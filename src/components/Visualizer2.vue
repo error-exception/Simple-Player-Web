@@ -1,0 +1,193 @@
+<template>
+  <div class="fill-size" style="pointer-events: none">
+    <canvas width="1280" height="720" ref="canvas"></canvas>
+  </div>
+</template>
+
+<script setup lang="ts">
+
+import {onMounted, onUnmounted, ref, watch} from "vue";
+import {WebGLRenderer} from "../ts/webgl/WebGLRenderer";
+import {Viewport} from "../ts/webgl/Viewport";
+import {destroyVisualizer, Visualizer} from "../ts/Visualizer";
+import {useStore} from "vuex";
+import {BeatLogo} from "../ts/webgl/BeatLogo";
+import {useEvent} from "../ts/EventBus";
+import {beatFuncV2, findMusic, useMouse} from "../ts/Utils";
+import {AudioPlayer} from "../ts/AudioPlayer";
+import {RoundVisualizer} from "../ts/webgl/RoundVisualizer";
+import {MovableBackground} from "../ts/webgl/MovableBackground";
+import {Beater} from "../ts/Beater";
+import {easeOut} from "../ts/util/Animation";
+import {getBeater} from "../ts/TimingInfo";
+
+const store = useStore()
+
+const canvas = ref<HTMLCanvasElement | null>(null)
+let isOpen = false
+let renderer: WebGLRenderer
+let beatLogo: BeatLogo
+let roundVisualizer: RoundVisualizer
+let background: MovableBackground
+
+let beater = new Beater({ bpm: 60, offset: 0 })
+
+const player = AudioPlayer.instance
+watch(player.isPlaying, (value) => {
+  isOpen = value;
+  if (isOpen) {
+    requestAnimationFrame(draw)
+  }
+})
+useEvent({
+
+  onBpmChanged(id: number) {
+    getBeater(id).then((res) => {
+      beater = res
+    })
+  },
+
+  onSongChanged(id: number) {
+    const music = findMusic(store, id)
+    if (music) {
+      getBeater(id).then((res) => {
+        beater = res
+      })
+    }
+  }
+
+})
+
+const [ mouseX, mouseY ] = useMouse()
+
+onMounted(() => {
+  const c = canvas.value
+  if (!c) return
+  const webgl = c.getContext("webgl2")
+  if (!webgl) {
+    return;
+  }
+  resizeCanvas()
+
+  isOpen = true
+  const viewport: Viewport = new Viewport({
+    x: 0,
+    y: 0,
+    height: window.innerHeight,
+    width: window.innerWidth
+  })
+  renderer = new WebGLRenderer(webgl, viewport)
+
+  background = new MovableBackground(webgl, {
+    x: '-50w',
+    y: '50h',
+    width: '100w',
+    height: '100h'
+  })
+
+  roundVisualizer = new RoundVisualizer(webgl, {
+    width: window.innerHeight,
+    height: window.innerHeight,
+    horizontal: "center",
+    vertical: "center"
+  })
+
+  beatLogo = new BeatLogo(webgl, {
+    width: 512,
+    height: 512,
+    vertical: "center",
+    horizontal: "center"
+  })
+
+  window.onresize = () => {
+    resizeCanvas()
+    renderer.setViewport(new Viewport({
+      x: 0,
+      y: 0,
+      width: window.innerWidth,
+      height: window.innerHeight
+    }))
+  }
+  renderer.addDrawable(background)
+  renderer.addDrawable(roundVisualizer)
+  renderer.addDrawable(beatLogo)
+  draw()
+})
+
+onUnmounted(() => {
+  isOpen = false
+  destroyVisualizer(store)
+  renderer.dispose()
+})
+
+function draw(timestamp: number = 0) {
+  if (!isOpen) {
+    return
+  }
+  requestAnimationFrame(draw)
+  if (!Visualizer.instance || !Visualizer.instance.isEnabled()) {
+    return;
+  }
+  const dataArray = Visualizer.instance.getFFT()
+  if (!dataArray) {
+    return;
+  }
+  const isKiai = beater.isKiai(player.currentTime)
+  const arr = toFloatArray(dataArray)
+  roundVisualizer.writeData(arr, 200, timestamp)
+  const scale = calcBeat(isKiai)
+
+
+  if (isKiai) {
+    if ((beater.getBeatCountRef().value & 1) === 0) {
+      background.setBrightness(scale * 0.5, 0)
+    } else {
+      background.setBrightness(0, scale * 0.5)
+    }
+  } else {
+    if ((beater.getBeatCountRef().value & 0b11) === 0) {
+      background.setBrightness(scale * 0.5, scale * 0.5)
+    }
+
+  }
+  renderer.render()
+}
+
+function calcBeat(isKiai: boolean) {
+  const time = player.currentTime
+  let scale = 0;
+  const offset = beater.getOffset()
+  if (time > beater.getOffset()) {
+    scale = beater.beat(time - offset)
+  } else {
+    scale = 1
+  }
+  const transX = (mouseX.value - window.innerWidth / 2)
+  const transY = (window.innerHeight / 2 - mouseY.value)
+  roundVisualizer.setTransform(0, 0)
+  beatLogo.setTransform(1 - scale * 0.02, isKiai ? scale : 0)
+  background.setTransform(0, 0)
+  store.commit("setBeat", scale)
+  return scale
+}
+
+function resizeCanvas() {
+  if (canvas.value) {
+    canvas.value.height = window.innerHeight
+    canvas.value.width = window.innerWidth
+  }
+}
+
+function toFloatArray(fft: Uint8Array) {
+  const result = []
+  for (let i = 0; i < fft.length; i++) {
+    result.push(fft[i] / 256.0)
+  }
+  return result
+}
+
+</script>
+
+<style scoped>
+
+</style>

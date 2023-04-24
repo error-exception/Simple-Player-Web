@@ -1,0 +1,19 @@
+@font-face {
+    font-family: 'KosugiMaru';
+    src: url("./KosugiMaru-Regular.ttf");
+}
+@font-face {
+    font-family: harmony;
+    src: url("./HarmonyOS_Sans_SC_Regular.ttf");
+    font-weight: normal;
+}
+@font-face {
+    font-family: harmony;
+    src: url("./HarmonyOS_Sans_SC_Bold.ttf");
+    font-weight: bold;
+}
+@font-face {
+    font-family: 'Digital Display';
+    src: url("./DigitalDisplay.ttf");
+    font-weight: normal;
+}

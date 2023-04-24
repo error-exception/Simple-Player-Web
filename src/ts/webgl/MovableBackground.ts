@@ -1,0 +1,197 @@
+import {Drawable} from "./Drawable";
+import {VertexArray} from "./core/VertexArray";
+import {Shader} from "./core/Shader";
+import {VertexBuffer} from "./core/VertexBuffer";
+import {VertexBufferLayout} from "./core/VertexBufferLayout";
+import {Alignment, Bound, defaultViewport, Viewport} from "./Viewport";
+import {Texture} from "./core/Texture";
+import backgroundImage from '../../assets/bg.png'
+import {glCall, isUndef} from "./core/Utils";
+
+interface MovableBackgroundConfig extends Bound, Alignment {}
+
+const vertexShader = `
+    attribute vec4 a_position;
+    attribute vec2 a_tex_coord;
+    
+    varying highp vec2 v_tex_coord;
+    
+    uniform mat4 u_transform;
+    
+    void main() {
+        gl_Position = a_position * u_transform;
+        v_tex_coord = a_tex_coord;
+    }
+`
+
+const fragmentShader = `
+    varying highp vec2 v_tex_coord;
+    uniform sampler2D u_sampler;
+    uniform highp vec2 u_brightness;
+    void main() {
+        highp vec4 texelColor = texture2D(u_sampler, v_tex_coord);
+        highp float distance = 0.0;
+        highp float left = 0.1;
+        highp float right = 0.9;
+        highp float target = 0.0;
+        if (v_tex_coord.x < left) {
+            distance = (left - v_tex_coord.x) / 0.1;
+            target = u_brightness.x * distance;
+        }
+        if (v_tex_coord.x > right) {
+            distance = (v_tex_coord.x - right) / 0.1;
+            target = u_brightness.y * distance;
+        }
+        texelColor.rgb = min(texelColor.rgb + target, 1.0);
+        gl_FragColor = texelColor;
+    }
+`
+
+export class MovableBackground implements Drawable {
+
+    private x: number = 0;
+    private y: number = 0;
+    private width: number = 0;
+    private height: number = 0;
+
+    private readonly vertexArray: VertexArray
+    private readonly shader: Shader
+    private readonly buffer: VertexBuffer
+    private readonly layout: VertexBufferLayout
+    private readonly texture: Texture
+
+    private viewport: Viewport = defaultViewport
+
+    constructor(
+        private gl: WebGL2RenderingContext,
+        private config: MovableBackgroundConfig
+    ) {
+        const vertexArray = new VertexArray(gl);
+        vertexArray.bind()
+        const buffer = new VertexBuffer(gl)
+        const layout = new VertexBufferLayout(gl)
+        const shader = new Shader(gl, vertexShader, fragmentShader)
+        const texture = new Texture(gl, backgroundImage)
+
+        buffer.bind()
+        shader.bind()
+
+        shader.setUniform1i('u_sampler', 1)
+        layout.pushFloat(shader.getAttributeLocation('a_position'), 2)
+        layout.pushFloat(shader.getAttributeLocation('a_tex_coord'), 2)
+        vertexArray.addBuffer(buffer, layout)
+
+        vertexArray.unbind()
+        buffer.unbind()
+        shader.unbind()
+
+        this.vertexArray = vertexArray;
+        this.buffer = buffer;
+        this.layout = layout;
+        this.texture = texture
+        this.shader = shader
+    }
+
+    private transformMatrix4 = new Float32Array([
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    ])
+
+    public setTransform(transX: number, transY: number) {
+        const matrix = this.transformMatrix4;
+        const viewport = this.viewport;
+        matrix[3] = viewport.convertX(transX)
+        matrix[7] = viewport.convertY(transY)
+
+        this.shader.bind()
+        this.shader.setUniformMatrix4fv('u_transform', matrix)
+        this.shader.unbind()
+    }
+
+    private brightnessValues = new Float32Array([0.0, 0.0])
+
+    /**
+     *
+     * @param {number} left range -> [0, 1]
+     * @param right
+     */
+    public setBrightness(left: number, right: number) {
+        const shader = this.shader
+        this.brightnessValues[0] = left
+        this.brightnessValues[1] = right
+        shader.bind()
+        shader.setUniform2fv('u_brightness', this.brightnessValues)
+        shader.unbind()
+    }
+
+    public createVertexArray() {
+        const viewport = this.viewport
+        return new Float32Array([
+            viewport.convertX(this.x),              viewport.convertY(this.y),               0.0, 0.0,
+            viewport.convertX(this.x + this.width), viewport.convertY(this.y),               1.0, 0.0,
+            viewport.convertX(this.x),              viewport.convertY(this.y - this.height), 0.0, 1.0,
+            viewport.convertX(this.x + this.width), viewport.convertY(this.y),               1.0, 0.0,
+            viewport.convertX(this.x),              viewport.convertY(this.y - this.height), 0.0, 1.0,
+            viewport.convertX(this.x + this.width), viewport.convertY(this.y - this.height), 1.0, 1.0
+        ])
+    }
+
+    public setViewport(viewport: Viewport) {
+        this.viewport = viewport
+        const config = this.config
+        if (
+            isUndef(config.y) && isUndef(config.vertical)
+            || isUndef(config.x) && isUndef(config.horizontal)
+        ) {
+            throw new Error('config error')
+        }
+        if (this.config.x) {
+            this.x = viewport.convertUnitX(this.config.x)
+        }
+        if (this.config.y) {
+            this.y = viewport.convertUnitY(this.config.y)
+        }
+        this.width = viewport.convertUnitX(this.config.width)
+        this.height = viewport.convertUnitY(this.config.height)
+        if (this.config.horizontal) {
+            this.x = viewport.alignmentX(this.config.horizontal, this.width)
+        }
+        if (this.config.vertical) {
+            this.y = viewport.alignmentY(this.config.vertical, this.height)
+        }
+        console.log('MovableBackground', `x=${this.x}, y=${this.y}, width=${this.width}, height=${this.height}`)
+        this.buffer.bind()
+        this.buffer.setBufferData(this.createVertexArray())
+        this.buffer.unbind()
+
+    }
+
+    public unbind() {
+        this.vertexArray.unbind()
+        this.texture.unbind()
+        this.shader.unbind()
+    }
+
+    public bind() {
+        this.texture.bind(1)
+        this.vertexArray.bind()
+        this.shader.bind()
+    }
+
+    public draw() {
+        const gl = this.gl
+        this.vertexArray.addBuffer(this.buffer, this.layout)
+        gl.drawArrays(gl.TRIANGLES, 0, 6)
+    }
+
+    public dispose() {
+        this.texture.dispose()
+        this.vertexArray.dispose()
+        this.shader.dispose()
+        this.buffer.dispose()
+    }
+
+
+}
