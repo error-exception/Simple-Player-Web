@@ -39,6 +39,9 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
 npm install
 ```
 
+本项目运行之前需要打开 Simple Player，启动网页播放器，此时会在手机上启动一个服务器，并在 `vite.config.ts` 修改代理服务器地址为手机的 IP 地址（仅修改 IP，不修改端口）
+（注：需要手机和 PC 在同一网络环境下）
+
 依赖安装完以后，运行下面的命令运行本项目
 
 ``` shell
