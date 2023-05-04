@@ -50,7 +50,7 @@ export class Viewport {
         throw new Error('invalid param: ' + x)
     }
 
-    public convertUnitY(y: number | Percent | WidthUnit) {
+    public convertUnitY(y: number | Percent | HeightUnit) {
         if (typeof y === "number") {
             return y
         } else {
@@ -158,7 +158,7 @@ export interface Bound {
     x?: number | Percent | WidthUnit
     y?: number | Percent | HeightUnit
     width: number | Percent | WidthUnit
-    height: number | Percent | WidthUnit
+    height: number | Percent | HeightUnit
 }
 
 export const defaultViewport: Viewport = new Viewport({

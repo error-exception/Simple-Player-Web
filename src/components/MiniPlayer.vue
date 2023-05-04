@@ -31,11 +31,12 @@ import {useStore} from "vuex";
 import {Icon} from "../ts/icon/Icon";
 import {launchVisualizer} from "../ts/Visualizer";
 import {AudioPlayer} from "../ts/AudioPlayer";
+import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 
 
 const store = useStore()
 
-const player = AudioPlayer.instance
+const player = AudioPlayerV2.instance
 
 const title = computed(() => store.state.currentMusic.title)
 const artist = computed(() => store.state.currentMusic.artist)

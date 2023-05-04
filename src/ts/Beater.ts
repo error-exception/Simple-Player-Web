@@ -35,13 +35,14 @@ export class Beater {
     }
 
     public isKiai(currentTime: number): boolean {
+        currentTime += 60
         const timingList = this.timingList
         if (timingList.length === 0) {
             return false
         }
         let item: TimingItem | null = null
         for (let i = 0; i < timingList.length; i++) {
-            if (currentTime < timingList[i].timestamp) {
+            if (currentTime <= timingList[i].timestamp) {
                 if (i > 0) {
                     item = timingList[i - 1]
                 }
@@ -60,6 +61,10 @@ export class Beater {
     }
 
     public beat(timestamp: number): number {
+        if (timestamp < this.offset) {
+            return 0
+        }
+        timestamp -= this.offset
         const gap = this.gap
         timestamp += 60
         const count = Math.floor(timestamp / gap)
@@ -68,8 +73,11 @@ export class Beater {
         if (timestamp <= 60) {
             return easeIn(timestamp / 60)
         }
+        if (timestamp <= gap - 60) {
+            return easeOut(1 - (timestamp - 60) / (gap - 120))
+        }
         if (timestamp <= gap) {
-            return easeOut(1 - (timestamp - 60) / (gap - 60))
+            return 0
         }
         return 0
     }

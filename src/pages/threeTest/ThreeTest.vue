@@ -12,7 +12,8 @@
 
 <script lang="ts" setup>
 import {onMounted, ref} from "vue";
-import WaveSurfer from 'wavesurfer.js'
+import WaveSurfer, {valueOf} from 'wavesurfer.js'
+import {int} from "../../ts/Utils";
 const box = ref<HTMLDivElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
 let context: CanvasRenderingContext2D
@@ -25,17 +26,21 @@ onMounted(() => {
   }
   context = canvas.value.getContext('2d')!!
   resizeCanvas()
+  audioContext().then((buffer) => {
+    draw(buffer)
+  })
+
   const wave = WaveSurfer.create({
     container: canvas.value.parentElement!!,
     waveColor: 'violet',
     progressColor: 'purple',
     mediaType: "audio",
   })
-  wave.load('/api/music?id=2')
+  wave.load('/api/music?id=0')
 
 })
 
-const audio = new Audio("/api/music?id=2")
+const audio = new Audio("/api/music?id=0")
 audio.load()
 let flag = false
 function play() {
@@ -62,45 +67,50 @@ function drawProgress() {
   }
   requestAnimationFrame(drawProgress)
   progress.value = audio.currentTime / audio.duration * 100
-  console.log(progress.value)
 }
 
-async function audioContext(): Promise<[Float32Array, number]> {
+async function audioContext(): Promise<AudioBuffer> {
 
 
-  const response = await fetch("/api/music?id=2")
+  const response = await fetch("/api/music?id=0")
   const arrayBuffer = await response.arrayBuffer()
   const context = new AudioContext()
   const audioBuffer = await context.decodeAudioData(arrayBuffer)
-  const pcm = audioBuffer.getChannelData(0)
   await context.close()
-  return [pcm, audioBuffer.sampleRate]
+  return audioBuffer
 }
 
-function draw(pcm: Float32Array, sampleRate: number) {
+function draw(buffer: AudioBuffer) {
 
-  const func = () => {
-    const duration = pcm.length / sampleRate
-    if (audio.currentTime >= duration) {
-      return
-    }
-    const bound = resizeCanvas()
-    context.beginPath()
-    context.translate(0, bound.height / 2)
+  const sampleRate = buffer.sampleRate
 
-    context.lineWidth = 1
-    context.strokeStyle = 'red'
-    let sliceWidth = 1
-    for (let i = 0; i < pcm.length && i < bound.width * window.devicePixelRatio; i++) {
-      const index = Math.round( i / bound.width * duration )
-      context.moveTo(sliceWidth, 0)
-      context.lineTo(sliceWidth, pcm[index * sampleRate] * 100)
-      sliceWidth += 1
-    }
-    context.stroke()
+  // const left = buffer.getChannelData(0)
+  // const right = buffer.getChannelData(1)
+  // let pcm = new Float32Array(left.length)
+  // for (let i = 0; i < buffer.length; i++) {
+  //   pcm[i] = Math.max(left[i], right[i])
+  // }
+  const pcm = buffer.getChannelData(1)
+  const height = 200
+  const bound = resizeCanvas()
+  const width = bound.width * 20
+  const duration = buffer.duration
+  const lineWidth = 1
+  const sampleRateStep = int(duration / width * sampleRate)
+  context.beginPath()
+  context.translate(0, 200)
+  context.scale(1, 1)
+  context.lineWidth = lineWidth
+  context.strokeStyle = 'red'
+  let sliceWidth = 0
+  for (let i = 0; i < pcm.length; i += sampleRateStep) {
+    const value = Math.abs(pcm[i]) * height
+    context.moveTo(Math.round(sliceWidth), -value / 2)
+    context.lineTo(Math.round(sliceWidth), value / 2)
+    sliceWidth += 1
   }
 
-  func()
+  context.stroke()
 }
 
 function resizeCanvas() {

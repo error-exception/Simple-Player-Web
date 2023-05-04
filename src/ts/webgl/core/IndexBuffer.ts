@@ -22,7 +22,7 @@ export class IndexBuffer implements Bindable, Disposable {
         this.unbind()
     }
 
-    public setIndexBuffer(data: Float32Array) {
+    public setIndexBuffer(data: Uint32Array) {
         const gl = this.gl
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, this.usage)
     }

@@ -9,29 +9,22 @@ import {degreeToRadian} from "../Utils";
 import {TransformUtils} from "./core/TransformUtils";
 import {Vector2} from "./core/Vector2";
 import {isUndef} from "./core/Utils";
+import {IndexBuffer} from "./core/IndexBuffer";
 
 export interface RoundVisualizerConfig extends Alignment, Bound {}
 
 const vertexShader = `
-    attribute vec3 a_vertexPosition;
+    attribute vec2 a_vertexPosition;
     uniform mat4 u_transform;
-    varying float v_alpha;
     void main() {
         vec4 coord = vec4(a_vertexPosition.xy, 0.0, 1.0) * u_transform;
-        v_alpha = a_vertexPosition.z;
         gl_Position = coord;
     }
 `
 
 const fragmentShader = `
-    #ifdef GL_ES
-        precision highp float;
-    #endif
-    
-    varying float v_alpha;
-    
     void main() {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, v_alpha);
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 0.05);
     }
 `
 
@@ -59,23 +52,40 @@ export class RoundVisualizer implements Disposable, Drawable {
         const shader = new Shader(gl, vertexShader, fragmentShader)
         const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
         const layout = new VertexBufferLayout(gl)
+        const indexBuffer = new IndexBuffer(gl)
+        // TODO: construct an index buffer
+        const index: number[] = [
+            0, 1, 2, 1, 2, 3
+        ]
+        const indexArray: number[] = new Array(index.length * 200 * 5)
+        for (let i = 0, j = 0; i < 200 * 5; i++, j += 6) {
+            const increment = i << 2
+            indexArray[j] = index[0] + increment
+            indexArray[j + 1] = index[1] + increment
+            indexArray[j + 2] = index[2] + increment
+            indexArray[j + 3] = index[3] + increment
+            indexArray[j + 4] = index[4] + increment
+            indexArray[j + 5] = index[5] + increment
+        }
+        indexBuffer.bind()
+        indexBuffer.setIndexBuffer(new Uint32Array(indexArray))
+
         buffer.bind()
         shader.bind()
 
         const location = shader.getAttributeLocation('a_vertexPosition')
-        layout.pushFloat(location, 3)
+        layout.pushFloat(location, 2)
         vertexArray.addBuffer(buffer, layout)
 
         vertexArray.unbind()
         buffer.unbind()
+        indexBuffer.unbind()
         shader.unbind()
 
         this.vertexArray = vertexArray
         this.buffer = buffer
         this.shader = shader
         this.layout = layout
-
-        console.log(window.devicePixelRatio)
     }
 
     private transformMatrix4 = new Float32Array([
@@ -88,8 +98,8 @@ export class RoundVisualizer implements Disposable, Drawable {
     public setTransform(transX: number, transY: number) {
         const matrix = this.transformMatrix4;
         const viewport = this.viewport;
-        matrix[3] = viewport.convertX(transX)
-        matrix[7] = viewport.convertY(transY)
+        matrix[3] = viewport.convertX(-transX * 0.02)
+        matrix[7] = viewport.convertY(-transY * 0.02)
 
         this.shader.bind()
         this.shader.setUniformMatrix4fv('u_transform', matrix)
@@ -97,7 +107,6 @@ export class RoundVisualizer implements Disposable, Drawable {
     }
 
     private vertexData = new Float32Array(0)
-    private alphas: number[] = new Array(200).fill(1)
 
     // TODO: 添加返回值，表示当前音量
     public writeData(data: number[], length: number = data.length, timestamp: number) {
@@ -105,12 +114,12 @@ export class RoundVisualizer implements Disposable, Drawable {
         const centerX = this.x + this.width / 2
         const centerY = this.y - this.height / 2
         if (this.vertexData.length !== length) {
-            this.vertexData = new Float32Array(length * 18 * 5)
+            this.vertexData = new Float32Array(length * 8 * 5)
         }
         const array = this.vertexData
-        const innerRadius = 232
+        const innerRadius = 260
         const lineWidth = (
-            100 * Math.sin(
+            innerRadius / 2 * Math.sin(
                 degreeToRadian(360 / (length))
             )
         ) * 2
@@ -124,7 +133,7 @@ export class RoundVisualizer implements Disposable, Drawable {
                 const degree = i / 200 * 360 + j * 360 / 5
 
                 const radian = degreeToRadian(degree)
-                const value = innerRadius + data[i] * 140
+                const value = innerRadius + data[i] * 200
                 const fromX = centerX
                 const fromY = centerY + innerRadius
                 const toX = centerX
@@ -142,16 +151,14 @@ export class RoundVisualizer implements Disposable, Drawable {
                 point3 = TransformUtils.apply(point3, matrix3)
                 point4 = TransformUtils.apply(point4, matrix3)
 
-                let alpha = 0.1
+                this.addPoint(array, k, point1)
+                this.addPoint(array, k + 2, point2)
+                // this.addPoint(array, k + 6, point3, alpha)
+                // this.addPoint(array, k + 9, point2, alpha)
+                this.addPoint(array, k + 4, point3)
+                this.addPoint(array, k + 6, point4)
 
-                this.addPoint(array, k, point1, alpha)
-                this.addPoint(array, k + 3, point2, alpha)
-                this.addPoint(array, k + 6, point3, alpha)
-                this.addPoint(array, k + 9, point2, alpha)
-                this.addPoint(array, k + 12, point3, alpha)
-                this.addPoint(array, k + 15, point4, alpha)
-
-                k += 18
+                k += 8
 
             }
         }
@@ -164,10 +171,9 @@ export class RoundVisualizer implements Disposable, Drawable {
         // this.alphas.fill(0.2)
     }
 
-    private addPoint(array: Float32Array, offset: number, point: Vector2, alpha: number) {
+    private addPoint(array: Float32Array, offset: number, point: Vector2) {
         array[offset] = this.viewport.convertX(point.x);
         array[offset + 1] = this.viewport.convertY(point.y);
-        array[offset + 2] = alpha;
     }
 
     private simpleSpectrum: number[] = new Array<number>(200)
@@ -252,7 +258,7 @@ export class RoundVisualizer implements Disposable, Drawable {
         const gl = this.gl
         // this.shader.setUniform4fv('u_color', [1.0, 1.0, 1.0, 0.2])
         this.vertexArray.addBuffer(this.buffer, this.layout)
-        gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
+        gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_INT, 0)
 
     }
 

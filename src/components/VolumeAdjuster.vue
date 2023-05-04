@@ -14,11 +14,12 @@ import {onMounted, ref} from "vue";
 import {AudioPlayer} from "../ts/AudioPlayer";
 import {degreeToRadian} from "../ts/Utils";
 import {simpleAnimate} from "../ts/util/Animation";
+import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 
-const player = AudioPlayer.instance
+const player = AudioPlayerV2.instance
 
 let context: CanvasRenderingContext2D
 let isShow = false

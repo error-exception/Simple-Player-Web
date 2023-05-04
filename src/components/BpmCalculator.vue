@@ -23,7 +23,7 @@
               :key="item.timestamp"
           >
             <span>{{ timeString(item.timestamp) }}</span>
-            <span class="font-bold" style="color: purple;">{{ item.isKiai ? 'Kiai' : '' }}</span>
+            <span class="timing-attr" :style="`display: ${item.isKiai ? 'block' : 'none'}`">Kiai</span>
           </Row>
         </Column>
         <Row class="fill-width" right :gap="16" style="padding-right: 16px;">
@@ -61,18 +61,22 @@
             </button>
           </Row>
           <Row class="fill-width font-white" :gap="16" center-horizontal>
-            <Row center :gap="4">
-              1.0 <CheckBox type="radio" :checked="state.precisionIndex === 0" @change="state.precisionIndex = 0"/>
-            </Row>
-            <Row center :gap="4">
-              10.0 <CheckBox type="radio" :checked="state.precisionIndex === 1" @change="state.precisionIndex = 1"/>
-            </Row>
-            <Row center :gap="4">
-              100.0 <CheckBox type="radio" :checked="state.precisionIndex === 2" @change="state.precisionIndex = 2"/>
-            </Row>
-            <Row center :gap="4">
-              beat gap <CheckBox type="radio" :checked="state.precisionIndex === 3" @change="state.precisionIndex = 3"/>
-            </Row>
+            <button class="radio-btn" @click="state.precisionIndex = 0" :style="`background-color: ${ state.precisionIndex == 0 ? '#33cb98' : 'transparent'}`">1.0</button>
+            <button class="radio-btn" @click="state.precisionIndex = 1" :style="`background-color: ${ state.precisionIndex == 1 ? '#33cb98' : 'transparent'}`">10.0</button>
+            <button class="radio-btn" @click="state.precisionIndex = 2" :style="`background-color: ${ state.precisionIndex == 2 ? '#33cb98' : 'transparent'}`">100.0</button>
+            <button class="radio-btn" @click="state.precisionIndex = 3" :style="`background-color: ${ state.precisionIndex == 3 ? '#33cb98' : 'transparent'}`">beat gap</button>
+<!--            <Row center :gap="4">-->
+<!--              1.0 <CheckBox type="radio" :checked="state.precisionIndex === 0" @change="state.precisionIndex = 0"/>-->
+<!--            </Row>-->
+<!--            <Row center :gap="4">-->
+<!--              10.0 <CheckBox type="radio" :checked="state.precisionIndex === 1" @change="state.precisionIndex = 1"/>-->
+<!--            </Row>-->
+<!--            <Row center :gap="4">-->
+<!--              100.0 <CheckBox type="radio" :checked="state.precisionIndex === 2" @change="state.precisionIndex = 2"/>-->
+<!--            </Row>-->
+<!--            <Row center :gap="4">-->
+<!--              beat gap <CheckBox type="radio" :checked="state.precisionIndex === 3" @change="state.precisionIndex = 3"/>-->
+<!--            </Row>-->
           </Row>
         </Column>
 <!--        <button class="btn" style="height: 48px">Use current time as offset</button>-->
@@ -89,7 +93,7 @@
         </Row>
         <Row class="fill-width" center-vertical v-if="state.timing.list.length !== 0">
           <span class="font-white">Kiai Mode</span>
-          <CheckBox class="ml-auto" v-model="state.timing.list[state.timing.selectedIndex].isKiai"/>
+          <CheckBox class="ml-auto" v-model="state.timing.selectedTiming.isKiai"/>
         </Row>
       </Column>
     </Row>
@@ -115,7 +119,7 @@
       >
         {{ Math.round(item * 100) }}%
       </button>
-      <button class="fill-height bpm-apply" @click="useCurrentBpm()">
+      <button class="fill-height bpm-apply" @click="applyTiming()">
         Apply
       </button>
     </Row>
@@ -134,6 +138,7 @@ import {AudioPlayer} from "../ts/AudioPlayer";
 import {TimingItem} from "../ts/TimingItem";
 import CheckBox from "./CheckBox.vue";
 import {addTimingInfoToCache, getBeater, TimingInfo, uploadTimingInfo} from "../ts/TimingInfo";
+import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -146,7 +151,8 @@ type ReactiveState = {
   playbackRateIndex: number,
   timing: {
     list: TimingItem[],
-    selectedIndex: number
+    selectedIndex: number,
+    selectedTiming: TimingItem
   }
   beatEffect: {
     tapBeat: number,
@@ -170,7 +176,11 @@ const state = reactive<ReactiveState>({
   playbackRateIndex: 3,
   timing: {
     list: [],
-    selectedIndex: 0
+    selectedIndex: -1,
+    selectedTiming: new TimingItem({
+      timestamp: 0,
+      isKiai: false
+    })
   },
   gap: [],
   currentTime: "00:00:000",
@@ -213,7 +223,7 @@ const wave = ref<HTMLCanvasElement | null>(null)
 
 const store = useStore()
 
-const player = AudioPlayer.instance
+const player = AudioPlayerV2.instance
 
 let progressContext: CanvasRenderingContext2D
 
@@ -277,6 +287,19 @@ useEvent({
 
 })
 
+const currentMusic = store.state.currentMusic;
+getBeater(currentMusic.id).then((res) => {
+  state.beatInfo.bpm = res.getBpm()
+  state.beatInfo.offset = res.getOffset()
+  state.timing.list = res.getTimingList()
+  if (player.isPlaying.value) {
+    drawFlag.main = true
+    drawFlag.progress = true
+    drawFlag.wave = true
+    draw()
+  }
+})
+
 useKeyboard('down', (evt) => {
   if (evt.code === 'ArrowRight') {
     changeProgressByBeatGap(true)
@@ -288,6 +311,7 @@ useKeyboard('down', (evt) => {
     state.playbackRateIndex = Math.max(state.playbackRateIndex - 1, 0)
   }
 })
+
 
 onMounted(() => {
   if (progress.value) {
@@ -302,18 +326,7 @@ onMounted(() => {
       waveContext = ctx
     }
   }
-  const currentMusic = store.state.currentMusic;
-  getBeater(currentMusic.id).then((res) => {
-    state.beatInfo.bpm = res.getBpm()
-    state.beatInfo.offset = res.getOffset()
-    state.timing.list = res.getTimingList()
-    if (player.isPlaying.value) {
-      drawFlag.main = true
-      drawFlag.progress = true
-      drawFlag.wave = true
-      draw()
-    }
-  })
+
 
 })
 
@@ -364,7 +377,7 @@ function click(a: KeyboardEvent) {
   tap(a.timeStamp)
 }
 
-function useCurrentBpm() {
+function applyTiming() {
   const bpm = Math.floor(state.beatInfo.bpm)
   store.commit("setCurrentMusicBpm", bpm)
   store.commit("setCurrentMusicOffset", state.beatInfo.offset)
@@ -436,14 +449,14 @@ function adjustBpm(dir: boolean) {
 
 function adjustOffset(dir: boolean) {
   if (dir) {
-    if (state.playbackRateIndex === 3) {
+    if (state.precisionIndex === 3) {
       const gap = 60 / state.beatInfo.bpm * 1000
       beatOffset.value += Math.floor(gap)
     } else {
       beatOffset.value += (10 ** state.precisionIndex)
     }
   } else {
-    if (state.playbackRateIndex === 3) {
+    if (state.precisionIndex === 3) {
       const gap = 60 / state.beatInfo.bpm * 1000
       beatOffset.value -= Math.floor(gap)
     } else {
@@ -487,15 +500,21 @@ function addAtCurrent() {
   })
   state.timing.list.push(timingItem)
   state.timing.list = state.timing.list.sort((a, b) => a.timestamp - b.timestamp)
+  state.timing.selectedIndex = state.timing.list.length - 1
+  state.timing.selectedTiming = state.timing.list[state.timing.selectedIndex]
 }
 
 function removeSelected() {
+  if (state.timing.selectedIndex < 0) {
+    return
+  }
   removeAt(state.timing.list, state.timing.selectedIndex)
 }
 
 function selectCurrentTiming(index: number) {
   state.timing.selectedIndex = index
   player.seek(state.timing.list[index].timestamp)
+  state.timing.selectedTiming = state.timing.list[index]
 }
 
 function draw() {
@@ -764,5 +783,20 @@ function drawWave(scale: number) {
   background-color: #82a9b5;
   width: 56px;
   border-radius: 8px;
+}
+.radio-btn {
+  background-color: #33cb98;
+  color: white;
+  padding: 4px 16px;
+  border-radius: 999px;
+  border: 3px solid #33cb98;
+  transition: background-color 100ms ease-in-out;
+}
+.timing-attr {
+  border-radius: 2px;
+  background-color: #000000;
+  padding: 2px;
+  font-size: 12px;
+  color: #af00af;
 }
 </style>

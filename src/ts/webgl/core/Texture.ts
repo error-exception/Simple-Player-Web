@@ -5,6 +5,8 @@ export class Texture implements Disposable, Bindable {
 
     private static blankData = new Uint8Array([0, 0, 0, 0])
     private readonly rendererId: WebGLTexture
+    public imageWidth: number = 0
+    public imageHeight: number = 0
 
     constructor(
         private gl: WebGL2RenderingContext,
@@ -28,6 +30,8 @@ export class Texture implements Disposable, Bindable {
         image.src = url
         image.decode().then(() => {
             gl.bindTexture(gl.TEXTURE_2D, texture)
+            this.imageWidth = image.width
+            this.imageHeight = image.height
             gl.texImage2D(
                 gl.TEXTURE_2D,
                 0,

@@ -38,13 +38,14 @@ export class Visualizer {
         }
         this.mediaElementSource.connect(this.audioContext.destination)
         this.mediaElementSource.connect(this.analyser)
-
         this.analyser.smoothingTimeConstant = .4
         this.analyser.minDecibels = -55
         this.analyser.maxDecibels = 0
         this.analyser.fftSize = 2048
 
+
         const bufferLength = this.analyser.frequencyBinCount
+        console.log("bufferLength", bufferLength)
         this.audioDataBuffer = new Uint8Array(bufferLength)
         this._isEnabled = true
     }

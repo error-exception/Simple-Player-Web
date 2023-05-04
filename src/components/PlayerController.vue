@@ -35,8 +35,9 @@ import {useStore} from "vuex";
 import ProgressBar from "./ProgressBar.vue";
 import {launchVisualizer} from "../ts/Visualizer";
 import {useKeyboard} from "../ts/Utils";
+import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 
-const player = AudioPlayer.instance
+const player = AudioPlayerV2.instance
 
 const musicInfo = useStore()
 
@@ -64,8 +65,8 @@ function nextSong() {
   }
   musicInfo.commit("setIndex", newIndex)
   const music = musicInfo.state.currentMusic;
-  AudioPlayer.instance.src(music)
-  AudioPlayer.instance.play()
+  player.src(music)
+  player.play()
   launchVisualizer(musicInfo)
 }
 
@@ -77,14 +78,14 @@ function prevSong() {
   }
   musicInfo.commit("setIndex", newIndex)
   const music = musicInfo.state.currentMusic;
-  AudioPlayer.instance.src(music)
-  AudioPlayer.instance.play()
+  player.src(music)
+  player.play()
   launchVisualizer(musicInfo)
 }
 
-AudioPlayer.instance.onEnded(() => {
+player.onEnded = () => {
   nextSong()
-})
+}
 
 useKeyboard("up", (evt) => {
   if (evt.code === 'ArrowRight') {

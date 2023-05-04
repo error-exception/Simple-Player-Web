@@ -48,6 +48,7 @@ import SettingsPanel from "./components/SettingsPanel.vue";
 import MiniPlayer from "./components/MiniPlayer.vue";
 import VolumeAdjuster from "./components/VolumeAdjuster.vue";
 import {launchVisualizer} from "./ts/Visualizer";
+import {AudioPlayerV2} from "./ts/AudioPlayerV2";
 
 const state = reactive({
   listState: false,
@@ -93,6 +94,17 @@ useKeyboard('up', (evt) => {
 
 const hasSomeUIShow = computed(() => state.listState || state.settingsState || state.miniPlayerState)
 
+function openBpmCalculator() {
+  state.bpmCalculatorState = true
+  AudioPlayerV2.instance.onEnded = null
+}
+function closeBpmCalculator() {
+  state.bpmCalculatorState = false
+  AudioPlayerV2.instance.onEnded = () => {
+    nextSong()
+  }
+}
+
 function closeAll() {
   state.settingsState = false
   state.listState = false
@@ -103,13 +115,13 @@ fetchJson('/api/musicList').then((obj) => {
   console.log(obj)
   store.commit("setMusicList", obj.data)
   store.commit('setMusic', store.state.musicList[store.state.currentIndex])
-  AudioPlayer.instance.src(store.state.currentMusic)
+  AudioPlayerV2.instance.src(store.state.currentMusic)
 })
 function play() {
-  if (AudioPlayer.instance.isPlaying.value) {
-    AudioPlayer.instance.pause()
+  if (AudioPlayerV2.instance.isPlaying.value) {
+    AudioPlayerV2.instance.pause()
   } else {
-    AudioPlayer.instance.play()
+    AudioPlayerV2.instance.play()
   }
   launchVisualizer(store)
 }
@@ -122,8 +134,8 @@ function nextSong() {
   }
   store.commit("setIndex", newIndex)
   const music = store.state.currentMusic;
-  AudioPlayer.instance.src(music)
-  AudioPlayer.instance.play()
+  AudioPlayerV2.instance.src(music)
+  AudioPlayerV2.instance.play()
   launchVisualizer(store)
 }
 
@@ -135,14 +147,14 @@ function prevSong() {
   }
   store.commit("setIndex", newIndex)
   const music = store.state.currentMusic;
-  AudioPlayer.instance.src(music)
-  AudioPlayer.instance.play()
+  AudioPlayerV2.instance.src(music)
+  AudioPlayerV2.instance.play()
   launchVisualizer(store)
 }
 
-AudioPlayer.instance.onEnded(() => {
+AudioPlayerV2.instance.onEnded = () => {
   nextSong()
-})
+}
 
 </script>
 

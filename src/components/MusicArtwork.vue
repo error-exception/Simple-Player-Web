@@ -39,10 +39,11 @@ import {AudioPlayer} from "../ts/AudioPlayer";
 import {computed} from "vue";
 import {timeString} from "../ts/Utils";
 import {Icon} from "../ts/icon/Icon";
+import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 
 const store = useStore()
 
-const player = AudioPlayer.instance;
+const player = AudioPlayerV2.instance;
 
 const duration = computed(() => timeString(player.duration.value))
 

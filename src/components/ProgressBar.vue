@@ -9,17 +9,18 @@
 
 import {AudioPlayer} from "../ts/AudioPlayer";
 import {computed, reactive} from "vue";
+import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 
 const state = reactive({
   current: 0,
   duration: 0
 })
 
-const player = AudioPlayer.instance
+const player = AudioPlayerV2.instance
 
-player.onTimeupdate(() => {
-  state.current = player.currentTime
-})
+// player.onTimeupdate(() => {
+//   state.current = player.currentTime
+// })
 const progress = computed(() => {
   return `width: ${state.current / player.duration.value * 300}px`
 })

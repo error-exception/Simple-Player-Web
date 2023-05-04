@@ -5,7 +5,7 @@ import {VertexBuffer} from "./core/VertexBuffer";
 import {VertexBufferLayout} from "./core/VertexBufferLayout";
 import {Alignment, Bound, defaultViewport, Viewport} from "./Viewport";
 import {Texture} from "./core/Texture";
-import backgroundImage from '../../assets/bg.png'
+import backgroundImage from '../../assets/ShovelKun.png'
 import {glCall, isUndef} from "./core/Utils";
 
 interface MovableBackgroundConfig extends Bound, Alignment {}
@@ -14,7 +14,7 @@ const vertexShader = `
     attribute vec4 a_position;
     attribute vec2 a_tex_coord;
     
-    varying highp vec2 v_tex_coord;
+    varying mediump vec2 v_tex_coord;
     
     uniform mat4 u_transform;
     
@@ -23,25 +23,23 @@ const vertexShader = `
         v_tex_coord = a_tex_coord;
     }
 `
-
+// TODO: 调整高亮的位置
 const fragmentShader = `
-    varying highp vec2 v_tex_coord;
+    varying mediump vec2 v_tex_coord;
     uniform sampler2D u_sampler;
-    uniform highp vec2 u_brightness;
+    uniform mediump vec2 u_brightness;
     void main() {
-        highp vec4 texelColor = texture2D(u_sampler, v_tex_coord);
-        highp float distance = 0.0;
-        highp float left = 0.1;
-        highp float right = 0.9;
-        highp float target = 0.0;
-        if (v_tex_coord.x < left) {
-            distance = (left - v_tex_coord.x) / 0.1;
-            target = u_brightness.x * distance;
-        }
-        if (v_tex_coord.x > right) {
-            distance = (v_tex_coord.x - right) / 0.1;
-            target = u_brightness.y * distance;
-        }
+        mediump vec4 texelColor = texture2D(u_sampler, v_tex_coord);
+        mediump float distance = 0.0;
+        mediump float target = 0.0;
+        
+        mediump float leftDistance = (0.1 - v_tex_coord.x) / 0.1;
+        mediump float rightDistance = (v_tex_coord.x - 0.9) / 0.1;
+        leftDistance = max(leftDistance, 0.0);
+        rightDistance = max(rightDistance, 0.0);
+        target = max(u_brightness.x * leftDistance, 0.0);
+        target = max(u_brightness.y * rightDistance, target);
+
         texelColor.rgb = min(texelColor.rgb + target, 1.0);
         gl_FragColor = texelColor;
     }
@@ -100,10 +98,32 @@ export class MovableBackground implements Drawable {
     ])
 
     public setTransform(transX: number, transY: number) {
+        const max = Math.max
+        const min = Math.min
         const matrix = this.transformMatrix4;
         const viewport = this.viewport;
-        matrix[3] = viewport.convertX(transX)
-        matrix[7] = viewport.convertY(transY)
+        const { imageWidth, imageHeight } = this.texture
+        const scale = 1.01
+
+        matrix[0] = scale
+        matrix[5] = scale
+        // matrix[3] = viewport.convertX(transX)
+        // matrix[7] = viewport.convertY(transY)
+
+        const scaledWidth = imageWidth * scale
+        const scaledHeight = imageHeight * scale
+
+        const shortOnImage = min(scaledHeight, scaledWidth)
+        const shortOnViewport = min(viewport.width, viewport.height)
+        const factor = shortOnViewport / shortOnImage
+
+        const widthDiffer = scaledWidth - imageWidth
+        const heightDiffer = scaledHeight - imageHeight
+        const x = (factor * widthDiffer / viewport.width) * transX
+        const y = (factor * heightDiffer / viewport.height) * transY
+
+        matrix[3] = viewport.convertX(x)
+        matrix[7] = viewport.convertY(y)
 
         this.shader.bind()
         this.shader.setUniformMatrix4fv('u_transform', matrix)

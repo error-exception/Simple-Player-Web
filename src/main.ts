@@ -40,21 +40,11 @@ const store = createStore({
             beat: 0,
             settings: {
                 backgroundMovable: true,
-                showWhiteBar: false
             },
             visConfig: {
-                maxHeight: 20, // 百分比
-                paddingBottom: 128,
-                mirror: false, // unused
                 smooth: 0.4,
                 maxDB: 0,
-                minDB: -55,
-                color: [255, 255, 255],
-                startOffset: 0,
-                endOffset: -1, // data offset unused
-                barCount: 200,
-                alpha: 1,
-                alphaByVolume: false
+                minDB: -55
             }
         }
     },
@@ -86,18 +76,6 @@ const store = createStore({
             state.visualizerVolume = v;
         },
 
-        setVisualizerMaxHeight(state, v: number) {
-            state.visConfig.maxHeight = v;
-        },
-
-        setVisualizerPaddingBottom(state, v: number) {
-            state.visConfig.paddingBottom = v;
-        },
-
-        setVisualizerMirror(state, v: boolean) {
-            state.visConfig.mirror = v;
-        },
-
         setVisualizerSmooth(state, v: number) {
             state.visConfig.smooth = v;
         },
@@ -108,34 +86,6 @@ const store = createStore({
 
         setVisualizerMinDB(state, v: number) {
             state.visConfig.minDB = v;
-        },
-
-        setVisualizerColor(state, v: [number, number, number]) {
-            state.visConfig.color = v;
-        },
-
-        setVisualizerStartOffset(state, v: number) {
-            state.visConfig.startOffset = v;
-        },
-
-        setVisualizerEndOffset(state, v: number) {
-            state.visConfig.endOffset = v;
-        },
-
-        setVisualizerBarCount(state, v: number) {
-            state.visConfig.barCount = v;
-        },
-
-        setVisualizerAlpha(state, v: number) {
-            state.visConfig.alpha = v;
-        },
-
-        setVisualizerAlphaByVolume(state, v: boolean) {
-            state.visConfig.alphaByVolume = v;
-        },
-
-        setShowWhiteBar(state, v: boolean) {
-            state.settings.showWhiteBar = v;
         },
 
         setBeat(state, v: number) {

@@ -100,10 +100,17 @@ export class AudioPlayer {
         this.audio.playbackRate = rate
     }
 
+    private onEndedListener: (() => void) | undefined
+
     public onEnded(c: () => void) {
-        this.audio.addEventListener("ended", () => {
-            c()
-        })
+        this.onEndedListener = c
+        this.audio.addEventListener("ended", this.onEndedListener)
+    }
+
+    public removeOnEnded() {
+        if (this.onEndedListener) {
+            this.audio.removeEventListener('ended', this.onEndedListener)
+        }
     }
 
     public onTimeupdate(c: () => void) {

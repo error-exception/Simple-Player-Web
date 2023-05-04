@@ -12,23 +12,13 @@ export interface MusicInfo {
 }
 
 export interface Settings {
-    backgroundMovable: boolean,
-    showWhiteBar: boolean
+    backgroundMovable: boolean
 }
 
 export interface VisualizerConfig {
-    maxHeight: number
-    paddingBottom: number
-    mirror: boolean
     smooth: number
     maxDB: number
     minDB: number
-    color: [number, number, number]
-    startOffset: number
-    endOffset: number
-    barCount: number
-    alpha: number
-    alphaByVolume: boolean
 }
 
 export interface IEvent {
@@ -45,8 +35,8 @@ export interface IEvent {
 
 }
 
-export interface ResponseResult {
+export interface ResponseResult<T = any> {
     code: number
-    data: any | null | undefined
+    data: T | null | undefined
     message: string
 }

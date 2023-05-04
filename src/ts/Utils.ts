@@ -200,10 +200,33 @@ export function useKeyboard(type: 'up' | 'down', c: (e: KeyboardEvent) => void) 
 
 export function removeAt<T>(array: T[], index: number) {
     if (array.length === 0 || index < 0 || index >= array.length) {
-        return
+        throw new Error("array is empty or index out of bound")
     }
     for (let i = index; i < array.length - 1; i++) {
         array[i] = array[i + 1]
     }
     array.pop()
+}
+
+export function int(n: number) {
+    return Math.floor(n)
+}
+
+export function calcRMS(sampleRate: number, left: Float32Array, right: Float32Array, currentTime: number) {
+    const wid = 1024 * 2
+    const unit = sampleRate / 1000
+    const index = int(currentTime * unit)
+    let sum = 0
+    if (left.length - index < wid) {
+        for (let i = left.length; i > left.length - wid; i--) {
+            const max = Math.max(left[i], right[i])
+            sum += max ** 2
+        }
+    } else {
+        for (let i = index; i < index + wid; i++) {
+            const max = Math.max(left[i], right[i])
+            sum += max ** 2
+        }
+    }
+    return Math.sqrt(sum / wid)
 }

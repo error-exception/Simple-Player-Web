@@ -3,9 +3,6 @@
     <Row class="fill-width">
       <input type="checkbox" v-model="store.state.settings.backgroundMovable">背景移动
     </Row>
-    <Row class="fill-width">
-      <input type="checkbox" v-model="store.state.settings.showWhiteBar">显示白条
-    </Row>
   </Column>
 </template>
 

@@ -7,7 +7,9 @@
     >
       {{Icon.Settings}}
     </button>
-    <div style="flex-grow: 1"></div>
+    <div style="flex-grow: 1">
+      <Slider/>
+    </div>
     <button
         class="ma light-gray-click"
         style="width: 48px; height: 48px; color: white"
@@ -51,6 +53,7 @@ import {Icon} from "../ts/icon/Icon";
 import {computed, inject} from "vue";
 import {useStore} from "vuex";
 import Row from "./Row.vue";
+import Slider from "./Slider.vue";
 
 const store = useStore()
 

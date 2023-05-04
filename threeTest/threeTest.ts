@@ -1,5 +1,5 @@
 import './threeTest.css'
 import {createApp} from "vue";
-import ThreeTest from "../src/pages/threeTest/ThreeTest.vue";
+import MainTest from "../src/pages/threeTest/MainTest.vue";
 
-createApp(ThreeTest).mount("#app")
+createApp(MainTest).mount("#app")

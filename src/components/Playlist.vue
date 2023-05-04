@@ -20,12 +20,15 @@ import {computed, onMounted, ref} from "vue";
 import {useStore} from "vuex";
 import {launchVisualizer} from "../ts/Visualizer";
 import Row from "./Row.vue";
+import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 
 const musicInfo = useStore()
+const player = AudioPlayerV2.instance
+
 function playAt(i: number, music: Music) {
   musicInfo.commit("setIndex", i)
-  AudioPlayer.instance.src(music)
-  AudioPlayer.instance.play()
+  player.src(music)
+  player.play()
   launchVisualizer(musicInfo)
 }
 

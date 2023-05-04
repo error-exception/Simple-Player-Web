@@ -11,15 +11,14 @@ import {WebGLRenderer} from "../ts/webgl/WebGLRenderer";
 import {Viewport} from "../ts/webgl/Viewport";
 import {destroyVisualizer, Visualizer} from "../ts/Visualizer";
 import {useStore} from "vuex";
-import {BeatLogo} from "../ts/webgl/BeatLogo";
+import {BeatLogo, FadeBeatLogo} from "../ts/webgl/BeatLogo";
 import {useEvent} from "../ts/EventBus";
-import {beatFuncV2, findMusic, useMouse} from "../ts/Utils";
-import {AudioPlayer} from "../ts/AudioPlayer";
+import { calcRMS, findMusic, useMouse} from "../ts/Utils";
 import {RoundVisualizer} from "../ts/webgl/RoundVisualizer";
 import {MovableBackground} from "../ts/webgl/MovableBackground";
 import {Beater} from "../ts/Beater";
-import {easeOut} from "../ts/util/Animation";
 import {getBeater} from "../ts/TimingInfo";
+import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 
 const store = useStore()
 
@@ -27,12 +26,21 @@ const canvas = ref<HTMLCanvasElement | null>(null)
 let isOpen = false
 let renderer: WebGLRenderer
 let beatLogo: BeatLogo
+let fadeBeatLogo: FadeBeatLogo
 let roundVisualizer: RoundVisualizer
 let background: MovableBackground
 
 let beater = new Beater({ bpm: 60, offset: 0 })
 
-const player = AudioPlayer.instance
+const player = AudioPlayerV2.instance
+const visualizer = player.getVisualizer()
+
+const audioData = {
+  sampleRate: 0,
+  leftChannel: new Float32Array(0),
+  rightChannel: new Float32Array(0)
+}
+
 watch(player.isPlaying, (value) => {
   isOpen = value;
   if (isOpen) {
@@ -53,6 +61,15 @@ useEvent({
       getBeater(id).then((res) => {
         beater = res
       })
+    }
+    const audioBuffer = player.getAudioBuffer();
+    audioData.sampleRate = audioBuffer.sampleRate
+    if (audioBuffer.numberOfChannels < 2) {
+      audioData.leftChannel = audioBuffer.getChannelData(0)
+      audioData.rightChannel = audioData.leftChannel
+    } else {
+      audioData.leftChannel = audioBuffer.getChannelData(0)
+      audioData.rightChannel = audioBuffer.getChannelData(1)
     }
   }
 
@@ -86,13 +103,19 @@ onMounted(() => {
   })
 
   roundVisualizer = new RoundVisualizer(webgl, {
-    width: window.innerHeight,
-    height: window.innerHeight,
+    width: '100w',
+    height: '100h',
     horizontal: "center",
     vertical: "center"
   })
 
   beatLogo = new BeatLogo(webgl, {
+    width: 600,
+    height: 600,
+    vertical: "center",
+    horizontal: "center"
+  })
+  fadeBeatLogo = new FadeBeatLogo(webgl, {
     width: 512,
     height: 512,
     vertical: "center",
@@ -111,6 +134,7 @@ onMounted(() => {
   renderer.addDrawable(background)
   renderer.addDrawable(roundVisualizer)
   renderer.addDrawable(beatLogo)
+  // renderer.addDrawable(fadeBeatLogo)
   draw()
 })
 
@@ -125,17 +149,18 @@ function draw(timestamp: number = 0) {
     return
   }
   requestAnimationFrame(draw)
-  if (!Visualizer.instance || !Visualizer.instance.isEnabled()) {
-    return;
-  }
-  const dataArray = Visualizer.instance.getFFT()
+  // if (!Visualizer.instance || !Visualizer.instance.isEnabled()) {
+  //   return;
+  // }
+  // const dataArray = Visualizer.instance.getFFT()
+  const dataArray = visualizer.getFFT()
   if (!dataArray) {
     return;
   }
   const isKiai = beater.isKiai(player.currentTime)
-  const arr = toFloatArray(dataArray)
+  const [arr, volume] = toFloatArray(dataArray)
   roundVisualizer.writeData(arr, 200, timestamp)
-  const scale = calcBeat(isKiai)
+  const scale = calcBeat(isKiai, volume)
 
 
   if (isKiai) {
@@ -146,28 +171,39 @@ function draw(timestamp: number = 0) {
     }
   } else {
     if ((beater.getBeatCountRef().value & 0b11) === 0) {
-      background.setBrightness(scale * 0.5, scale * 0.5)
+      background.setBrightness(scale * 0.3, scale * 0.3)
     }
 
   }
   renderer.render()
 }
 
-function calcBeat(isKiai: boolean) {
+function calcBeat(isKiai: boolean, volume: number) {
   const time = player.currentTime
-  let scale = 0;
-  const offset = beater.getOffset()
-  if (time > beater.getOffset()) {
-    scale = beater.beat(time - offset)
-  } else {
-    scale = 1
-  }
+  const scale = beater.beat(time)
   const transX = (mouseX.value - window.innerWidth / 2)
   const transY = (window.innerHeight / 2 - mouseY.value)
-  roundVisualizer.setTransform(0, 0)
-  beatLogo.setTransform(1 - scale * 0.02, isKiai ? scale : 0)
-  background.setTransform(0, 0)
-  store.commit("setBeat", scale)
+  roundVisualizer.setTransform(transX, transY)
+  let adjust = audioData.sampleRate !== 0 ? calcRMS(
+      audioData.sampleRate,
+      audioData.leftChannel,
+      audioData.rightChannel,
+      time
+  ) * 0.08: scale * 0.02
+  beatLogo.setTransform(
+      // isKiai ? (1 - scale * 0.02) : (1 - volume * 0.6),
+      1 - adjust, // * 0.02,
+      isKiai ? scale : 0,
+      transX,
+      transY
+  )
+  // fadeBeatLogo.setTransform(
+  //     // isKiai ? (1 - scale * 0.02) : (1 - volume * 0.6),
+  //     1 + adjust, // * 0.02,
+  //     0
+  // )
+  background.setTransform(transX, transY)
+  // store.commit("setBeat", scale)
   return scale
 }
 
@@ -178,12 +214,15 @@ function resizeCanvas() {
   }
 }
 
-function toFloatArray(fft: Uint8Array) {
+function toFloatArray(fft: Uint8Array): [number[], number] {
   const result = []
+  let volume = 0
   for (let i = 0; i < fft.length; i++) {
-    result.push(fft[i] / 256.0)
+    const value = fft[i] / 256.0
+    volume += value
+    result.push(value)
   }
-  return result
+  return [result, volume / fft.length]
 }
 
 </script>
