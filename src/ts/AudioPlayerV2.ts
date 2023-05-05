@@ -58,10 +58,7 @@ export class AudioPlayerV2 {
         }
         const source = this.audioContext.createBufferSource()
         source.buffer = this.audioBuffer
-        if (this.needApplyPlaybackRate) {
-            this.needApplyPlaybackRate = false
-            source.playbackRate.value = this.playbackRate
-        }
+        source.playbackRate.value = this.playbackRate
         source.connect(this.audioContext.destination)
         source.onended = () => {
             this.time.pause()
@@ -115,12 +112,10 @@ export class AudioPlayerV2 {
     }
 
     private playbackRate: number = 1
-    private needApplyPlaybackRate = false
 
     public setPlaybackRate(rate: number) {
         this.playbackRate = rate
-        if (!this.isAvailable || this.source == null) {
-            this.needApplyPlaybackRate = true
+        if (!this.isAvailable) {
             return
         }
         const source = this.source

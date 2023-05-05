@@ -9,11 +9,8 @@ import {Music, MusicInfo, Settings, VisualizerConfig} from "./ts/type";
 
 export type StoreType = MusicInfo & {
     musicList: Music[],
-    visualizer: boolean,
-    settings: Settings
     visualizerVolume: number,
-    visConfig: VisualizerConfig,
-    beat: number
+    visConfig: VisualizerConfig
 }
 
 const store = createStore({
@@ -36,13 +33,7 @@ const store = createStore({
                 bpm: 60,
                 offset: 0
             }],
-            visualizer: true,
-            beat: 0,
-            settings: {
-                backgroundMovable: true,
-            },
             visConfig: {
-                smooth: 0.4,
                 maxDB: 0,
                 minDB: -55
             }
@@ -64,20 +55,8 @@ const store = createStore({
             state.musicList = musicList
         },
 
-        setVisualizer(state, v: boolean) {
-            state.visualizer = v
-        },
-
-        setBackgroundMovable(state, v: boolean) {
-            state.settings.backgroundMovable = v;
-        },
-
         setVisualizerVolume(state, v: number) {
             state.visualizerVolume = v;
-        },
-
-        setVisualizerSmooth(state, v: number) {
-            state.visConfig.smooth = v;
         },
 
         setVisualizerMaxDB(state, v: number) {
@@ -86,10 +65,6 @@ const store = createStore({
 
         setVisualizerMinDB(state, v: number) {
             state.visConfig.minDB = v;
-        },
-
-        setBeat(state, v: number) {
-            state.beat = v;
         },
 
         setCurrentMusicBpm(state, v: number) {

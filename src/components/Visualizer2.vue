@@ -11,7 +11,7 @@ import {WebGLRenderer} from "../ts/webgl/WebGLRenderer";
 import {Viewport} from "../ts/webgl/Viewport";
 import {destroyVisualizer, Visualizer} from "../ts/Visualizer";
 import {useStore} from "vuex";
-import {BeatLogo, FadeBeatLogo} from "../ts/webgl/BeatLogo";
+import {BeatLogo} from "../ts/webgl/BeatLogo";
 import {useEvent} from "../ts/EventBus";
 import { calcRMS, findMusic, useMouse} from "../ts/Utils";
 import {RoundVisualizer} from "../ts/webgl/RoundVisualizer";
@@ -26,7 +26,6 @@ const canvas = ref<HTMLCanvasElement | null>(null)
 let isOpen = false
 let renderer: WebGLRenderer
 let beatLogo: BeatLogo
-let fadeBeatLogo: FadeBeatLogo
 let roundVisualizer: RoundVisualizer
 let background: MovableBackground
 
@@ -115,12 +114,6 @@ onMounted(() => {
     vertical: "center",
     horizontal: "center"
   })
-  fadeBeatLogo = new FadeBeatLogo(webgl, {
-    width: 512,
-    height: 512,
-    vertical: "center",
-    horizontal: "center"
-  })
 
   window.onresize = () => {
     resizeCanvas()
@@ -134,7 +127,6 @@ onMounted(() => {
   renderer.addDrawable(background)
   renderer.addDrawable(roundVisualizer)
   renderer.addDrawable(beatLogo)
-  // renderer.addDrawable(fadeBeatLogo)
   draw()
 })
 
@@ -149,10 +141,6 @@ function draw(timestamp: number = 0) {
     return
   }
   requestAnimationFrame(draw)
-  // if (!Visualizer.instance || !Visualizer.instance.isEnabled()) {
-  //   return;
-  // }
-  // const dataArray = Visualizer.instance.getFFT()
   const dataArray = visualizer.getFFT()
   if (!dataArray) {
     return;
@@ -197,13 +185,7 @@ function calcBeat(isKiai: boolean, volume: number) {
       transX,
       transY
   )
-  // fadeBeatLogo.setTransform(
-  //     // isKiai ? (1 - scale * 0.02) : (1 - volume * 0.6),
-  //     1 + adjust, // * 0.02,
-  //     0
-  // )
   background.setTransform(transX, transY)
-  // store.commit("setBeat", scale)
   return scale
 }
 

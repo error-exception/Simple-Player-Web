@@ -18,14 +18,7 @@ export class VisualizerV2 {
 
     public disable() {
         this.isAvailable = false
-        if (this.source) {
-            try {
-                this.source.disconnect(this.analyse)
-            } catch (e) {
-                console.log(e)
-            }
-            this.source = null
-        }
+        this.source = null
     }
 
     public enable() {

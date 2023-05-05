@@ -37,10 +37,9 @@
 
 import '../public/Material_Icon/material-icons.css'
 import Playlist from "./components/Playlist.vue";
-import {computed, provide, reactive} from "vue";
+import {computed, provide, reactive, watch} from "vue";
 import {fetchJson, useKeyboard} from "./ts/Utils";
 import {useStore} from "vuex";
-import {AudioPlayer} from "./ts/AudioPlayer";
 import TopBar from "./components/TopBar.vue";
 import BpmCalculator from "./components/BpmCalculator.vue";
 import Visualizer2 from "./components/Visualizer2.vue";
@@ -94,16 +93,11 @@ useKeyboard('up', (evt) => {
 
 const hasSomeUIShow = computed(() => state.listState || state.settingsState || state.miniPlayerState)
 
-function openBpmCalculator() {
-  state.bpmCalculatorState = true
-  AudioPlayerV2.instance.onEnded = null
-}
-function closeBpmCalculator() {
-  state.bpmCalculatorState = false
-  AudioPlayerV2.instance.onEnded = () => {
+watch(() => state.bpmCalculatorState, (value) => {
+  AudioPlayerV2.instance.onEnded = value ? null : () => {
     nextSong()
   }
-}
+})
 
 function closeAll() {
   state.settingsState = false
@@ -155,6 +149,8 @@ function prevSong() {
 AudioPlayerV2.instance.onEnded = () => {
   nextSong()
 }
+
+
 
 </script>
 

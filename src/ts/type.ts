@@ -16,7 +16,6 @@ export interface Settings {
 }
 
 export interface VisualizerConfig {
-    smooth: number
     maxDB: number
     minDB: number
 }

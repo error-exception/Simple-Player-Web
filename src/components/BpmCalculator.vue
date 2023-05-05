@@ -2,12 +2,19 @@
   <Column class="fill-size" style="background-color: #171c1a">
     <Row class="fill-width" style="background-color: #374340; padding: 16px">
       <span class="font-white fill-height">Timing</span>
-      <span class="ml-auto font-white fill-height" @click="closeCalculator()">Close</span>
+      <span class="font-white fill-height flex-grow text-center">{{ loadState }}</span>
+      <span class="font-white fill-height" @click="closeCalculator()">Close</span>
     </Row>
-    <div class="fill-width font-white" style="height: 80px; background-color: #212926">
-      <canvas ref="wave" @wheel="changeByBpm"></canvas>
-    </div>
-    <Row class="flex-grow" :gap="16">
+    <Row class="fill-width">
+      <Column class="fill-height" style="justify-content: space-evenly; padding-left: 4px; padding-right: 4px">
+        <button class="ma font-white" @click="DRAW_COUNT++">{{ Icon.ZoomOut }}</button>
+        <button class="font-white ma" @click="DRAW_COUNT--">{{ Icon.ZoomIn }}</button>
+      </Column>
+      <div class="flex-grow font-white" style="height: 80px; background-color: #212926">
+        <canvas ref="wave" @wheel="changeByBpm"></canvas>
+      </div>
+    </Row>
+    <Row class="flex-grow" :gap="8">
       <!-- Timing List -->
       <Column
           class="font-white flex-grow"
@@ -33,65 +40,63 @@
       </Column>
       <Column
           class="fill-height vertical-scroll no-scroller"
-          style="padding: 8px; width: 420px; background-color: #2e3835"
-          :gap="16"
+          style="width: 420px; padding-top: 8px;"
+          :gap="8"
           center-horizontal
       >
-        <Column class="fill-width" center-horizontal :gap="12">
-          <span class="font-white">BPM</span>
-          <Row class="fill-width" :gap="8" center-horizontal>
+        <Row
+            class="fill-width block-box"
+            center-vertical
+            :gap="12"
+        >
+          <span class="font-white" style="width: 50px;">BPM</span>
+          <Row class="flex-grow bpm-adjust-box" center-horizontal>
             <button class="bpm-adjust-btn ma" @click="adjustBpm(false)">
               {{ Icon.Remove }}
             </button>
-            <input class="bpm-input" v-model="state.beatInfo.bpm">
+            <input class="bpm-input flex-grow" v-model="state.beatInfo.bpm">
             <button class="bpm-adjust-btn ma" @click="adjustBpm(true)">
               {{ Icon.Add }}
             </button>
           </Row>
-        </Column>
-        <Column class="fill-width" center-horizontal :gap="12">
-          <span class="font-white">Offset</span>
-          <Row class="fill-width" :gap="8" center-horizontal>
-            <button class="bpm-adjust-btn ma" @click="adjustOffset(false)">
-              {{ Icon.Remove }}
-            </button>
-            <input class="bpm-input" v-model="beatOffset">
-            <button class="bpm-adjust-btn ma" @click="adjustOffset(true)">
-              {{ Icon.Add }}
-            </button>
+        </Row>
+
+        <Column class="fill-width block-box" :gap="12">
+          <Row class="fill-width" center-vertical :gap="12">
+            <span class="font-white" style="width: 50px;">Offset</span>
+            <Row class="flex-grow bpm-adjust-box" center-horizontal>
+              <button class="bpm-adjust-btn ma" @click="adjustOffset(false)">
+                {{ Icon.Remove }}
+              </button>
+              <input class="bpm-input flex-grow" v-model="beatOffset">
+              <button class="bpm-adjust-btn ma" @click="adjustOffset(true)">
+                {{ Icon.Add }}
+              </button>
+            </Row>
           </Row>
           <Row class="fill-width font-white" :gap="16" center-horizontal>
             <button class="radio-btn" @click="state.precisionIndex = 0" :style="`background-color: ${ state.precisionIndex == 0 ? '#33cb98' : 'transparent'}`">1.0</button>
             <button class="radio-btn" @click="state.precisionIndex = 1" :style="`background-color: ${ state.precisionIndex == 1 ? '#33cb98' : 'transparent'}`">10.0</button>
             <button class="radio-btn" @click="state.precisionIndex = 2" :style="`background-color: ${ state.precisionIndex == 2 ? '#33cb98' : 'transparent'}`">100.0</button>
             <button class="radio-btn" @click="state.precisionIndex = 3" :style="`background-color: ${ state.precisionIndex == 3 ? '#33cb98' : 'transparent'}`">beat gap</button>
-<!--            <Row center :gap="4">-->
-<!--              1.0 <CheckBox type="radio" :checked="state.precisionIndex === 0" @change="state.precisionIndex = 0"/>-->
-<!--            </Row>-->
-<!--            <Row center :gap="4">-->
-<!--              10.0 <CheckBox type="radio" :checked="state.precisionIndex === 1" @change="state.precisionIndex = 1"/>-->
-<!--            </Row>-->
-<!--            <Row center :gap="4">-->
-<!--              100.0 <CheckBox type="radio" :checked="state.precisionIndex === 2" @change="state.precisionIndex = 2"/>-->
-<!--            </Row>-->
-<!--            <Row center :gap="4">-->
-<!--              beat gap <CheckBox type="radio" :checked="state.precisionIndex === 3" @change="state.precisionIndex = 3"/>-->
-<!--            </Row>-->
           </Row>
         </Column>
-<!--        <button class="btn" style="height: 48px">Use current time as offset</button>-->
-        <Row class="fill-width" center-horizontal :gap="64">
-          <div class="bpm-side-beat" :style="`opacity: ${state.beatEffect.left}`" ></div>
-          <button class="beat-button" @click="click" :style="`transform: scale(${state.beatEffect.tapBeat})`">Tap</button>
-          <div class="bpm-side-beat" :style="`opacity: ${state.beatEffect.right}`" ></div>
-        </Row>
-        <Row class="fill-width" center-horizontal style="justify-content: space-evenly">
-          <div class="round" :style="`opacity: ${state.beatEffect.first}`"></div>
-          <div class="round" :style="`opacity: ${state.beatEffect.second}`"></div>
-          <div class="round" :style="`opacity: ${state.beatEffect.third}`"></div>
-          <div class="round" :style="`opacity: ${state.beatEffect.fourth}`"></div>
-        </Row>
-        <Row class="fill-width" center-vertical v-if="state.timing.list.length !== 0">
+        <Column class="fill-width block-box" center-horizontal :gap="16">
+          <Row class="fill-width" style="justify-content: space-between" center-vertical>
+            <button
+                class="beat-button"
+                :style="`transform: scale(${state.beatEffect.tapBeat})`"
+            >
+              Beat
+            </button>
+            <div style="background-color: #171c1a; height: 240px; width: 50%">
+              <canvas ref="beatWave"></canvas>
+            </div>
+          </Row>
+<!--          <div class="bpm-side-beat" :style="`opacity: ${state.beatEffect.left}`" ></div>-->
+<!--          <div class="bpm-side-beat" :style="`opacity: ${state.beatEffect.right}`" ></div>-->
+        </Column>
+        <Row class="fill-width block-box" center-vertical v-if="state.timing.list.length !== 0">
           <span class="font-white">Kiai Mode</span>
           <CheckBox class="ml-auto" v-model="state.timing.selectedTiming.isKiai"/>
         </Row>
@@ -133,19 +138,33 @@ import {computed, onMounted, onUnmounted, reactive, Ref, ref, toRaw, watch} from
 import {Icon} from "../ts/icon/Icon";
 import {EventDispatcher, useEvent} from "../ts/EventBus";
 import {useStore} from "vuex";
-import {beatFuncV2, findMusic, removeAt, useKeyboard} from "../ts/Utils";
+import {
+  ArrayUtils,
+  autoCorrelate, autocorrelation,
+  beatFuncV2,
+  calcRMS,
+  currentMilliseconds,
+  findMusic,
+  int,
+  removeAt,
+  useKeyboard
+} from "../ts/Utils";
 import {AudioPlayer} from "../ts/AudioPlayer";
 import {TimingItem} from "../ts/TimingItem";
 import CheckBox from "./CheckBox.vue";
 import {addTimingInfoToCache, getBeater, TimingInfo, uploadTimingInfo} from "../ts/TimingInfo";
 import {AudioPlayerV2} from "../ts/AudioPlayerV2";
+import {TestBeater} from "../ts/TestBeater";
+import {simpleAnimate} from "../ts/util/Animation";
+import test from "node:test";
 
 const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
 const playbackRate = ref([0.25, 0.5, 0.75, 1.0])
-
+const tapTestScale = ref(1)
+const loadState = ref("正在初始化......")
 type ReactiveState = {
   gap: number[],
   playbackRateIndex: number,
@@ -200,9 +219,7 @@ const state = reactive<ReactiveState>({
 })
 
 const drawFlag = {
-  main: false,
-  progress: false,
-  wave: false
+  main: false
 }
 
 const beatOffset = computed({
@@ -218,25 +235,25 @@ const beatOffset = computed({
 })
 
 const progress = ref<HTMLCanvasElement | null>(null)
-
 const wave = ref<HTMLCanvasElement | null>(null)
-
+const beatWave = ref<HTMLCanvasElement | null>(null)
 const store = useStore()
 
 const player = AudioPlayerV2.instance
 
 let progressContext: CanvasRenderingContext2D
-
 let waveContext: CanvasRenderingContext2D
-
-let [beatFunc, beatCount] = beatFuncV2(state.beatInfo.bpm)
+let beatWaveContext: CanvasRenderingContext2D
+const beater = new TestBeater()
+let intervals: number[] = []
 
 useKeyboard("down", (evt: KeyboardEvent) => {
   if (!evt.isTrusted) {
     return
   }
   if (evt.code === 'KeyT' || evt.code === 'KeyY') {
-    tap(evt.timeStamp)
+    // tap(evt.timeStamp)
+    tapV2()
   }
   if (evt.code === 'KeyR') {
     reset()
@@ -253,38 +270,20 @@ watch(player.isPlaying, (value) => {
 })
 watch(() => state.beatInfo.bpm, (value, oldValue, onCleanup) => {
   if (value != oldValue) {
-    const i = beatFuncV2(value)
-    beatFunc = i[0]
-    beatCount = i[1]
+    beater.setBpm(value)
   }
   if (!player.isPlaying.value) {
-    drawWave(1)
+    drawWave()
   }
 })
-
-watch(() => state.beatInfo.offset, () => {
+watch(() => state.beatInfo.offset, (value) => {
+  beater.setOffset(value)
   if (!player.isPlaying.value) {
-    drawWave(1)
+    drawWave()
   }
 })
-
 watch(() => state.playbackRateIndex, (value) => {
   player.setPlaybackRate(playbackRate.value[value])
-})
-
-useEvent({
-
-  onSongChanged(id: number) {
-    const music = findMusic(store, id)
-    if (music) {
-      const i = beatFuncV2(music.bpm)
-      beatFunc = i[0]
-      beatCount = i[1]
-      state.beatInfo.bpm = music.bpm
-      state.beatInfo.offset = music.offset
-    }
-  }
-
 })
 
 const currentMusic = store.state.currentMusic;
@@ -292,10 +291,11 @@ getBeater(currentMusic.id).then((res) => {
   state.beatInfo.bpm = res.getBpm()
   state.beatInfo.offset = res.getOffset()
   state.timing.list = res.getTimingList()
+  beater.setBpm(res.getBpm())
+  beater.setOffset(res.getOffset())
+  beater.setTimingList(res.getTimingList())
   if (player.isPlaying.value) {
     drawFlag.main = true
-    drawFlag.progress = true
-    drawFlag.wave = true
     draw()
   }
 })
@@ -309,9 +309,13 @@ useKeyboard('down', (evt) => {
     state.playbackRateIndex = Math.min(state.playbackRateIndex + 1, 3)
   } else if (evt.code === "ArrowDown") {
     state.playbackRateIndex = Math.max(state.playbackRateIndex - 1, 0)
+  } else if (evt.code === "KeyG") {
+    tapTestScale.value = 0.96
+    simpleAnimate(tapTestScale).easeOutTo(1, 20)
   }
 })
 
+let peeks: number[] = []
 
 onMounted(() => {
   if (progress.value) {
@@ -326,55 +330,57 @@ onMounted(() => {
       waveContext = ctx
     }
   }
-
-
+  if (beatWave.value) {
+    const ctx = beatWave.value.getContext("2d")
+    if (ctx) {
+      beatWaveContext = ctx
+    }
+  }
+  peeks = generatePeek()
+  loadState.value = ""
 })
 
 onUnmounted(() => {
   drawFlag.main = false
 })
 
-let previous = 0
+let previous = -1
 
-const WINDOW = 8
+const WINDOW = 12
 
 function closeCalculator() {
   player.setPlaybackRate(playbackRate.value[3])
   emit("close")
 }
 
-function tap(timestamp: number) {
-  if (timestamp - previous > 2000)
-    reset()
-  if (previous === 0) {
+function tapV2() {
+  const timestamp = currentMilliseconds()
+  if (previous < 0) {
     previous = timestamp
-  } else {
-    const gap = timestamp - previous
-    state.gap.push(gap)
-    if (state.gap.length > WINDOW) {
-      state.gap.shift()
-    }
-    const arr = state.gap;
-    let sum = 0
-    for (let i = 0; i < arr.length; i++) {
-      sum += arr[i]
-    }
-    const average = sum / arr.length
-    state.beatInfo.bpm = Math.round(60 / average * 1000)
-    // state.tapIndex = (state.tapIndex + 1) % 4
-    previous = timestamp
+    return
   }
+  const interval = timestamp - previous
+  if (interval > 2000) {
+    intervals.length = 0
+    previous = timestamp
+    return;
+  }
+  if (intervals.length < WINDOW) {
+    intervals.push(interval)
+    intervals.sort()
+  } else {
+    const start = int(intervals.length * 0.2)
+    const end = int(intervals.length * 0.8)
+    intervals = ArrayUtils.copyOfRange(intervals, start, end)
+    state.beatInfo.bpm = Math.round(60 / ArrayUtils.averageOf(intervals) * 1000)
+  }
+  previous = timestamp
 }
 
 function reset() {
   state.gap.length = 0
   state.beatInfo.bpm = 0
   previous = 0
-  state.beatInfo.offset = 0
-}
-
-function click(a: KeyboardEvent) {
-  tap(a.timeStamp)
 }
 
 function applyTiming() {
@@ -434,9 +440,8 @@ function slideProgress(e: MouseEvent) {
   }
   player.seek(p)
   state.currentTime = timeString(player.currentTime)
-  drawFlag.progress = true
   drawProgressbar()
-  drawWave(1)
+  drawWave()
 }
 
 function adjustBpm(dir: boolean) {
@@ -451,14 +456,14 @@ function adjustOffset(dir: boolean) {
   if (dir) {
     if (state.precisionIndex === 3) {
       const gap = 60 / state.beatInfo.bpm * 1000
-      beatOffset.value += Math.floor(gap)
+      beatOffset.value += int(gap)
     } else {
       beatOffset.value += (10 ** state.precisionIndex)
     }
   } else {
     if (state.precisionIndex === 3) {
       const gap = 60 / state.beatInfo.bpm * 1000
-      beatOffset.value -= Math.floor(gap)
+      beatOffset.value -= int(gap)
     } else {
       beatOffset.value -= (10 ** state.precisionIndex)
     }
@@ -482,7 +487,7 @@ function changeProgressByBeatGap(isPlus: boolean) {
   const targetCurrent = gap * count + offset
   player.seek(targetCurrent)
   drawProgressbar()
-  drawWave(1)
+  drawWave()
   state.currentTime = timeString(player.currentTime)
 }
 
@@ -490,7 +495,7 @@ function stopPlay() {
   player.pause()
   player.seek(0)
   drawProgressbar()
-  drawWave(1)
+  drawWave()
 }
 
 function addAtCurrent() {
@@ -517,15 +522,36 @@ function selectCurrentTiming(index: number) {
   state.timing.selectedTiming = state.timing.list[index]
 }
 
+function generatePeek() {
+  const peek: number[] = []
+  const audioBuffer = player.getAudioBuffer();
+  const sampleRate = audioBuffer.sampleRate
+  let leftChannel: Float32Array, rightChannel: Float32Array
+  if (audioBuffer.numberOfChannels < 2) {
+    leftChannel = audioBuffer.getChannelData(0)
+    rightChannel = leftChannel
+  } else {
+    leftChannel = audioBuffer.getChannelData(0)
+    rightChannel = audioBuffer.getChannelData(1)
+  }
+  const duration = int(audioBuffer.duration * 1000)
+  for (let i = 0; i < duration; i++) {
+    const value = calcRMS(sampleRate, leftChannel, rightChannel, i, 512)
+    peek.push(value)
+  }
+  return peek
+}
+
 function draw() {
   if (!drawFlag.main) {
     return
   }
   requestAnimationFrame(draw)
-  const scale = beat()
+  beat()
   state.currentTime = timeString(player.currentTime)
   drawProgressbar()
-  drawWave(scale)
+  drawWave()
+  drawBeatWave()
 }
 
 /**
@@ -567,38 +593,12 @@ function timeString(time: number): string {
 
 function beat() {
   const time = player.currentTime
-  let scale = 0;
-  const beatOffset = state.beatInfo.offset
-  if (time > beatOffset) {
-    scale = beatFunc(time - beatOffset)
-  } else {
-    scale = 1
-  }
+  const scale = beater.beat(time)
   state.beatEffect.tapBeat = 1 - scale * 0.05
-  if ((beatCount.value & 0b11) == 0) {
-    state.beatEffect.first = scale
-  }
-  if ((beatCount.value & 0b11) == 1) {
-    state.beatEffect.second = scale
-  }
-  if ((beatCount.value & 0b11) == 2) {
-    state.beatEffect.third = scale
-  }
-  if ((beatCount.value & 0b11) == 3) {
-    state.beatEffect.fourth = scale
-  }
-  if ((beatCount.value & 0b1) == 0) {
-    state.beatEffect.left = 0.1 + scale * 0.9
-    state.beatEffect.right = 0.1
-  }
-  if ((beatCount.value & 0b1) == 1) {
-    state.beatEffect.left = 0.1
-    state.beatEffect.right = 0.1 + scale * 0.9
-  }
   return scale
 }
 
-function resizeCanvas(htmlRef: Ref<HTMLCanvasElement | null>) {
+function resizeCanvas(htmlRef: Ref<HTMLCanvasElement | null>, pixelRatio: number = 1) {
   const canvas = htmlRef.value
   if (!canvas) {
     return {
@@ -606,8 +606,11 @@ function resizeCanvas(htmlRef: Ref<HTMLCanvasElement | null>) {
       height: 0
     }
   }
-  canvas.height = canvas.parentElement!!.offsetHeight
-  canvas.width = canvas.parentElement!!.offsetWidth
+  const parent = canvas.parentElement!!
+  if (canvas.height !== parent.offsetHeight || canvas.width !== parent.offsetWidth) {
+    canvas.height = parent.offsetHeight * pixelRatio
+    canvas.width = parent.offsetWidth * pixelRatio
+  }
   return {
     width: canvas.width,
     height: canvas.height
@@ -616,13 +619,12 @@ function resizeCanvas(htmlRef: Ref<HTMLCanvasElement | null>) {
 
 // TODO: draw kiai mode time
 function drawProgressbar() {
-  if (!drawFlag.progress) {
-    return
-  }
   const bound = resizeCanvas(progress)
   progressBound = bound
   const ctx = progressContext
   const progressValue = player.currentTime / player.duration.value
+  ctx.clearRect(0, 0, bound.width, bound.height)
+
   ctx.beginPath()
   ctx.lineWidth = 2
   ctx.strokeStyle = 'white'
@@ -637,12 +639,9 @@ function drawProgressbar() {
   ctx.stroke()
 }
 
-const DRAW_COUNT = 20
+let DRAW_COUNT = 12
 
-function drawWave(scale: number) {
-  if (!drawFlag.wave) {
-    return
-  }
+function drawWave() {
   const bound = resizeCanvas(wave)
   const gap = 60 / state.beatInfo.bpm * 1000
   const offset = state.beatInfo.offset
@@ -655,12 +654,36 @@ function drawWave(scale: number) {
   const ctx = waveContext
   const musicStartX = (halfVisibleTime - currentTime) * unit
 
+  const start = int(currentTime - bound.width / 2 / unit)
+  const end = int(currentTime + bound.width / 2 / unit)
+  const duration = player.duration.value
+
+  ctx.clearRect(0, 0, bound.width, bound.height)
+
+  ctx.beginPath()
+  ctx.lineWidth = 1
+  ctx.fillStyle = '#33cb9840'
+  let x2 = 0
+  const startLength = peeks[start] * bound.height
+  ctx.moveTo(x2, (bound.height - startLength) / 2)
+  for (let i = start + 1; i < end && i < duration; i++) {
+    const length = peeks[i] * bound.height
+    ctx.lineTo(x2, (bound.height - length) / 2)
+    x2 += unit
+  }
+  for (let i = end - 1; i >= start; i--) {
+    const length = peeks[i] * bound.height
+    ctx.lineTo(x2, (bound.height - length) / 2 + length)
+    x2 -= unit
+  }
+  ctx.moveTo(0, (bound.height - startLength) / 2)
+  ctx.fill()
+
 //  music start line
   if (musicStartX > 0) {
     ctx.beginPath()
     ctx.strokeStyle = "yellow"
     ctx.lineWidth = 4
-    console.log()
     ctx.moveTo(musicStartX, 0)
     ctx.lineTo(musicStartX, bound.height)
     ctx.stroke()
@@ -695,8 +718,64 @@ function drawWave(scale: number) {
 
   // playing line
   ctx.beginPath()
-  ctx.strokeStyle = `rgba(255, 0, 0, ${scale})`
+  ctx.strokeStyle = 'red'
   ctx.lineWidth = 2
+  ctx.moveTo(bound.width / 2, 0)
+  ctx.lineTo(bound.width / 2, bound.height)
+  ctx.stroke()
+
+}
+let lastBeatCount = -1
+function drawBeatWave() {
+  if (beater.getBeatCount() == lastBeatCount) {
+    return
+  }
+  lastBeatCount = beater.getBeatCount()
+
+  const beatIndex = beater.getBeatCount() - 4
+
+  const bound = resizeCanvas(beatWave, window.devicePixelRatio)
+  const ctx = beatWaveContext
+  const beatLength = beater.getGap()
+  const unit = bound.width / beatLength
+  const heightPerWave = bound.height / 8
+
+  ctx.scale(0.8, 0.8)
+
+  ctx.clearRect(0, 0, bound.width, bound.height)
+  ctx.beginPath()
+  ctx.lineWidth = 1
+  ctx.fillStyle = '#33cb98'
+  for (let i = beatIndex, j = 0; i < beatIndex + 8; i++, j++) {
+    if (i < 0) continue
+    const offsetY = heightPerWave * j
+    const time = beatLength * i + beater.getOffset()
+    const width = bound.width
+    const height = heightPerWave
+    const start = int(time - width / 2 / unit)
+    const end = int(time + width / 2 / unit)
+    const duration = player.duration.value
+
+    let x2 = 0
+    const startLength = peeks[start] * height
+    ctx.moveTo(x2, offsetY + (height - startLength) / 2)
+    for (let i = start + 1; i < end && i < duration; i++) {
+      const length = peeks[i] * height
+      ctx.lineTo(x2, offsetY + (height - length) / 2)
+      x2 += unit
+    }
+    for (let i = end - 1; i >= start; i--) {
+      const length = peeks[i] * height
+      ctx.lineTo(x2, offsetY + (height - length) / 2 + length)
+      x2 -= unit
+    }
+    ctx.lineTo(0, offsetY + (height - startLength) / 2)
+  }
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.lineWidth = 2
+  ctx.strokeStyle = "white"
   ctx.moveTo(bound.width / 2, 0)
   ctx.lineTo(bound.width / 2, bound.height)
   ctx.stroke()
@@ -722,14 +801,17 @@ function drawWave(scale: number) {
   border-radius: 50%;
   background-color: yellow;
 }
+.bpm-adjust-box {
+  background-color: black;
+  border-radius: 600px;
+  height: 48px;
+  overflow: hidden;
+}
 .bpm-input {
+  height: 100%;
   color: white;
   text-align: center;
   font-size: 20px;
-  background-color: black;
-  width: 260px;
-  border-radius: 600px;
-  padding: 8px 0;
 }
 .btn {
   background-color: #33cb98;
@@ -747,17 +829,16 @@ function drawWave(scale: number) {
 .beat-button {
   color: white;
   width: 128px;
-  aspect-ratio: 1/1;
+  height: 128px;
   border-radius: 50%;
   background-color: #60756e;
   font-size: 26px;
 }
 .bpm-adjust-btn {
   color: white;
-  background-color: black;
   height: 100%;
   aspect-ratio: 1/1;
-  border-radius: 6px;
+  border-radius: 50%;
 }
 .bpm-adjust-btn:hover {
   background-color: #171717;
@@ -798,5 +879,10 @@ function drawWave(scale: number) {
   padding: 2px;
   font-size: 12px;
   color: #af00af;
+}
+.block-box {
+  padding: 16px 12px;
+  background-color: #2e3835;
+  border-radius: 4px;
 }
 </style>

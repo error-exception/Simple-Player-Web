@@ -9,13 +9,7 @@ import {useStore} from "vuex";
 
 const store = useStore()
 
-const movable = computed(() => store.state.settings.backgroundMovable)
-
-const className = ref<'movable' | 'static'>(store.state.settings.backgroundMovable ? 'movable' : 'static')
-
-watch<boolean>(movable, (value) => {
-  className.value = value ? "movable" : "static"
-})
+const className = ref('movable')
 
 let clientX: number, clientY: number;
 

@@ -31,16 +31,6 @@ const state = reactive({
 
 const store = useStore()
 
-const color = computed({
-  set(v: string) {
-    store.commit('setVisualizerColor', toRGB(v))
-  },
-  get() {
-    const [red, green, blue] = store.state.visConfig.color
-    return '#' + byteToHex(red) + byteToHex(green) + byteToHex(blue)
-  }
-})
-
 const maxDB = computed({
   set(v: number) {
     store.commit('setVisualizerMaxDB', v)
