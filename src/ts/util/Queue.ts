@@ -41,7 +41,7 @@ export class Queue<T> {
     public foreach(callback: (e: T, i: number) => void) {
         let current = this._head;
         let i = 0
-        while (current !== null) {
+        while (current !== undefined) {
             callback(current!.value, i++)
             current = current!.next
         }

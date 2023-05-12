@@ -1,8 +1,7 @@
 // BpmCalculator.vue use only
 
 import {TimingItem} from "./TimingItem";
-import {easeIn, easeOut} from "./util/Animation";
-import {TimeLike} from "fs";
+import {easeInOut, easeOut, easeOutQuint} from "./util/Easing";
 
 export class TestBeater {
 
@@ -52,6 +51,9 @@ export class TestBeater {
         }
     }
 
+    private beatFlag = false
+    private prevBeat = -1
+
     public beat(timestamp: number): number {
         if (timestamp < this.offset) {
             return 0
@@ -63,11 +65,19 @@ export class TestBeater {
         timestamp -= count * gap
         this.beatCount = count
         if (timestamp <= 60) {
-            return easeIn(timestamp / 60)
+
+            return easeOut(timestamp / 60)
         }
         if (timestamp <= gap - 60) {
-            return easeOut(1 - (timestamp - 60) / (gap - 120))
+            if (!this.beatFlag && this.prevBeat != count) {
+                this.beatFlag = true
+                this.prevBeat = count
+            } else {
+                this.beatFlag = false
+            }
+            return easeInOut(1 - (timestamp - 60) / (gap - 120))
         }
+
         if (timestamp <= gap) {
             return 0
         }
@@ -78,8 +88,12 @@ export class TestBeater {
         return this.beatCount
     }
 
-    public getOffset() {
+    public getOffset(): number {
         return this.offset
+    }
+
+    public isBeat(): boolean {
+        return this.beatFlag
     }
 
 }

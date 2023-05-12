@@ -1,7 +1,7 @@
 <template>
   <div class="mini-player-box">
     <div style="position: relative" class="fill-size">
-      <img :src="testArtwork" alt="" width="500" height="240" style="position: absolute">
+      <img :src="artwork" alt="" width="500" height="240" style="position: absolute">
       <Column class="fill-size" style="position: absolute; bottom: 4px">
         <Column class="fill-width flex-grow" center :gap="8">
           <span class="player-title">{{ title }}</span>
@@ -26,17 +26,17 @@
 import testArtwork from '../assets/1.png'
 import Column from "./Column.vue";
 import Row from "./Row.vue";
-import {computed, inject} from "vue";
+import {computed, inject, onMounted, ref} from "vue";
 import {useStore} from "vuex";
 import {Icon} from "../ts/icon/Icon";
-import {launchVisualizer} from "../ts/Visualizer";
-import {AudioPlayer} from "../ts/AudioPlayer";
 import {AudioPlayerV2} from "../ts/AudioPlayerV2";
-
+import {useEvent} from "../ts/EventBus";
 
 const store = useStore()
 
 const player = AudioPlayerV2.instance
+
+const artwork = ref(testArtwork)
 
 const title = computed(() => store.state.currentMusic.title)
 const artist = computed(() => store.state.currentMusic.artist)
@@ -49,6 +49,19 @@ const { nextSong, play, prevSong } = inject<{
   prevSong: () => void
 }>("playerControl")!!
 
+useEvent({
+  onSongChanged(id: number) {
+    artwork.value = "/api/artwork?id=" + id
+  }
+})
+
+onMounted(() => {
+  const music = player.currentMusic
+  if (music) {
+    const id = music.id
+    artwork.value = "/api/artwork?id=" + id
+  }
+})
 
 </script>
 

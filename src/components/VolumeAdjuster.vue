@@ -11,7 +11,6 @@
 <script setup lang="ts">
 
 import {onMounted, ref} from "vue";
-import {AudioPlayer} from "../ts/AudioPlayer";
 import {degreeToRadian} from "../ts/Utils";
 import {simpleAnimate} from "../ts/util/Animation";
 import {AudioPlayerV2} from "../ts/AudioPlayerV2";

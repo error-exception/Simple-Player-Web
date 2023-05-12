@@ -1,5 +1,5 @@
 import {Disposable} from "./core/Disposable";
-import {Drawable} from "./Drawable";
+import {BaseDrawableConfig, Drawable} from "./Drawable";
 import {Alignment, Bound, defaultViewport, Viewport} from "./Viewport";
 import {VertexArray} from "./core/VertexArray";
 import {VertexBuffer} from "./core/VertexBuffer";
@@ -10,8 +10,13 @@ import {TransformUtils} from "./core/TransformUtils";
 import {Vector2} from "./core/Vector2";
 import {isUndef} from "./core/Utils";
 import {IndexBuffer} from "./core/IndexBuffer";
+import {AudioPlayerV2} from "../AudioPlayerV2";
+import {VisualizerV2} from "../VisualizerV2";
+import {Time} from "../Time";
+import {BeatState} from "../Beater";
+import {Matrix3} from "./core/Matrix3";
 
-export interface RoundVisualizerConfig extends Alignment, Bound {}
+export interface RoundVisualizerConfig extends BaseDrawableConfig {}
 
 const vertexShader = `
     attribute vec2 a_vertexPosition;
@@ -23,37 +28,35 @@ const vertexShader = `
 `
 
 const fragmentShader = `
+    uniform lowp float u_alpha;
     void main() {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 0.1);
+        gl_FragColor = vec4(1.0, 1.0, 1.0, u_alpha);
     }
 `
 
-export class RoundVisualizer implements Disposable, Drawable {
+export class RoundVisualizer extends Drawable {
 
     private readonly vertexArray: VertexArray
     private readonly buffer: VertexBuffer
     private readonly shader: Shader
     private readonly layout: VertexBufferLayout
-    private viewport: Viewport = defaultViewport
+    private readonly indexBuffer: IndexBuffer
     private vertexCount = 0
 
-    private x: number = 0
-    private y: number = 0
-    private width: number = 0
-    private height: number = 0
+    private readonly visualizer: VisualizerV2
+
 
     constructor(
-        private gl: WebGL2RenderingContext,
-        private config: RoundVisualizerConfig
+        gl: WebGL2RenderingContext,
+        config: RoundVisualizerConfig
     ) {
-
+        super(gl, config)
         const vertexArray = new VertexArray(gl)
         vertexArray.bind()
         const shader = new Shader(gl, vertexShader, fragmentShader)
         const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
         const layout = new VertexBufferLayout(gl)
         const indexBuffer = new IndexBuffer(gl)
-        // TODO: construct an index buffer
         const index: number[] = [
             0, 1, 2, 1, 2, 3
         ]
@@ -86,33 +89,30 @@ export class RoundVisualizer implements Disposable, Drawable {
         this.buffer = buffer
         this.shader = shader
         this.layout = layout
-    }
+        this.indexBuffer = indexBuffer
 
-    private transformMatrix4 = new Float32Array([
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-    ])
-
-    public setTransform(transX: number, transY: number) {
-        const matrix = this.transformMatrix4;
-        const viewport = this.viewport;
-        matrix[3] = viewport.convertX(-transX * 0.02)
-        matrix[7] = viewport.convertY(-transY * 0.02)
-
-        this.shader.bind()
-        this.shader.setUniformMatrix4fv('u_transform', matrix)
-        this.shader.unbind()
+        this.visualizer = AudioPlayerV2.instance.getVisualizer()
     }
 
     private vertexData = new Float32Array(0)
 
-    // TODO: 添加返回值，表示当前音量
-    public writeData(data: number[], length: number = data.length, timestamp: number) {
-        this.updateSpectrum(data, timestamp)
-        const centerX = this.x + this.width / 2
-        const centerY = this.y - this.height / 2
+    protected onUpdate() {
+        super.onUpdate();
+        this.getSpectrum(Time.currentTime, BeatState.isKiai ? 1 : 0.5)
+        this.updateVertex(this.targetSpectrum, 200)
+    }
+
+    protected onTransformApplied() {
+        super.onTransformApplied();
+        this.shader.bind()
+        this.shader.setUniform1f("u_alpha", BeatState.isKiai ? 0.25 + BeatState.currentBeat * 0.05 : 0.25)
+        this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
+        this.shader.unbind()
+    }
+
+    private updateVertex(spectrum: number[], length: number = spectrum.length) {
+        const centerX = this.position.x + this.size.x / 2
+        const centerY = this.position.y - this.size.y / 2
         if (this.vertexData.length !== length) {
             this.vertexData = new Float32Array(length * 8 * 5)
         }
@@ -133,7 +133,7 @@ export class RoundVisualizer implements Disposable, Drawable {
                 const degree = i / 200 * 360 + j * 360 / 5
 
                 const radian = degreeToRadian(degree)
-                const value = innerRadius + data[i] * 200
+                const value = innerRadius + spectrum[i] * 160
                 const fromX = centerX
                 const fromY = centerY + innerRadius
                 const toX = centerX
@@ -153,8 +153,6 @@ export class RoundVisualizer implements Disposable, Drawable {
 
                 this.addPoint(array, k, point1)
                 this.addPoint(array, k + 2, point2)
-                // this.addPoint(array, k + 6, point3, alpha)
-                // this.addPoint(array, k + 9, point2, alpha)
                 this.addPoint(array, k + 4, point3)
                 this.addPoint(array, k + 6, point4)
 
@@ -168,7 +166,6 @@ export class RoundVisualizer implements Disposable, Drawable {
         this.buffer.bind()
         this.buffer.setBufferData(array)
         this.buffer.unbind()
-        // this.alphas.fill(0.2)
     }
 
     private addPoint(array: Float32Array, offset: number, point: Vector2) {
@@ -184,64 +181,43 @@ export class RoundVisualizer implements Disposable, Drawable {
     private indexOffset = 0
     private indexChange = 5
 
+    private targetSpectrum: number[] = new Array<number>(200).fill(0)
 
-    private updateSpectrum(fft: number[], timestamp: number) {
-        // for (let i = 0; i < 5; i++) {
-        //     fft[i] *= 2.254
-        // }
+    // TODO: 调整频谱
+    private spectrumShape: number[] = [
+        1.5, 2, 2.7, 2.1, 1.4,
+        1.1, 1, 1, 1, 1,
+        ...(new Array<number>(190).fill(1))
+    ]
+
+    private getSpectrum(timestamp: number, barScale: number) {
         if (this.lastTime === 0 || this.updateOffsetTime === 0) {
             this.lastTime = timestamp
             this.updateOffsetTime = timestamp
         }
-        for (let i = 0, j = this.indexOffset; i < this.indexChange - 2; i++, j = (j + 1) % 200) {
-            this.simpleSpectrum[j] = fft[i]
+        const fftData = this.visualizer.getFFT()
+        for (let i = 0; i < fftData.length; i++) {
+            this.simpleSpectrum[i] = fftData[i] / 255.0
         }
-
         for (let i = 0; i < 200; i++) {
-            fft[i] = fft[i + this.indexChange]
-            const simpleValue = this.simpleSpectrum[i] * 3.267
-            if (simpleValue > fft[i]) {
-                fft[i] = simpleValue
+            const targetIndex = (i + this.indexOffset) % 200
+            const target = this.simpleSpectrum[targetIndex]
+            if (target > this.targetSpectrum[i]) {
+                this.targetSpectrum[i] = target * this.spectrumShape[targetIndex] * (0.5 + barScale)
             }
         }
-        const decayFactor = (timestamp - this.lastTime) * 0.0048
+        if (timestamp - this.updateOffsetTime >= 50) {
+            this.updateOffsetTime = timestamp
+            this.indexOffset = (this.indexOffset - this.indexChange) % 200
+        }
+        const decayFactor = (timestamp - this.lastTime) * 0.0024
         for (let i = 0; i < 200; i++) {
-            this.simpleSpectrum[i] -= decayFactor * (this.simpleSpectrum[i] + 0.03)
-            if (this.simpleSpectrum[i] < 0) {
-                this.simpleSpectrum[i] = 0
+            this.targetSpectrum[i] -= decayFactor * (this.targetSpectrum[i] + 0.03)
+            if (this.targetSpectrum[i] < 0) {
+                this.targetSpectrum[i] = 0
             }
         }
         this.lastTime = timestamp
-        if (timestamp - this.updateOffsetTime >= 50) {
-            this.indexOffset = (this.indexOffset + this.indexChange) % 200
-            this.updateOffsetTime = timestamp
-        }
-    }
-
-    public setViewport(viewport: Viewport) {
-        this.viewport = viewport
-        const config = this.config
-        if (
-            isUndef(config.y) && isUndef(config.vertical)
-            || isUndef(config.x) && isUndef(config.horizontal)
-        ) {
-            throw new Error('config error')
-        }
-        if (this.config.x) {
-            this.x = viewport.convertUnitX(this.config.x)
-        }
-        if (this.config.y) {
-            this.y = viewport.convertUnitY(this.config.y)
-        }
-        this.width = viewport.convertUnitX(this.config.width)
-        this.height = viewport.convertUnitY(this.config.height)
-        if (this.config.horizontal) {
-            this.x = viewport.alignmentX(this.config.horizontal, this.width)
-        }
-        if (this.config.vertical) {
-            this.y = viewport.alignmentY(this.config.vertical, this.height)
-        }
-        console.log('RoundVisualizer', `x=${this.x}, y=${this.y}, width=${this.width}, height=${this.height}`)
     }
 
     public bind() {
@@ -254,18 +230,17 @@ export class RoundVisualizer implements Disposable, Drawable {
         this.vertexArray.unbind()
     }
 
-    public draw() {
+    public onDraw() {
         const gl = this.gl
-        // this.shader.setUniform4fv('u_color', [1.0, 1.0, 1.0, 0.2])
         this.vertexArray.addBuffer(this.buffer, this.layout)
         gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_INT, 0)
-
     }
 
     public dispose() {
         this.vertexArray.dispose()
         this.buffer.dispose()
         this.shader.dispose()
+        this.indexBuffer.dispose()
     }
 
 }

@@ -7,9 +7,9 @@
     >
       {{Icon.Settings}}
     </button>
-    <div style="flex-grow: 1">
-      <Slider/>
-    </div>
+    <Row style="flex-grow: 1" center>
+      <span class="font-white">{{ stateText }}</span>
+    </Row>
     <button
         class="ma light-gray-click"
         style="width: 48px; height: 48px; color: white"
@@ -56,6 +56,10 @@ import Row from "./Row.vue";
 import Slider from "./Slider.vue";
 
 const store = useStore()
+
+defineProps<{
+  stateText: string
+}>()
 
 defineEmits<{
   (e: 'settingsClick'): void

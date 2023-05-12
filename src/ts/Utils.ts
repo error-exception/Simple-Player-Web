@@ -1,7 +1,7 @@
 import {onMounted, onUnmounted, ref, Ref} from "vue";
-import {easeIn, easeOut} from "./util/Animation";
 import {Music} from "./type";
-import {publicDecrypt} from "crypto";
+import {easeIn, easeOut} from "./util/Easing";
+import TypedArray = NodeJS.TypedArray;
 
 export async function fetchJson(url: string) {
     const response = await fetch(url);
@@ -63,20 +63,6 @@ export function useMouse(): [Ref<number>, Ref<number>] {
 
 export function degreeToRadian(degree: number) {
     return degree * ( Math.PI / 180)
-}
-
-export function beatFunc(bpm: number) {
-    const gap = 60 / bpm * 1000
-    return (timestamp: number) => {
-        timestamp -= Math.floor(timestamp / gap) * gap
-        if (timestamp <= 60) {
-            return (1 / 60) * timestamp
-        }
-        if (timestamp <= gap) {
-            return (gap - timestamp) / (gap - 60)
-        }
-        return 0
-    }
 }
 
 export function virtualBeatFunc(bpm: number) {
@@ -199,16 +185,6 @@ export function useKeyboard(type: 'up' | 'down', c: (e: KeyboardEvent) => void) 
 
 }
 
-export function removeAt<T>(array: T[], index: number) {
-    if (array.length === 0 || index < 0 || index >= array.length) {
-        throw new Error("array is empty or index out of bound")
-    }
-    for (let i = index; i < array.length - 1; i++) {
-        array[i] = array[i + 1]
-    }
-    array.pop()
-}
-
 export function int(n: number) {
     return Math.floor(n)
 }
@@ -217,15 +193,18 @@ export function calcRMS(sampleRate: number, left: Float32Array, right: Float32Ar
     const unit = sampleRate / 1000
     const index = int(currentTime * unit)
     let sum = 0
+    if (!ArrayUtils.inBound(left, index)) {
+        return 0
+    }
     if (left.length - index < wind) {
-        for (let i = left.length; i > left.length - wind; i--) {
-            const max = Math.max(left[i], right[i])
-            sum += max ** 2
+        for (let i = left.length - 1; i > left.length - 1 - wind; i--) {
+            // const max = Math.max(left[i], right[i])
+            sum += (left[i] ** 2 + right[i] ** 2) / 2
         }
     } else {
         for (let i = index; i < index + wind; i++) {
-            const max = Math.max(left[i], right[i])
-            sum += max ** 2
+            // const max = Math.max(left[i], right[i])
+            sum += (left[i] ** 2 + right[i] ** 2) / 2
         }
     }
     return Math.sqrt(sum / wind)
@@ -267,6 +246,18 @@ export class ArrayUtils {
         return newArray
     }
 
+    public static inBound<T>(arr: T[] | TypedArray, index: number): boolean {
+        if (!Number.isInteger(index)) {
+            return false
+        }
+        return index >= 0 && index < arr.length
+    }
+
+    public static everyValue<T>(arr: T[], param2: (it: T) => T) {
+        for (let i = 0; i < arr.length; i++) {
+            arr[i] = param2(arr[i])
+        }
+    }
 }
 
 export function autoCorrelate(arr: number[]) {

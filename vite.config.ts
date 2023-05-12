@@ -16,10 +16,17 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://192.168.31.186:8888',
+        // target: 'http://172.31.44.32:8888',
+        // target: 'http://192.168.31.186:8888',
+        target: 'http://192.168.42.129:8888',
         // target: 'http://127.0.0.1:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
+      },
+      '/res': {
+        target: 'http://127.0.0.1',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/res/, '')
       }
     }
   }

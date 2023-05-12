@@ -29,6 +29,15 @@ export class Matrix3 {
         return ma
     }
 
+    public static copyTo(ma: Matrix3, out: number[] | Float32Array | Float64Array) {
+        if (out.length < ma.value.length) {
+            throw new Error("out.length should be greater than or equal to 9")
+        }
+        for (let i = 0; i < out.length; i++) {
+            out[i] = ma.value[i]
+        }
+    }
+
     public get M11() {
         return this.value[0]
     }
@@ -91,5 +100,6 @@ export class Matrix3 {
     public set M33(v: number) {
         this.value[8] = v;
     }
+
 
 }

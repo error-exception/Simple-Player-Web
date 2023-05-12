@@ -11,9 +11,10 @@ export interface TimingInfo {
     timingList: TimingItem[]
 }
 
-const defaultBeater = new Beater({
+export const defaultBeater = new Beater({
     bpm: 60,
-    offset: 0
+    offset: 0,
+    available: false
 })
 
 const beaterCache = new Map<number, Beater>()

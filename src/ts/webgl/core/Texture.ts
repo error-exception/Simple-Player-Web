@@ -10,7 +10,7 @@ export class Texture implements Disposable, Bindable {
 
     constructor(
         private gl: WebGL2RenderingContext,
-        url: string
+        image: HTMLImageElement | null = null
     ) {
         const texture = gl.createTexture()
         if (!texture) {
@@ -26,9 +26,7 @@ export class Texture implements Disposable, Bindable {
 
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, Texture.blankData)
         gl.bindTexture(gl.TEXTURE_2D, null)
-        const image = new Image()
-        image.src = url
-        image.decode().then(() => {
+        if (image !== null) {
             gl.bindTexture(gl.TEXTURE_2D, texture)
             this.imageWidth = image.width
             this.imageHeight = image.height
@@ -44,7 +42,28 @@ export class Texture implements Disposable, Bindable {
                 image
             )
             gl.bindTexture(gl.TEXTURE_2D, null)
-        })
+        }
+
+    }
+
+    public setTextureImage(image: HTMLImageElement) {
+        const gl = this.gl
+        gl.bindTexture(gl.TEXTURE_2D, this.rendererId)
+        this.imageWidth = image.width
+        this.imageHeight = image.height
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            image.width,
+            image.height,
+            0,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            image
+        )
+        gl.bindTexture(gl.TEXTURE_2D, null)
+
     }
 
     public bind(slot: GLenum = 0) {

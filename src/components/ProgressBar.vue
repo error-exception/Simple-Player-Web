@@ -7,7 +7,6 @@
 
 <script setup lang="ts">
 
-import {AudioPlayer} from "../ts/AudioPlayer";
 import {computed, reactive} from "vue";
 import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 

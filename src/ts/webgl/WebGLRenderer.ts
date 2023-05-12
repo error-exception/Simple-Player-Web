@@ -38,9 +38,11 @@ export class WebGLRenderer implements Disposable {
         }
         gl.clear(gl.COLOR_BUFFER_BIT)
         for (let i = 0; i < this.drawables.length; i++) {
-            this.drawables[i].bind()
-            this.drawables[i].draw()
-            this.drawables[i].unbind()
+            const drawable = this.drawables[i];
+            drawable.update()
+            // drawable.bind()
+            drawable.draw()
+            // drawable.unbind()
         }
     }
 

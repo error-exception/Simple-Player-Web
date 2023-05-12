@@ -1,16 +1,15 @@
 
 <template>
-  <div class="fill-size" style="position: relative; background-color: white; overflow: hidden">
-<!--    <SideBars style="position: absolute" v-show="whiteBar"/>-->
+  <div class="fill-size" style="position: relative; background-color: black; overflow: hidden">
     <Visualizer2 style="position: absolute"/>
     <TopBar
         style="position: absolute; top: 0"
+        :stateText = "state.stateText"
         @settingsClick="state.settingsState = !state.settingsState"
         @bpmCalcClick="state.bpmCalculatorState = !state.bpmCalculatorState"
         @hideUI="state.showUI = false"
         v-show="state.showUI"
     />
-<!--    <BottomBar :ui="state" style="position: absolute; bottom: 0" v-show="state.showUI"/>-->
     <Transition name="mask">
       <div style="position: absolute" class="max-size mask" v-if="hasSomeUIShow" @click="closeAll()"></div>
     </Transition>
@@ -31,6 +30,7 @@
       <MiniPlayer v-if="state.miniPlayerState" style="position: absolute; top: 48px; right: 80px"/>
     </Transition>
     <BpmCalculator style="position: absolute" v-if="state.bpmCalculatorState" @close="state.bpmCalculatorState = false"/>
+<!--    <Toast style="position: absolute"/>-->
   </div>
 </template>
 <script setup lang="ts">
@@ -48,6 +48,7 @@ import MiniPlayer from "./components/MiniPlayer.vue";
 import VolumeAdjuster from "./components/VolumeAdjuster.vue";
 import {launchVisualizer} from "./ts/Visualizer";
 import {AudioPlayerV2} from "./ts/AudioPlayerV2";
+import Toast from "./components/Toast.vue";
 
 const state = reactive({
   listState: false,
@@ -55,6 +56,7 @@ const state = reactive({
   bpmCalculatorState: false,
   showUI: true,
   miniPlayerState: false,
+  stateText: ""
 })
 
 const store = useStore()
@@ -98,6 +100,20 @@ watch(() => state.bpmCalculatorState, (value) => {
     nextSong()
   }
 })
+
+AudioPlayerV2.instance.onState = (stateCode: number) => {
+  if (stateCode === AudioPlayerV2.STATE_DOWNLOADING) {
+    state.stateText = "正在下载"
+  } else if (stateCode === AudioPlayerV2.STATE_DECODING) {
+    state.stateText = "正在解码"
+  } else if (stateCode === AudioPlayerV2.STATE_PLAYING) {
+    state.stateText = "正在播放"
+  } else if (stateCode === AudioPlayerV2.STATE_DECODE_DONE) {
+    state.stateText = "准备就绪"
+  } else if (stateCode === AudioPlayerV2.STATE_PAUSING) {
+    state.stateText = "播放暂停"
+  }
+}
 
 function closeAll() {
   state.settingsState = false
@@ -160,11 +176,21 @@ AudioPlayerV2.instance.onEnded = () => {
 .mask-enter-active,
 .mask-leave-active,
 .settings-enter-active,
-.settings-leave-active,
-.player-enter-active,
-.player-leave-active
+.settings-leave-active
 {
-  transition: all 260ms cubic-bezier(0, 0.22, 0, 0.98)
+  transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1)
+}
+.player-enter-active {
+  animation-name: player-enter-animation;
+  animation-duration: 460ms;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+.player-leave-active {
+  animation-name: player-leave-animation;
+  animation-duration: 220ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: forwards;
 }
 .list-enter-from, .list-leave-to {
   transform: translateX(100%);
@@ -182,11 +208,9 @@ AudioPlayerV2.instance.onEnded = () => {
 
 .player-enter-from, .player-leave-to {
   transform-origin: top center;
-  transform: scale(0);
 }
 .player-enter-to, .player-leave-from {
   transform-origin: top center;
-  transform: scale(1);
 }
 
 
@@ -198,5 +222,56 @@ AudioPlayerV2.instance.onEnded = () => {
 }
 .mask {
   background-color: #00000080;
+}
+@keyframes player-enter-animation {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  16% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+
+  28% {
+    opacity: 0.87;
+    transform: scale(0.97);
+  }
+
+  44% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  59% {
+    opacity: 0.98;
+    transform: scale(0.99);
+  }
+
+  73% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  88% {
+    opacity: 1;
+    transform: scale(0.99);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes player-leave-animation {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
 }
 </style>

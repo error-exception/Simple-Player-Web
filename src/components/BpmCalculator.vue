@@ -136,27 +136,22 @@ import Row from "./Row.vue";
 import Column from "./Column.vue";
 import {computed, onMounted, onUnmounted, reactive, Ref, ref, toRaw, watch} from "vue";
 import {Icon} from "../ts/icon/Icon";
-import {EventDispatcher, useEvent} from "../ts/EventBus";
+import {EventDispatcher} from "../ts/EventBus";
 import {useStore} from "vuex";
 import {
   ArrayUtils,
-  autoCorrelate, autocorrelation,
-  beatFuncV2,
   calcRMS,
   currentMilliseconds,
-  findMusic,
   int,
-  removeAt,
   useKeyboard
 } from "../ts/Utils";
-import {AudioPlayer} from "../ts/AudioPlayer";
 import {TimingItem} from "../ts/TimingItem";
 import CheckBox from "./CheckBox.vue";
 import {addTimingInfoToCache, getBeater, TimingInfo, uploadTimingInfo} from "../ts/TimingInfo";
 import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 import {TestBeater} from "../ts/TestBeater";
 import {simpleAnimate} from "../ts/util/Animation";
-import test from "node:test";
+import beatSound from '../assets/soft-hitwhistle.wav'
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -189,6 +184,8 @@ type ReactiveState = {
   currentTime: string,
   precisionIndex: number
 }
+
+const sound = new Audio(beatSound)
 
 const state = reactive<ReactiveState>({
   precisionIndex: 2,
@@ -302,6 +299,7 @@ getBeater(currentMusic.id).then((res) => {
 
 useKeyboard('down', (evt) => {
   if (evt.code === 'ArrowRight') {
+    console.log("change progress")
     changeProgressByBeatGap(true)
   } else if (evt.code === "ArrowLeft") {
     changeProgressByBeatGap(false)
@@ -477,6 +475,7 @@ function changeByBpm(e: WheelEvent) {
 function changeProgressByBeatGap(isPlus: boolean) {
   const offset = state.beatInfo.offset
   const current = Math.max(player.currentTime - offset, 0)
+  console.log('before', player.currentTime)
   const gap = 60 / state.beatInfo.bpm * 1000
   let count = Math.round(current / gap)
   if (isPlus)
@@ -486,6 +485,7 @@ function changeProgressByBeatGap(isPlus: boolean) {
   }
   const targetCurrent = gap * count + offset
   player.seek(targetCurrent)
+  console.log('after', player.currentTime)
   drawProgressbar()
   drawWave()
   state.currentTime = timeString(player.currentTime)
@@ -513,7 +513,7 @@ function removeSelected() {
   if (state.timing.selectedIndex < 0) {
     return
   }
-  removeAt(state.timing.list, state.timing.selectedIndex)
+  ArrayUtils.removeAt(state.timing.list, state.timing.selectedIndex)
 }
 
 function selectCurrentTiming(index: number) {
@@ -727,9 +727,14 @@ function drawWave() {
 }
 let lastBeatCount = -1
 function drawBeatWave() {
-  if (beater.getBeatCount() == lastBeatCount) {
+  if (!beater.isBeat()) {
     return
   }
+    // sound.play()
+  // if (beater.getBeatCount() == lastBeatCount) {
+  //   return
+  // }
+
   lastBeatCount = beater.getBeatCount()
 
   const beatIndex = beater.getBeatCount() - 4

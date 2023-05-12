@@ -8,17 +8,25 @@ import {VisualizerV2} from "./VisualizerV2";
 
 export class AudioPlayerV2 {
 
+    public static STATE_DOWNLOADING = 0
+    public static STATE_DECODING = 1
+    public static STATE_PLAYING = 2
+    public static STATE_DECODE_DONE = 3
+    public static STATE_PAUSING = 4
+
     private readonly audioContext: AudioContext
     private source: AudioBufferSourceNode | null = null
     private audioBuffer: AudioBuffer | null = null
     private isAvailable = false
     private time: TimePlayer = new TimePlayer()
+    private playerState: number = -1
 
     public duration = ref(0)
     public isPlaying = ref(false)
     public volume = ref(1)
     public currentMusic: Music | null = null
     public onEnded: (() => void) | null = null
+    public onState: ((state: number) => void) | null = null
 
     public static readonly instance: AudioPlayerV2 = new AudioPlayerV2()
 
@@ -26,13 +34,20 @@ export class AudioPlayerV2 {
         this.audioContext = new AudioContext()
     }
 
-    public src(music: Music) {
+    public src(music: Music): boolean {
+        if (
+            this.playerState === AudioPlayerV2.STATE_DOWNLOADING
+            || this.playerState === AudioPlayerV2.STATE_DECODING
+            || this.currentMusic?.id === music.id
+        ) {
+            return false
+        }
         this.currentMusic = music
         this.pause()
         this.isAvailable = false
-        this.time.reset()
         this.load(music.id).then(() => {
             this.isAvailable = true
+            this.time.reset()
             this.duration.value = int(this.audioBuffer!!.duration * 1000)
             if (this.needToPlay) {
                 this.needToPlay = false
@@ -40,28 +55,40 @@ export class AudioPlayerV2 {
             }
             EventDispatcher.fireOnSongChanged(music.id)
         })
+        return true
     }
 
     private async load(musicId: number) {
+        this.playerState = AudioPlayerV2.STATE_DOWNLOADING
+        this.onState?.(AudioPlayerV2.STATE_DOWNLOADING)
         const response = await fetch(`/api/music?id=${musicId}`)
         const arrayBuffer = await response.arrayBuffer()
+        this.playerState = AudioPlayerV2.STATE_DECODING
+        this.onState?.(AudioPlayerV2.STATE_DECODING)
         this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer)
+        this.playerState = AudioPlayerV2.STATE_DECODE_DONE
+        this.onState?.(AudioPlayerV2.STATE_DECODE_DONE)
     }
 
     private needToPlay = false
 
     public play() {
-        this.isPlaying.value = true
+        if (this.isPlaying.value) {
+            return;
+        }
         if (!this.isAvailable) {
             this.needToPlay = true
             return
         }
+        this.isPlaying.value = true
+        this.playerState = AudioPlayerV2.STATE_PLAYING
+        this.onState?.(AudioPlayerV2.STATE_PLAYING)
         const source = this.audioContext.createBufferSource()
         source.buffer = this.audioBuffer
         source.playbackRate.value = this.playbackRate
         source.connect(this.audioContext.destination)
         source.onended = () => {
-            this.time.pause()
+            this.pause()
             this.onEnded?.()
         }
         let startTime = 0
@@ -81,11 +108,16 @@ export class AudioPlayerV2 {
     }
 
     public pause() {
-        this.isPlaying.value = false
+        if (!this.isPlaying.value) {
+            return;
+        }
         if (!this.isAvailable) {
             this.needToPlay = false
             return
         }
+        this.isPlaying.value = false
+        this.playerState = AudioPlayerV2.STATE_PAUSING
+        this.onState?.(AudioPlayerV2.STATE_PAUSING)
         const source = this.source
         if (source != null) {
             source.onended = null
@@ -101,13 +133,18 @@ export class AudioPlayerV2 {
     private seekTime = -1
 
     public seek(time: number) {
-        if (!this.isAvailable || this.source == null) {
+        if (!this.isAvailable) {
             this.seekTime = time
             return
         }
-        this.pause()
+        let shouldReplay = this.isPlaying.value
+        if (shouldReplay) {
+            this.pause()
+        }
         this.time.seek(time)
-        this.play()
+        if (shouldReplay) {
+            this.play()
+        }
         EventDispatcher.fireOnMusicSeeked(this.currentMusic!!.id, time)
     }
 
@@ -133,7 +170,7 @@ export class AudioPlayerV2 {
     }
 
     public get currentTime(): number {
-        return this.time.currentTime().value
+        return Math.min(this.time.currentTime().value, this.duration.value)
     }
 
     public getAudioBuffer(): AudioBuffer {

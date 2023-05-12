@@ -1,6 +1,6 @@
 import {IEvent} from "./type";
 import {onMounted, onUnmounted} from "vue";
-import {Beater} from "./Beater";
+import {ArrayUtils} from "./Utils";
 
 const eventList: IEvent[] = []
 
@@ -8,20 +8,30 @@ export function useEvent(ev?: IEvent) {
 
     onMounted(() => {
         if (ev) {
-            eventList.push(ev)
+            EventDispatcher.register(ev)
         }
     })
 
     onUnmounted(() => {
         if (ev) {
-            const i = eventList.indexOf(ev)
-            eventList.splice(i, 1)
+            EventDispatcher.unregister(ev)
         }
     })
 
 }
 
 export class EventDispatcher {
+
+    public static register(e: IEvent) {
+        eventList.push(e)
+    }
+
+    public static unregister(e: IEvent) {
+        const i = eventList.indexOf(e)
+        if (ArrayUtils.inBound(eventList, i)) {
+            eventList.splice(i, 1)
+        }
+    }
 
     public static fireOnBpmChanged(id: number) {
         for (let i = 0; i < eventList.length; i++) {
