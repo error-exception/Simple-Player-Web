@@ -2,7 +2,7 @@
   <div class="mini-player-box">
     <div style="position: relative" class="fill-size">
       <img :src="artwork" alt="" width="500" height="240" style="position: absolute">
-      <Column class="fill-size" style="position: absolute; bottom: 4px">
+      <Column class="fill-size" style="position: absolute; background-color: #00000040">
         <Column class="fill-width flex-grow" center :gap="8">
           <span class="player-title">{{ title }}</span>
           <span class="player-artist">{{ artist }}</span>
@@ -14,16 +14,16 @@
         >
           <button class="control-btn ma" @click="prevSong()">{{ Icon.SkipPrevious }}</button>
           <button class="control-btn ma" @click="play()">{{ isPlaying ? Icon.Pause : Icon.PlayArrow }}</button>
+          <button class="control-btn ma" @click="stop()">{{ Icon.Stop }}</button>
           <button class="control-btn ma" @click="nextSong()">{{ Icon.SkipNext }}</button>
         </Row>
       </Column>
-      <div style="height: 8px; background-color: yellow; position: absolute; bottom: 0" class="fill-width"></div>
+      <ProgressBar style="width: 100%; position: absolute; bottom: 0;"/>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import testArtwork from '../assets/1.png'
 import Column from "./Column.vue";
 import Row from "./Row.vue";
 import {computed, inject, onMounted, ref} from "vue";
@@ -31,12 +31,14 @@ import {useStore} from "vuex";
 import {Icon} from "../ts/icon/Icon";
 import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 import {useEvent} from "../ts/EventBus";
+import ProgressBar from "./ProgressBar.vue";
+import {url} from "../ts/Utils";
 
 const store = useStore()
 
 const player = AudioPlayerV2.instance
 
-const artwork = ref(testArtwork)
+const artwork = ref("")
 
 const title = computed(() => store.state.currentMusic.title)
 const artist = computed(() => store.state.currentMusic.artist)
@@ -51,7 +53,7 @@ const { nextSong, play, prevSong } = inject<{
 
 useEvent({
   onSongChanged(id: number) {
-    artwork.value = "/api/artwork?id=" + id
+    artwork.value = url("/artwork?id=" + id)
   }
 })
 
@@ -59,16 +61,21 @@ onMounted(() => {
   const music = player.currentMusic
   if (music) {
     const id = music.id
-    artwork.value = "/api/artwork?id=" + id
+    artwork.value = url("/artwork?id=" + id)
   }
 })
+
+function stop() {
+  player.pause()
+  player.seek(0)
+}
 
 </script>
 
 <style scoped>
 .mini-player-box {
   width: 500px;
-  height: 240px;
+  height: 200px;
   overflow: hidden;
   border-radius: 8px;
   background-color: black;

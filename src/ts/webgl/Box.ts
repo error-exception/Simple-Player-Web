@@ -2,6 +2,8 @@ import {Drawable} from "./Drawable";
 import {Viewport} from "./Viewport";
 import {ArrayUtils} from "../Utils";
 import {Queue} from "../util/Queue";
+import {Vector2} from "./core/Vector2";
+import {MouseState} from "../MouseState";
 
 export class Box extends Drawable {
 
@@ -98,6 +100,101 @@ export class Box extends Drawable {
         super.setViewport(viewport)
         for (let i = 0; i < this.childrenList.length; i++) {
             this.childrenList[i].setViewport(viewport)
+        }
+    }
+
+    public click(which: number, position: Vector2) {
+        if (this.isAvailable && this.isInBound(position)) {
+            if ('onClick' in this && typeof this.onClick === "function")
+                this.onClick(which)
+        }
+        for (let i = this.childrenList.length - 1; i >= 0; i--) {
+            this.childrenList[i].click(which, position)
+        }
+    }
+
+    public mouseDown(which: number, position: Vector2) {
+        if (this.isAvailable && this.isInBound(position)) {
+            if ('onMouseDown' in this && typeof this.onMouseDown === "function") {
+                this.onMouseDown(which)
+            }
+
+        }
+        for (let i = this.childrenList.length - 1; i >= 0; i--) {
+            this.childrenList[i].mouseDown(which, position)
+        }
+    }
+
+    public mouseUp(which: number, position: Vector2) {
+        if (this.isAvailable && this.isInBound(position)) {
+            if ('onMouseUp' in this && typeof this.onMouseUp === "function") {
+                this.onMouseUp(which)
+            }
+
+        }
+        this.dragLost(which, position)
+        for (let i = this.childrenList.length - 1; i >= 0; i--) {
+            this.childrenList[i].mouseUp(which, position)
+        }
+    }
+
+    public mouseMove(position: Vector2) {
+        if (this.isAvailable && this.isInBound(position)) {
+            if ('onMouseMove' in this && typeof this.onMouseMove === "function") {
+                this.onMouseMove()
+            }
+            this.hover(position)
+            if (MouseState.hasKeyDown()) {
+                this.drag(MouseState.which, position)
+            }
+        } else {
+
+            if (this.#isDragged) {
+                this.drag(MouseState.which, position)
+            }
+            this.hoverLost(position)
+        }
+        for (let i = this.childrenList.length - 1; i >= 0; i--) {
+            this.childrenList[i].mouseMove(position)
+        }
+    }
+
+    #isHovered = false
+
+    public hover(position: Vector2) {
+        // if (this.isAvailable && this.isInBound(position)) {
+        if ('onHover' in this && typeof this.onHover === "function" && !this.#isHovered) {
+            this.#isHovered = true
+            this.onHover()
+        }
+        // }
+    }
+
+    public hoverLost(position: Vector2) {
+        if (this.isAvailable && this.#isHovered && !this.isInBound(position)) {
+            if ('onHoverLost' in this && typeof this.onHoverLost === "function") {
+                this.#isHovered = false
+                this.onHoverLost()
+            }
+        }
+    }
+
+    #isDragged = false
+    public drag(which: number, position: Vector2) {
+        // if (this.isAvailable && this.isInBound(position)) {
+        if ('onDrag' in this && typeof this.onDrag === "function") {
+            this.#isDragged = true
+            this.onDrag(which)
+        }
+        // }
+    }
+
+    public dragLost(which: number, position: Vector2) {
+        if (this.isAvailable && this.#isDragged) {
+            if ('onDragLost' in this && typeof this.onDragLost === "function") {
+                this.#isDragged = false
+                this.onDragLost()
+            }
         }
     }
 

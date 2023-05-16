@@ -35,7 +35,11 @@ export class Shader implements Bindable, Disposable {
         this.gl.uniform2fv(this.getUniformLocation(name), value)
     }
 
-    public setUniform4fv(name: string, value: number[]) {
+    public setUniform3fv(name: string, value: Float32Array) {
+        this.gl.uniform3fv(this.getUniformLocation(name), value)
+    }
+
+    public setUniform4fv(name: string, value: Float32Array) {
         this.gl.uniform4fv(this.getUniformLocation(name), value)
     }
 

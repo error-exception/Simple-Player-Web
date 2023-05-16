@@ -13,5 +13,9 @@ export class Vector2 {
         return new Vector2(0, 0)
     }
 
+    public static equals(v1: Vector2, v2: Vector2) {
+        return v1.x === v2.x && v1.y === v2.y
+    }
+
 }
 

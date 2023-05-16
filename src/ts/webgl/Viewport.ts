@@ -32,7 +32,7 @@ export class Viewport {
 
     public convertUnitX(x: number | Percent | WidthUnit) {
         if (typeof x === "number") {
-            return x
+            return x * window.devicePixelRatio
         } else {
             const ch = x.charAt(x.length - 1)
             let v = 0
@@ -52,7 +52,7 @@ export class Viewport {
 
     public convertUnitY(y: number | Percent | HeightUnit) {
         if (typeof y === "number") {
-            return y
+            return y * window.devicePixelRatio
         } else {
             const ch = y.charAt(y.length - 1)
             let v = 0

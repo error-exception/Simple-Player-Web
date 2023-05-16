@@ -46,7 +46,7 @@ export class Texture implements Disposable, Bindable {
 
     }
 
-    public setTextureImage(image: HTMLImageElement) {
+    public setTextureImage(image: ImageBitmap) {
         const gl = this.gl
         gl.bindTexture(gl.TEXTURE_2D, this.rendererId)
         this.imageWidth = image.width

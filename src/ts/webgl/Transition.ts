@@ -179,6 +179,91 @@ export class FadeTransition {
     }
 }
 
+export class TranslateTransition {
+
+
+    private transXTransition: TransitionGroup | null = null
+    private transYTransition: TransitionGroup | null = null
+    private transOffsetTime: number = 0
+    public isEnd = false
+
+    public constructor(public drawable: Drawable) {}
+
+    public setStartTime(startTime: number) {
+        this.transOffsetTime = startTime
+    }
+
+    public translateTo(target: Vector2, duration: number = 0, ease: TimeFunction = linear) {
+        const translate = this.drawable.translate
+        const transitionX = new Transition(
+            this.transOffsetTime,
+            this.transOffsetTime + duration,
+            ease,
+            target.x,
+            translate.x
+        )
+        if (this.transXTransition === null) {
+            this.transXTransition = new TransitionGroup()
+        }
+        this.transXTransition.add(transitionX)
+
+        const transitionY = new Transition(
+            this.transOffsetTime,
+            this.transOffsetTime + duration,
+            ease,
+            target.y,
+            translate.y
+        )
+        if (this.transYTransition === null) {
+            this.transYTransition = new TransitionGroup()
+        }
+        this.transYTransition.add(transitionY)
+        this.transOffsetTime += duration
+        return this
+    }
+
+    public update(timestamp: number) {
+        const x = this.updateX(timestamp)
+        const y = this.updateY(timestamp)
+        if (x && y) {
+            this.drawable.translate = new Vector2(x, y)
+        }
+    }
+
+    private updateX(timestamp: number) {
+        const transXTransition = this.transXTransition
+        if (transXTransition !== null) {
+            transXTransition.update(timestamp)
+            const transXValue = transXTransition.currentValue
+            this.isEnd = transXTransition.isEnd
+            if (transXTransition.isEnd) {
+                this.transXTransition = null
+            }
+            if (transXValue != null) {
+                return transXValue
+            }
+        }
+        return null
+    }
+
+    private updateY(timestamp: number) {
+        const transYTransition = this.transYTransition
+        if (transYTransition !== null) {
+            transYTransition.update(timestamp)
+            const transYValue = transYTransition.currentValue
+            this.isEnd = transYTransition.isEnd
+            if (transYTransition.isEnd) {
+                this.transYTransition = null
+            }
+            if (transYValue != null) {
+                return  transYValue
+            }
+        }
+        return null
+    }
+
+}
+
 export class ObjectTransition {
 
     private transitionGroup: TransitionGroup | null = null

@@ -1,6 +1,6 @@
 <template>
   <div class="artwork-box">
-    <img :src="artwork" alt="artwork" style="position: absolute">
+    <img src="" alt="artwork" style="position: absolute">
     <Row class="info-box">
       <div style="width: 16px; background-color: yellowgreen;"></div>
       <div style="width: 12px; background-color: yellowgreen; opacity: .7"></div>
@@ -31,11 +31,9 @@
 
 <script setup lang="ts">
 
-import artwork from '../assets/1.png'
 import Row from "./Row.vue";
 import Column from "./Column.vue";
 import {useStore} from "vuex";
-import {AudioPlayer} from "../ts/AudioPlayer";
 import {computed} from "vue";
 import {timeString} from "../ts/Utils";
 import {Icon} from "../ts/icon/Icon";

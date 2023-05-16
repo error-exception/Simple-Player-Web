@@ -8,16 +8,24 @@
 
 <script setup lang="ts">
 import Row from "./Row.vue";
-import {Toast} from "../ts/Toast";
+import {Toaster} from "../ts/Toaster";
 import {reactive} from "vue";
 
 const state = reactive({
-  opacity: 1,
+  opacity: 0,
   message: ""
 })
 
-Toast.onToast = (message: string) => {
+let timeoutId: any = undefined
 
+Toaster.onToast = (message: string) => {
+  clearTimeout(timeoutId)
+  state.opacity = 1
+  state.message = message
+  timeoutId = setTimeout(() => {
+    state.opacity = 0
+    state.message = ""
+  }, 3000)
 }
 
 </script>

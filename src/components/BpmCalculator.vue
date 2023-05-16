@@ -1,9 +1,9 @@
 <template>
   <Column class="fill-size" style="background-color: #171c1a">
-    <Row class="fill-width" style="background-color: #374340; padding: 16px">
-      <span class="font-white fill-height">Timing</span>
+    <Row class="fill-width" style="background-color: #374340; height: 36px; padding: 0 16px">
+      <button class="font-white fill-height">Timing</button>
       <span class="font-white fill-height flex-grow text-center">{{ loadState }}</span>
-      <span class="font-white fill-height" @click="closeCalculator()">Close</span>
+      <button class="font-white fill-height bpm-close" @click="closeCalculator()">Close</button>
     </Row>
     <Row class="fill-width">
       <Column class="fill-height" style="justify-content: space-evenly; padding-left: 4px; padding-right: 4px">
@@ -152,6 +152,7 @@ import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 import {TestBeater} from "../ts/TestBeater";
 import {simpleAnimate} from "../ts/util/Animation";
 import beatSound from '../assets/soft-hitwhistle.wav'
+import {Toaster} from "../ts/Toaster";
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -184,8 +185,6 @@ type ReactiveState = {
   currentTime: string,
   precisionIndex: number
 }
-
-const sound = new Audio(beatSound)
 
 const state = reactive<ReactiveState>({
   precisionIndex: 2,
@@ -249,7 +248,6 @@ useKeyboard("down", (evt: KeyboardEvent) => {
     return
   }
   if (evt.code === 'KeyT' || evt.code === 'KeyY') {
-    // tap(evt.timeStamp)
     tapV2()
   }
   if (evt.code === 'KeyR') {
@@ -381,7 +379,7 @@ function reset() {
   previous = 0
 }
 
-function applyTiming() {
+async function applyTiming() {
   const bpm = Math.floor(state.beatInfo.bpm)
   store.commit("setCurrentMusicBpm", bpm)
   store.commit("setCurrentMusicOffset", state.beatInfo.offset)
@@ -405,7 +403,8 @@ function applyTiming() {
   addTimingInfoToCache(timingInfo)
 
   EventDispatcher.fireOnBpmChanged(store.state.currentMusic.id)
-  uploadTimingInfo(timingInfo)
+  const isSuccess = await uploadTimingInfo(timingInfo)
+  Toaster.show(isSuccess ? '保存成功' : '保存失败')
 
 }
 
@@ -475,7 +474,6 @@ function changeByBpm(e: WheelEvent) {
 function changeProgressByBeatGap(isPlus: boolean) {
   const offset = state.beatInfo.offset
   const current = Math.max(player.currentTime - offset, 0)
-  console.log('before', player.currentTime)
   const gap = 60 / state.beatInfo.bpm * 1000
   let count = Math.round(current / gap)
   if (isPlus)
@@ -485,7 +483,6 @@ function changeProgressByBeatGap(isPlus: boolean) {
   }
   const targetCurrent = gap * count + offset
   player.seek(targetCurrent)
-  console.log('after', player.currentTime)
   drawProgressbar()
   drawWave()
   state.currentTime = timeString(player.currentTime)
@@ -622,7 +619,8 @@ function drawProgressbar() {
   const bound = resizeCanvas(progress)
   progressBound = bound
   const ctx = progressContext
-  const progressValue = player.currentTime / player.duration.value
+  const duration = player.duration.value
+  const progressValue = player.currentTime / duration
   ctx.clearRect(0, 0, bound.width, bound.height)
 
   ctx.beginPath()
@@ -631,6 +629,40 @@ function drawProgressbar() {
   ctx.moveTo(0, bound.height / 2)
   ctx.lineTo(bound.width, bound.height / 2)
   ctx.stroke()
+
+  // draw kiai
+  ctx.beginPath()
+  ctx.fillStyle = "#7a0a5180"
+  const list = state.timing.list
+  for (let i = 0; i < list.length; i++) {
+    const { timestamp, isKiai } = list[i]
+    if (!isKiai) {
+      continue
+    }
+    const startPosition = timestamp / duration
+    let endPosition: number = -1
+    for (let j = i + 1; j < list.length; j++) {
+      const endTiming = list[j]
+      if (endTiming.isKiai) {
+        continue
+      }
+      endPosition = endTiming.timestamp / duration
+      i = j
+      break
+    }
+    if (endPosition < 0) {
+      endPosition = 1
+    }
+    ctx.moveTo(bound.width * startPosition, 30)
+    ctx.lineTo(bound.width * startPosition, bound.height - 30)
+    ctx.lineTo(bound.width * endPosition, bound.height - 30)
+    ctx.lineTo(bound.width * endPosition, 30)
+    ctx.lineTo(bound.width * startPosition, 30)
+    if (endPosition === 1) break
+  }
+  ctx.fill()
+  // draw progress bar
+
   ctx.beginPath()
   ctx.lineWidth = 2
   ctx.strokeStyle = 'red'
@@ -660,6 +692,7 @@ function drawWave() {
 
   ctx.clearRect(0, 0, bound.width, bound.height)
 
+  // draw wave
   ctx.beginPath()
   ctx.lineWidth = 1
   ctx.fillStyle = '#33cb9840'
@@ -730,10 +763,6 @@ function drawBeatWave() {
   if (!beater.isBeat()) {
     return
   }
-    // sound.play()
-  // if (beater.getBeatCount() == lastBeatCount) {
-  //   return
-  // }
 
   lastBeatCount = beater.getBeatCount()
 
@@ -889,5 +918,15 @@ function drawBeatWave() {
   padding: 16px 12px;
   background-color: #2e3835;
   border-radius: 4px;
+}
+.bpm-close {
+  padding: 0 16px;
+  cursor: pointer;
+}
+.bpm-close:hover {
+  background-color: rgba(72, 87, 83, 0.85);
+}
+.bpm-close:active {
+  background-color: rgb(79, 94, 90);
 }
 </style>

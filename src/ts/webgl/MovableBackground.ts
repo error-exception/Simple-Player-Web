@@ -11,14 +11,11 @@ import {BeatState} from "../Beater";
 import {BeatDrawable} from "./BeatDrawable";
 import {Time} from "../Time";
 import {ObjectTransition} from "./Transition";
-import {easeOut, easeOutCubic, easeOutQuint, easeOutSine} from "../util/Easing";
-import {int} from "../Utils";
+import {easeOut, easeOutCubic} from "../util/Easing";
 import {IEvent} from "../type";
 import {EventDispatcher} from "../EventBus";
 import {Box} from "./Box";
-import {glCall} from "./core/Utils";
-import {ImageLoader} from "../ImageResources";
-import {isMainThread} from "worker_threads";
+import {BackgroundLoader} from "../BackgroundLoader";
 
 interface MovableBackgroundConfig extends BaseDrawableConfig {}
 
@@ -59,6 +56,14 @@ const fragmentShader = `
     }
 `
 
+interface ImageDrawInfo {
+    drawWidth: number
+    drawHeight: number,
+    offsetLeft: number,
+    offsetTop: number,
+    needToChange: boolean
+}
+
 export class MovableBackground extends BeatDrawable {
 
     private readonly vertexArray: VertexArray
@@ -69,6 +74,9 @@ export class MovableBackground extends BeatDrawable {
 
     public leftLight: number = 0
     public rightLight: number = 0
+    public imageDrawInfo: ImageDrawInfo = {
+        drawHeight: 0, drawWidth: 0, needToChange: false, offsetLeft: 0, offsetTop: 0
+    }
 
     private leftTransition: ObjectTransition = new ObjectTransition(this, 'leftLight')
     private rightTransition: ObjectTransition = new ObjectTransition(this, 'rightLight')
@@ -160,10 +168,31 @@ export class MovableBackground extends BeatDrawable {
         this.brightnessValues[0] = this.leftLight
         this.brightnessValues[1] = this.rightLight
 
-
         const min = Math.min
         const viewport = this.viewport;
         const { imageWidth, imageHeight } = this.texture
+
+        const imageDrawInfo = this.imageDrawInfo
+        if (imageDrawInfo.needToChange) {
+            const rawWidth = this.rawSize.x
+            const rawHeight = this.rawSize.y
+            const rawRatio = rawWidth / rawHeight
+            const imageRatio = imageWidth / imageHeight
+            if (rawRatio > imageRatio) {
+                imageDrawInfo.drawWidth = imageWidth
+                imageDrawInfo.drawHeight = imageWidth / rawRatio
+                imageDrawInfo.offsetLeft = 0
+                imageDrawInfo.offsetTop = (imageHeight - imageDrawInfo.drawHeight) / 2
+            } else {
+                imageDrawInfo.drawHeight = imageHeight
+                imageDrawInfo.drawWidth = imageHeight * rawRatio
+                imageDrawInfo.offsetTop = 0
+                imageDrawInfo.offsetLeft = (imageWidth - imageDrawInfo.drawWidth) / 2
+            }
+            imageDrawInfo.needToChange = false
+            this.updateVertex()
+        }
+
         const scale = 1.01
         const translate = this.translate
 
@@ -196,10 +225,40 @@ export class MovableBackground extends BeatDrawable {
 
     private brightnessValues = new Float32Array([0.0, 0.0])
 
-    private createVertexArray() {
-        const { x, y } = this.position
-        const width = this.size.x
-        const height= this.size.y
+    // private createVertexArray() {
+    //     const { x, y } = this.rawPosition
+    //     const width = this.rawSize.x
+    //     const height= this.rawSize.y
+    //     const vertex = [
+    //         new Vector2(x,         y),
+    //         new Vector2(x + width, y),
+    //         new Vector2(x,         y - height),
+    //         new Vector2(x + width, y),
+    //         new Vector2(x,         y - height),
+    //         new Vector2(x + width, y - height)
+    //     ]
+    //     for (let i = 0; i < vertex.length; i++) {
+    //         TransformUtils.applyOrigin(vertex[i], this.coordinateScale)
+    //     }
+    //     return new Float32Array([
+    //         vertex[0].x, vertex[0].y, 0.0, 0.0,
+    //         vertex[1].x, vertex[1].y, 1.0, 0.0,
+    //         vertex[2].x, vertex[2].y, 0.0, 1.0,
+    //         vertex[3].x, vertex[3].y, 1.0, 0.0,
+    //         vertex[4].x, vertex[4].y, 0.0, 1.0,
+    //         vertex[5].x, vertex[5].y, 1.0, 1.0
+    //     ])
+    // }
+
+    public setBackgroundImage(image: ImageBitmap) {
+        this.texture.setTextureImage(image)
+        this.imageDrawInfo.needToChange = true
+    }
+    private vertex = new Float32Array(4 * 6)
+    private updateVertex() {
+        const { x, y } = this.rawPosition
+        const width = this.rawSize.x
+        const height= this.rawSize.y
         const vertex = [
             new Vector2(x,         y),
             new Vector2(x + width, y),
@@ -211,18 +270,48 @@ export class MovableBackground extends BeatDrawable {
         for (let i = 0; i < vertex.length; i++) {
             TransformUtils.applyOrigin(vertex[i], this.coordinateScale)
         }
-        return new Float32Array([
-            vertex[0].x, vertex[0].y, 0.0, 0.0,
-            vertex[1].x, vertex[1].y, 1.0, 0.0,
-            vertex[2].x, vertex[2].y, 0.0, 1.0,
-            vertex[3].x, vertex[3].y, 1.0, 0.0,
-            vertex[4].x, vertex[4].y, 0.0, 1.0,
-            vertex[5].x, vertex[5].y, 1.0, 1.0
-        ])
-    }
+        const info = this.imageDrawInfo
+        const imageTopLeft = new Vector2(info.offsetLeft, info.offsetTop)
+        const imageTopRight = new Vector2(info.offsetLeft + info.drawWidth, info.offsetTop)
+        const imageBottomLeft = new Vector2(info.offsetLeft, info.offsetTop + info.drawHeight)
+        const imageBottomRight = new Vector2(info.offsetLeft + info.drawWidth, info.offsetTop + info.drawHeight)
+        const imageScale = TransformUtils.scale(1 / this.texture.imageWidth, 1 / this.texture.imageHeight)
+        TransformUtils.applyOrigin(imageTopLeft, imageScale)
+        TransformUtils.applyOrigin(imageTopRight, imageScale)
+        TransformUtils.applyOrigin(imageBottomLeft, imageScale)
+        TransformUtils.applyOrigin(imageBottomRight, imageScale)
+        this.vertex[0] = vertex[0].x
+        this.vertex[1] = vertex[0].y
+        this.vertex[2] = imageTopLeft.x
+        this.vertex[3] = imageTopLeft.y
 
-    public setBackgroundImage(image: HTMLImageElement) {
-        this.texture.setTextureImage(image)
+        this.vertex[4] = vertex[1].x
+        this.vertex[5] = vertex[1].y
+        this.vertex[6] = imageTopRight.x
+        this.vertex[7] = imageTopRight.y
+
+        this.vertex[8] = vertex[2].x
+        this.vertex[9] = vertex[2].y
+        this.vertex[10] = imageBottomLeft.x
+        this.vertex[11] = imageBottomLeft.y
+
+        this.vertex[12] = vertex[3].x
+        this.vertex[13] = vertex[3].y
+        this.vertex[14] = imageTopRight.x
+        this.vertex[15] = imageTopRight.y
+
+        this.vertex[16] = vertex[4].x
+        this.vertex[17] = vertex[4].y
+        this.vertex[18] = imageBottomLeft.x
+        this.vertex[19] = imageBottomLeft.y
+
+        this.vertex[20] = vertex[5].x
+        this.vertex[21] = vertex[5].y
+        this.vertex[22] = imageBottomRight.x
+        this.vertex[23] = imageBottomRight.y
+        this.buffer.bind()
+        this.buffer.setBufferData(this.vertex)
+        this.buffer.unbind()
     }
 
     private onFinish: (() => void) | null = null
@@ -235,10 +324,8 @@ export class MovableBackground extends BeatDrawable {
 
     public setViewport(viewport: Viewport) {
         super.setViewport(viewport)
-        this.buffer.bind()
-        this.buffer.setBufferData(this.createVertexArray())
-        this.buffer.unbind()
-
+        this.imageDrawInfo.needToChange = true
+        this.updateVertex()
     }
 
     public unbind() {
@@ -291,8 +378,8 @@ export class Background extends Box implements IEvent {
     }
 
     private updateBackground(bg: MovableBackground) {
-        const imageUrl = `/res/pics/${1 + int(Math.random() * 14)}.png`
-        bg.setBackgroundImage(ImageLoader.get(imageUrl))
+        const imageBitmap = BackgroundLoader.getBackground()
+        bg.setBackgroundImage(imageBitmap)
     }
 
     private get currentBackground() {

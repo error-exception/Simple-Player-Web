@@ -1,6 +1,7 @@
 import {Drawable} from "./Drawable";
 import {Disposable} from "./core/Disposable";
 import {Viewport} from "./Viewport";
+import {MouseState} from "../MouseState";
 
 export class WebGLRenderer implements Disposable {
 
@@ -8,12 +9,45 @@ export class WebGLRenderer implements Disposable {
     private readonly disposables: Disposable[] = []
     private readonly gl: WebGL2RenderingContext
     private isViewportChanged: boolean = false
+    private isEventReady: boolean = false
 
     constructor(gl: WebGL2RenderingContext, private viewport: Viewport) {
         this.gl = gl
         gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        MouseState.onClick = this.onClick.bind(this)
+        MouseState.onMouseMove = this.onMouseMove.bind(this)
+        MouseState.onMouseDown = this.onMouseDown.bind(this)
+        MouseState.onMouseUp = this.onMouseUp.bind(this)
+    }
+
+    private onClick(which: number) {
+        if (!this.isEventReady) return
+        for (let i = 0; i < this.drawables.length; i++) {
+            this.drawables[i].click(which, MouseState.position)
+        }
+    }
+
+    private onMouseDown(which: number) {
+        if (!this.isEventReady) return
+        for (let i = 0; i < this.drawables.length; i++) {
+            this.drawables[i].mouseDown(which, MouseState.position)
+        }
+    }
+
+    private onMouseMove() {
+        if (!this.isEventReady) return
+        for (let i = 0; i < this.drawables.length; i++) {
+            this.drawables[i].mouseMove(MouseState.position)
+        }
+    }
+
+    private onMouseUp(which: number) {
+        if (!this.isEventReady) return
+        for (let i = 0; i < this.drawables.length; i++) {
+            this.drawables[i].mouseUp(which, MouseState.position)
+        }
     }
 
     public addDrawable(drawable: Drawable) {
@@ -28,6 +62,7 @@ export class WebGLRenderer implements Disposable {
     }
 
     public render() {
+        this.isEventReady = true
         const gl = this.gl
         if (this.isViewportChanged) {
             this.isViewportChanged = false
@@ -40,9 +75,7 @@ export class WebGLRenderer implements Disposable {
         for (let i = 0; i < this.drawables.length; i++) {
             const drawable = this.drawables[i];
             drawable.update()
-            // drawable.bind()
             drawable.draw()
-            // drawable.unbind()
         }
     }
 

@@ -38,13 +38,6 @@
     >
       {{Icon.List}}
     </button>
-    <button
-        class="ma light-gray-click"
-        style="width: 48px; height: 48px; color: white"
-        @click="openThree()"
-    >
-      {{Icon.DeveloperMode}}
-    </button>
   </Row>
 </template>
 
@@ -76,13 +69,9 @@ const settings = computed({
   }
 })
 
-const openPlaylist = inject("openList")
+const openPlaylist = inject<Function>("openList")!!
 
-const openMiniPlayer = inject("openMiniPlayer")
-
-function openThree() {
-  window.location.href = '../../threeTest/index.html'
-}
+const openMiniPlayer = inject<Function>("openMiniPlayer")!!
 
 </script>
 

@@ -1,13 +1,17 @@
 
 <template>
-  <div class="fill-size" style="position: relative; background-color: black; overflow: hidden">
+  <div class="fill-size" style="position: relative; overflow: hidden">
     <Visualizer2 style="position: absolute"/>
+    <FPSCounter
+        :frame-time="16"
+        style="position: absolute; left: 4px; bottom: 4px"
+    />
     <TopBar
         style="position: absolute; top: 0"
         :stateText = "state.stateText"
         @settingsClick="state.settingsState = !state.settingsState"
         @bpmCalcClick="state.bpmCalculatorState = !state.bpmCalculatorState"
-        @hideUI="state.showUI = false"
+        @hideUI="hideUI()"
         v-show="state.showUI"
     />
     <Transition name="mask">
@@ -30,15 +34,17 @@
       <MiniPlayer v-if="state.miniPlayerState" style="position: absolute; top: 48px; right: 80px"/>
     </Transition>
     <BpmCalculator style="position: absolute" v-if="state.bpmCalculatorState" @close="state.bpmCalculatorState = false"/>
-<!--    <Toast style="position: absolute"/>-->
+    <Toast style="position: absolute"/>
+
+    <DevelopTip style="position: absolute; right: 0; bottom: 0"/>
   </div>
 </template>
 <script setup lang="ts">
 
 import '../public/Material_Icon/material-icons.css'
 import Playlist from "./components/Playlist.vue";
-import {computed, provide, reactive, watch} from "vue";
-import {fetchJson, useKeyboard} from "./ts/Utils";
+import {computed, onMounted, provide, reactive, watch} from "vue";
+import {fetchJson, url, useKeyboard} from "./ts/Utils";
 import {useStore} from "vuex";
 import TopBar from "./components/TopBar.vue";
 import BpmCalculator from "./components/BpmCalculator.vue";
@@ -46,9 +52,13 @@ import Visualizer2 from "./components/Visualizer2.vue";
 import SettingsPanel from "./components/SettingsPanel.vue";
 import MiniPlayer from "./components/MiniPlayer.vue";
 import VolumeAdjuster from "./components/VolumeAdjuster.vue";
-import {launchVisualizer} from "./ts/Visualizer";
 import {AudioPlayerV2} from "./ts/AudioPlayerV2";
+import {ResponseResult} from "./ts/type";
+import {fetchAndInitAllTiming} from "./ts/TimingInfo";
+import DevelopTip from "./components/DevelopTip.vue";
 import Toast from "./components/Toast.vue";
+import {Toaster} from "./ts/Toaster";
+import FPSCounter from "./components/FPSCounter.vue";
 
 const state = reactive({
   listState: false,
@@ -86,8 +96,10 @@ useKeyboard('up', (evt) => {
   }
   if (evt.code === 'ArrowRight') {
     nextSong()
+    Toaster.show("下一曲")
   } else if (evt.code === 'ArrowLeft') {
     prevSong()
+    Toaster.show("上一曲")
   } else if (evt.code === 'Space') {
     play()
   }
@@ -115,25 +127,37 @@ AudioPlayerV2.instance.onState = (stateCode: number) => {
   }
 }
 
+onMounted(async () => {
+
+  await fetchAndInitAllTiming()
+
+  const obj: ResponseResult = await fetchJson(url('/musicList'))
+  console.log(obj)
+  store.commit("setMusicList", obj.data)
+  store.commit('setMusic', store.state.musicList[store.state.currentIndex])
+  AudioPlayerV2.instance.src(store.state.currentMusic)
+})
+
+function hideUI() {
+  state.showUI = false
+  Toaster.show(`按“O“显示 `)
+}
+
 function closeAll() {
   state.settingsState = false
   state.listState = false
   state.miniPlayerState = false
 }
 
-fetchJson('/api/musicList').then((obj) => {
-  console.log(obj)
-  store.commit("setMusicList", obj.data)
-  store.commit('setMusic', store.state.musicList[store.state.currentIndex])
-  AudioPlayerV2.instance.src(store.state.currentMusic)
-})
+
 function play() {
   if (AudioPlayerV2.instance.isPlaying.value) {
     AudioPlayerV2.instance.pause()
+    Toaster.show("暂停")
   } else {
     AudioPlayerV2.instance.play()
+    Toaster.show("播放")
   }
-  launchVisualizer(store)
 }
 
 function nextSong() {
@@ -146,7 +170,6 @@ function nextSong() {
   const music = store.state.currentMusic;
   AudioPlayerV2.instance.src(music)
   AudioPlayerV2.instance.play()
-  launchVisualizer(store)
 }
 
 function prevSong() {
@@ -159,14 +182,11 @@ function prevSong() {
   const music = store.state.currentMusic;
   AudioPlayerV2.instance.src(music)
   AudioPlayerV2.instance.play()
-  launchVisualizer(store)
 }
 
 AudioPlayerV2.instance.onEnded = () => {
   nextSong()
 }
-
-
 
 </script>
 
@@ -181,16 +201,10 @@ AudioPlayerV2.instance.onEnded = () => {
   transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1)
 }
 .player-enter-active {
-  animation-name: player-enter-animation;
-  animation-duration: 460ms;
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
+  transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .player-leave-active {
-  animation-name: player-leave-animation;
-  animation-duration: 220ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  animation-fill-mode: forwards;
+  transition: all 200ms ease-out;
 }
 .list-enter-from, .list-leave-to {
   transform: translateX(100%);
@@ -208,9 +222,13 @@ AudioPlayerV2.instance.onEnded = () => {
 
 .player-enter-from, .player-leave-to {
   transform-origin: top center;
+  opacity: 0;
+  transform: scale(0.8);
 }
 .player-enter-to, .player-leave-from {
   transform-origin: top center;
+  opacity: 1;
+  transform: scale(1);
 }
 
 

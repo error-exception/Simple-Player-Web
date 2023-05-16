@@ -1,6 +1,5 @@
 <template>
-  <Card class="settings-card">
-    <Row class="fill-size">
+    <Row class="fill-size" style="width: 420px">
       <Column class="selector">
         <button
             v-for="(item, index) in state.selectors"
@@ -16,11 +15,9 @@
         <VisualizerSettings v-if="state.selectIndex === 2"/>
       </div>
     </Row>
-  </Card>
 </template>
 
 <script setup lang="ts">
-import Card from "./Card.vue";
 import Row from "./Row.vue";
 import Column from "./Column.vue";
 import {reactive} from "vue";
@@ -31,7 +28,7 @@ import {Icon} from "../ts/icon/Icon";
 const state = reactive({
   selectIndex: 0,
   selectors: [
-      Icon.GraphicEq, Icon.MusicNote, Icon.Equalizer
+      Icon.FormatPaint, Icon.MusicNote
   ]
 })
 </script>

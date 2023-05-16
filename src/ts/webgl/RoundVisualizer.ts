@@ -1,6 +1,4 @@
-import {Disposable} from "./core/Disposable";
 import {BaseDrawableConfig, Drawable} from "./Drawable";
-import {Alignment, Bound, defaultViewport, Viewport} from "./Viewport";
 import {VertexArray} from "./core/VertexArray";
 import {VertexBuffer} from "./core/VertexBuffer";
 import {Shader} from "./core/Shader";
@@ -8,13 +6,11 @@ import {VertexBufferLayout} from "./core/VertexBufferLayout";
 import {degreeToRadian} from "../Utils";
 import {TransformUtils} from "./core/TransformUtils";
 import {Vector2} from "./core/Vector2";
-import {isUndef} from "./core/Utils";
 import {IndexBuffer} from "./core/IndexBuffer";
 import {AudioPlayerV2} from "../AudioPlayerV2";
 import {VisualizerV2} from "../VisualizerV2";
 import {Time} from "../Time";
 import {BeatState} from "../Beater";
-import {Matrix3} from "./core/Matrix3";
 
 export interface RoundVisualizerConfig extends BaseDrawableConfig {}
 
@@ -105,19 +101,19 @@ export class RoundVisualizer extends Drawable {
     protected onTransformApplied() {
         super.onTransformApplied();
         this.shader.bind()
-        this.shader.setUniform1f("u_alpha", BeatState.isKiai ? 0.25 + BeatState.currentBeat * 0.05 : 0.25)
+        this.shader.setUniform1f("u_alpha", BeatState.isKiai ? 0.2 + BeatState.currentBeat * 0.1 : 0.2)
         this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
         this.shader.unbind()
     }
 
     private updateVertex(spectrum: number[], length: number = spectrum.length) {
-        const centerX = this.position.x + this.size.x / 2
-        const centerY = this.position.y - this.size.y / 2
+        const centerX = this.rawPosition.x + this.rawSize.x / 2
+        const centerY = this.rawPosition.y - this.rawSize.y / 2
         if (this.vertexData.length !== length) {
             this.vertexData = new Float32Array(length * 8 * 5)
         }
         const array = this.vertexData
-        const innerRadius = 260
+        const innerRadius = 236 * window.devicePixelRatio
         const lineWidth = (
             innerRadius / 2 * Math.sin(
                 degreeToRadian(360 / (length))
@@ -133,7 +129,7 @@ export class RoundVisualizer extends Drawable {
                 const degree = i / 200 * 360 + j * 360 / 5
 
                 const radian = degreeToRadian(degree)
-                const value = innerRadius + spectrum[i] * 160
+                const value = innerRadius + spectrum[i] * (160 * window.devicePixelRatio)
                 const fromX = centerX
                 const fromY = centerY + innerRadius
                 const toX = centerX
@@ -232,8 +228,10 @@ export class RoundVisualizer extends Drawable {
 
     public onDraw() {
         const gl = this.gl
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
         this.vertexArray.addBuffer(this.buffer, this.layout)
         gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_INT, 0)
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     }
 
     public dispose() {

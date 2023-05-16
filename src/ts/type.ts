@@ -15,11 +15,6 @@ export interface Settings {
     backgroundMovable: boolean
 }
 
-export interface VisualizerConfig {
-    maxDB: number
-    minDB: number
-}
-
 export interface IEvent {
 
     onMusicPlay?(): void

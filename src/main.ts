@@ -3,14 +3,14 @@ import './assets/fonts/fonts.css'
 import './style.css'
 import App from './App.vue'
 import {createStore} from "vuex";
-import {Music, MusicInfo, Settings, VisualizerConfig} from "./ts/type";
+import {Music, MusicInfo, Settings} from "./ts/type";
 
 
 
 export type StoreType = MusicInfo & {
     musicList: Music[],
     visualizerVolume: number,
-    visConfig: VisualizerConfig
+    frameTime: number
 }
 
 const store = createStore({
@@ -25,6 +25,7 @@ const store = createStore({
                 offset: 0
             },
             currentIndex: 0,
+            frameTime: 0,
             visualizerVolume: 0,
             musicList: [{
                 title: 'no song',
@@ -32,11 +33,7 @@ const store = createStore({
                 id: -1,
                 bpm: 60,
                 offset: 0
-            }],
-            visConfig: {
-                maxDB: 0,
-                minDB: -55
-            }
+            }]
         }
     },
 
@@ -59,20 +56,16 @@ const store = createStore({
             state.visualizerVolume = v;
         },
 
-        setVisualizerMaxDB(state, v: number) {
-            state.visConfig.maxDB = v;
-        },
-
-        setVisualizerMinDB(state, v: number) {
-            state.visConfig.minDB = v;
-        },
-
         setCurrentMusicBpm(state, v: number) {
             state.currentMusic.bpm = v;
         },
 
         setCurrentMusicOffset(state, v: number) {
             state.currentMusic.offset = v;
+        },
+
+        setFrameTime(state, v: number) {
+            state.frameTime = v
         }
     }
 

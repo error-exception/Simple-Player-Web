@@ -260,54 +260,11 @@ export class ArrayUtils {
     }
 }
 
-export function autoCorrelate(arr: number[]) {
-    const result: number[] = []
-    for (let i = 0; i < arr.length; i++) {
-        let value = 0
-        for (let j = 0; j <= i; j++) {
-            value += arr[j] * arr[arr.length - 1 - i + j]
-        }
-        result.push(value)
+const isProduct = false
+
+export function url(urlString: string) {
+    if (isProduct) {
+        return urlString
     }
-    return result
+    return '/api' + urlString
 }
-
-export function autocorrelation(x: number[], n: number = x.length)
-{
-    let i, j;
-    let mean = 0.0, value = 0.0;
-
-    // 计算均值和方差
-    for (i = 0; i < n; i++)
-        mean += x[i];
-    mean /= n;
-
-    for (i = 0; i < n; i++)
-        value += Math.pow(x[i] - mean, 2);
-    value /= (n - 1);
-
-    // 计算自相关函数
-    const acf: number[] = new Array<number>(n)
-    for (i = 0; i < n; i++) {
-        for (j = 0; j < n - i; j++)
-            acf[i] += (x[j + i] - mean) * (x[j] - mean);
-        acf[i] /= (n - 1) * value;
-    }
-
-    return acf;
-}
-
-// int main()
-// {
-//     double x[] = { 1.0, 2.0, 1.0, -1.0, -2.0, -1.0, 1.0, 2.0 };
-//     int n = sizeof(x) / sizeof(x[0]);
-//
-//     double *acf = autocorrelation(x, n);
-//
-//     int i;
-//     for (i = 0; i < n; i++)
-//         printf("%lf ", acf[i]);
-//
-//     free(acf);
-//     return 0;
-// }

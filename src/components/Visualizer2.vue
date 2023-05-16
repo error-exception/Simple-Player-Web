@@ -1,6 +1,6 @@
 <template>
   <div class="fill-size" style="pointer-events: none">
-    <canvas width="1280" height="720" ref="canvas"></canvas>
+    <canvas style="width: 100vw; height: 100vh" ref="canvas"></canvas>
   </div>
 </template>
 
@@ -10,35 +10,29 @@ import {onMounted, onUnmounted, ref} from "vue";
 import {WebGLRenderer} from "../ts/webgl/WebGLRenderer";
 import {Viewport} from "../ts/webgl/Viewport";
 import {useStore} from "vuex";
-import {BeatLogo} from "../ts/webgl/BeatLogo";
 import {useEvent} from "../ts/EventBus";
 import {calcRMS, findMusic, useMouse} from "../ts/Utils";
-import {RoundVisualizer} from "../ts/webgl/RoundVisualizer";
 import {Background} from "../ts/webgl/MovableBackground";
 import {Beater, BeatState} from "../ts/Beater";
 import {getBeater} from "../ts/TimingInfo";
 import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 import {easeOut, easeOutQuint} from "../ts/util/Easing";
-import {Ripple} from "../ts/webgl/Ripple";
 import {Time} from "../ts/Time";
 import {Vector2} from "../ts/webgl/core/Vector2";
-import {Box} from "../ts/webgl/Box";
 import {ImageLoader} from "../ts/ImageResources";
 
-import logoImg from '../assets/Logo2.png'
+import logoImg from '../assets/logo.png'
 import rippleImg from '../assets/ripple.png'
 import {BeatLogoBox} from "../ts/webgl/BeatLogoBox";
+import {BackgroundLoader} from "../ts/BackgroundLoader";
+import {MOUSE_KEY_LEFT, MOUSE_KEY_NONE, MOUSE_KEY_RIGHT, MouseState} from "../ts/MouseState";
 
 const store = useStore()
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 let isOpen = false
 let renderer: WebGLRenderer
-// let beatLogo: BeatLogo
-// let roundVisualizer: RoundVisualizer
 let background: Background
-// let ripple: Ripple
-// let drawableBox: Box
 let beatLogoBox: BeatLogoBox
 
 let beater = new Beater({ bpm: 60, offset: 0 })
@@ -81,10 +75,45 @@ useEvent({
 
 const [ mouseX, mouseY ] = useMouse()
 
+const mouseListener = {
+  mousedown(e: MouseEvent) {
+    const x = (e.x - window.innerWidth / 2) * window.devicePixelRatio
+    const y = (window.innerHeight / 2 - e.y) * window.devicePixelRatio
+    let which: number = MOUSE_KEY_NONE
+    if (e.button === 0)
+      which = MOUSE_KEY_LEFT
+    if (e.button === 2)
+      which = MOUSE_KEY_RIGHT
+    if (which !== MOUSE_KEY_NONE)
+      MouseState.receiveMouseDown(which, x, y)
+  },
+  mouseup(e: MouseEvent) {
+    const x = (e.x - window.innerWidth / 2) * window.devicePixelRatio
+    const y = (window.innerHeight / 2 - e.y) * window.devicePixelRatio
+    let which: number = MOUSE_KEY_NONE
+    if (e.button === 0)
+      which = MOUSE_KEY_LEFT
+    if (e.button === 2)
+      which = MOUSE_KEY_RIGHT
+    if (which !== MOUSE_KEY_NONE)
+      MouseState.receiveMouseUp(which, x, y)
+  },
+  mousemove(e: MouseEvent) {
+    const x = (e.x - window.innerWidth / 2) * window.devicePixelRatio
+    const y = (window.innerHeight / 2 - e.y) * window.devicePixelRatio
+    MouseState.receiveMouseMove(x, y)
+  }
+}
+
 onMounted(async () => {
+  window.addEventListener("mousedown", mouseListener.mousedown)
+  window.addEventListener("mouseup", mouseListener.mouseup)
+  window.addEventListener("mousemove", mouseListener.mousemove)
   const c = canvas.value
   if (!c) return
-  const webgl = c.getContext("webgl2")
+  const webgl = c.getContext("webgl2", {
+    alpha: false
+  })
   if (!webgl) {
     return;
   }
@@ -92,35 +121,25 @@ onMounted(async () => {
 
   await ImageLoader.load(logoImg, "logo")
   await ImageLoader.load(rippleImg, "ripple")
-  await ImageLoader.load("/res/pics/1.png")
-  await ImageLoader.load("/res/pics/2.png")
-  await ImageLoader.load("/res/pics/3.png")
-  await ImageLoader.load("/res/pics/4.png")
-  await ImageLoader.load("/res/pics/5.png")
-  await ImageLoader.load("/res/pics/6.png")
-  await ImageLoader.load("/res/pics/7.png")
-  await ImageLoader.load("/res/pics/8.png")
-  await ImageLoader.load("/res/pics/9.png")
-  await ImageLoader.load("/res/pics/10.png")
-  await ImageLoader.load("/res/pics/11.png")
-  await ImageLoader.load("/res/pics/12.png")
-  await ImageLoader.load("/res/pics/13.png")
-  await ImageLoader.load("/res/pics/14.png")
-  await ImageLoader.load("/res/pics/15.png")
+  await BackgroundLoader.init()
 
   isOpen = true
   const viewport: Viewport = new Viewport({
     x: 0,
     y: 0,
-    height: window.innerHeight,
-    width: window.innerWidth
+    width: c.clientWidth * window.devicePixelRatio,
+    height: c.clientHeight * window.devicePixelRatio
   })
   renderer = new WebGLRenderer(webgl, viewport)
   beatLogoBox = new BeatLogoBox(webgl, {
-    x: '-50w',
-    y: '50h',
-    width: '100w',
-    height: '100h'
+    // x: '-50w',
+    // y: '50h',
+    // width: '100w',
+    // height: '100h',
+    width: 520,
+    height: 520,
+    horizontal: "center",
+    vertical: "center"
   })
 
   background = new Background(webgl, {
@@ -135,8 +154,8 @@ onMounted(async () => {
     renderer.setViewport(new Viewport({
       x: 0,
       y: 0,
-      width: window.innerWidth,
-      height: window.innerHeight
+      width: c.clientWidth * window.devicePixelRatio,
+      height: c.clientHeight * window.devicePixelRatio
     }))
   }
   renderer.addDrawable(background)
@@ -145,6 +164,9 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  window.removeEventListener("mousedown", mouseListener.mousedown)
+  window.removeEventListener("mouseup", mouseListener.mouseup)
+  window.removeEventListener("mousemove", mouseListener.mousemove)
   renderer.dispose()
 })
 let prevTimestamp = -1
@@ -161,6 +183,7 @@ function draw(timestamp: number = 0) {
 
   Time.currentTime = timestamp
   Time.elapsed = elapsed
+  store.commit('setFrameTime', Time.elapsed)
 
   BeatState.isKiai = beater.isKiai(time)
   BeatState.beatIndex = beater.getBeatCount() + 1
@@ -184,7 +207,7 @@ function draw(timestamp: number = 0) {
   const transX = (mouseX.value - window.innerWidth / 2)
   const transY = (window.innerHeight / 2 - mouseY.value)
 
-  beatLogoBox.translate = new Vector2(-transX * 0.01, -transY * 0.01)
+  // beatLogoBox.translate = new Vector2(-transX * 0.01, -transY * 0.01)
 
   background.translate = new Vector2(transX, transY)
   renderer.render()
@@ -192,8 +215,8 @@ function draw(timestamp: number = 0) {
 
 function resizeCanvas() {
   if (canvas.value) {
-    canvas.value.height = window.innerHeight
-    canvas.value.width = window.innerWidth
+    canvas.value.height = canvas.value.clientHeight * window.devicePixelRatio
+    canvas.value.width = canvas.value.clientWidth * window.devicePixelRatio
   }
 }
 </script>

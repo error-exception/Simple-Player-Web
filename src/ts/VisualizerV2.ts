@@ -7,7 +7,7 @@ export class VisualizerV2 {
 
     constructor(private analyse: AnalyserNode) {
         analyse.smoothingTimeConstant = .3
-        analyse.minDecibels = -60
+        analyse.minDecibels = -45
         analyse.maxDecibels = 0
         analyse.fftSize = 1024
 

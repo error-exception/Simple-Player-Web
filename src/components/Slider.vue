@@ -1,8 +1,6 @@
 <template>
   <div
       class="slider-box"
-      @mousemove="move"
-      @mouseleave="leave"
   >
     <div
         class="slider-box-background"
@@ -18,8 +16,8 @@
     <div
         class="slider-box-thumb"
         ref="sliderThumb"
-        @mousedown="down"
-        @mouseup="up"
+        @dragstart="dragStart"
+        @drop="onDrop"
         :style="`
           background-color: ${color};
           transform: translateX(${progress * width}px);
@@ -56,28 +54,37 @@ onMounted(() => {
   }
   width.value = background.offsetWidth
 })
+
+function dragStart(e: DragEvent) {
+  e.preventDefault()
+  console.log("drag start")
+}
+function onDrop() {
+  console.log('drop')
+}
+
 let isMouseDown: boolean = false
-function down() {
-  isMouseDown = true
-}
-
-function move(e: MouseEvent) {
-  if (!sliderBackground.value || !isMouseDown || !sliderThumb.value) {
-    return
-  }
-  console.log(e.movementX)
-  const x = e.clientX - sliderBackground.value.offsetLeft - sliderThumb.value.offsetWidth / 2
-  progress.value = Math.max(Math.min(x / width.value, 1), 0)
-  emit("update:modelValue", progress.value)
-}
-
-function up() {
-  isMouseDown = false
-}
-
-function leave() {
-  isMouseDown = false
-}
+// function down() {
+//   isMouseDown = true
+// }
+//
+// function move(e: MouseEvent) {
+//   if (!sliderBackground.value || !isMouseDown || !sliderThumb.value) {
+//     return
+//   }
+//   console.log(e.movementX)
+//   const x = e.clientX - sliderBackground.value.offsetLeft - sliderThumb.value.offsetWidth / 2
+//   progress.value = Math.max(Math.min(x / width.value, 1), 0)
+//   emit("update:modelValue", progress.value)
+// }
+//
+// function up() {
+//   isMouseDown = false
+// }
+//
+// function leave() {
+//   isMouseDown = false
+// }
 
 </script>
 

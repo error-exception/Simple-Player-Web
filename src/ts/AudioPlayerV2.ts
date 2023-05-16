@@ -2,7 +2,7 @@
 import {Music} from "./type";
 import {TimePlayer} from "./TimePlayer";
 import {ref} from "vue";
-import {int} from "./Utils";
+import {int, url} from "./Utils";
 import {EventDispatcher} from "./EventBus";
 import {VisualizerV2} from "./VisualizerV2";
 
@@ -61,7 +61,7 @@ export class AudioPlayerV2 {
     private async load(musicId: number) {
         this.playerState = AudioPlayerV2.STATE_DOWNLOADING
         this.onState?.(AudioPlayerV2.STATE_DOWNLOADING)
-        const response = await fetch(`/api/music?id=${musicId}`)
+        const response = await fetch(url(`/music?id=${musicId}`))
         const arrayBuffer = await response.arrayBuffer()
         this.playerState = AudioPlayerV2.STATE_DECODING
         this.onState?.(AudioPlayerV2.STATE_DECODING)
