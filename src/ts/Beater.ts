@@ -1,7 +1,8 @@
 import {TimingItem} from "./TimingItem";
 import {isUndef} from "./webgl/core/Utils";
 import {linear, TimeFunction} from "./util/Easing";
-import {ArrayUtils, int} from "./Utils";
+import {int} from "./Utils";
+import {ArrayUtils} from "./util/ArrayUtils";
 
 export interface BeaterParam {
     bpm: number
@@ -135,32 +136,7 @@ export class Beater {
             return before(timestamp / 60)
         }
         if (timestamp <= gap) {
-            // if (!this.beatFlag && this.prevBeat != count) {
-            //     this.beatFlag = true
-            //
-            //     this.prevBeat = count
-            // } else {
-            //     this.beatFlag = false
-            // }
             return after(1 - (timestamp - 60) / (gap - 60))
-        }
-        return 0
-    }
-
-    public simpleBeat(timestamp: number, timeFunction: TimeFunction) {
-        if (timestamp < this.offset) {
-            return 0
-        }
-        timestamp -= this.offset
-        timestamp += 60
-        const gap = this.gap
-        const count = int(timestamp / gap)
-        if (count === 0) {
-            return 0
-        }
-        timestamp -= count * gap
-        if (timestamp <= gap - 60) {
-            return timeFunction(timestamp / gap)
         }
         return 0
     }

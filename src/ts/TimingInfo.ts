@@ -75,6 +75,11 @@ export async function fetchAndInitAllTiming() {
     const data: ResponseResult<TimingInfo[]> = await response.json()
     if (data.code === 0 && data.data) {
         const list = data.data
+        // const map = new Map<number, TimingInfo>()
+        // for (let i = 0; i < list.length; i++) {
+        //     map.set(list[i].id, list[i])
+        // }
+
         for (let i = 0; i < list.length; i++) {
             const timingInfo = list[i]
             const beater = new Beater({

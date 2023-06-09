@@ -1,18 +1,12 @@
 import {Viewport} from "./Viewport";
-import {BaseDrawableConfig} from "./Drawable";
+import {BaseDrawableConfig, Drawable} from "./Drawable";
 import {VertexArray} from "./core/VertexArray";
 import {VertexBuffer} from "./core/VertexBuffer";
 import {Texture} from "./core/Texture";
 import {Shader} from "./core/Shader";
 import {VertexBufferLayout} from "./core/VertexBufferLayout";
-import ripple from '../../assets/ripple.png'
 import {Vector2} from "./core/Vector2";
 import {TransformUtils} from "./core/TransformUtils";
-import {Beater} from "../Beater";
-import {easeOutQuint} from "../util/Easing";
-import {IEvent} from "../type";
-import {EventDispatcher} from "../EventBus";
-import {BeatDrawable} from "./BeatDrawable";
 import {ImageLoader} from "../ImageResources";
 
 interface RippleConfig extends BaseDrawableConfig {}
@@ -40,7 +34,7 @@ const fragmentShader = `
     }
 `
 
-export class Ripple extends BeatDrawable implements IEvent {
+export class Ripple extends Drawable {
 
     private readonly vertexArray: VertexArray
     private readonly buffer: VertexBuffer
@@ -78,25 +72,6 @@ export class Ripple extends BeatDrawable implements IEvent {
         this.layout = layout
         this.shader = shader
 
-        EventDispatcher.register(this)
-
-    }
-
-    public onSongChanged(id: number) {
-
-    }
-
-    public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {
-        // this.scaleBegin()
-        //     .scaleTo(1)
-        //     .scaleTo(1.1, gap, easeOutQuint)
-        // this.fadeBegin()
-        //     .fadeTo(0.3)
-        //     .fadeTo(0, gap, easeOutQuint)
-    }
-
-    protected onUpdate() {
-        super.onUpdate();
     }
 
     public set alpha(v: number) {
@@ -106,31 +81,6 @@ export class Ripple extends BeatDrawable implements IEvent {
     public get alpha(): number {
         return super.alpha;
     }
-
-    protected onTransformApplied() {
-        super.onTransformApplied();
-        this.shader.bind()
-        this.shader.setUniform1f('alpha', this._alpha)
-        this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
-        this.shader.unbind()
-    }
-
-    // public setTransform(scale: number, transX: number, transY: number) {
-    //     const matrix = this.transformMatrix4;
-    //     const viewport = this.viewport
-    //
-    //     matrix[0] = 1 + scale * 0.06
-    //     matrix[5] = 1 + scale * 0.06
-    //     matrix[3] = viewport.convertX(-transX * 0.02)
-    //     matrix[7] = viewport.convertY(-transY * 0.02)
-    //
-    //     const alpha = 0.2 - scale * 0.2
-    //
-    //     this.shader.bind()
-    //     this.shader.setUniformMatrix4fv('u_transform', matrix)
-    //     this.shader.setUniform1f('alpha', alpha)
-    //     this.shader.unbind()
-    // }
 
     public createVertexArray() {
         const { x, y } = this.rawPosition
@@ -179,6 +129,10 @@ export class Ripple extends BeatDrawable implements IEvent {
 
     public onDraw() {
         const gl = this.gl
+
+        this.shader.setUniform1f('alpha', this._alpha)
+        this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
+
         this.vertexArray.addBuffer(this.buffer, this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, 6)
     }
@@ -188,7 +142,6 @@ export class Ripple extends BeatDrawable implements IEvent {
         this.vertexArray.dispose()
         this.shader.dispose()
         this.buffer.dispose()
-        EventDispatcher.unregister(this)
     }
 
 }

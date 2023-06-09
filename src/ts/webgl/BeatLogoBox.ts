@@ -10,6 +10,7 @@ import {Time} from "../Time";
 import {Vector2} from "./core/Vector2";
 import {LogoTriangles} from "./LogoTriangles";
 import {MouseState} from "../MouseState";
+import {Interpolation} from "./Interpolation";
 
 class BeatLogo extends Box implements IBeat {
 
@@ -54,10 +55,15 @@ class BeatLogo extends Box implements IBeat {
             return;
         }
         const volume = BeatState.nextBeatRMS
-        const logoScale = 1 - Math.min(volume + 0.4, 1) * 0.03
+        const adjust = Math.min(volume + 0.4, 1)
         this.scaleBegin()
-            .scaleTo(logoScale, 60, easeOut)
+            .scaleTo(1 - adjust * 0.03, 60, easeOut)
             .scaleTo(1, gap * 2, easeOutQuint)
+
+        this.triangles.velocityBegin()
+            .transitionTo(1 + adjust, 60, easeOut)
+            .transitionTo(0, gap * 2, easeOutQuint)
+
         if (BeatState.isKiai) {
             this.triangles.lightBegin()
                 .transitionTo(0.15, 60, easeOut)
@@ -96,9 +102,9 @@ class LogoBeatBox extends Box {
         if (AudioPlayerV2.instance.isPlaying.value) {
             if (BeatState.beat.isAvailable) {
                 const scale = this.scale
-                const a = this.interpolationDump(
+                const a = Interpolation.dump(
                     scale.x,
-                    1 - Math.max(0, Math.min(BeatState.currentRMS, 1)) * 0.05,
+                    1 - Math.min(BeatState.currentRMS, 1) * 0.065,
                     0.9,
                     Time.elapsed
                 )
@@ -106,15 +112,10 @@ class LogoBeatBox extends Box {
                 scale.y = a
                 this.scale = scale
             } else {
-                const a = 1 - BeatState.currentRMS * 0.06
+                const a = 1 - BeatState.currentRMS * 0.08
                 this.scale = new Vector2(a, a)
             }
         }
-    }
-
-    private interpolationDump(start: number, final: number, base: number, exponent: number) {
-        const amount = 1 - Math.pow(base, exponent)
-        return start + (final - start) * amount
     }
 
 }
@@ -220,21 +221,21 @@ export class BeatLogoBox extends Box {
         this.add(this.logoBounceBox)
     }
 
-    // private flag = true
-    // public onClick(which: number): boolean {
-    //     if (this.flag) {
-    //         this.translateBegin()
-    //             .translateTo(new Vector2(-400, 80), 400, easeInCubic)
-    //         this.scaleBegin()
-    //             .scaleTo(0.5, 400, easeInCubic)
-    //     } else {
-    //         this.translateBegin()
-    //             .translateTo(new Vector2(0, 0), 400, easeOutCubic)
-    //         this.scaleBegin()
-    //             .scaleTo(1, 400, easeOutCubic)
-    //     }
-    //     this.flag = !this.flag
-    //     return true
-    // }
+    private flag = true
+    public onClick(which: number): boolean {
+        if (this.flag) {
+            this.translateBegin()
+                .translateTo(new Vector2(-400, 80), 400, easeInCubic)
+            this.scaleBegin()
+                .scaleTo(0.5, 400, easeInCubic)
+        } else {
+            this.translateBegin()
+                .translateTo(new Vector2(0, 0), 400, easeOutCubic)
+            this.scaleBegin()
+                .scaleTo(1, 400, easeOutCubic)
+        }
+        this.flag = !this.flag
+        return true
+    }
 
 }

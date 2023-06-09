@@ -4,12 +4,16 @@ import {VertexBuffer} from "./core/VertexBuffer";
 import {VertexBufferLayout} from "./core/VertexBufferLayout";
 import {Shader} from "./core/Shader";
 import {Vector2} from "./core/Vector2";
-import {degreeToRadian} from "../Utils";
 import {Matrix3} from "./core/Matrix3";
 import {TransformUtils} from "./core/TransformUtils";
 import {Viewport} from "./Viewport";
 import {ObjectTransition} from "./Transition";
 import {Time} from "../Time";
+import {BeatDrawable} from "./BeatDrawable";
+import {Color} from "./Color";
+import {Interpolation} from "./Interpolation";
+import {BeatState} from "../Beater";
+import {easeOut, easeOutQuint} from "../util/Easing";
 
 const vertexShader = `
     attribute vec2 a_position;
@@ -44,26 +48,6 @@ const fragmentShader = `
     }
 `
 
-const fragmentShader1 = `
-    varying mediump vec4 v_color;
-    uniform mediump vec3 u_circle;
-    uniform mediump float u_light;
-    void main() {
-//        gl_FragColor = v_color;
-//        lowp float dist = distance(u_circle.xy, gl_FragCoord.xy);
-//        if (dist < u_circle.z) {
-//            mediump vec4 color = vec4(0.0);
-//            color.rgb = min(v_color.rgb + u_light, 1.0);
-//            color.a = v_color.a;
-//            gl_FragColor = color;
-            gl_FragColor = v_color;
-//        } else {
-//            gl_FragColor = vec4(0.0, 1.0, 0.0, 0.5);
-//            discard;
-//        }
-    }
-`
-
 export class LogoTriangles extends Drawable {
 
     private readonly vertexArray: VertexArray
@@ -72,10 +56,17 @@ export class LogoTriangles extends Drawable {
     private readonly shader: Shader
     private vertexCount: number = 0
     private vertex: Float32Array
-    private triangles: Triangle[] = []
+    private particles: TriangleParticle[] = []
+    private startColor = Color.fromHex(0xff7db7)
+    private endColor = Color.fromHex(0xde5b95)
+    private MAX_SIZE = 500
+    private MIN_SIZE = 20
 
     public light: number = 0
     private lightTransition = new ObjectTransition(this, 'light')
+
+    public velocityIncrement = 0
+    private velocityTransition = new ObjectTransition(this, 'velocityIncrement')
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
@@ -92,8 +83,8 @@ export class LogoTriangles extends Drawable {
         this.vertexCount = 3 * 42
         this.vertex = new Float32Array(this.vertexCount * 6)
         for (let i = 0; i < this.vertexCount / 3 - 2; i++) {
-            const triangle = new Triangle(this)
-            this.triangles.push(triangle)
+            const triangle = new TriangleParticle(this)
+            this.particles.push(triangle)
         }
 
         vertexArray.unbind()
@@ -111,11 +102,17 @@ export class LogoTriangles extends Drawable {
         return this.lightTransition
     }
 
+    public velocityBegin(atTime: number = Time.currentTime) {
+        this.velocityTransition.setStartTime(atTime)
+        return this.velocityTransition
+    }
+
     private circleInfo = new Float32Array(3)
 
     protected onUpdate() {
         super.onUpdate();
         this.lightTransition.update(Time.currentTime)
+        this.velocityTransition.update(Time.currentTime)
         const width = this.rawSize.x
         const height = this.rawSize.y
         const { x, y } = this.rawPosition
@@ -127,63 +124,94 @@ export class LogoTriangles extends Drawable {
         TransformUtils.applyOrigin(topRight, this.coordinateScale)
         TransformUtils.applyOrigin(bottomLeft, this.coordinateScale)
         TransformUtils.applyOrigin(bottomRight, this.coordinateScale)
-        const [r, g, b, a] = [1.0, 0x7d / 0xff, 0xb7 / 0xff, 1.0]
+        const {red, green, blue, alpha} = this.startColor
         const vertex = this.vertex
 
         vertex[0] = topLeft.x
         vertex[1] = topLeft.y
-        vertex[2] = r
-        vertex[3] = g
-        vertex[4] = b
-        vertex[5] = a
+        vertex[2] = red
+        vertex[3] = green
+        vertex[4] = blue
+        vertex[5] = alpha
 
         vertex[6] = bottomLeft.x
         vertex[7] = bottomLeft.y
-        vertex[8] =  r
-        vertex[9] =  g
-        vertex[10] = b
-        vertex[11] = a
+        vertex[8] =  red
+        vertex[9] =  green
+        vertex[10] = blue
+        vertex[11] = alpha
 
 
         vertex[12] = bottomRight.x
         vertex[13] = bottomLeft.y
-        vertex[14] = r
-        vertex[15] = g
-        vertex[16] = b
-        vertex[17] = a
+        vertex[14] = red
+        vertex[15] = green
+        vertex[16] = blue
+        vertex[17] = alpha
 
         vertex[18] = bottomRight.x
         vertex[19] = bottomRight.y
-        vertex[20] = r
-        vertex[21] = g
-        vertex[22] = b
-        vertex[23] = a
+        vertex[20] = red
+        vertex[21] = green
+        vertex[22] = blue
+        vertex[23] = alpha
 
         vertex[24] = topLeft.x
         vertex[25] = topLeft.y
-        vertex[26] = r
-        vertex[27] = g
-        vertex[28] = b
-        vertex[29] = a
+        vertex[26] = red
+        vertex[27] = green
+        vertex[28] = blue
+        vertex[29] = alpha
 
         vertex[30] = topRight.x
         vertex[31] = topRight.y
-        vertex[32] = r
-        vertex[33] = g
-        vertex[34] = b
-        vertex[35] = a
+        vertex[32] = red
+        vertex[33] = green
+        vertex[34] = blue
+        vertex[35] = alpha
 
-        for (let i = 0; i < this.triangles.length; i++) {
-            const triangle = this.triangles[i]
-            triangle.update()
-            triangle.copyTo(this.coordinateScale, vertex, 36 + 18 * i, 6)
+        this.updateParticles()
+    }
+
+    private updateParticles() {
+        for (let i = 0; i < this.particles.length; i++) {
+            const triangle = this.particles[i]
+            if (triangle.isFinish()) {
+                triangle.size = Interpolation.valueAt(Math.random(), this.MIN_SIZE, this.MAX_SIZE)
+                triangle.position = new Vector2(
+                    Interpolation.valueAt(Math.random(), this.rawPosition.x, this.rawPosition.x + this.rawSize.x),
+                    this.rawPosition.y - this.rawSize.y - triangle.size
+                )
+                triangle.color = colorAt(Math.random(), this.startColor, this.endColor)
+                triangle.updateVertex()
+            } else {
+                triangle.position.y += 0.2 + triangle.size / 400 + this.velocityIncrement * (triangle.size / 400)
+                triangle.updateVertex()
+                triangle.copyTo(this.coordinateScale, this.vertex, 36 + 18 * i, 6)
+            }
         }
+    }
 
-        this.shader.bind()
-        this.shader.setUniform1f('u_light', this.light)
-        this.vertexBuffer.bind()
-        this.vertexBuffer.setBufferData(vertex)
-        this.vertexBuffer.unbind()
+    public setViewport(viewport: Viewport) {
+        super.setViewport(viewport);
+        this.initParticles()
+    }
+
+    private isInitialed = false
+
+    private initParticles() {
+        if (this.isInitialed) return
+        this.isInitialed = true
+        for (let i = 0; i < this.particles.length; i++) {
+            const triangle = this.particles[i]
+            triangle.size = Interpolation.valueAt(Math.random(), this.MIN_SIZE, this.MAX_SIZE)
+            triangle.position = new Vector2(
+                Interpolation.valueAt(Math.random(), this.rawPosition.x, this.rawPosition.x + this.rawSize.x),
+                Interpolation.valueAt(Math.random(), this.rawPosition.y, this.rawPosition.y - this.rawSize.y)
+            )
+            triangle.color = colorAt(Math.random(), this.startColor, this.endColor)
+            triangle.updateVertex()
+        }
     }
 
     protected onTransformApplied() {
@@ -196,14 +224,8 @@ export class LogoTriangles extends Drawable {
         this.circleInfo[0] = circleCenter.x
         this.circleInfo[1] = circleCenter.y
         this.circleInfo[2] = circleMaxRadius
-        this.shader.setUniform3fv('u_circle', this.circleInfo)
-        this.shader.setUniformMatrix4fv("u_transform", this.matrixArray)
-        this.shader.unbind()
     }
 
-    public setViewport(viewport: Viewport) {
-        super.setViewport(viewport);
-    }
 
     public bind(): void {
         this.vertexArray.bind()
@@ -212,8 +234,17 @@ export class LogoTriangles extends Drawable {
 
     public onDraw(): void {
         const gl = this.gl
+
+        this.shader.setUniform1f('u_light', this.light)
+        this.shader.setUniform3fv('u_circle', this.circleInfo)
+        this.shader.setUniformMatrix4fv("u_transform", this.matrixArray)
+        this.vertexBuffer.bind()
+        this.vertexBuffer.setBufferData(this.vertex)
+
         this.vertexArray.addBuffer(this.vertexBuffer, this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
+
+        this.vertexBuffer.unbind()
     }
 
     public unbind(): void {
@@ -230,111 +261,42 @@ export class LogoTriangles extends Drawable {
 
 }
 
-export class Color {
-    public red: number = 0.0
-    public green: number = 0
-    public blue: number = 0
-    public alpha: number = 0
-
-    constructor(colorInt: number, alphaInt: number = 255) {
-        const red = (colorInt >> 16) & 0xff
-        const green = (colorInt >> 8) & 0xff
-        const blue = (colorInt) & 0xff
-        this.red = red / 255
-        this.green = green / 255
-        this.blue = blue / 255
-        this.alpha = alphaInt / 255
-    }
-
-}
-const colors: Color[] = [
-    new Color(0xFF66AA),
-    new Color(0xEE3399),
-    new Color(0xBB1177)
-]
-
-class Triangle {
+class TriangleParticle {
 
     public top: Vector2 = Vector2.newZero()
     public bottomLeft: Vector2 = Vector2.newZero()
     public bottomRight: Vector2 = Vector2.newZero()
-    public velocity: number = 1
-    private center: Vector2 = Vector2.newZero()
-    private size: number = 0
-    private color: Color = colors[1]
-    private startColor = new Color(0xff7db7)
-    private endColor = new Color(0xde5b95)
-    private isInitialed = false
 
-    constructor(private parent: LogoTriangles) {
-    }
+    public position: Vector2 = Vector2.newZero()
+    public size: number = 0
+    public color: Color = Color.fromHex(0xff7db7)
 
-    private randomPosition(): Vector2 {
-        const x = this.parent.rawSize.x * Math.random() - this.parent.rawSize.x / 2
-        const y = this.parent.rawSize.y * Math.random() - this.parent.rawSize.y / 2
-        return new Vector2(x, y)
-    }
+    constructor(private parent: LogoTriangles) {}
 
-    private randomSize(): number {
-        return (10 + Math.random() * 500) //* this.parent.appliedScale.x
-    }
+    private cos30 = Math.sqrt(3) / 2
+    private sin30 = 0.5
 
-    private randomColor() {
-        this.color = colorAt(Math.random(), this.startColor, this.endColor)
-    }
-
-    public update() {
-        if (!this.isInitialed) {
-            const center = this.randomPosition()
-            const size = this.randomSize()
-            const cos30 = Math.cos(degreeToRadian(30))
-            const sin30 = Math.sin(degreeToRadian(30))
-
-            this.top = new Vector2(center.x, center.y + size)
-            this.bottomLeft = new Vector2(center.x - size * cos30, center.y - size * sin30)
-            this.bottomRight = new Vector2(center.x + size * cos30, center.y - size * sin30)
-
-            this.size = size
-            this.center = center
-            this.randomColor()
-            this.isInitialed = true
-
-        }
-        if (this.isOutOfBound()) {
-            this.reset()
-            return
-        }
-        const translateY = this.velocity + this.size / 250
-        const matrix = TransformUtils.translate(0, translateY)
-        TransformUtils.applyOrigin(this.top, matrix)
-        TransformUtils.applyOrigin(this.bottomLeft, matrix)
-        TransformUtils.applyOrigin(this.bottomRight, matrix)
-        TransformUtils.applyOrigin(this.center, matrix)
-    }
-
-    private isOutOfBound(): boolean {
-        const centerY = this.center.y - Math.cos(degreeToRadian(60)) * this.size
+    public isFinish(): boolean {
+        const centerY = this.position.y - 0.5 /* Math.cos(degreeToRadian(60))*/ * this.size
         return centerY > this.parent.rawSize.y / 2
     }
 
-    private reset() {
-        const size = this.randomSize()
-        const parentWidth = this.parent.rawSize.x
-        const parentHeight = this.parent.rawSize.y
+    public updateVertex() {
 
-        const centerX = Math.random() * parentWidth - parentWidth / 2
-        const centerY = -parentHeight / 2 - size
-        const center = new Vector2(centerX, centerY)
-        const cos30 = Math.cos(degreeToRadian(30))
-        const sin30 = Math.sin(degreeToRadian(30))
-
-        this.top = new Vector2(center.x, center.y + size)
-        this.bottomLeft = new Vector2(center.x - size * cos30, center.y - size * sin30)
-        this.bottomRight = new Vector2(center.x + size * cos30, center.y - size * sin30)
-
-        this.size = size
-        this.center = center
-        this.randomColor()
+        const position = this.position
+        const size = this.size
+        Vector2.set(this.top,
+            position.x,
+            position.y + size
+        )
+        Vector2.set(this.bottomLeft,
+            position.x - size * this.cos30,
+            position.y - size * this.sin30
+        )
+        Vector2.set(this.bottomRight,
+            position.x + size * this.cos30,
+            position.y - size * this.sin30
+        )
     }
 
     public copyTo(coordinateScale: Matrix3, out: Float32Array, offset: number, stride: number) {
@@ -369,9 +331,5 @@ function colorAt(randomValue: number, startColor: Color, endColor: Color): Color
     const r = startColor.red + (endColor.red - startColor.red) * randomValue
     const g = startColor.green + (endColor.green - startColor.green) * randomValue
     const b = startColor.blue + (endColor.blue - startColor.blue) * randomValue
-    const color = new Color(0)
-    color.red = r
-    color.green = g
-    color.blue = b
-    return color
+    return new Color(r, g, b, 1)
 }

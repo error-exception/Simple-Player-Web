@@ -98,14 +98,6 @@ export class RoundVisualizer extends Drawable {
         this.updateVertex(this.targetSpectrum, 200)
     }
 
-    protected onTransformApplied() {
-        super.onTransformApplied();
-        this.shader.bind()
-        this.shader.setUniform1f("u_alpha", BeatState.isKiai ? 0.2 + BeatState.currentBeat * 0.1 : 0.2)
-        this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
-        this.shader.unbind()
-    }
-
     private updateVertex(spectrum: number[], length: number = spectrum.length) {
         const centerX = this.rawPosition.x + this.rawSize.x / 2
         const centerY = this.rawPosition.y - this.rawSize.y / 2
@@ -147,10 +139,10 @@ export class RoundVisualizer extends Drawable {
                 point3 = TransformUtils.apply(point3, matrix3)
                 point4 = TransformUtils.apply(point4, matrix3)
 
-                this.addPoint(array, k, point1)
-                this.addPoint(array, k + 2, point2)
-                this.addPoint(array, k + 4, point3)
-                this.addPoint(array, k + 6, point4)
+                this.updateAt(array, k, point1)
+                this.updateAt(array, k + 2, point2)
+                this.updateAt(array, k + 4, point3)
+                this.updateAt(array, k + 6, point4)
 
                 k += 8
 
@@ -164,7 +156,7 @@ export class RoundVisualizer extends Drawable {
         this.buffer.unbind()
     }
 
-    private addPoint(array: Float32Array, offset: number, point: Vector2) {
+    private updateAt(array: Float32Array, offset: number, point: Vector2) {
         array[offset] = this.viewport.convertX(point.x);
         array[offset + 1] = this.viewport.convertY(point.y);
     }
@@ -228,6 +220,10 @@ export class RoundVisualizer extends Drawable {
 
     public onDraw() {
         const gl = this.gl
+
+        this.shader.setUniform1f("u_alpha", BeatState.isKiai ? 0.2 + BeatState.currentBeat * 0.1 : 0.2)
+        this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
+
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
         this.vertexArray.addBuffer(this.buffer, this.layout)
         gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_INT, 0)

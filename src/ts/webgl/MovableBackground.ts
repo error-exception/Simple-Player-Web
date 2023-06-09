@@ -11,7 +11,7 @@ import {BeatState} from "../Beater";
 import {BeatDrawable} from "./BeatDrawable";
 import {Time} from "../Time";
 import {ObjectTransition} from "./Transition";
-import {easeOut, easeOutCubic} from "../util/Easing";
+import {easeOut, easeOutCubic, easeOutQuint} from "../util/Easing";
 import {IEvent} from "../type";
 import {EventDispatcher} from "../EventBus";
 import {Box} from "./Box";
@@ -36,10 +36,11 @@ const vertexShader = `
 const fragmentShader = `
     varying mediump vec2 v_tex_coord;
     uniform sampler2D u_sampler;
-    uniform mediump vec2 u_brightness;
+    //uniform mediump vec2 u_brightness;
     uniform mediump float u_alpha;
     void main() {
         mediump vec4 texelColor = texture2D(u_sampler, v_tex_coord);
+        /*
         mediump float distance = 0.0;
         mediump float target = 0.0;
         
@@ -50,7 +51,7 @@ const fragmentShader = `
         target = max(u_brightness.x * leftDistance, 0.0);
         target = max(u_brightness.y * rightDistance, target);
 
-        texelColor.rgb = min(texelColor.rgb + target, 1.0);
+        texelColor.rgb = min(texelColor.rgb + target, 1.0);*/
         texelColor.a = texelColor.a * u_alpha;
         gl_FragColor = texelColor;
     }
@@ -71,15 +72,15 @@ export class MovableBackground extends BeatDrawable {
     private readonly buffer: VertexBuffer
     private readonly layout: VertexBufferLayout
     private readonly texture: Texture
-
-    public leftLight: number = 0
-    public rightLight: number = 0
+    //
+    // public leftLight: number = 0
+    // public rightLight: number = 0
     public imageDrawInfo: ImageDrawInfo = {
         drawHeight: 0, drawWidth: 0, needToChange: false, offsetLeft: 0, offsetTop: 0
     }
 
-    private leftTransition: ObjectTransition = new ObjectTransition(this, 'leftLight')
-    private rightTransition: ObjectTransition = new ObjectTransition(this, 'rightLight')
+    // private leftTransition: ObjectTransition = new ObjectTransition(this, 'leftLight')
+    // private rightTransition: ObjectTransition = new ObjectTransition(this, 'rightLight')
 
     constructor(
         gl: WebGL2RenderingContext,
@@ -113,48 +114,48 @@ export class MovableBackground extends BeatDrawable {
         this.shader = shader
     }
 
-    private leftLightBegin(atTime: number = Time.currentTime) {
-        this.leftTransition.setStartTime(atTime)
-        return this.leftTransition
-    }
-
-    private rightLightBegin(atTime: number = Time.currentTime) {
-        this.rightTransition.setStartTime(atTime)
-        return this.rightTransition
-    }
+    // private leftLightBegin(atTime: number = Time.currentTime) {
+    //     this.leftTransition.setStartTime(atTime)
+    //     return this.leftTransition
+    // }
+    //
+    // private rightLightBegin(atTime: number = Time.currentTime) {
+    //     this.rightTransition.setStartTime(atTime)
+    //     return this.rightTransition
+    // }
 
     public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {
-        if (!this.isAvailable)
-            return
-        if (!BeatState.beat.isAvailable) {
-            return;
-        }
-        const adjust = Math.min(BeatState.nextBeatRMS + 0.4, 1)
-        let left = 0, right = 0
-        if (BeatState.isKiai) {
-            if ((BeatState.beatIndex & 1) === 0) {
-                left = 0.5 * adjust
-                this.leftLightBegin()
-                    .transitionTo(left, 60, easeOut)
-                    .transitionTo(0, gap * 2, easeOutCubic)
-            } else {
-                right = 0.5 * adjust
-                this.rightLightBegin()
-                    .transitionTo(right, 60, easeOut)
-                    .transitionTo(0, gap * 2, easeOutCubic)
-            }
-        } else {
-            if ((BeatState.beatIndex & 0b11) === 0 && BeatState.beatIndex != 0) {
-                left = 0.3 * adjust
-                right = 0.3 * adjust
-                this.leftLightBegin()
-                    .transitionTo(left, 60, easeOut)
-                    .transitionTo(0, gap * 2, easeOutCubic)
-                this.rightLightBegin()
-                    .transitionTo(right, 60, easeOut)
-                    .transitionTo(0, gap * 2, easeOutCubic)
-            }
-        }
+        // if (!this.isAvailable)
+        //     return
+        // if (!BeatState.beat.isAvailable) {
+        //     return;
+        // }
+        // const adjust = Math.min(BeatState.nextBeatRMS + 0.4, 1)
+        // let left = 0, right = 0
+        // if (BeatState.isKiai) {
+        //     if ((BeatState.beatIndex & 1) === 0) {
+        //         left = 0.5 * adjust
+        //         this.leftLightBegin()
+        //             .transitionTo(left, 60, easeOut)
+        //             .transitionTo(0, gap * 2, easeOutQuint)
+        //     } else {
+        //         right = 0.5 * adjust
+        //         this.rightLightBegin()
+        //             .transitionTo(right, 60, easeOut)
+        //             .transitionTo(0, gap * 2, easeOutQuint)
+        //     }
+        // } else {
+        //     if ((BeatState.beatIndex & 0b11) === 0 && BeatState.beatIndex != 0) {
+        //         left = 0.3 * adjust
+        //         right = 0.3 * adjust
+        //         this.leftLightBegin()
+        //             .transitionTo(left, 60, easeOut)
+        //             .transitionTo(0, gap * 2, easeOutQuint)
+        //         this.rightLightBegin()
+        //             .transitionTo(right, 60, easeOut)
+        //             .transitionTo(0, gap * 2, easeOutQuint)
+        //     }
+        // }
     }
 
     protected onUpdate() {
@@ -163,10 +164,10 @@ export class MovableBackground extends BeatDrawable {
             this.onFinish?.()
             this.onFinish = null
         }
-        this.leftTransition.update(Time.currentTime)
-        this.rightTransition.update(Time.currentTime)
-        this.brightnessValues[0] = this.leftLight
-        this.brightnessValues[1] = this.rightLight
+        // this.leftTransition.update(Time.currentTime)
+        // this.rightTransition.update(Time.currentTime)
+        // this.brightnessValues[0] = this.leftLight
+        // this.brightnessValues[1] = this.rightLight
 
         const min = Math.min
         const viewport = this.viewport;
@@ -213,7 +214,7 @@ export class MovableBackground extends BeatDrawable {
 
         const shader = this.shader
         shader.bind()
-        shader.setUniform2fv('u_brightness', this.brightnessValues)
+        //shader.setUniform2fv('u_brightness', this.brightnessValues)
         shader.setUniform1f('u_alpha', this._alpha)
     }
 
@@ -223,7 +224,7 @@ export class MovableBackground extends BeatDrawable {
         this.shader.unbind()
     }
 
-    private brightnessValues = new Float32Array([0.0, 0.0])
+    // private brightnessValues = new Float32Array([0.0, 0.0])
 
     // private createVertexArray() {
     //     const { x, y } = this.rawPosition

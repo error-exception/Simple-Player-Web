@@ -77,13 +77,6 @@ export class Logo extends Drawable {
 
     }
 
-    protected onTransformApplied() {
-        super.onTransformApplied();
-        this.shader.bind()
-        this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
-        this.shader.unbind()
-    }
-
     public createVertexArray() {
         const width = this.rawSize.x
         const height= this.rawSize.y
@@ -133,6 +126,7 @@ export class Logo extends Drawable {
 
     public onDraw() {
         const gl = this.gl
+        this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
         this.vertexArray.addBuffer(this.buffer, this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, 6)
     }

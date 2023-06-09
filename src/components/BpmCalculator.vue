@@ -139,7 +139,6 @@ import {Icon} from "../ts/icon/Icon";
 import {EventDispatcher} from "../ts/EventBus";
 import {useStore} from "vuex";
 import {
-  ArrayUtils,
   calcRMS,
   currentMilliseconds,
   int,
@@ -151,8 +150,8 @@ import {addTimingInfoToCache, getBeater, TimingInfo, uploadTimingInfo} from "../
 import {AudioPlayerV2} from "../ts/AudioPlayerV2";
 import {TestBeater} from "../ts/TestBeater";
 import {simpleAnimate} from "../ts/util/Animation";
-import beatSound from '../assets/soft-hitwhistle.wav'
 import {Toaster} from "../ts/Toaster";
+import {ArrayUtils} from "../ts/util/ArrayUtils";
 
 const emit = defineEmits<{
   (e: 'close'): void

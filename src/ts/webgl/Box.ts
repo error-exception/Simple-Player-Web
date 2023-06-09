@@ -1,9 +1,9 @@
 import {Drawable} from "./Drawable";
 import {Viewport} from "./Viewport";
-import {ArrayUtils} from "../Utils";
 import {Queue} from "../util/Queue";
 import {Vector2} from "./core/Vector2";
 import {MouseState} from "../MouseState";
+import {ArrayUtils} from "../util/ArrayUtils";
 
 export class Box extends Drawable {
 

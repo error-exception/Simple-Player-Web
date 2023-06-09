@@ -1,6 +1,6 @@
 import {IEvent} from "./type";
 import {onMounted, onUnmounted} from "vue";
-import {ArrayUtils} from "./Utils";
+import {ArrayUtils} from "./util/ArrayUtils";
 
 const eventList: IEvent[] = []
 

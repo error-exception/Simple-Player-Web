@@ -15,9 +15,11 @@ export interface BaseDrawableConfig extends Alignment, Bound {}
 export abstract class Drawable implements Bindable, Disposable, IMouseEvent {
 
     protected viewport: Viewport = defaultViewport
+
     public position: Vector2 = Vector2.newZero()
     public size: Vector2 = Vector2.newZero()
     public rawPosition: Vector2 = Vector2.newZero()
+
     public rawSize: Vector2 = Vector2.newZero()
 
     protected _scale: Vector2 = new Vector2(1, 1)
@@ -54,6 +56,7 @@ export abstract class Drawable implements Bindable, Disposable, IMouseEvent {
     ) {
         this.isAvailable = true
     }
+
 
     public setParent(parent: Box) {
         this.parent = parent

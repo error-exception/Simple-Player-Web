@@ -26,6 +26,7 @@ import rippleImg from '../assets/ripple.png'
 import {BeatLogoBox} from "../ts/webgl/BeatLogoBox";
 import {BackgroundLoader} from "../ts/BackgroundLoader";
 import {MOUSE_KEY_LEFT, MOUSE_KEY_NONE, MOUSE_KEY_RIGHT, MouseState} from "../ts/MouseState";
+import {Flashlight} from "../ts/webgl/Flashlight";
 
 const store = useStore()
 
@@ -34,6 +35,7 @@ let isOpen = false
 let renderer: WebGLRenderer
 let background: Background
 let beatLogoBox: BeatLogoBox
+let flashlight: Flashlight
 
 let beater = new Beater({ bpm: 60, offset: 0 })
 
@@ -148,6 +150,12 @@ onMounted(async () => {
     width: '100w',
     height: '100h'
   })
+  flashlight = new Flashlight(webgl, {
+    x: '-50w',
+    y: '50h',
+    width: '100w',
+    height: '100h'
+  })
 
   window.onresize = () => {
     resizeCanvas()
@@ -159,6 +167,7 @@ onMounted(async () => {
     }))
   }
   renderer.addDrawable(background)
+  renderer.addDrawable(flashlight)
   renderer.addDrawable(beatLogoBox)
   draw()
 })
