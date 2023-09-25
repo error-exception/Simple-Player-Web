@@ -36,6 +36,13 @@ export class Box extends Drawable {
         }
     }
 
+    public removeAllChildren() {
+        for (let i = 0; i < this.childrenList.length; i++) {
+            this.childrenList[i].dispose()
+        }
+        this.childrenList.length = 0
+    }
+
     public get firstChild() {
         return this.childrenList[0]
     }
@@ -59,8 +66,32 @@ export class Box extends Drawable {
         this.posts.push(call)
     }
 
+    public load(): void {
+        super.onLoad()
+        for (let i = 0; i < this.childrenList.length; i++) {
+            this.childrenList[i].load()
+        }
+    }
+
+    public onWindowResize(): void {
+        super.onWindowResize()
+        for (let i = 0; i < this.childrenList.length; i++) {
+            this.childrenList[i].onWindowResize()
+        }
+    }
+
+    public setParent(parent: Box): void {
+        super.setParent(parent)
+        for (let i = 0; i < this.childrenList.length; i++) {
+            this.childrenList[i].setParent(this)
+        }
+    }
+
     public update() {
         super.update()
+        if (!this.isVisible) {
+            return
+        }
         if (!this.posts.isEmpty()) {
             console.log("handle post")
             this.posts.foreach((e) => {
@@ -87,6 +118,9 @@ export class Box extends Drawable {
     }
 
     public draw(): void {
+        if (!this.isVisible) {
+            return
+        }
         for (let i = 0; i < this.childrenList.length; i++) {
             this.childrenList[i].draw()
         }

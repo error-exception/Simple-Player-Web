@@ -40,7 +40,7 @@ export class MouseState {
         MouseState.upPosition.x = x
         MouseState.upPosition.y = y
         MouseState.fireOnMouseUp(which)
-        if (Vector2.equals(MouseState.downPosition, MouseState.upPosition)) {
+        if (MouseState.downPosition.equals(MouseState.upPosition)) {
             MouseState.fireOnClick(which)
         }
     }
@@ -96,11 +96,11 @@ export class MouseState {
         return (MouseState.state & 0b11) !== 0
     }
 
-    public isLeftKey(which: number) {
+    public static isLeftKey(which: number) {
         return (which & MOUSE_KEY_LEFT) != 0
     }
 
-    public isRightKey(which: number) {
+    public static isRightKey(which: number) {
         return (which & MOUSE_KEY_RIGHT) != 0
     }
 }

@@ -1,5 +1,6 @@
 export class VisualizerV2 {
 
+    // @ts-ignore
     private source: AudioBufferSourceNode | null = null
     private readonly fftBuffer: Uint8Array = new Uint8Array(0)
     private readonly emptyBuffer: Uint8Array = new Uint8Array(0)

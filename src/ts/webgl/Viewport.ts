@@ -11,6 +11,7 @@ export type WidthUnit = string /* 0w, 50w, 100w */
 export type HeightUnit = string /* 0h, 50h, 100h */
 /**
  * 屏幕中心为坐标原点
+ * @deprecated
  */
 export class Viewport {
 

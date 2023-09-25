@@ -1,19 +1,18 @@
-import {BaseDrawableConfig, Drawable} from "./Drawable";
-import {VertexArray} from "./core/VertexArray";
-import {VertexBuffer} from "./core/VertexBuffer";
-import {VertexBufferLayout} from "./core/VertexBufferLayout";
-import {Shader} from "./core/Shader";
-import {Vector2} from "./core/Vector2";
-import {Matrix3} from "./core/Matrix3";
-import {TransformUtils} from "./core/TransformUtils";
-import {Viewport} from "./Viewport";
-import {ObjectTransition} from "./Transition";
-import {Time} from "../Time";
-import {BeatDrawable} from "./BeatDrawable";
-import {Color} from "./Color";
-import {Interpolation} from "./Interpolation";
-import {BeatState} from "../Beater";
-import {easeOut, easeOutQuint} from "../util/Easing";
+import { Time } from "../Time";
+import { Color } from "./Color";
+import Coordinate from "./Coordinate";
+import { BaseDrawableConfig, Drawable } from "./Drawable";
+import { Interpolation } from "./Interpolation";
+import { Shape2D } from "./Shape2D";
+import { ObjectTransition } from "./Transition";
+import { Viewport } from "./Viewport";
+import { Matrix3 } from "./core/Matrix3";
+import { Shader } from "./core/Shader";
+import { TransformUtils } from "./core/TransformUtils";
+import { Vector2 } from "./core/Vector2";
+import { VertexArray } from "./core/VertexArray";
+import { VertexBuffer } from "./core/VertexBuffer";
+import { VertexBufferLayout } from "./core/VertexBufferLayout";
 
 const vertexShader = `
     attribute vec2 a_position;
@@ -21,9 +20,11 @@ const vertexShader = `
     
     varying mediump vec4 v_color;
     
+    uniform mat4 u_orth;
     uniform mat4 u_transform;
     void main() {
-        gl_Position = vec4(a_position, 0.0, 1.0) * u_transform;
+        vec4 position = vec4(a_position, 0.0, 1.0) * u_transform;
+        gl_Position = position * u_orth;
         v_color = a_color;
     }
 `
@@ -113,62 +114,80 @@ export class LogoTriangles extends Drawable {
         super.onUpdate();
         this.lightTransition.update(Time.currentTime)
         this.velocityTransition.update(Time.currentTime)
-        const width = this.rawSize.x
-        const height = this.rawSize.y
-        const { x, y } = this.rawPosition
+        const width = this.width;
+        const height = this.height;
+        // const x = Coordinate.worldX(this.boundary.getAbsoluteLeft());
+        // const y = Coordinate.worldY(this.boundary.getAbsoluteTop());
+        
+        // const width = this.rawSize.x
+        // const height = this.rawSize.y
+        const { x, y } = this.position
         const topLeft = new Vector2(x, y)
-        const topRight = new Vector2(x + width, y)
-        const bottomLeft = new Vector2(x, y - height)
+        // const topRight = new Vector2(x + width, y)
+        // const bottomLeft = new Vector2(x, y - height)
         const bottomRight = new Vector2(x + width, y - height)
-        TransformUtils.applyOrigin(topLeft, this.coordinateScale)
-        TransformUtils.applyOrigin(topRight, this.coordinateScale)
-        TransformUtils.applyOrigin(bottomLeft, this.coordinateScale)
-        TransformUtils.applyOrigin(bottomRight, this.coordinateScale)
-        const {red, green, blue, alpha} = this.startColor
+        // TransformUtils.applyOrigin(topLeft, this.coordinateScale)
+        // TransformUtils.applyOrigin(topRight, this.coordinateScale)
+        // TransformUtils.applyOrigin(bottomLeft, this.coordinateScale)
+        // TransformUtils.applyOrigin(bottomRight, this.coordinateScale)
+        // const {red, green, blue, alpha} = this.startColor
         const vertex = this.vertex
+        Shape2D.quadVector2(topLeft, bottomRight, vertex, 0, 6)
+        Shape2D.oneColor(this.startColor, vertex, 2, 6)
+        // Shape2D.quad(
+        //     topLeft.x, topLeft.y,
+        //     bottomRight.x, bottomRight.y,
+        //     vertex, 0, 6
+        // )
+        // Shape2D.color(
+        //     red, green, blue, alpha,            
+        //     red, green, blue, alpha,            
+        //     red, green, blue, alpha,            
+        //     red, green, blue, alpha,
+        //     vertex, 2, 6            
+        // )
+        // vertex[0] = topLeft.x
+        // vertex[1] = topLeft.y
+        // vertex[2] = red
+        // vertex[3] = green
+        // vertex[4] = blue
+        // vertex[5] = alpha
 
-        vertex[0] = topLeft.x
-        vertex[1] = topLeft.y
-        vertex[2] = red
-        vertex[3] = green
-        vertex[4] = blue
-        vertex[5] = alpha
-
-        vertex[6] = bottomLeft.x
-        vertex[7] = bottomLeft.y
-        vertex[8] =  red
-        vertex[9] =  green
-        vertex[10] = blue
-        vertex[11] = alpha
+        // vertex[6] = bottomLeft.x
+        // vertex[7] = bottomLeft.y
+        // vertex[8] =  red
+        // vertex[9] =  green
+        // vertex[10] = blue
+        // vertex[11] = alpha
 
 
-        vertex[12] = bottomRight.x
-        vertex[13] = bottomLeft.y
-        vertex[14] = red
-        vertex[15] = green
-        vertex[16] = blue
-        vertex[17] = alpha
+        // vertex[12] = bottomRight.x
+        // vertex[13] = bottomLeft.y
+        // vertex[14] = red
+        // vertex[15] = green
+        // vertex[16] = blue
+        // vertex[17] = alpha
 
-        vertex[18] = bottomRight.x
-        vertex[19] = bottomRight.y
-        vertex[20] = red
-        vertex[21] = green
-        vertex[22] = blue
-        vertex[23] = alpha
+        // vertex[18] = bottomRight.x
+        // vertex[19] = bottomRight.y
+        // vertex[20] = red
+        // vertex[21] = green
+        // vertex[22] = blue
+        // vertex[23] = alpha
 
-        vertex[24] = topLeft.x
-        vertex[25] = topLeft.y
-        vertex[26] = red
-        vertex[27] = green
-        vertex[28] = blue
-        vertex[29] = alpha
+        // vertex[24] = topLeft.x
+        // vertex[25] = topLeft.y
+        // vertex[26] = red
+        // vertex[27] = green
+        // vertex[28] = blue
+        // vertex[29] = alpha
 
-        vertex[30] = topRight.x
-        vertex[31] = topRight.y
-        vertex[32] = red
-        vertex[33] = green
-        vertex[34] = blue
-        vertex[35] = alpha
+        // vertex[30] = topRight.x
+        // vertex[31] = topRight.y
+        // vertex[32] = red
+        // vertex[33] = green
+        // vertex[34] = blue
+        // vertex[35] = alpha
 
         this.updateParticles()
     }
@@ -178,22 +197,26 @@ export class LogoTriangles extends Drawable {
             const triangle = this.particles[i]
             if (triangle.isFinish()) {
                 triangle.size = Interpolation.valueAt(Math.random(), this.MIN_SIZE, this.MAX_SIZE)
+                // const x = Coordinate.worldX(this.getLeft())
+                // const y = Coordinate.worldY(this.getTop())
+                const { x, y } = this.position
                 triangle.position = new Vector2(
-                    Interpolation.valueAt(Math.random(), this.rawPosition.x, this.rawPosition.x + this.rawSize.x),
-                    this.rawPosition.y - this.rawSize.y - triangle.size
+                    Interpolation.valueAt(Math.random(), x, x + this.width),
+                    y - this.height - triangle.size
                 )
                 triangle.color = colorAt(Math.random(), this.startColor, this.endColor)
                 triangle.updateVertex()
             } else {
-                triangle.position.y += 0.2 + triangle.size / 400 + this.velocityIncrement * (triangle.size / 400)
+                const size = triangle.size
+                triangle.position.y += 0.2 + size / 400 + this.velocityIncrement * (size / 400)
                 triangle.updateVertex()
-                triangle.copyTo(this.coordinateScale, this.vertex, 36 + 18 * i, 6)
+                triangle.copyTo(this.vertex, 36 + 18 * i, 6)
             }
         }
     }
 
-    public setViewport(viewport: Viewport) {
-        super.setViewport(viewport);
+    public onLoad(): void {
+        super.onLoad()
         this.initParticles()
     }
 
@@ -204,10 +227,11 @@ export class LogoTriangles extends Drawable {
         this.isInitialed = true
         for (let i = 0; i < this.particles.length; i++) {
             const triangle = this.particles[i]
-            triangle.size = Interpolation.valueAt(Math.random(), this.MIN_SIZE, this.MAX_SIZE)
+            triangle.size = Interpolation.valueAt(Math.random(), this.MIN_SIZE, this.MAX_SIZE);
+            const { x, y } = this.position
             triangle.position = new Vector2(
-                Interpolation.valueAt(Math.random(), this.rawPosition.x, this.rawPosition.x + this.rawSize.x),
-                Interpolation.valueAt(Math.random(), this.rawPosition.y, this.rawPosition.y - this.rawSize.y)
+                Interpolation.valueAt(Math.random(), x, x + this.width),
+                Interpolation.valueAt(Math.random(), y, y - this.height)
             )
             triangle.color = colorAt(Math.random(), this.startColor, this.endColor)
             triangle.updateVertex()
@@ -216,10 +240,16 @@ export class LogoTriangles extends Drawable {
 
     protected onTransformApplied() {
         super.onTransformApplied();
-        const circleMaxRadius = Math.min(this.size.x, this.size.y) / 2
+        const transform = this.appliedTransform
+        const scaledWidth = this.width * window.devicePixelRatio * transform.scale.x
+        const scaledHeight = this.height * window.devicePixelRatio * transform.scale.y
+        const circleMaxRadius = Math.min(scaledWidth, scaledHeight) / 2
         const circleCenter = new Vector2(
-            this.viewport.width / 2 + this.appliedTranslate.x,
-            this.viewport.height / 2 + this.appliedTranslate.y
+            (Coordinate.width / 2 + transform.translate.x) * window.devicePixelRatio,
+            (Coordinate.height / 2 + transform.translate.y) * window.devicePixelRatio
+            // transform.translate.x,
+            // transform.translate.y
+            // 0, 0
         )
         this.circleInfo[0] = circleCenter.x
         this.circleInfo[1] = circleCenter.y
@@ -229,6 +259,7 @@ export class LogoTriangles extends Drawable {
 
     public bind(): void {
         this.vertexArray.bind()
+        this.vertexBuffer.bind()
         this.shader.bind()
     }
 
@@ -238,17 +269,17 @@ export class LogoTriangles extends Drawable {
         this.shader.setUniform1f('u_light', this.light)
         this.shader.setUniform3fv('u_circle', this.circleInfo)
         this.shader.setUniformMatrix4fv("u_transform", this.matrixArray)
-        this.vertexBuffer.bind()
+        this.shader.setUniformMatrix4fv("u_orth", Coordinate.orthographicProjectionMatrix4)
         this.vertexBuffer.setBufferData(this.vertex)
 
         this.vertexArray.addBuffer(this.vertexBuffer, this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
 
-        this.vertexBuffer.unbind()
     }
 
     public unbind(): void {
         this.vertexArray.unbind()
+        this.vertexBuffer.unbind()
         this.shader.unbind()
     }
 
@@ -278,51 +309,33 @@ class TriangleParticle {
 
     public isFinish(): boolean {
         const centerY = this.position.y - 0.5 /* Math.cos(degreeToRadian(60))*/ * this.size
-        return centerY > this.parent.rawSize.y / 2
+        return centerY > this.parent.width / 2
     }
 
     public updateVertex() {
 
         const position = this.position
         const size = this.size
-        Vector2.set(this.top,
+        this.top.set(
             position.x,
             position.y + size
         )
-        Vector2.set(this.bottomLeft,
+        this.bottomLeft.set(
             position.x - size * this.cos30,
             position.y - size * this.sin30
         )
-        Vector2.set(this.bottomRight,
+        this.bottomRight.set(
             position.x + size * this.cos30,
             position.y - size * this.sin30
         )
     }
 
-    public copyTo(coordinateScale: Matrix3, out: Float32Array, offset: number, stride: number) {
-        const top = TransformUtils.apply(this.top, coordinateScale)
-        const bottomLeft = TransformUtils.apply(this.bottomLeft, coordinateScale)
-        const bottomRight = TransformUtils.apply(this.bottomRight, coordinateScale)
-        out[offset] = top.x
-        out[offset + 1] = top.y
-        out[offset + 2] = this.color.red
-        out[offset + 3] = this.color.green
-        out[offset + 4] = this.color.blue
-        out[offset + 5] = this.color.alpha
-
-        out[offset + stride] = bottomLeft.x
-        out[offset + stride + 1] = bottomLeft.y
-        out[offset + stride + 2] = this.color.red
-        out[offset + stride + 3] = this.color.green
-        out[offset + stride + 4] = this.color.blue
-        out[offset + stride + 5] = this.color.alpha
-
-        out[offset + stride * 2] = bottomRight.x
-        out[offset + stride * 2 + 1] = bottomRight.y
-        out[offset + stride * 2 + 2] = this.color.red
-        out[offset + stride * 2 + 3] = this.color.green
-        out[offset + stride * 2 + 4] = this.color.blue
-        out[offset + stride * 2 + 5] = this.color.alpha
+    public copyTo(out: Float32Array, offset: number, stride: number) {
+        const top = this.top
+        const bottomLeft = this.bottomLeft
+        const bottomRight = this.bottomRight
+        Shape2D.triangle(top, bottomLeft, bottomRight, out, offset, stride)
+        Shape2D.oneColor(this.color, out, offset + 2, stride)
     }
 
 }

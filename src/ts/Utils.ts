@@ -1,5 +1,4 @@
 import {onMounted, onUnmounted, ref, Ref} from "vue";
-import {Music} from "./type";
 import {ArrayUtils} from "./util/ArrayUtils";
 
 export async function fetchJson(url: string) {
@@ -42,14 +41,15 @@ export function currentMilliseconds() {
     return Date.now()
 }
 
-export function findMusic(store: any, id: number): Music | undefined {
-    const musicList = store.state.musicList;
-    for (let i = 0; i < musicList.length; i++) {
-        if (musicList[i].id === id)
-            return musicList[i]
-    }
-    return undefined
-}
+// export function findMusic(store: any, id: number): Music | undefined {
+//     // const musicList = store.state.musicList;
+//     // for (let i = 0; i < musicList.length; i++) {
+//     //     if (musicList[i].id === id)
+//     //         return musicList[i]
+//     // }
+//     // return undefined
+//     return PlayManager.getMusicList().value.find(music => music.id === id)
+// }
 
 export function useKeyboard(type: 'up' | 'down', c: (e: KeyboardEvent) => void) {
 
@@ -89,30 +89,46 @@ export function calcRMS(sampleRate: number, left: Float32Array, right: Float32Ar
     if (left.length - index < wind) {
         for (let i = left.length - 1; i > left.length - 1 - wind; i--) {
             // const max = Math.max(left[i], right[i])
-            sum += (left[i] ** 2 + right[i] ** 2) / 2
+            sum += (left[i] ** 2 + right[i] ** 2)// / 2
         }
     } else {
         for (let i = index; i < index + wind; i++) {
             // const max = Math.max(left[i], right[i])
-            sum += (left[i] ** 2 + right[i] ** 2) / 2
+            sum += (left[i] ** 2 + right[i] ** 2)// / 2
         }
     }
     return Math.sqrt(sum / wind)
 }
 
-
-
-const isProduct = false
-
 export function url(urlString: string) {
-    if (isProduct) {
-        return urlString
+    if (__DEV__) {
+        return '/api' + urlString
     }
-    return '/api' + urlString
+    return urlString
 }
 
 export function clamp(value: number, min: number, max: number) {
     if (value < min) return min
     if (value > max) return max
     return value
+}
+
+export function scope<T>(target: T, scope: (this: T) => void) {
+    scope.call(target)
+}
+
+export function isString(v: any): v is string {
+    return typeof v === 'string'
+}
+
+export function init<T>(target: T, scope: (this: T) => void): T {
+    scope.call(target)
+    return target
+}
+
+export function getClassName<T>(a: T): string {
+    if ('constructor' in a) {
+        return a.constructor.name
+    }
+    return 'unknown'
 }

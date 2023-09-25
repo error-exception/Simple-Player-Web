@@ -7,7 +7,7 @@ import {VertexBufferLayout} from "./core/VertexBufferLayout";
 import {ObjectTransition} from "./Transition";
 import {Time} from "../Time";
 import {BeatState} from "../Beater";
-import {easeOut, easeOutQuint} from "../util/Easing";
+import {easeIn, easeInCirc, easeInCubic, easeInOutQuart, easeInQuad, easeInQuart, easeInQuint} from "../util/Easing";
 import {Color} from "./Color";
 
 const vertexShader = `
@@ -55,6 +55,7 @@ export class Flashlight extends BeatDrawable {
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
+
         const vertexArray = new VertexArray(gl)
         vertexArray.bind()
         const vertexBuffer = new VertexBuffer(gl, this.createVertex())
@@ -132,32 +133,34 @@ export class Flashlight extends BeatDrawable {
     public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number): void {
         if (!this.isAvailable)
             return
-        if (!BeatState.beat.isAvailable)
+        if (!BeatState.isAvailable)
             return;
         const adjust = Math.min(BeatState.nextBeatRMS + 0.4, 1)
         let left = 0, right = 0
+        const lightTimeFunc = easeInQuad
+        const beatLength = gap
         if (BeatState.isKiai) {
             if ((BeatState.beatIndex & 1) === 0) {
-                left = 0.5 * adjust
+                left = 0.6 * adjust
                 this.leftLightBegin()
-                    .transitionTo(left, 60, easeOut)
-                    .transitionTo(0, gap * 2, easeOutQuint)
+                    .transitionTo(left, 60)
+                    .transitionTo(0, beatLength, lightTimeFunc)
             } else {
-                right = 0.5 * adjust
+                right = 0.6 * adjust
                 this.rightLightBegin()
-                    .transitionTo(right, 60, easeOut)
-                    .transitionTo(0, gap * 2, easeOutQuint)
+                    .transitionTo(right, 60)
+                    .transitionTo(0, beatLength, lightTimeFunc)
             }
         } else {
             if ((BeatState.beatIndex & 0b11) === 0 && BeatState.beatIndex != 0) {
-                left = 0.3 * adjust
-                right = 0.3 * adjust
+                left = 0.4 * adjust
+                right = 0.4 * adjust
                 this.leftLightBegin()
-                    .transitionTo(left, 60, easeOut)
-                    .transitionTo(0, gap * 2, easeOutQuint)
+                    .transitionTo(left, 60)
+                    .transitionTo(0, beatLength, lightTimeFunc)
                 this.rightLightBegin()
-                    .transitionTo(right, 60, easeOut)
-                    .transitionTo(0, gap * 2, easeOutQuint)
+                    .transitionTo(right, 60)
+                    .transitionTo(0, beatLength, lightTimeFunc)
             }
         }
     }

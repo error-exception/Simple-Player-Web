@@ -19,4 +19,8 @@ export class Color {
         return new Color(red / 255, green / 255, blue / 255, alphaInt / 255)
     }
 
+    public copy() {
+        return new Color(this.red, this.green, this.blue, this.alpha)
+    }
+
 }

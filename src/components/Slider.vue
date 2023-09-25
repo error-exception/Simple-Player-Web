@@ -37,7 +37,7 @@ withDefaults(defineProps<{
   color: '#33cb98'
 })
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'update:modelValue', value: number): void
 }>()
 

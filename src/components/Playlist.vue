@@ -6,34 +6,32 @@
       <Row
           v-for="(item, index) in list"
           :gap="8"
-          @click="playAt(index, item)"
+          @click="playAt(index)"
           :class="`list-item ${activeIndex === index ? 'select' : ''}`"
       >
-        <span style="flex-grow: 1">{{item.title}}</span>
+        <span style="flex-grow: 1">{{item.metadata.title}}</span>
       </Row>
     </div>
 </template>
 
 <script setup lang="ts">
-import {Music} from "../ts/type";
-import {computed, onMounted, ref} from "vue";
-import {useStore} from "vuex";
-import {AudioPlayerV2} from "../ts/AudioPlayerV2";
-import {Icon} from "../ts/icon/Icon";
+import {onMounted, ref, shallowRef} from "vue";
+import PlayManager from "../ts/player/PlayManager";
+import {useCollect, useStateFlow} from '../ts/util/use';
 import Row from "./Row.vue";
+import {Bullet} from "../ts/type";
 
-const musicInfo = useStore()
-const player = AudioPlayerV2.instance
-
-function playAt(i: number, music: Music) {
-  musicInfo.commit("setIndex", i)
-  player.src(music)
-  player.play()
+function playAt(i: number) {
+  PlayManager.playAt(i)
 }
 
-const list = computed(() => musicInfo.state.musicList)
+const list = shallowRef<Bullet[]>([])
 
-const activeIndex = computed(() => musicInfo.state.currentIndex)
+useCollect(PlayManager.getMusicList(), res => {
+    list.value = res
+})
+
+const activeIndex = useStateFlow(PlayManager.currentIndex)
 
 const html = ref<HTMLDivElement | null>(null)
 

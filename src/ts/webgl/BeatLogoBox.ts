@@ -4,39 +4,57 @@ import {BaseDrawableConfig} from "./Drawable";
 import {Logo} from "./Logo";
 import {Ripple} from "./Ripple";
 import {RoundVisualizer} from "./RoundVisualizer";
-import {ease, easeInCubic, easeOut, easeOutCubic, easeOutElastic, easeOutQuint, easeOutSine} from "../util/Easing";
-import {AudioPlayerV2} from "../AudioPlayerV2";
+import {easeInCubic, easeOut, easeOutCubic, easeOutElastic, easeOutQuint} from "../util/Easing";
+import AudioPlayerV2 from "../player/AudioPlayer";
 import {Time} from "../Time";
-import {Vector2} from "./core/Vector2";
+import {Vector2, createV2} from "./core/Vector2";
 import {LogoTriangles} from "./LogoTriangles";
 import {MouseState} from "../MouseState";
 import {Interpolation} from "./Interpolation";
+import { init } from "../Utils";
+import { Axis } from "./layout/Axis";
+import Coordinate from "./Coordinate";
+import { onEnterMenu } from "../GlobalState";
 
 class BeatLogo extends Box implements IBeat {
 
+    // @ts-ignore
     private readonly logo: Logo
     private readonly ripple: Ripple
     private readonly triangles: LogoTriangles
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
+        // const logo = new Logo(gl, {
+        //     width: 520,
+        //     height: 520,
+        //     vertical: "center",
+        //     horizontal: "center"
+        // })
+
+        // this.size = createV2(Coordinate.width, Coordinate.height)
+        // this.anchor = Axis.X_CENTER | Axis.Y_CENTER
+
         const logo = new Logo(gl, {
-            width: 520,
-            height: 520,
-            vertical: "center",
-            horizontal: "center"
+            size: [520, 520],
         })
+        // const ripple = new Ripple(gl, {
+        //     width: 500,
+        //     height: 500,
+        //     vertical: "center",
+        //     horizontal: "center"
+        // })
         const ripple = new Ripple(gl, {
-            width: 500,
-            height: 500,
-            vertical: "center",
-            horizontal: "center"
+            size: [500, 500]
         })
+        // const triangles = new LogoTriangles(gl, {
+        //     width: 500,
+        //     height: 500,
+        //     vertical: "center",
+        //     horizontal: "center"
+        // })
         const triangles = new LogoTriangles(gl, {
-            width: 500,
-            height: 500,
-            vertical: "center",
-            horizontal: "center"
+            size: [500, 500]
         })
         this.logo = logo
         this.ripple = ripple
@@ -51,7 +69,7 @@ class BeatLogo extends Box implements IBeat {
     }
 
     public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {
-        if (!BeatState.beat.isAvailable) {
+        if (!BeatState.isAvailable) {
             return;
         }
         const volume = BeatState.nextBeatRMS
@@ -61,12 +79,12 @@ class BeatLogo extends Box implements IBeat {
             .scaleTo(1, gap * 2, easeOutQuint)
 
         this.triangles.velocityBegin()
-            .transitionTo(1 + adjust, 60, easeOut)
+            .transitionTo(1 + adjust + (BeatState.isKiai ? 4 : 0), 60, easeOut)
             .transitionTo(0, gap * 2, easeOutQuint)
 
         if (BeatState.isKiai) {
             this.triangles.lightBegin()
-                .transitionTo(0.15, 60, easeOut)
+                .transitionTo(0.2, 60, easeOut)
                 .transitionTo(0, gap * 2, easeOutQuint)
         }
 
@@ -92,6 +110,9 @@ class LogoBeatBox extends Box {
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
+        // this.size = createV2(Coordinate.width, Coordinate.height)
+        // this.anchor = Axis.X_CENTER | Axis.Y_CENTER
+
         this.beatLogo = new BeatLogo(gl, config)
         this.add(
             this.beatLogo
@@ -99,12 +120,12 @@ class LogoBeatBox extends Box {
     }
 
     protected onUpdate() {
-        if (AudioPlayerV2.instance.isPlaying.value) {
-            if (BeatState.beat.isAvailable) {
+        if (AudioPlayerV2.isPlaying()) {
+            if (BeatState.isAvailable) {
                 const scale = this.scale
                 const a = Interpolation.dump(
                     scale.x,
-                    1 - Math.min(BeatState.currentRMS, 1) * 0.065,
+                    1 - Math.min(BeatState.currentRMS - 0.4,1) * 0.0635,
                     0.9,
                     Time.elapsed
                 )
@@ -127,12 +148,11 @@ class LogoAmpBox extends Box {
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
-        this.visualizer = new RoundVisualizer(gl, {
-            width: '100w',
-            height: '100h',
-            horizontal: "center",
-            vertical: "center"
-        })
+        // this.size = createV2(Coordinate.width, Coordinate.height);
+        // this.anchor = Axis.X_CENTER | Axis.Y_CENTER;
+
+        this.visualizer = new RoundVisualizer(gl, { size: ['fill-parent', 'fill-parent'] })
+
         this.logoBeatBox = new LogoBeatBox(gl, config)
         this.add(
             this.visualizer,
@@ -153,13 +173,14 @@ class LogoAmpBox extends Box {
     }
 }
 
-class LogoBounceBox extends Box {
+export class LogoBounceBox extends Box {
 
     private readonly logoAmpBox: LogoAmpBox
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
-        this.logoAmpBox = new LogoAmpBox(gl, config)
+
+        this.logoAmpBox = new LogoAmpBox(gl, { size: config.size })
         this.add(this.logoAmpBox)
     }
 
@@ -217,7 +238,10 @@ export class BeatLogoBox extends Box {
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
-        this.logoBounceBox = new LogoBounceBox(gl, config)
+        // this.size = createV2(Coordinate.width, Coordinate.height)
+        // this.anchor = Axis.X_CENTER | Axis.Y_CENTER
+
+        this.logoBounceBox = new LogoBounceBox(gl, { size: config.size })
         this.add(this.logoBounceBox)
     }
 
@@ -234,6 +258,8 @@ export class BeatLogoBox extends Box {
             this.scaleBegin()
                 .scaleTo(1, 400, easeOutCubic)
         }
+        const v = this.flag
+        setTimeout(() => onEnterMenu.emit(v), 400);
         this.flag = !this.flag
         return true
     }

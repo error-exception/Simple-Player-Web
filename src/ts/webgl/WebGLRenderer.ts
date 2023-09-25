@@ -2,6 +2,7 @@ import {Drawable} from "./Drawable";
 import {Disposable} from "./core/Disposable";
 import {Viewport} from "./Viewport";
 import {MouseState} from "../MouseState";
+import Coordinate from "./Coordinate";
 
 export class WebGLRenderer implements Disposable {
 
@@ -11,15 +12,19 @@ export class WebGLRenderer implements Disposable {
     private isViewportChanged: boolean = false
     private isEventReady: boolean = false
 
-    constructor(gl: WebGL2RenderingContext, private viewport: Viewport) {
+    constructor(gl: WebGL2RenderingContext) {
         this.gl = gl
-        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
+        gl.viewport(0, 0, Coordinate.width * window.devicePixelRatio, Coordinate.height * window.devicePixelRatio)
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         MouseState.onClick = this.onClick.bind(this)
         MouseState.onMouseMove = this.onMouseMove.bind(this)
         MouseState.onMouseDown = this.onMouseDown.bind(this)
         MouseState.onMouseUp = this.onMouseUp.bind(this)
+
+        Coordinate.onWindowResize = () => {
+            this.isViewportChanged = true
+        }
     }
 
     private onClick(which: number) {
@@ -52,13 +57,25 @@ export class WebGLRenderer implements Disposable {
 
     public addDrawable(drawable: Drawable) {
         this.drawables.push(drawable)
-        drawable.setViewport(this.viewport)
+        drawable.load()
         this.disposables.push(drawable)
     }
 
+    public removeDrawable(drawable: Drawable) {
+        const index = this.drawables.indexOf(drawable)
+        const drawableToDispose = this.drawables[index]
+        this.drawables.splice(index, 1)
+        drawableToDispose.dispose()
+    }
+
+    /**
+     * 
+     * @param viewport 
+     * @deprecated
+     */
     public setViewport(viewport: Viewport) {
-        this.viewport = viewport
-        this.isViewportChanged = true
+        // this.viewport = viewport
+        // this.isViewportChanged = true
     }
 
     public render() {
@@ -66,9 +83,13 @@ export class WebGLRenderer implements Disposable {
         const gl = this.gl
         if (this.isViewportChanged) {
             this.isViewportChanged = false
-            gl.viewport(this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height)
+            gl.viewport(0, 0, Coordinate.width * window.devicePixelRatio, Coordinate.height * window.devicePixelRatio)
+            // gl.viewport(0, 0, window.innerWidth * window.devicePixelRatio, window.innerWidth * window.devicePixelRatio)
+            // for (let i = 0; i < this.drawables.length; i++) {
+            //     this.drawables[i].setViewport(this.viewport)
+            // }
             for (let i = 0; i < this.drawables.length; i++) {
-                this.drawables[i].setViewport(this.viewport)
+                this.drawables[i].onWindowResize()
             }
         }
         gl.clear(gl.COLOR_BUFFER_BIT)

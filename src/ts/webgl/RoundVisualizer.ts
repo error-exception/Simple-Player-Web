@@ -7,19 +7,19 @@ import {degreeToRadian} from "../Utils";
 import {TransformUtils} from "./core/TransformUtils";
 import {Vector2} from "./core/Vector2";
 import {IndexBuffer} from "./core/IndexBuffer";
-import {AudioPlayerV2} from "../AudioPlayerV2";
+import AudioPlayerV2 from "../player/AudioPlayer";
 import {VisualizerV2} from "../VisualizerV2";
 import {Time} from "../Time";
 import {BeatState} from "../Beater";
-
-export interface RoundVisualizerConfig extends BaseDrawableConfig {}
+import Coordinate from "./Coordinate";
 
 const vertexShader = `
     attribute vec2 a_vertexPosition;
+    uniform mat4 u_orth;
     uniform mat4 u_transform;
     void main() {
-        vec4 coord = vec4(a_vertexPosition.xy, 0.0, 1.0) * u_transform;
-        gl_Position = coord;
+        vec4 coord = vec4(a_vertexPosition, 0.0, 1.0) * u_transform;
+        gl_Position = coord * u_orth;
     }
 `
 
@@ -44,7 +44,7 @@ export class RoundVisualizer extends Drawable {
 
     constructor(
         gl: WebGL2RenderingContext,
-        config: RoundVisualizerConfig
+        config: BaseDrawableConfig
     ) {
         super(gl, config)
         const vertexArray = new VertexArray(gl)
@@ -87,7 +87,7 @@ export class RoundVisualizer extends Drawable {
         this.layout = layout
         this.indexBuffer = indexBuffer
 
-        this.visualizer = AudioPlayerV2.instance.getVisualizer()
+        this.visualizer = AudioPlayerV2.getVisualizer()
     }
 
     private vertexData = new Float32Array(0)
@@ -99,13 +99,16 @@ export class RoundVisualizer extends Drawable {
     }
 
     private updateVertex(spectrum: number[], length: number = spectrum.length) {
-        const centerX = this.rawPosition.x + this.rawSize.x / 2
-        const centerY = this.rawPosition.y - this.rawSize.y / 2
+        // const centerX = this.boundary.getAbsoluteLeft() + this.boundary.rect.getWidth() / 2 - Coordinate.width / 2
+        //const centerX = this.rawPosition.x + this.rawSize.x / 2
+        // const centerY = this.boundary.getAbsoluteTop() + this.boundary.rect.getHeight() / 2 - Coordinate.height / 2
+        // const centerY = this.rawPosition.y - this.rawSize.y / 2
+        const centerX = 0, centerY = 0
         if (this.vertexData.length !== length) {
             this.vertexData = new Float32Array(length * 8 * 5)
         }
         const array = this.vertexData
-        const innerRadius = 236 * window.devicePixelRatio
+        const innerRadius = 236
         const lineWidth = (
             innerRadius / 2 * Math.sin(
                 degreeToRadian(360 / (length))
@@ -121,7 +124,7 @@ export class RoundVisualizer extends Drawable {
                 const degree = i / 200 * 360 + j * 360 / 5
 
                 const radian = degreeToRadian(degree)
-                const value = innerRadius + spectrum[i] * (160 * window.devicePixelRatio)
+                const value = innerRadius + spectrum[i] * (160)
                 const fromX = centerX
                 const fromY = centerY + innerRadius
                 const toX = centerX
@@ -157,8 +160,10 @@ export class RoundVisualizer extends Drawable {
     }
 
     private updateAt(array: Float32Array, offset: number, point: Vector2) {
-        array[offset] = this.viewport.convertX(point.x);
-        array[offset + 1] = this.viewport.convertY(point.y);
+        // array[offset] = this.viewport.convertX(point.x);
+        // array[offset + 1] = this.viewport.convertY(point.y);
+        array[offset] = point.x// * 1 / (Coordinate.width / 2)
+        array[offset + 1] = point.y// * 1 / (Coordinate.height / 2)
     }
 
     private simpleSpectrum: number[] = new Array<number>(200)
@@ -221,8 +226,9 @@ export class RoundVisualizer extends Drawable {
     public onDraw() {
         const gl = this.gl
 
-        this.shader.setUniform1f("u_alpha", BeatState.isKiai ? 0.2 + BeatState.currentBeat * 0.1 : 0.2)
+        this.shader.setUniform1f("u_alpha", BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14)
         this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
+        this.shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
 
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
         this.vertexArray.addBuffer(this.buffer, this.layout)

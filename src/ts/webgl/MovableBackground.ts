@@ -1,23 +1,18 @@
-import {BaseDrawableConfig} from "./Drawable";
-import {VertexArray} from "./core/VertexArray";
-import {Shader} from "./core/Shader";
-import {VertexBuffer} from "./core/VertexBuffer";
-import {VertexBufferLayout} from "./core/VertexBufferLayout";
-import {Viewport} from "./Viewport";
-import {Texture} from "./core/Texture";
-import {Vector2} from "./core/Vector2";
-import {TransformUtils} from "./core/TransformUtils";
-import {BeatState} from "../Beater";
-import {BeatDrawable} from "./BeatDrawable";
-import {Time} from "../Time";
-import {ObjectTransition} from "./Transition";
-import {easeOut, easeOutCubic, easeOutQuint} from "../util/Easing";
-import {IEvent} from "../type";
-import {EventDispatcher} from "../EventBus";
-import {Box} from "./Box";
-import {BackgroundLoader} from "../BackgroundLoader";
-
-interface MovableBackgroundConfig extends BaseDrawableConfig {}
+import BackgroundLoader from "../BackgroundLoader";
+import { Box } from "./Box";
+import Coordinate from "./Coordinate";
+import { Drawable } from "./Drawable";
+import ShaderManager from "./ShaderManager";
+import { Shape2D } from "./Shape2D";
+import { Viewport } from "./Viewport";
+import { Shader } from "./core/Shader";
+import { Texture } from "./core/Texture";
+import { TransformUtils } from "./core/TransformUtils";
+import { Vector2, createV2 } from "./core/Vector2";
+import { VertexArray } from "./core/VertexArray";
+import { VertexBuffer } from "./core/VertexBuffer";
+import { VertexBufferLayout } from "./core/VertexBufferLayout";
+import { Axis } from "./layout/Axis";
 
 const vertexShader = `
     attribute vec4 a_position;
@@ -65,34 +60,31 @@ interface ImageDrawInfo {
     needToChange: boolean
 }
 
-export class MovableBackground extends BeatDrawable {
+export class MovableBackground extends Drawable {
 
     private readonly vertexArray: VertexArray
     private readonly shader: Shader
     private readonly buffer: VertexBuffer
     private readonly layout: VertexBufferLayout
     private readonly texture: Texture
-    //
-    // public leftLight: number = 0
-    // public rightLight: number = 0
+
     public imageDrawInfo: ImageDrawInfo = {
         drawHeight: 0, drawWidth: 0, needToChange: false, offsetLeft: 0, offsetTop: 0
     }
 
-    // private leftTransition: ObjectTransition = new ObjectTransition(this, 'leftLight')
-    // private rightTransition: ObjectTransition = new ObjectTransition(this, 'rightLight')
+    private image: ImageBitmap | null = null
+    private needUpdateTexture = false
 
     constructor(
         gl: WebGL2RenderingContext,
-        config: MovableBackgroundConfig,
         private textureUnit: number
     ) {
-        super(gl, config)
+        super(gl, { size: ['fill-parent', 'fill-parent'] })
         const vertexArray = new VertexArray(gl);
         vertexArray.bind()
         const buffer = new VertexBuffer(gl)
         const layout = new VertexBufferLayout(gl)
-        const shader = new Shader(gl, vertexShader, fragmentShader)
+        const shader = ShaderManager.newTextureShader()//new Shader(gl, vertexShader, fragmentShader)
         const texture = new Texture(gl, null)
 
         buffer.bind()
@@ -114,69 +106,21 @@ export class MovableBackground extends BeatDrawable {
         this.shader = shader
     }
 
-    // private leftLightBegin(atTime: number = Time.currentTime) {
-    //     this.leftTransition.setStartTime(atTime)
-    //     return this.leftTransition
-    // }
-    //
-    // private rightLightBegin(atTime: number = Time.currentTime) {
-    //     this.rightTransition.setStartTime(atTime)
-    //     return this.rightTransition
-    // }
-
-    public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {
-        // if (!this.isAvailable)
-        //     return
-        // if (!BeatState.beat.isAvailable) {
-        //     return;
-        // }
-        // const adjust = Math.min(BeatState.nextBeatRMS + 0.4, 1)
-        // let left = 0, right = 0
-        // if (BeatState.isKiai) {
-        //     if ((BeatState.beatIndex & 1) === 0) {
-        //         left = 0.5 * adjust
-        //         this.leftLightBegin()
-        //             .transitionTo(left, 60, easeOut)
-        //             .transitionTo(0, gap * 2, easeOutQuint)
-        //     } else {
-        //         right = 0.5 * adjust
-        //         this.rightLightBegin()
-        //             .transitionTo(right, 60, easeOut)
-        //             .transitionTo(0, gap * 2, easeOutQuint)
-        //     }
-        // } else {
-        //     if ((BeatState.beatIndex & 0b11) === 0 && BeatState.beatIndex != 0) {
-        //         left = 0.3 * adjust
-        //         right = 0.3 * adjust
-        //         this.leftLightBegin()
-        //             .transitionTo(left, 60, easeOut)
-        //             .transitionTo(0, gap * 2, easeOutQuint)
-        //         this.rightLightBegin()
-        //             .transitionTo(right, 60, easeOut)
-        //             .transitionTo(0, gap * 2, easeOutQuint)
-        //     }
-        // }
-    }
-
     protected onUpdate() {
         super.onUpdate();
         if (this.fadeTransition.isEnd) {
             this.onFinish?.()
             this.onFinish = null
         }
-        // this.leftTransition.update(Time.currentTime)
-        // this.rightTransition.update(Time.currentTime)
-        // this.brightnessValues[0] = this.leftLight
-        // this.brightnessValues[1] = this.rightLight
 
         const min = Math.min
-        const viewport = this.viewport;
+        const viewport = Coordinate;
         const { imageWidth, imageHeight } = this.texture
 
         const imageDrawInfo = this.imageDrawInfo
         if (imageDrawInfo.needToChange) {
-            const rawWidth = this.rawSize.x
-            const rawHeight = this.rawSize.y
+            const rawWidth = this.width
+            const rawHeight = this.height
             const rawRatio = rawWidth / rawHeight
             const imageRatio = imageWidth / imageHeight
             if (rawRatio > imageRatio) {
@@ -212,119 +156,53 @@ export class MovableBackground extends BeatDrawable {
         this.scale = new Vector2(scale, scale)
         this.translate = new Vector2(x, y)
 
-        const shader = this.shader
-        shader.bind()
         //shader.setUniform2fv('u_brightness', this.brightnessValues)
-        shader.setUniform1f('u_alpha', this._alpha)
     }
-
-    protected onTransformApplied() {
-        super.onTransformApplied();
-        this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
-        this.shader.unbind()
-    }
-
-    // private brightnessValues = new Float32Array([0.0, 0.0])
-
-    // private createVertexArray() {
-    //     const { x, y } = this.rawPosition
-    //     const width = this.rawSize.x
-    //     const height= this.rawSize.y
-    //     const vertex = [
-    //         new Vector2(x,         y),
-    //         new Vector2(x + width, y),
-    //         new Vector2(x,         y - height),
-    //         new Vector2(x + width, y),
-    //         new Vector2(x,         y - height),
-    //         new Vector2(x + width, y - height)
-    //     ]
-    //     for (let i = 0; i < vertex.length; i++) {
-    //         TransformUtils.applyOrigin(vertex[i], this.coordinateScale)
-    //     }
-    //     return new Float32Array([
-    //         vertex[0].x, vertex[0].y, 0.0, 0.0,
-    //         vertex[1].x, vertex[1].y, 1.0, 0.0,
-    //         vertex[2].x, vertex[2].y, 0.0, 1.0,
-    //         vertex[3].x, vertex[3].y, 1.0, 0.0,
-    //         vertex[4].x, vertex[4].y, 0.0, 1.0,
-    //         vertex[5].x, vertex[5].y, 1.0, 1.0
-    //     ])
-    // }
 
     public setBackgroundImage(image: ImageBitmap) {
-        this.texture.setTextureImage(image)
+        this.image = image
+        this.texture.setTextureImage(this.image)
         this.imageDrawInfo.needToChange = true
+        this.needUpdateTexture = true
     }
     private vertex = new Float32Array(4 * 6)
     private updateVertex() {
-        const { x, y } = this.rawPosition
-        const width = this.rawSize.x
-        const height= this.rawSize.y
-        const vertex = [
-            new Vector2(x,         y),
-            new Vector2(x + width, y),
-            new Vector2(x,         y - height),
-            new Vector2(x + width, y),
-            new Vector2(x,         y - height),
-            new Vector2(x + width, y - height)
-        ]
-        for (let i = 0; i < vertex.length; i++) {
-            TransformUtils.applyOrigin(vertex[i], this.coordinateScale)
-        }
+        const { x, y } = this.position
+        const width = this.width
+        const height = this.height
+        const topLeft = new Vector2(x, y)
+        const bottomRight = new Vector2(x + width, y - height)
+        
         const info = this.imageDrawInfo
         const imageTopLeft = new Vector2(info.offsetLeft, info.offsetTop)
-        const imageTopRight = new Vector2(info.offsetLeft + info.drawWidth, info.offsetTop)
-        const imageBottomLeft = new Vector2(info.offsetLeft, info.offsetTop + info.drawHeight)
+    
         const imageBottomRight = new Vector2(info.offsetLeft + info.drawWidth, info.offsetTop + info.drawHeight)
         const imageScale = TransformUtils.scale(1 / this.texture.imageWidth, 1 / this.texture.imageHeight)
         TransformUtils.applyOrigin(imageTopLeft, imageScale)
-        TransformUtils.applyOrigin(imageTopRight, imageScale)
-        TransformUtils.applyOrigin(imageBottomLeft, imageScale)
+        
         TransformUtils.applyOrigin(imageBottomRight, imageScale)
-        this.vertex[0] = vertex[0].x
-        this.vertex[1] = vertex[0].y
-        this.vertex[2] = imageTopLeft.x
-        this.vertex[3] = imageTopLeft.y
-
-        this.vertex[4] = vertex[1].x
-        this.vertex[5] = vertex[1].y
-        this.vertex[6] = imageTopRight.x
-        this.vertex[7] = imageTopRight.y
-
-        this.vertex[8] = vertex[2].x
-        this.vertex[9] = vertex[2].y
-        this.vertex[10] = imageBottomLeft.x
-        this.vertex[11] = imageBottomLeft.y
-
-        this.vertex[12] = vertex[3].x
-        this.vertex[13] = vertex[3].y
-        this.vertex[14] = imageTopRight.x
-        this.vertex[15] = imageTopRight.y
-
-        this.vertex[16] = vertex[4].x
-        this.vertex[17] = vertex[4].y
-        this.vertex[18] = imageBottomLeft.x
-        this.vertex[19] = imageBottomLeft.y
-
-        this.vertex[20] = vertex[5].x
-        this.vertex[21] = vertex[5].y
-        this.vertex[22] = imageBottomRight.x
-        this.vertex[23] = imageBottomRight.y
-        this.buffer.bind()
-        this.buffer.setBufferData(this.vertex)
-        this.buffer.unbind()
+        Shape2D.quad(
+            topLeft.x, topLeft.y, 
+            bottomRight.x, bottomRight.y, 
+            this.vertex, 0, 4
+        )
+        Shape2D.quad(
+            imageTopLeft.x, imageTopLeft.y, 
+            imageBottomRight.x, imageBottomRight.y, 
+            this.vertex, 2, 4
+        )
     }
 
     private onFinish: (() => void) | null = null
 
     public fadeOut(onFinish: () => void) {
         this.fadeBegin()
-            .fadeTo(0, 1000)
+            .fadeTo(0, 220)
         this.onFinish = onFinish
     }
 
-    public setViewport(viewport: Viewport) {
-        super.setViewport(viewport)
+    public onWindowResize(): void {
+        super.onWindowResize()
         this.imageDrawInfo.needToChange = true
         this.updateVertex()
     }
@@ -332,17 +210,30 @@ export class MovableBackground extends BeatDrawable {
     public unbind() {
         this.vertexArray.unbind()
         this.texture.unbind()
+        this.buffer.unbind()
         this.shader.unbind()
     }
 
     public bind() {
         this.texture.bind(this.textureUnit)
         this.vertexArray.bind()
+        this.buffer.bind()
         this.shader.bind()
     }
 
     public onDraw() {
+        if (this.needUpdateTexture && this.image) {
+            console.log("background need change");
+            
+            this.needUpdateTexture = false
+        }
+        this.buffer.setBufferData(this.vertex)
+        
         const gl = this.gl
+        const shader = this.shader
+        shader.setUniformMatrix4fv('u_transform', this.matrixArray)
+        shader.setUniform1f('u_alpha', this.alpha)
+        shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
         this.vertexArray.addBuffer(this.buffer, this.layout)
 
         gl.drawArrays(gl.TRIANGLES, 0, 6)
@@ -357,19 +248,48 @@ export class MovableBackground extends BeatDrawable {
     }
 }
 
-export class Background extends Box implements IEvent {
+export class Background extends Box {
 
     private textureUnits = [2, 3]
     private textureUnitIndex = 0
 
-    constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
-        super(gl, config);
-        const current = new MovableBackground(gl, config, this.nextTextureUnit())
-        const next = new MovableBackground(gl, config, this.nextTextureUnit())
+    constructor(gl: WebGL2RenderingContext, initImage?: ImageBitmap) {
+        super(gl, { size: ['fill-parent', 'fill-parent'] });
+        const current = new MovableBackground(gl, this.nextTextureUnit())
+        const next = new MovableBackground(gl, this.nextTextureUnit())
         this.add(next, current)
-        this.updateBackground(current)
-        this.updateBackground(next)
-        EventDispatcher.register(this)
+        this.backImage.isVisible = false
+        // this.backImage.setBackgroundImage(BackgroundLoader.getBackground())
+        this.frontImage.setBackgroundImage(initImage ? initImage : BackgroundLoader.getBackground())
+        // this.updateBackground(current)
+        // this.updateBackground(next)
+        // EventDispatcher.register(this)
+        // AudioPlayerV2.onChange.collect(this.onSongChanged.bind(this))
+        // OSUPlayer.background.collect(bg => {
+        //     if (bg.image) {
+        //         this.currentBackground.setBackgroundImage(bg.image)
+        //     }
+        // })
+        // CurrentPlayState.onBackgroundUpdate.collect(image => {
+            // if (this.isFading) return;
+            // if (this.flag < 0) {
+            //     this.flag++
+            //     return
+            // }
+            // this.isFading = true
+            // this.displayNext = true
+            // this.currentBackground.fadeOut(() => {
+            //     // console.log("fade out complete")
+            //     console.log("upfda", image)
+            //     this.swap()
+            //     // this.updateBackground(this.nextBackground)
+            //     this.nextBackground.setBackgroundImage(image)
+            //     this.nextBackground.alpha = 1
+            //     this.isFading = false
+            //     this.displayNext = false
+            // })
+            // this.currentBackground.setBackgroundImage(image)
+        // })
     }
 
     private swap() {
@@ -378,37 +298,35 @@ export class Background extends Box implements IEvent {
         this.childrenList[1] = temp
     }
 
-    private updateBackground(bg: MovableBackground) {
-        const imageBitmap = BackgroundLoader.getBackground()
-        bg.setBackgroundImage(imageBitmap)
-    }
-
-    private get currentBackground() {
+    private get frontImage() {
         return this.childrenList[1] as MovableBackground
     }
 
-    private get nextBackground() {
+    private get backImage() {
         return this.childrenList[0] as MovableBackground
     }
 
     private flag = -1
     private isFading = false
     private displayNext = false
-    public onSongChanged(id: number) {
-        if (this.isFading) return;
-        if (this.flag < 0) {
-            this.flag++
-            return
-        }
+
+    public updateBackground2(image: ImageBitmap) {
+        // console.log(this.backImage.isVisible, this.backImage.textureUnit)
+        // console.log(this.frontImage.isVisible, this.frontImage.textureUnit)
+        if (this.isFading) return
+        // if (this.flag++ < 0) return;
         this.isFading = true
-        this.displayNext = true
-        this.currentBackground.fadeOut(() => {
-            console.log("fade out complete")
-            this.swap()
-            this.updateBackground(this.nextBackground)
-            this.nextBackground.alpha = 1
+
+        // this.frontImage.setBackgroundImage(image)
+        // this.backImage.setBackgroundImage(image)
+
+        this.backImage.setBackgroundImage(image)
+        this.backImage.isVisible = true
+        this.backImage.alpha = 1
+        this.frontImage.fadeOut(() => {
+            this.frontImage.isVisible = false
             this.isFading = false
-            this.displayNext = false
+            this.swap()
         })
     }
 
@@ -424,18 +342,11 @@ export class Background extends Box implements IEvent {
         return Vector2.newZero()
     }
 
-    public updateChildren() {
-        if (this.displayNext) {
-            this.nextBackground.update()
-        }
-        this.currentBackground.update()
-    }
-
     public draw() {
-        if (this.displayNext) {
-            this.nextBackground.draw()
+        if (this.isVisible) {
+            this.backImage.draw()
+            this.frontImage.draw()
         }
-        this.currentBackground.draw()
     }
 
     private nextTextureUnit(): number {
@@ -443,9 +354,5 @@ export class Background extends Box implements IEvent {
         return this.textureUnits[this.textureUnitIndex]
     }
 
-    public dispose() {
-        super.dispose();
-        EventDispatcher.unregister(this)
-    }
 
 }

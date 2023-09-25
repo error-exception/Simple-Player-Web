@@ -1,143 +1,255 @@
-import {Alignment, Bound, defaultViewport, Viewport} from "./Viewport";
-import {Bindable} from "./core/Bindable";
-import {Disposable} from "./core/Disposable";
-import {isUndef} from "./core/Utils";
-import {Vector2} from "./core/Vector2";
-import {Matrix3} from "./core/Matrix3";
-import {TransformUtils} from "./core/TransformUtils";
-import {FadeTransition, ScaleTransition, TranslateTransition} from "./Transition";
-import {Time} from "../Time";
-import {Box} from "./Box";
-import {IMouseEvent, MouseState} from "../MouseState";
+import { IMouseEvent, MouseState } from "../MouseState";
+import { Time } from "../Time";
+import { getClassName } from "../Utils";
+import { Box } from "./Box";
+import Coordinate from "./Coordinate";
+import { Transform } from "./Transform";
+import {
+    FadeTransition,
+    ScaleTransition,
+    TranslateTransition,
+} from "./Transition";
+import { Viewport, defaultViewport } from "./Viewport";
+import { Bindable } from "./core/Bindable";
+import { Disposable } from "./core/Disposable";
+import { TransformUtils } from "./core/TransformUtils";
+import { isUndef } from "./core/Utils";
+import { Vector2 } from "./core/Vector2";
+import { Axis } from "./layout/Axis";
 
-export interface BaseDrawableConfig extends Alignment, Bound {}
+export interface BaseDrawableConfig {
+    size: [number | "fill-parent", number | "fill-parent"];
+    anchor?: number;
+    offset?: [number, number];
+}
 
-export abstract class Drawable implements Bindable, Disposable, IMouseEvent {
+/**
+ *
+ * Translate Based
+ *
+ * TopLeft
+ * TopCenter
+ * TopRight
+ * CenterLeft
+ * Center
+ * CenterRight
+ * BottomLeft
+ * BottomCenter
+ * BottomRight
+ *
+ * AnchorTo(ParentRect)
+ *
+ * Rect { Left, Top, Right, Bottom }
+ */
 
-    protected viewport: Viewport = defaultViewport
+export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig> implements Bindable, Disposable, IMouseEvent {
+    /**
+     * 通过 Anchor 调整后的变换
+     */
+    private layoutTransform: Transform = new Transform();
+    /**
+     * 记录自身的变换
+     */
+    protected selfTransform: Transform = new Transform();
+    /**
+     * 最终计算出来的变换
+     */
+    public appliedTransform: Transform = new Transform();
 
-    public position: Vector2 = Vector2.newZero()
-    public size: Vector2 = Vector2.newZero()
-    public rawPosition: Vector2 = Vector2.newZero()
+    // public boundary: Boundary = new Boundary();
+    public size = new Vector2();
+    public position = new Vector2();
+    public anchor = Axis.X_CENTER | Axis.Y_CENTER;
 
-    public rawSize: Vector2 = Vector2.newZero()
+    /**
+     * @deprecated
+     */
+    protected viewport: Viewport = defaultViewport;
 
-    protected _scale: Vector2 = new Vector2(1, 1)
-    protected _translate: Vector2 = Vector2.newZero()
-    protected _alpha: number = 1
+    // below four can be replaced by boundary
+    // public position: Vector2 = Vector2.newZero();
+    // public size: Vector2 = Vector2.newZero();
+    // public rawPosition: Vector2 = Vector2.newZero();
+    // public rawSize: Vector2 = Vector2.newZero();
 
-    public appliedScale: Vector2 = new Vector2(1, 1)
-    public appliedTranslate: Vector2 = Vector2.newZero()
-    public appliedAlpha: number = 1
+    // protected _scale: Vector2 = new Vector2(1, 1)
+    // protected _translate: Vector2 = Vector2.newZero()
+    // protected _alpha: number = 1
 
-    protected parent: Box | null = null
-    protected isAvailable = false
+    // public appliedScale: Vector2 = new Vector2(1, 1)
+    // public appliedTranslate: Vector2 = Vector2.newZero()
+    // public appliedAlpha: number = 1
 
-    protected coordinateScale = TransformUtils.scale(
-        2 / this.viewport.width,
-        2 / this.viewport.height
-    )
+    protected parent: Box | null = null;
+    protected isAvailable = false;
 
-    protected transformMatrix: Matrix3 = Matrix3.newIdentify()
+    // protected transformMatrix: Matrix3 = Matrix3.newIdentify();
     protected matrixArray = new Float32Array([
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-    ])
+        1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+    ]);
 
-    protected scaleTransition: ScaleTransition = new ScaleTransition(this)
-    protected fadeTransition: FadeTransition = new FadeTransition(this)
-    protected translateTransition: TranslateTransition = new TranslateTransition(this)
+    protected scaleTransition: ScaleTransition = new ScaleTransition(this);
+    protected fadeTransition: FadeTransition = new FadeTransition(this);
+    protected translateTransition: TranslateTransition =
+        new TranslateTransition(this);
+
+    public isVisible = true;
 
     constructor(
         protected gl: WebGL2RenderingContext,
-        protected config: BaseDrawableConfig
+        protected config: C
     ) {
-        this.isAvailable = true
+        this.isAvailable = true;
+        this.updateBounding();
     }
 
+    public get width() {
+        return this.size.x;
+    }
+
+    public get height() {
+        return this.size.y;
+    }
 
     public setParent(parent: Box) {
-        this.parent = parent
+        this.parent = parent;
     }
 
+    public load() {
+        this.updateBounding();
+        this.onLoad();
+    }
+
+    public onLoad() {}
+
+    public updateBounding() {
+        let [width, height] = this.config.size;
+
+        this.anchor = isUndef(this.config.anchor)
+            ? Axis.X_CENTER | Axis.Y_CENTER
+            : this.config.anchor;
+        // console.log("Coordinate", Coordinate.width, Coordinate.height);
+
+        if (width === "fill-parent") {
+            width = Coordinate.width;
+        }
+        if (height === "fill-parent") {
+            height = Coordinate.height;
+        }
+        // width *= window.devicePixelRatio
+        // height *= window.devicePixelRatio
+        let x = 0,
+            y = 0,
+            left = -width / 2,
+            top = height / 2;
+        const xAxis = Axis.getXAxis(this.anchor);
+        const yAxis = Axis.getYAxis(this.anchor);
+
+        if (xAxis === Axis.X_LEFT) {
+            x = -Coordinate.width / 2;
+        } else if (xAxis === Axis.X_CENTER) {
+            x = -width / 2;
+        } else if (xAxis === Axis.X_RIGHT) {
+            x = Coordinate.width / 2 - width;
+        }
+        if (yAxis === Axis.Y_TOP) {
+            y = Coordinate.height / 2;
+        } else if (yAxis === Axis.Y_CENTER) {
+            y = height / 2;
+        } else if (yAxis === Axis.Y_BOTTOM) {
+            y = -Coordinate.height / 2 + height;
+        }
+        if (this.config.offset) {
+            const [ offsetX, offsetY ] = this.config.offset
+            x += offsetX
+            y += offsetY
+        }
+        // console.log(x, y);
+
+        const centerTranslate = new Vector2(x - left, y - top);
+        this.position.set(left, top);
+        // this.position.set(0, 0)
+        this.size.set(width, height);
+        this.layoutTransform.translateTo(centerTranslate);
+        // console.log(center)
+    }
+
+    /**
+     * remove self from parent
+     */
     public remove() {
-        this.parent?.removeChild(this)
+        this.parent?.removeChild(this);
     }
 
     public scaleBegin(atTime: number = Time.currentTime): ScaleTransition {
-        this.scaleTransition.setStartTime(atTime)
-        return this.scaleTransition
+        this.scaleTransition.setStartTime(atTime);
+        return this.scaleTransition;
     }
 
     public fadeBegin(atTime: number = Time.currentTime): FadeTransition {
-        this.fadeTransition.setStartTime(atTime)
-        return this.fadeTransition
+        this.fadeTransition.setStartTime(atTime);
+        return this.fadeTransition;
     }
 
-    public translateBegin(atTime: number = Time.currentTime): TranslateTransition {
-        this.translateTransition.setStartTime(atTime)
-        return this.translateTransition
+    public translateBegin(
+        atTime: number = Time.currentTime
+    ): TranslateTransition {
+        this.translateTransition.setStartTime(atTime);
+        return this.translateTransition;
     }
 
     public set scale(v: Vector2) {
-        this._scale.x = v.x
-        this._scale.y = v.y
+        this.selfTransform.scaleTo(v);
     }
 
     public get scale(): Vector2 {
-        return new Vector2(this._scale.x, this._scale.y)
+        return this.selfTransform.scale.copy();
     }
 
     public set translate(v: Vector2) {
-        this._translate.x = v.x
-        this._translate.y = v.y
+        this.selfTransform.translateTo(v);
     }
 
     public get translate(): Vector2 {
-        return new Vector2(this._translate.x, this._translate.y)
+        return this.selfTransform.translate.copy();
     }
 
     public set alpha(v: number) {
-        this._alpha = v
+        this.selfTransform.alphaTo(v);
     }
 
     public get alpha() {
-        return this._alpha
+        return this.selfTransform.alpha;
     }
 
     protected updateTransform() {
-        const matrix = this.transformMatrix
-        const rawMatrix = Matrix3.newIdentify()
-        const translate = this.translate
-        translate.x += (this.parent?.appliedTranslate.x ?? 0)
-        translate.y += (this.parent?.appliedTranslate.y ?? 0)
-        
-        this.appliedTranslate.x = translate.x
-        this.appliedTranslate.y = translate.y
-        rawMatrix.M13 = translate.x
-        rawMatrix.M23 = translate.y
-        TransformUtils.applyOrigin(translate, this.coordinateScale)
-        matrix.M13 = translate.x
-        matrix.M23 = translate.y
-        this.appliedScale.x = this._scale.x * (this.parent?.appliedScale.x ?? 1)
-        this.appliedScale.y = this._scale.y * (this.parent?.appliedScale.y ?? 1)
-        matrix.M11 = this.appliedScale.x
-        matrix.M22 = this.appliedScale.y
-        rawMatrix.M11 = this.appliedScale.x
-        rawMatrix.M22 = this.appliedScale.y
-        this.position = TransformUtils.apply(this.rawPosition, rawMatrix)
-        this.size = TransformUtils.applyScale(this.rawSize, this.appliedScale.x, this.appliedScale.y)
-        const array = this.matrixArray
-        array[0] = matrix.M11
-        array[5] = matrix.M22
-        array[3] = matrix.M13
-        array[7] = matrix.M23
+        const layoutTransform = this.layoutTransform;
+        const selfTransform = this.selfTransform;
+        const appliedTransform = this.appliedTransform;
+        const parentTransform = this.parent
+            ? this.parent.appliedTransform
+            : new Transform();
 
-        this.appliedAlpha = this._alpha * (this.parent?.appliedAlpha ?? 1)
+        appliedTransform.translateTo(parentTransform.translate);
+        appliedTransform.translateBy(layoutTransform.translate);
+        appliedTransform.translateBy(selfTransform.translate);
 
-        this.onTransformApplied()
+        appliedTransform.scaleTo(parentTransform.scale);
+        appliedTransform.scaleBy(layoutTransform.scale);
+        appliedTransform.scaleBy(selfTransform.scale);
+
+        appliedTransform.alphaTo(parentTransform.alpha);
+        appliedTransform.alphaBy(layoutTransform.alpha);
+        appliedTransform.alphaBy(selfTransform.alpha);
+
+        appliedTransform.extractToMatrix(this.matrixArray);
+        // const appliedTranslate = appliedTransform.translate
+        // TransformUtils.apply(appliedTranslate, Coordinate.coordinateScale)
+        // array[3] = appliedTranslate.x
+        // array[7] = appliedTranslate.y
+        // console.log(array);
+
+        this.onTransformApplied();
     }
 
     protected onTransformApplied() {}
@@ -145,163 +257,173 @@ export abstract class Drawable implements Bindable, Disposable, IMouseEvent {
     protected onUpdate() {}
 
     public update() {
-        if (this.isAvailable) {
-            this.scaleTransition.update(Time.currentTime)
-            this.fadeTransition.update(Time.currentTime)
-            this.translateTransition.update(Time.currentTime)
+        if (!this.isVisible) {
+            return;
         }
         if (this.isAvailable) {
-            this.onUpdate()
+            this.scaleTransition.update(Time.currentTime);
+            this.fadeTransition.update(Time.currentTime);
+            this.translateTransition.update(Time.currentTime);
         }
         if (this.isAvailable) {
-            this.updateTransform()
+            this.onUpdate();
+        }
+        if (this.isAvailable) {
+            this.updateTransform();
         }
     }
 
     public draw(): void {
-        if (this.isAvailable) {
-            this.bind()
-            this.onDraw()
-            this.unbind()
+        if (this.isAvailable && this.isVisible) {
+            this.bind();
+            this.onDraw();
+            this.unbind();
         }
     }
 
-    abstract onDraw(): void
+    abstract onDraw(): void;
 
-    public setViewport(viewport: Viewport): void {
-        this.viewport = viewport
-        this.coordinateScale = TransformUtils.scale(
-            2 / viewport.width,
-            2 / viewport.height
-        )
-        const config = this.config
-        if (
-            isUndef(config.y) && isUndef(config.vertical)
-            || isUndef(config.x) && isUndef(config.horizontal)
-        ) {
-            throw new Error('config error')
-        }
-        if (this.config.x) {
-            this.position.x = viewport.convertUnitX(this.config.x)
-        }
-        if (this.config.y) {
-            this.position.y = viewport.convertUnitY(this.config.y)
-        }
-        this.size.x = viewport.convertUnitX(this.config.width)
-        this.size.y = viewport.convertUnitY(this.config.height)
-        if (this.config.horizontal) {
-            this.position.x = viewport.alignmentX(this.config.horizontal, this.size.x)
-        }
-        if (this.config.vertical) {
-            this.position.y = viewport.alignmentY(this.config.vertical, this.size.y)
-        }
-        this.rawSize.x = this.size.x
-        this.rawSize.y = this.size.y
-        this.rawPosition.x = this.position.x
-        this.rawPosition.y = this.position.y
+    /**
+     *
+     * @deprecated
+     */
+    public setViewport(viewport: Viewport): void {}
+
+    public onWindowResize() {
+        this.updateBounding();
     }
 
     abstract bind(): void;
 
     public dispose(): void {
-        this.isAvailable = false
+        this.isAvailable = false;
     }
 
     abstract unbind(): void;
 
     public placeholder() {}
 
-
     /**
      * 检查 position 是否在 Drawable 区域内
      * @param position
      */
     public isInBound(position: Vector2) {
-        let x = position.x
-        let y = position.y
-        return (x > this.position.x && x <= this.position.x + this.size.x)
-            && (y < this.position.y && y >= this.position.y - this.size.y)
+        // const name = getClassName(this)
+        let { x, y } = this.position;
+        const { translate, scale } = this.appliedTransform;
+
+        x *= scale.x;
+        y *= scale.y;
+        x += translate.x;
+        y += translate.y;
+        // console.log(`mouse ${name}.ts:`, position.x, position.y)
+        // console.log(`${name}.ts:`, x, y)
+        // const scaledWidth = this.width * scale.x;
+        // console.log("🚀 ~ file: " + name + ".ts:313 ~ Drawable ~ isInBound ~ scaledWidth:", scaledWidth)
+        // const scaledHeight = this.height * scale.y;
+        // console.log(
+        //     "🚀 ~ file: " + name + ".ts:308 ~ Drawable ~ isInBound ~ scledHeight:",
+        //     scaledHeight
+        // );
+
+        return (
+            position.x > x &&
+            position.x <= x + this.width * scale.x &&
+            position.y < y &&
+            position.y >= y - this.height * scale.y
+        );
     }
 
     public click(which: number, position: Vector2) {
         if (this.isAvailable && this.isInBound(position)) {
-            if ('onClick' in this && typeof this.onClick === "function")
-                this.onClick(which)
+            if ("onClick" in this && typeof this.onClick === "function")
+                this.onClick(which);
         }
     }
 
     public mouseDown(which: number, position: Vector2) {
         if (this.isAvailable && this.isInBound(position)) {
-            if ('onMouseDown' in this && typeof this.onMouseDown === "function") {
-                this.onMouseDown(which)
+            if (
+                "onMouseDown" in this &&
+                typeof this.onMouseDown === "function"
+            ) {
+                this.onMouseDown(which);
             }
         }
     }
 
     public mouseUp(which: number, position: Vector2) {
         if (this.isAvailable && this.isInBound(position)) {
-            if ('onMouseUp' in this && typeof this.onMouseUp === "function") {
-                this.onMouseUp(which)
+            if ("onMouseUp" in this && typeof this.onMouseUp === "function") {
+                this.onMouseUp(which);
             }
         }
-        this.dragLost(which, position)
+        this.dragLost(which, position);
     }
 
     public mouseMove(position: Vector2) {
         if (this.isAvailable && this.isInBound(position)) {
-            if ('onMouseMove' in this && typeof this.onMouseMove === "function") {
-                this.onMouseMove()
+            if (
+                "onMouseMove" in this &&
+                typeof this.onMouseMove === "function"
+            ) {
+                this.onMouseMove();
             }
-            this.hover(position)
+            this.hover(position);
             if (MouseState.hasKeyDown()) {
-                this.drag(MouseState.which, position)
+                this.drag(MouseState.which, position);
             }
-            return
+            return;
         }
         if (this.isDragged) {
-            this.drag(MouseState.which, position)
+            this.drag(MouseState.which, position);
         }
-        this.hoverLost(position)
-
+        this.hoverLost(position);
     }
 
-    private isHovered = false
+    private isHovered = false;
 
     public hover(position: Vector2) {
         // if (this.isAvailable && this.isInBound(position)) {
-            if ('onHover' in this && typeof this.onHover === "function" && !this.isHovered) {
-                this.isHovered = true
-                this.onHover()
-            }
+        if (
+            "onHover" in this &&
+            typeof this.onHover === "function" &&
+            !this.isHovered
+        ) {
+            this.isHovered = true;
+            this.onHover();
+        }
         // }
     }
 
     public hoverLost(position: Vector2) {
         if (this.isAvailable && this.isHovered && !this.isInBound(position)) {
-            if ('onHoverLost' in this && typeof this.onHoverLost === "function") {
-                this.isHovered = false
-                this.onHoverLost()
+            if (
+                "onHoverLost" in this &&
+                typeof this.onHoverLost === "function"
+            ) {
+                this.isHovered = false;
+                this.onHoverLost();
             }
         }
     }
 
-    private isDragged = false
+    private isDragged = false;
     public drag(which: number, position: Vector2) {
         // if (this.isAvailable && this.isInBound(position)) {
-            if ('onDrag' in this && typeof this.onDrag === "function") {
-                this.isDragged = true
-                this.onDrag(which)
-            }
+        if ("onDrag" in this && typeof this.onDrag === "function") {
+            this.isDragged = true;
+            this.onDrag(which);
+        }
         // }
     }
 
     public dragLost(which: number, position: Vector2) {
         if (this.isAvailable && this.isDragged) {
-            if ('onDragLost' in this && typeof this.onDragLost === "function") {
-                this.isDragged = false
-                this.onDragLost()
+            if ("onDragLost" in this && typeof this.onDragLost === "function") {
+                this.isDragged = false;
+                this.onDragLost();
             }
         }
     }
-
 }

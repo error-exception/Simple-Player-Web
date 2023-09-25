@@ -7,16 +7,13 @@
 
 <script setup lang="ts">
 import Column from "./Column.vue";
-import {computed, ref, watch} from "vue";
-import {useStore} from "vuex";
+import {ref, watch} from "vue";
 import {currentMilliseconds} from "../ts/Utils";
 
 const fps = ref(0)
 const frame = ref(1)
 
-const store = useStore()
-
-const frameTime = computed(() => store.state.frameTime)
+const frameTime = ref(16.6667)
 let lastUpdate = currentMilliseconds()
 update()
 
@@ -26,7 +23,7 @@ watch(() => frameTime.value, () => {
 
 function update() {
   const current = currentMilliseconds()
-  if (current - lastUpdate > 1000) {
+  if (current - lastUpdate > 200) {
     frame.value = Math.round(frameTime.value * 100) / 100
     fps.value = Math.round(1000 / frame.value)
     lastUpdate = current

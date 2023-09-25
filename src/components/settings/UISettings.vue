@@ -6,10 +6,7 @@
 
 <script lang="ts" setup>
 
-import {useStore} from "vuex";
 import Column from "../Column.vue";
-
-const store = useStore()
 
 </script>
 

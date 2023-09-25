@@ -8,8 +8,9 @@ import {VertexBufferLayout} from "./core/VertexBufferLayout";
 import {Vector2} from "./core/Vector2";
 import {TransformUtils} from "./core/TransformUtils";
 import {ImageLoader} from "../ImageResources";
-
-interface RippleConfig extends BaseDrawableConfig {}
+import Coordinate from "./Coordinate";
+import { Shape2D } from "./Shape2D";
+import ShaderManager from "./ShaderManager";
 
 const vertexShader = `
     attribute vec2 a_position;
@@ -45,14 +46,14 @@ export class Ripple extends Drawable {
 
     constructor(
         gl: WebGL2RenderingContext,
-        config: RippleConfig
+        config: BaseDrawableConfig
     ) {
         super(gl, config)
         const vertexArray = new VertexArray(gl)
         vertexArray.bind()
         const buffer = new VertexBuffer(gl)
         const layout = new VertexBufferLayout(gl)
-        const shader = new Shader(gl, vertexShader, fragmentShader)
+        const shader = ShaderManager.newTextureShader()
         const texture = new Texture(gl, ImageLoader.get("ripple"))
 
         buffer.bind()
@@ -83,33 +84,41 @@ export class Ripple extends Drawable {
     }
 
     public createVertexArray() {
-        const { x, y } = this.rawPosition
-        const width = this.rawSize.x
-        const height= this.rawSize.y
-        const vertex = [
-            new Vector2(x,         y),
-            new Vector2(x + width, y),
-            new Vector2(x,         y - height),
-            new Vector2(x + width, y),
-            new Vector2(x,         y - height),
-            new Vector2(x + width, y - height)
-        ]
-        for (let i = 0; i < vertex.length; i++) {
-            TransformUtils.applyOrigin(vertex[i], this.coordinateScale)
-        }
-        return new Float32Array([
-            vertex[0].x, vertex[0].y, 0.0, 0.0,
-            vertex[1].x, vertex[1].y, 1.0, 0.0,
-            vertex[2].x, vertex[2].y, 0.0, 1.0,
-            vertex[3].x, vertex[3].y, 1.0, 0.0,
-            vertex[4].x, vertex[4].y, 0.0, 1.0,
-            vertex[5].x, vertex[5].y, 1.0, 1.0
-        ])
+        const width = this.width
+        const height = this.height
+        let { x, y } = this.position
+        y -= height * 0.007
+        // let x = -width / 2, y = height / 2
+        console.log("create vertex", x, y)
+        
+        const topLeft = new Vector2(x, y)
+        const bottomRight = new Vector2(x + width, y - height)
+        // TransformUtils.applyOrigin(topLeft, Coordinate.orthographicProjection)
+        // TransformUtils.applyOrigin(bottomRight, Coordinate.orthographicProjection)
+        const vertexData: number[] = []
+        Shape2D.quad(
+            topLeft.x, topLeft.y,
+            bottomRight.x, bottomRight.y,
+            vertexData, 0, 4
+        )
+        Shape2D.quad(
+            0, 0, 1, 1,
+            vertexData, 2, 4
+        )
+        console.log(vertexData);
+        
+        return new Float32Array(vertexData)
     }
 
-    public setViewport(viewport: Viewport) {
-        super.setViewport(viewport)
+    public onLoad(): void {
+        super.onLoad()
+        this.buffer.bind()
+        this.buffer.setBufferData(this.createVertexArray())
+        this.buffer.unbind()
+    }
 
+    public onWindowResize(): void {
+        super.onWindowResize()
         this.buffer.bind()
         this.buffer.setBufferData(this.createVertexArray())
         this.buffer.unbind()
@@ -129,9 +138,10 @@ export class Ripple extends Drawable {
 
     public onDraw() {
         const gl = this.gl
-
-        this.shader.setUniform1f('alpha', this._alpha)
-        this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
+        const shader = this.shader
+        shader.setUniform1f('u_alpha', this.alpha)
+        shader.setUniformMatrix4fv('u_transform', this.matrixArray)
+        shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
 
         this.vertexArray.addBuffer(this.buffer, this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, 6)

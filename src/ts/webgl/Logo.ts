@@ -1,25 +1,26 @@
-import {BaseDrawableConfig, Drawable} from "./Drawable";
-import {Viewport} from "./Viewport";
-import {Texture} from "./core/Texture";
-import {Shader} from "./core/Shader";
-import {VertexBuffer} from "./core/VertexBuffer";
-import {VertexBufferLayout} from "./core/VertexBufferLayout";
-import {VertexArray} from "./core/VertexArray";
-import {TransformUtils} from "./core/TransformUtils";
-import {Vector2} from "./core/Vector2";
-import {ImageLoader} from "../ImageResources";
-
-interface BeatLogoConfig extends BaseDrawableConfig {}
+import { ImageLoader } from "../ImageResources";
+import Coordinate from "./Coordinate";
+import { BaseDrawableConfig, Drawable } from "./Drawable";
+import { Shape2D } from "./Shape2D";
+import { Shader } from "./core/Shader";
+import { Texture } from "./core/Texture";
+import { TransformUtils } from "./core/TransformUtils";
+import { Vector2 } from "./core/Vector2";
+import { VertexArray } from "./core/VertexArray";
+import { VertexBuffer } from "./core/VertexBuffer";
+import { VertexBufferLayout } from "./core/VertexBufferLayout";
 
 const vertexShader = `
     attribute vec4 a_position;
     attribute vec2 a_tex_coord;
     varying mediump vec2 v_tex_coord;
     varying mediump float v_texture_alpha;
+    uniform mat4 u_orth;
     uniform mat4 u_transform;
     
     void main() {
-        gl_Position = a_position * u_transform;
+        vec4 position = a_position * u_transform;
+        gl_Position = position * u_orth;
         v_tex_coord = a_tex_coord;
     }
 `
@@ -47,9 +48,11 @@ export class Logo extends Drawable {
 
     constructor(
         gl: WebGL2RenderingContext,
-        config: BeatLogoConfig
+        config: BaseDrawableConfig
     ) {
         super(gl, config)
+        console.log(this.anchor.toString(2));
+        
         const vertexArray = new VertexArray(gl)
         vertexArray.bind()
         const buffer = new VertexBuffer(gl)
@@ -78,38 +81,45 @@ export class Logo extends Drawable {
     }
 
     public createVertexArray() {
-        const width = this.rawSize.x
-        const height= this.rawSize.y
-        this.position.y -= height * 0.007
-        const { x, y } = this.rawPosition
-
-        const vertex = [
-            new Vector2(x,         y),
-            new Vector2(x + width, y),
-            new Vector2(x,         y - height),
-            new Vector2(x + width, y),
-            new Vector2(x,         y - height),
-            new Vector2(x + width, y - height)
-        ]
-        for (let i = 0; i < vertex.length; i++) {
-            TransformUtils.applyOrigin(vertex[i], this.coordinateScale)
-        }
-        return new Float32Array([
-            vertex[0].x, vertex[0].y, 0.0, 0.0,
-            vertex[1].x, vertex[1].y, 1.0, 0.0,
-            vertex[2].x, vertex[2].y, 0.0, 1.0,
-            vertex[3].x, vertex[3].y, 1.0, 0.0,
-            vertex[4].x, vertex[4].y, 0.0, 1.0,
-            vertex[5].x, vertex[5].y, 1.0, 1.0
-        ])
+        const width = this.width
+        const height = this.height
+        // this.position.y -= height * 0.007
+        const { x, y } = this.position
+        // let x = -width / 2, y = height / 2
+        console.log("create vertex", x, y)
+        
+        const topLeft = new Vector2(x, y)
+        const bottomRight = new Vector2(x + width, y - height)
+        // TransformUtils.applyOrigin(topLeft, Coordinate.orthographicProjection)
+        // TransformUtils.applyOrigin(bottomRight, Coordinate.orthographicProjection)
+        const vertexData: number[] = []
+        Shape2D.quadVector2(
+            topLeft, bottomRight,
+            vertexData, 0, 4
+        )
+        Shape2D.quad(
+            0, 0, 1, 1,
+            vertexData, 2, 4
+        )
+        console.log(vertexData);
+        
+        return new Float32Array(vertexData)
     }
 
-    public setViewport(viewport: Viewport) {
-        super.setViewport(viewport)
+    public onLoad(): void {
+        // console.log(this.position.x, this.position.y)
+        // console.log(this.width, this.height)
         this.buffer.bind()
         this.buffer.setBufferData(this.createVertexArray())
         this.buffer.unbind()
+    }
 
+    public onWindowResize(): void {
+        super.onWindowResize()
+        console.log("resize")
+        this.buffer.bind()
+        this.buffer.setBufferData(this.createVertexArray())
+        this.buffer.unbind()
     }
 
     public unbind() {
@@ -126,6 +136,7 @@ export class Logo extends Drawable {
 
     public onDraw() {
         const gl = this.gl
+        this.shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
         this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
         this.vertexArray.addBuffer(this.buffer, this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, 6)

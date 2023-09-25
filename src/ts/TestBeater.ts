@@ -1,11 +1,11 @@
 // BpmCalculator.vue use only
 
-import {TimingItem} from "./TimingItem";
-import {easeInOut, easeOut, easeOutQuint} from "./util/Easing";
+import {easeInOut, easeOut} from "./util/Easing";
+import {TimingItem} from "./type";
 
 export class TestBeater {
 
-    private bpm: number = 0
+    // private bpm: number = 0
     private gap: number = 0
     private offset: number = 0
     private timingList: TimingItem[] = []
@@ -16,7 +16,7 @@ export class TestBeater {
     }
 
     public setBpm(bpm: number) {
-        this.bpm = bpm
+        // this.bpm = bpm
         this.gap = 60 / bpm * 1000
     }
 

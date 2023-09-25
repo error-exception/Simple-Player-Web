@@ -1,7 +1,6 @@
 import {linear, TimeFunction} from "../util/Easing";
 import {Drawable} from "./Drawable";
 import {Vector2} from "./core/Vector2";
-import {Ref} from "vue";
 export class Transition {
 
     public next: Transition | null = null
@@ -182,7 +181,6 @@ export class FadeTransition {
 
 export class TranslateTransition {
 
-
     private transXTransition: TransitionGroup | null = null
     private transYTransition: TransitionGroup | null = null
     private transOffsetTime: number = 0
@@ -226,7 +224,7 @@ export class TranslateTransition {
     public update(timestamp: number) {
         const x = this.updateX(timestamp)
         const y = this.updateY(timestamp)
-        if (x && y) {
+        if (x !== null && y !== null) {
             this.drawable.translate = new Vector2(x, y)
         }
     }

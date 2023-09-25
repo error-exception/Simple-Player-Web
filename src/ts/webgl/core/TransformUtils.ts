@@ -31,6 +31,43 @@ export class TransformUtils {
         return matrix
     }
 
+    public static orth(left: number, right: number, bottom: number, top: number, near: number, far: number): Float32Array {
+        const mat4 = new Float32Array([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        ])
+        let x_orth = 2 / (right - left);
+		let y_orth = 2 / (top - bottom);
+		let z_orth = -2 / (far - near);
+
+		let tx = -(right + left) / (right - left);
+		let ty = -(top + bottom) / (top - bottom);
+		let tz = -(far + near) / (far - near);
+        mat4[0] = x_orth
+        mat4[1] = 0
+        mat4[2] = 0
+        mat4[3] = tx
+
+        mat4[4] = 0
+        mat4[5] = y_orth
+        mat4[6] = 0
+        mat4[7] = ty
+
+        mat4[8] = 0
+        mat4[9] = 0
+        mat4[10] = z_orth
+        mat4[11] = tz
+
+        mat4[12] = 0
+        mat4[13] = 0
+        mat4[14] = 0
+        mat4[15] = 1
+
+        return mat4
+    }
+
     public static apply(vec2: Vector2, matrix: Matrix3): Vector2 {
         const result = new Vector2()
         result.x = vec2.x * matrix.M11 + vec2.y * matrix.M12 + matrix.M13

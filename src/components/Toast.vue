@@ -18,15 +18,15 @@ const state = reactive({
 
 let timeoutId: any = undefined
 
-Toaster.onToast = (message: string) => {
-  clearTimeout(timeoutId)
-  state.opacity = 1
-  state.message = message
-  timeoutId = setTimeout(() => {
-    state.opacity = 0
-    state.message = ""
-  }, 3000)
-}
+Toaster.toast.collect(message => {
+    clearTimeout(timeoutId)
+    state.opacity = 1
+    state.message = message
+    timeoutId = setTimeout(() => {
+        state.opacity = 0
+        state.message = ""
+    }, 3000)
+})
 
 </script>
 
