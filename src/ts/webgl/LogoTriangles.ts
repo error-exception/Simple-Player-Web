@@ -1,18 +1,15 @@
-import { Time } from "../Time";
-import { Color } from "./Color";
+import {Time} from "../Time";
+import {Color} from "./Color";
 import Coordinate from "./Coordinate";
-import { BaseDrawableConfig, Drawable } from "./Drawable";
-import { Interpolation } from "./Interpolation";
-import { Shape2D } from "./Shape2D";
-import { ObjectTransition } from "./Transition";
-import { Viewport } from "./Viewport";
-import { Matrix3 } from "./core/Matrix3";
-import { Shader } from "./core/Shader";
-import { TransformUtils } from "./core/TransformUtils";
-import { Vector2 } from "./core/Vector2";
-import { VertexArray } from "./core/VertexArray";
-import { VertexBuffer } from "./core/VertexBuffer";
-import { VertexBufferLayout } from "./core/VertexBufferLayout";
+import {BaseDrawableConfig, Drawable} from "./Drawable";
+import {Interpolation} from "./Interpolation";
+import {Shape2D} from "./Shape2D";
+import {ObjectTransition} from "./Transition";
+import {Shader} from "./core/Shader";
+import {Vector2} from "./core/Vector2";
+import {VertexArray} from "./core/VertexArray";
+import {VertexBuffer} from "./core/VertexBuffer";
+import {VertexBufferLayout} from "./core/VertexBufferLayout";
 
 const vertexShader = `
     attribute vec2 a_position;
@@ -60,7 +57,7 @@ export class LogoTriangles extends Drawable {
     private particles: TriangleParticle[] = []
     private startColor = Color.fromHex(0xff7db7)
     private endColor = Color.fromHex(0xde5b95)
-    private MAX_SIZE = 500
+    private MAX_SIZE = 300
     private MIN_SIZE = 20
 
     public light: number = 0

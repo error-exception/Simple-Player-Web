@@ -11,6 +11,7 @@ import backIcon from '../assets/back_white_48.png';
 import legacyLogo from '../assets/legacy_logo.png';
 import logoImg from '../assets/logo.png';
 import rippleImg from '../assets/ripple.png';
+import rippleNew from '../assets/ripple_new.png';
 import BackgroundLoader from "../ts/BackgroundLoader";
 import BeatBooster from "../ts/BeatBooster";
 import { BeatState } from "../ts/Beater";
@@ -105,7 +106,7 @@ onMounted(async () => {
     resizeCanvas()
     
     await ImageLoader.load(logoImg, "logo")
-    await ImageLoader.load(rippleImg, "ripple")
+    await ImageLoader.load(rippleNew, "ripple")
     await ImageLoader.load(legacyLogo, "legacyLogo")
     await ImageLoader.load(backIcon, 'backIcon')
     await ImageLoader.load(stdNoteCircle, "stdNoteCircle")

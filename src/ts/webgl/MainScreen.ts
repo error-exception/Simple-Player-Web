@@ -1,14 +1,11 @@
 import BackgroundLoader from "../BackgroundLoader";
-import { MouseState } from "../MouseState";
-import { init } from "../Utils";
-import OSUPlayer, { OSUBackground } from "../player/OSUPlayer";
-import { BeatLogoBox } from "./BeatLogoBox";
-import { Box } from "./Box";
-import Coordinate from "./Coordinate";
-import { Flashlight } from "./Flashlight";
-import { Background } from "./MovableBackground";
-import { Vector2, createV2 } from "./core/Vector2";
-import { Axis } from "./layout/Axis";
+import {MouseState} from "../MouseState";
+import OSUPlayer, {OSUBackground} from "../player/OSUPlayer";
+import {BeatLogoBox} from "./BeatLogoBox";
+import {Box} from "./Box";
+import {Flashlight} from "./Flashlight";
+import {Background} from "./MovableBackground";
+import {Menu} from "./menu/Menu";
 
 export class MainScreen extends Box {
 
@@ -29,21 +26,14 @@ export class MainScreen extends Box {
             // });
         }
 
-        console.log(bg);
+        // console.log(bg);
     }
 
     constructor(gl: WebGL2RenderingContext) {
         super(gl, {
             size: ['fill-parent', 'fill-parent'],
         });
-        // this.size = createV2(Coordinate.width, Coordinate.height)
-        // this.anchor = Axis.X_CENTER | Axis.Y_CENTER
-        // const beatLogo = new BeatLogoBox(gl, {
-        //     width: 520,
-        //     height: 520,
-        //     horizontal: "center",
-        //     vertical: "center"
-        // })
+        const menu = new Menu(gl)
         const beatLogo = new BeatLogoBox(gl, { size: [520, 520] })
         const background = new Background(gl, OSUPlayer.background.value.image)
         this.background = background
@@ -51,6 +41,7 @@ export class MainScreen extends Box {
         OSUPlayer.background.collect(this.collector)
         this.add(
             background,
+            menu,
             flashlight,
             beatLogo
         )
@@ -58,10 +49,7 @@ export class MainScreen extends Box {
 
     protected onUpdate() {
         super.onUpdate();
-        const {x, y} = MouseState.position
-        // const transX = (x - window.innerWidth / 2)
-        // const transY = (window.innerHeight / 2 - y)
-        this.background.translate = new Vector2(x, y)
+        this.background.translate = MouseState.position.copy()
     }
 
     public dispose(): void {

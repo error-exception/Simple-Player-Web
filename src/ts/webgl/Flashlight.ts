@@ -7,7 +7,7 @@ import {VertexBufferLayout} from "./core/VertexBufferLayout";
 import {ObjectTransition} from "./Transition";
 import {Time} from "../Time";
 import {BeatState} from "../Beater";
-import {easeIn, easeInCirc, easeInCubic, easeInOutQuart, easeInQuad, easeInQuart, easeInQuint} from "../util/Easing";
+import {easeInQuad} from "../util/Easing";
 import {Color} from "./Color";
 
 const vertexShader = `

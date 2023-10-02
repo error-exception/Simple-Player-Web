@@ -1,20 +1,20 @@
 import noteEffect from "../../../assets/soft-hitwhistle.wav"
-import { OSUParser } from "../../OSUParser"
-import { Score } from "../../Score"
-import { Time } from "../../Time"
-import { int } from "../../Utils"
+import {OSUParser} from "../../OSUParser"
+import {Score} from "../../Score"
+import {Time} from "../../Time"
+import {clamp, int} from "../../Utils"
 import AudioPlayer from "../../player/AudioPlayer"
-import { ease, easeOut } from "../../util/Easing"
-import { Color } from "../Color"
+import {ease, easeOut} from "../../util/Easing"
+import {Color} from "../Color"
 import Coordinate from "../Coordinate"
-import { Drawable } from "../Drawable"
-import { Shape2D } from "../Shape2D"
-import { ObjectTransition } from "../Transition"
-import { Shader } from "../core/Shader"
-import { Vector2 } from "../core/Vector2"
-import { VertexArray } from "../core/VertexArray"
-import { VertexBuffer } from "../core/VertexBuffer"
-import { VertexBufferLayout } from "../core/VertexBufferLayout"
+import {Drawable} from "../Drawable"
+import {Shape2D} from "../Shape2D"
+import {ObjectTransition} from "../Transition"
+import {Shader} from "../core/Shader"
+import {Vector2} from "../core/Vector2"
+import {VertexArray} from "../core/VertexArray"
+import {VertexBuffer} from "../core/VertexBuffer"
+import {VertexBufferLayout} from "../core/VertexBufferLayout"
 
 const vertexShader = `
     attribute vec2 a_position;
@@ -47,6 +47,11 @@ const fragmentShader = `
 `
 
 let count = 0
+
+const yellow = Color.fromHex(0xffff00)
+const green = Color.fromHex(0x00ff00)
+const red = Color.fromHex(0xff0000)
+const purple = Color.fromHex(0xff00ff)
 
 export class ManiaPanel extends Drawable {
 
@@ -118,6 +123,7 @@ export class ManiaPanel extends Drawable {
         this.vertexArray = vertexArray
         this.offsetLeft = this.position.x + 10 + this.trackGap
         let currentOffsetLeft = this.offsetLeft
+        const colors = [yellow, green, red, purple]
         for (let i = 0; i < this.trackCount; i++) {
             const track = new ManiaTrack(
                 noteData[i],
@@ -125,6 +131,7 @@ export class ManiaPanel extends Drawable {
                 350,
                 currentOffsetLeft,
                 this.trackWidth,
+                colors[i],
                 this
             )
             currentOffsetLeft += this.trackWidth + this.trackGap
@@ -150,69 +157,70 @@ export class ManiaPanel extends Drawable {
         }
         this.songProgress.update()
         this.vertexArrayData = []
-        const { x, y } = this.position
+        // const { x, y } = this.position
         let offset = 0
         // left edge
-        Shape2D.quad(
-            x, y,
-            x + 10, y - this.height,
-            this.vertexArrayData,
-            offset,
-            6
-        )
-        Shape2D.color(
-            1, 1, 1, 1,
-            1, 1, 1, 1,
-            1, 1, 1, 1,
-            1, 1, 1, 1,
-            this.vertexArrayData,
-            offset + 2,
-            6
-        )
-        offset += 36
+        // Shape2D.quad(
+        //     x, y,
+        //     x + 10, y - this.height,
+        //     this.vertexArrayData,
+        //     offset,
+        //     6
+        // )
+        // Shape2D.color(
+        //     1, 1, 1, 1,
+        //     1, 1, 1, 1,
+        //     1, 1, 1, 1,
+        //     1, 1, 1, 1,
+        //     this.vertexArrayData,
+        //     offset + 2,
+        //     6
+        // )
+        // offset += 36
+
         for (let i = 0; i < this.tracks.length; i++) {
             offset += this.tracks[i].copyTo(this.vertexArrayData, offset)
         }
         // right edge
-        Shape2D.quad(
-            x + 10 + this.trackWidth * this.trackCount + this.trackGap * (this.trackCount + 1), y,
-            x + 20 + this.trackWidth * this.trackCount + this.trackGap * (this.trackCount + 1), y - this.height,
-            this.vertexArrayData,
-            offset,
-            6
-        )
-        Shape2D.color(
-            1, 1, 1, 1,
-            1, 1, 1, 1,
-            1, 1, 1, 1,
-            1, 1, 1, 1,
-            this.vertexArrayData,
-            offset + 2,
-            6
-        )
-        offset += 36
+        // Shape2D.quad(
+        //     x + 10 + this.trackWidth * this.trackCount + this.trackGap * (this.trackCount + 1), y,
+        //     x + 20 + this.trackWidth * this.trackCount + this.trackGap * (this.trackCount + 1), y - this.height,
+        //     this.vertexArrayData,
+        //     offset,
+        //     6
+        // )
+        // Shape2D.color(
+        //     1, 1, 1, 1,
+        //     1, 1, 1, 1,
+        //     1, 1, 1, 1,
+        //     1, 1, 1, 1,
+        //     this.vertexArrayData,
+        //     offset + 2,
+        //     6
+        // )
+        // offset += 36
         // judgementLine
-        Shape2D.quad(
-            x + 10,
-            y - this.height * (this.judgementLinePosition / 100),
-            x + 10 + this.trackWidth * (this.trackCount) + this.trackGap * (this.trackCount + 1), 
-            y - this.height * (this.judgementLinePosition / 100) - 10,
-            // -1 + Coordinate.glXLength(this.offsetLeft - 10), 1 - 2 * (this.judgementLinePosition / 100),
-            // -1 + Coordinate.glXLength(this.offsetLeft + this.trackWidth * this.trackCount + this.trackGap * (this.trackCount) + 10), 1 - 2 * (this.judgementLinePosition / 100) - Coordinate.glYLength(10),
-            this.vertexArrayData,
-            offset,
-            6
-        )
-        Shape2D.color(
-            1, 1, 1, 1,
-            1, 1, 1, 1,
-            1, 1, 1, 1,
-            1, 1, 1, 1,
-            this.vertexArrayData,
-            offset + 2,
-            6
-        )
-        offset += 36
+        // Shape2D.quad(
+        //     x + 10,
+        //     y - this.height * (this.judgementLinePosition / 100),
+        //     x + 10 + this.trackWidth * (this.trackCount) + this.trackGap * (this.trackCount + 1),
+        //     y - this.height * (this.judgementLinePosition / 100) - 10,
+        //     // -1 + Coordinate.glXLength(this.offsetLeft - 10), 1 - 2 * (this.judgementLinePosition / 100),
+        //     // -1 + Coordinate.glXLength(this.offsetLeft + this.trackWidth * this.trackCount + this.trackGap * (this.trackCount) + 10), 1 - 2 * (this.judgementLinePosition / 100) - Coordinate.glYLength(10),
+        //     this.vertexArrayData,
+        //     offset,
+        //     6
+        // )
+        // Shape2D.color(
+        //     1, 1, 1, 1,
+        //     1, 1, 1, 1,
+        //     1, 1, 1, 1,
+        //     1, 1, 1, 1,
+        //     this.vertexArrayData,
+        //     offset + 2,
+        //     6
+        // )
+        // offset += 36
         // offset += this.songProgress.copyTo(this.vertexArrayData, offset, 6)
         this.vertexData = new Float32Array(this.vertexArrayData)
         this.vertexCount = int(this.vertexArrayData.length / 6)
@@ -229,7 +237,6 @@ export class ManiaPanel extends Drawable {
         this.shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
         this.vertexBuffer.setBufferData(this.vertexData)
         this.vertexArray.addBuffer(this.vertexBuffer, this.layout)
-        
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
     }
 
@@ -250,13 +257,13 @@ class ManiaTrack {
     private alpha = 0
 
     private fadeTransition = new ObjectTransition(this, 'alpha')
-
     constructor(
-        private noteDataList: NoteData[], // sorted by start time
+        noteDataList: NoteData[], // sorted by start time
         private judgementLinePosition: number,
         private movementDuration: number, // 运动时间
         private offsetLeft: number,
         private trackWidth: number,
+        private mainColor: Color,
         private panel: ManiaPanel
     ) {
         // this.updateNoteQueue(0)
@@ -268,11 +275,23 @@ class ManiaTrack {
                 this.offsetLeft,
                 this.movementDuration,
                 this.judgementLinePosition,
+                this.mainColor,
                 noteDataList[i],
-                () => {
-                    this.fadeBegin()
-                    .transitionTo(0.3, 60, easeOut)
-                    .transitionTo(0, 200, ease)
+                (isHold, isHoldEnd) => {
+                    if (isHold) {
+                        if (isHoldEnd) {
+                            this.fadeBegin()
+                              .transitionTo(0, 200, ease)
+                        } else {
+                            this.fadeBegin()
+                              .transitionTo(0.3, 60, easeOut)
+                        }
+                    } else {
+                        this.fadeBegin()
+                          .transitionTo(0.3, 60, easeOut)
+                          .transitionTo(0, 200, ease)
+                    }
+
                 }
             )
             this.noteList.push(note)
@@ -322,21 +341,42 @@ class ManiaTrack {
         const currentTime = AudioPlayer.currentTime()
         const endTime = currentTime + this.movementDuration
 
+        const { red, green, blue } = this.mainColor
+
+        // track bg
+        Shape2D.quad(
+          this.offsetLeft, Coordinate.height / 2,
+          this.offsetLeft + this.trackWidth,
+          // this.panel.position.y - this.panel.height * (this.judgementLinePosition / 100),
+          -this.panel.height / 2,
+          out, offset, 6
+        )
+        const brightness = 0.8
+        Shape2D.color(
+          clamp(red - brightness, 0, 1), clamp(green - brightness, 0, 1), clamp(blue - brightness, 0, 1), 1,
+          clamp(red - brightness, 0, 1), clamp(green - brightness, 0, 1), clamp(blue - brightness, 0, 1), 1,
+          clamp(red - brightness, 0, 1), clamp(green - brightness, 0, 1), clamp(blue - brightness, 0, 1), 1,
+          clamp(red - brightness, 0, 1), clamp(green - brightness, 0, 1), clamp(blue - brightness, 0, 1), 1,
+          out, offset + 2, 6
+        )
+
+        let currentOffset = offset + 36
+        // hit
         Shape2D.quad(
             this.offsetLeft, Coordinate.height / 2 * 0.4,
             this.offsetLeft + this.trackWidth, 
             this.panel.position.y - this.panel.height * (this.judgementLinePosition / 100),
-            out, offset, 6
+            out, currentOffset, 6
         )
         Shape2D.color(
             0, 0, 0, 0,
-            1, 1, 1, this.alpha,
+            red, green, blue, this.alpha,
             0, 0, 0, 0,
-            1, 1, 1, this.alpha,
-            out, offset + 2, 6
+            red, green, blue, this.alpha,
+            out, currentOffset + 2, 6
         )
 
-        let currentOffset = offset + 36
+        currentOffset += 36
 
         // 画 key 座
         Shape2D.quad(
@@ -346,15 +386,19 @@ class ManiaTrack {
             -this.panel.height / 2,
             out, currentOffset, 6
         )
+        const stageAlpha = Math.min(
+          this.alpha, 1
+        )
         Shape2D.color(
-            0, 1, 0, this.alpha + 0.5,
-            0, 1, 0, this.alpha + 0.5,
-            0, 1, 0, this.alpha + 0.5,
-            0, 1, 0, this.alpha + 0.5,
-            out, currentOffset + 2, 6
+          red, green, blue, stageAlpha,
+          red, green, blue, stageAlpha,
+          red, green, blue, stageAlpha,
+          red, green, blue, stageAlpha,
+          out, currentOffset + 2, 6
         )
 
         currentOffset += 36
+
 
         for (let i = 0; i < noteList.length; i++) {
             const data = noteList[i].noteData
@@ -369,6 +413,22 @@ class ManiaTrack {
             }
             currentOffset += noteList[i].copyTo(out, currentOffset, 6)
         }
+        // 判定线
+        Shape2D.quad(
+          this.offsetLeft,
+          this.panel.position.y - (this.judgementLinePosition / 100) * this.panel.height,
+          this.offsetLeft + this.trackWidth,
+          this.panel.position.y - (this.judgementLinePosition / 100) * this.panel.height + 5,
+          out, currentOffset, 6
+        )
+        Shape2D.color(
+          1, 1, 1, 1,
+          1, 1, 1, 1,
+          1, 1, 1, 1,
+          1, 1, 1, 1,
+          out, currentOffset + 2, 6
+        )
+        currentOffset += 36
         return currentOffset
     }
 
@@ -395,12 +455,11 @@ class Note {
         private offsetLeft: number,
         private movementDuration: number,
         private judgementLinePosition: number,
+        color: Color,
         public noteData: NoteData,
-        public onAutoHit: () => void
+        public onNoteReceive: (isHold: boolean, isHoldEnd: boolean) => void
     ) {
-        // const glOffsetLeft = Coordinate.glXLength(offsetLeft)
-        // const glNoteWidth = Coordinate.glXLength(noteWidth)
-        // const glNoteHeight = Coordinate.glYLength(noteHeight)
+        this.color = color
         this.position.x = offsetLeft;
         this.position.y = panel.height / 2;
         const topLeft = this.topLeft;
@@ -418,7 +477,7 @@ class Note {
             return;
         }
         this.autoHit()
-        this.updateVertex();
+        this.updateVertex()
         if (this.judgeResult >= 0) {
             return;
         }
@@ -429,7 +488,7 @@ class Note {
             // EventDispatcher.fireOnManiaHit(++count)
         }
     }
-
+    private isHoldStart = false
     public updateVertex() {
         const currentTime = AudioPlayer.currentTime(); // 判定线处
         const noteArea = this.panel.height * (this.judgementLinePosition / 100);
@@ -450,36 +509,48 @@ class Note {
             if (noteEndTime > endTime) {
                 topY = panelTop;
             } else if (endPercent < 0) {
+                // finish hold
+                // if (this.isHoldStart) {
+                //     this.triggerNoteReceive(true, true)
+                //     this.isHoldStart = false
+                // }
                 topY = panelTop - noteArea;
             } else {
+                // holding
+                // this.isHoldStart && this.triggerNoteReceive(true, false)
                 topY = panelTop - (1 - endPercent) * noteArea;
             }
             if (startPercent < 0) {
+                // if (!this.isHoldStart) {
+                //     console.log('start hold')
+                //     this.triggerNoteReceive(true, false)
+                //     this.isHoldStart = true
+                // }
                 bottomY = panelTop - noteArea;
             } else {
+                // start hold
                 bottomY = panelTop - (1 - startPercent) * noteArea;
             }
         } else {
+            // this.triggerNoteReceive(false, true, false)
             // note
             topY = panelTop - (1 - startPercent) * noteArea - noteHeight;
             bottomY = panelTop - (1 - startPercent) * noteArea;
         }
 
-        // let targetY = -1
-        // if (noteEndTime > 0) {
-        //     if (noteEndTime > endTime) {
-        //         targetY = 1
-        //     } else {
-        //         targetY = 1 - (1 - (noteEndTime - currentTime) / (endTime - currentTime)) * noteArea
-        //     }
-        // } else {
-        //     targetY = 1 - (1 - startPercent) * noteArea + Coordinate.glYLength(this.noteHeight)
-        // }
-
         this.position.y = bottomY;
         this.topLeft.y = topY;
-        this.bottomRight.y =
-            this.position.y; /* - Coordinate.glYLength(this.noteHeight)*/
+        this.bottomRight.y = this.position.y;
+    }
+
+    private lastTrigger = [false, false]
+    private triggerNoteReceive(isHold: boolean, isHoldEnd: boolean, check: boolean = true) {
+        if (check && this.lastTrigger[0] === isHold && this.lastTrigger[1] === isHoldEnd) {
+            return
+        }
+        this.lastTrigger[0] = isHold
+        this.lastTrigger[1] = isHoldEnd
+        this.onNoteReceive(isHold, isHoldEnd)
     }
 
     public hit() {
@@ -539,7 +610,7 @@ class Note {
         if (absDiffTime <= 60 || diffTime < 0) {
             this.judgeResult = Note.JUDGE_PERFECT;
             Score.perfect.value++;
-            this.onAutoHit()
+            this.onNoteReceive(false, true)
         }
     }
 

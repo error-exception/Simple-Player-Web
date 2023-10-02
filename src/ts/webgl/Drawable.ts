@@ -1,26 +1,23 @@
-import { IMouseEvent, MouseState } from "../MouseState";
-import { Time } from "../Time";
-import { getClassName } from "../Utils";
-import { Box } from "./Box";
+import {IMouseEvent, MouseState} from "../MouseState";
+import {Time} from "../Time";
+import {Box} from "./Box";
 import Coordinate from "./Coordinate";
-import { Transform } from "./Transform";
-import {
-    FadeTransition,
-    ScaleTransition,
-    TranslateTransition,
-} from "./Transition";
-import { Viewport, defaultViewport } from "./Viewport";
-import { Bindable } from "./core/Bindable";
-import { Disposable } from "./core/Disposable";
-import { TransformUtils } from "./core/TransformUtils";
-import { isUndef } from "./core/Utils";
-import { Vector2 } from "./core/Vector2";
-import { Axis } from "./layout/Axis";
+import {Transform} from "./Transform";
+import {FadeTransition, ScaleTransition, TranslateTransition,} from "./Transition";
+import {Viewport} from "./Viewport";
+import {Bindable} from "./core/Bindable";
+import {Disposable} from "./core/Disposable";
+import {isUndef} from "./core/Utils";
+import {Vector2} from "./core/Vector2";
+import {Axis} from "./layout/Axis";
+import {provide, unprovide} from "./DependencyInject";
 
 export interface BaseDrawableConfig {
     size: [number | "fill-parent", number | "fill-parent"];
     anchor?: number;
     offset?: [number, number];
+    // 设置变换中心
+    origin?: number
 }
 
 /**
@@ -56,34 +53,13 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
      */
     public appliedTransform: Transform = new Transform();
 
-    // public boundary: Boundary = new Boundary();
     public size = new Vector2();
     public position = new Vector2();
     public anchor = Axis.X_CENTER | Axis.Y_CENTER;
 
-    /**
-     * @deprecated
-     */
-    protected viewport: Viewport = defaultViewport;
-
-    // below four can be replaced by boundary
-    // public position: Vector2 = Vector2.newZero();
-    // public size: Vector2 = Vector2.newZero();
-    // public rawPosition: Vector2 = Vector2.newZero();
-    // public rawSize: Vector2 = Vector2.newZero();
-
-    // protected _scale: Vector2 = new Vector2(1, 1)
-    // protected _translate: Vector2 = Vector2.newZero()
-    // protected _alpha: number = 1
-
-    // public appliedScale: Vector2 = new Vector2(1, 1)
-    // public appliedTranslate: Vector2 = Vector2.newZero()
-    // public appliedAlpha: number = 1
-
     protected parent: Box | null = null;
     protected isAvailable = false;
 
-    // protected transformMatrix: Matrix3 = Matrix3.newIdentify();
     protected matrixArray = new Float32Array([
         1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
     ]);
@@ -101,6 +77,7 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
     ) {
         this.isAvailable = true;
         this.updateBounding();
+        provide(this.constructor.name, this)
     }
 
     public get width() {
@@ -128,7 +105,6 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
         this.anchor = isUndef(this.config.anchor)
             ? Axis.X_CENTER | Axis.Y_CENTER
             : this.config.anchor;
-        // console.log("Coordinate", Coordinate.width, Coordinate.height);
 
         if (width === "fill-parent") {
             width = Coordinate.width;
@@ -136,8 +112,7 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
         if (height === "fill-parent") {
             height = Coordinate.height;
         }
-        // width *= window.devicePixelRatio
-        // height *= window.devicePixelRatio
+
         let x = 0,
             y = 0,
             left = -width / 2,
@@ -164,14 +139,12 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
             x += offsetX
             y += offsetY
         }
-        // console.log(x, y);
 
         const centerTranslate = new Vector2(x - left, y - top);
         this.position.set(left, top);
-        // this.position.set(0, 0)
+
         this.size.set(width, height);
         this.layoutTransform.translateTo(centerTranslate);
-        // console.log(center)
     }
 
     /**
@@ -243,11 +216,6 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
         appliedTransform.alphaBy(selfTransform.alpha);
 
         appliedTransform.extractToMatrix(this.matrixArray);
-        // const appliedTranslate = appliedTransform.translate
-        // TransformUtils.apply(appliedTranslate, Coordinate.coordinateScale)
-        // array[3] = appliedTranslate.x
-        // array[7] = appliedTranslate.y
-        // console.log(array);
 
         this.onTransformApplied();
     }
@@ -297,6 +265,7 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
 
     public dispose(): void {
         this.isAvailable = false;
+        unprovide(this.constructor.name)
     }
 
     abstract unbind(): void;
@@ -308,7 +277,7 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
      * @param position
      */
     public isInBound(position: Vector2) {
-        // const name = getClassName(this)
+
         let { x, y } = this.position;
         const { translate, scale } = this.appliedTransform;
 
@@ -316,15 +285,6 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
         y *= scale.y;
         x += translate.x;
         y += translate.y;
-        // console.log(`mouse ${name}.ts:`, position.x, position.y)
-        // console.log(`${name}.ts:`, x, y)
-        // const scaledWidth = this.width * scale.x;
-        // console.log("🚀 ~ file: " + name + ".ts:313 ~ Drawable ~ isInBound ~ scaledWidth:", scaledWidth)
-        // const scaledHeight = this.height * scale.y;
-        // console.log(
-        //     "🚀 ~ file: " + name + ".ts:308 ~ Drawable ~ isInBound ~ scledHeight:",
-        //     scaledHeight
-        // );
 
         return (
             position.x > x &&

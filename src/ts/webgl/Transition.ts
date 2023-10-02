@@ -100,6 +100,7 @@ export class ScaleTransition {
 
     public setStartTime(startTime: number) {
         this.scaleTimeOffset = startTime
+        this.isEnd = false
     }
 
     public scaleTo(target: number, duration: number = 0, ease: TimeFunction = linear) {
@@ -144,6 +145,7 @@ export class FadeTransition {
 
     public setStartTime(startTime: number) {
         this.fadeTimeOffset = startTime
+        this.isEnd = false
     }
 
     public fadeTo(target: number, duration: number = 0, ease: TimeFunction = linear) {
@@ -190,6 +192,7 @@ export class TranslateTransition {
 
     public setStartTime(startTime: number) {
         this.transOffsetTime = startTime
+        this.isEnd = false
     }
 
     public translateTo(target: Vector2, duration: number = 0, ease: TimeFunction = linear) {
@@ -360,6 +363,7 @@ export class ObjectTransition {
 
     public setStartTime(startTime: number) {
         this.timeOffset = startTime
+        this.isEnd = false
     }
 
     public transitionTo(target: number, duration: number = 0, ease: TimeFunction = linear) {

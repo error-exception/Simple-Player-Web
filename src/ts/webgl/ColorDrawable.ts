@@ -1,13 +1,12 @@
-import { Color } from "./Color";
+import {Color} from "./Color";
 import Coordinate from "./Coordinate";
-import { BaseDrawableConfig, Drawable } from "./Drawable";
+import {BaseDrawableConfig, Drawable} from "./Drawable";
 import ShaderManager from "./ShaderManager";
-import { Shape2D } from "./Shape2D";
-import { Shader } from "./core/Shader";
-import { Texture } from "./core/Texture";
-import { VertexArray } from "./core/VertexArray";
-import { VertexBuffer } from "./core/VertexBuffer";
-import { VertexBufferLayout } from "./core/VertexBufferLayout";
+import {Shape2D} from "./Shape2D";
+import {Shader} from "./core/Shader";
+import {VertexArray} from "./core/VertexArray";
+import {VertexBuffer} from "./core/VertexBuffer";
+import {VertexBufferLayout} from "./core/VertexBufferLayout";
 
 export interface ColorDrawableConfig extends BaseDrawableConfig {
     color: Color
@@ -29,7 +28,7 @@ export class ColorDrawable extends Drawable {
         const vertexArray = new VertexArray(gl)
         vertexArray.bind()
         const buffer = new VertexBuffer(gl)
-        const shader = ShaderManager.newColoredShader()//new Shader(gl, vertexShader, fragmentShader)
+        const shader = ShaderManager.newColoredShader()
         const layout = new VertexBufferLayout(gl)
 
         buffer.bind()
@@ -102,6 +101,7 @@ export class ColorDrawable extends Drawable {
         }
         this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
         this.shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
+        this.shader.setUniform1f('u_alpha', this.appliedTransform.alpha)
         this.vertexArray.addBuffer(this.buffer, this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, 6)
     }

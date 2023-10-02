@@ -1,12 +1,12 @@
 import Coordinate from "./Coordinate";
-import { BaseDrawableConfig, Drawable } from "./Drawable";
+import {BaseDrawableConfig, Drawable} from "./Drawable";
 import ShaderManager from "./ShaderManager";
-import { Shape2D } from "./Shape2D";
-import { Shader } from "./core/Shader";
-import { Texture } from "./core/Texture";
-import { VertexArray } from "./core/VertexArray";
-import { VertexBuffer } from "./core/VertexBuffer";
-import { VertexBufferLayout } from "./core/VertexBufferLayout";
+import {Shape2D} from "./Shape2D";
+import {Shader} from "./core/Shader";
+import {Texture} from "./core/Texture";
+import {VertexArray} from "./core/VertexArray";
+import {VertexBuffer} from "./core/VertexBuffer";
+import {VertexBufferLayout} from "./core/VertexBufferLayout";
 
 const vertexShader = `
     attribute vec2 a_position;

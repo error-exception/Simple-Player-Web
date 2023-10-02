@@ -1,14 +1,13 @@
 import BackgroundLoader from "../../BackgroundLoader";
-import { MouseState } from "../../MouseState";
-import { Toaster } from "../../Toaster";
-import OSUPlayer, { OSUBackground } from "../../player/OSUPlayer";
-import { Box } from "../Box";
-import { Color } from "../Color";
-import { ColorDrawable } from "../ColorDrawable";
-import { Background } from "../MovableBackground";
-import { VideoBackground } from "../VideoBackground";
-import { Vector2 } from "../core/Vector2";
-import { ManiaPanel, NoteData, osuFile } from "./ManiaPanel";
+import {MouseState} from "../../MouseState";
+import {Toaster} from "../../Toaster";
+import OSUPlayer, {OSUBackground} from "../../player/OSUPlayer";
+import {Box} from "../Box";
+import {Color} from "../Color";
+import {ColorDrawable} from "../ColorDrawable";
+import {Background} from "../MovableBackground";
+import {VideoBackground} from "../VideoBackground";
+import {ManiaPanel, NoteData, osuFile} from "./ManiaPanel";
 
 export class ManiaScreen extends Box {
     private readonly background: Background
@@ -46,9 +45,9 @@ export class ManiaScreen extends Box {
         this.videoBackground = new VideoBackground(gl, null)
         OSUPlayer.background.collect(this.collector)
 
-        const trackWidth: number[] = [120, 120, 120, 120]
+        const trackWidth: number[] = new Array(4).fill(80)
         const offsetLeft = 400
-        const trackGap = 12
+        const trackGap = 8
         let data: NoteData[][]
         if (OSUPlayer.maniaNoteData.value !== null) {
             data = OSUPlayer.maniaNoteData.value
@@ -61,7 +60,7 @@ export class ManiaScreen extends Box {
             offsetLeft,
             trackWidth[0],
             trackGap,
-            OSUPlayer.maniaNoteData.value ? OSUPlayer.maniaNoteData.value : osuFile.NoteData!
+            data
         )
         const mask = new ColorDrawable(gl, {
             size: ['fill-parent', 'fill-parent'],
@@ -77,10 +76,7 @@ export class ManiaScreen extends Box {
 
     protected onUpdate() {
         super.onUpdate();
-        const {x, y} = MouseState.position
-        // const transX = (x - window.innerWidth / 2)
-        // const transY = (window.innerHeight / 2 - y)
-        this.background.translate = new Vector2(x, y)
+        this.background.translate = MouseState.position.copy()
     }
 
     public dispose() {

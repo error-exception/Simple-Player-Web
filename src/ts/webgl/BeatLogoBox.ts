@@ -2,65 +2,37 @@ import {Box} from "./Box";
 import {BeatDispatcher, BeatState, IBeat} from "../Beater";
 import {BaseDrawableConfig} from "./Drawable";
 import {Logo} from "./Logo";
-import {Ripple} from "./Ripple";
+import {Ripples} from "./Ripples";
 import {RoundVisualizer} from "./RoundVisualizer";
 import {easeInCubic, easeOut, easeOutCubic, easeOutElastic, easeOutQuint} from "../util/Easing";
 import AudioPlayerV2 from "../player/AudioPlayer";
 import {Time} from "../Time";
-import {Vector2, createV2} from "./core/Vector2";
+import {Vector2} from "./core/Vector2";
 import {LogoTriangles} from "./LogoTriangles";
 import {MouseState} from "../MouseState";
 import {Interpolation} from "./Interpolation";
-import { init } from "../Utils";
-import { Axis } from "./layout/Axis";
-import Coordinate from "./Coordinate";
-import { onEnterMenu } from "../GlobalState";
+import {onEnterMenu} from "../GlobalState";
+import {inject} from "./DependencyInject";
+import {Menu} from "./menu/Menu";
 
 class BeatLogo extends Box implements IBeat {
 
     // @ts-ignore
     private readonly logo: Logo
-    private readonly ripple: Ripple
     private readonly triangles: LogoTriangles
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
-        // const logo = new Logo(gl, {
-        //     width: 520,
-        //     height: 520,
-        //     vertical: "center",
-        //     horizontal: "center"
-        // })
-
-        // this.size = createV2(Coordinate.width, Coordinate.height)
-        // this.anchor = Axis.X_CENTER | Axis.Y_CENTER
 
         const logo = new Logo(gl, {
             size: [520, 520],
         })
-        // const ripple = new Ripple(gl, {
-        //     width: 500,
-        //     height: 500,
-        //     vertical: "center",
-        //     horizontal: "center"
-        // })
-        const ripple = new Ripple(gl, {
-            size: [500, 500]
-        })
-        // const triangles = new LogoTriangles(gl, {
-        //     width: 500,
-        //     height: 500,
-        //     vertical: "center",
-        //     horizontal: "center"
-        // })
         const triangles = new LogoTriangles(gl, {
             size: [500, 500]
         })
         this.logo = logo
-        this.ripple = ripple
         this.triangles = triangles
         this.add(
-            ripple,
             triangles,
             logo
         )
@@ -87,14 +59,6 @@ class BeatLogo extends Box implements IBeat {
                 .transitionTo(0.2, 60, easeOut)
                 .transitionTo(0, gap * 2, easeOutQuint)
         }
-
-        const ripple = this.ripple
-        ripple.scaleBegin()
-            .scaleTo(1)
-            .scaleTo(1.1, gap, easeOutQuint)
-        ripple.fadeBegin()
-            .fadeTo(0.6)
-            .fadeTo(0, gap, easeOutQuint)
     }
 
     public dispose() {
@@ -110,8 +74,6 @@ class LogoBeatBox extends Box {
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
-        // this.size = createV2(Coordinate.width, Coordinate.height)
-        // this.anchor = Axis.X_CENTER | Axis.Y_CENTER
 
         this.beatLogo = new BeatLogo(gl, config)
         this.add(
@@ -148,15 +110,16 @@ class LogoAmpBox extends Box {
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
-        // this.size = createV2(Coordinate.width, Coordinate.height);
-        // this.anchor = Axis.X_CENTER | Axis.Y_CENTER;
 
         this.visualizer = new RoundVisualizer(gl, { size: ['fill-parent', 'fill-parent'] })
-
+        const ripple = new Ripples(gl, {
+            size: [500, 500]
+        })
         this.logoBeatBox = new LogoBeatBox(gl, config)
         this.add(
-            this.visualizer,
-            this.logoBeatBox
+          this.visualizer,
+          ripple,
+          this.logoBeatBox
         )
     }
 
@@ -183,29 +146,6 @@ export class LogoBounceBox extends Box {
         this.logoAmpBox = new LogoAmpBox(gl, { size: config.size })
         this.add(this.logoAmpBox)
     }
-
-    // public onMouseDown(which: number): boolean {
-    //     this.scaleBegin()
-    //         .scaleTo(0.9 * this._scale.x, 1000, easeOutSine)
-    //     return true
-    // }
-    //
-    // private flag = true
-    // public onMouseUp(which: number): boolean {
-    //     if (this.flag) {
-    //         this.translateBegin()
-    //             .translateTo(new Vector2(-600, 50), 400, easeInCubic)
-    //         this.scaleBegin()
-    //             .scaleTo(0.4, 400, easeInCubic)
-    //     } else {
-    //         this.translateBegin()
-    //             .translateTo(new Vector2(0, 0), 400, easeOutCubic)
-    //         this.scaleBegin()
-    //             .scaleTo(1, 400, easeOutCubic)
-    //     }
-    //     this.flag = !this.flag
-    //     return true
-    // }
 
     private flag = false
     private startPosition = Vector2.newZero()
@@ -238,8 +178,6 @@ export class BeatLogoBox extends Box {
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
-        // this.size = createV2(Coordinate.width, Coordinate.height)
-        // this.anchor = Axis.X_CENTER | Axis.Y_CENTER
 
         this.logoBounceBox = new LogoBounceBox(gl, { size: config.size })
         this.add(this.logoBounceBox)
@@ -247,16 +185,20 @@ export class BeatLogoBox extends Box {
 
     private flag = true
     public onClick(which: number): boolean {
+        const menu = inject<Menu>('Menu')
+
         if (this.flag) {
             this.translateBegin()
-                .translateTo(new Vector2(-400, 80), 400, easeInCubic)
+                .translateTo(new Vector2(-240, 0), 400, easeInCubic)
             this.scaleBegin()
                 .scaleTo(0.5, 400, easeInCubic)
+            menu.show()
         } else {
             this.translateBegin()
                 .translateTo(new Vector2(0, 0), 400, easeOutCubic)
             this.scaleBegin()
                 .scaleTo(1, 400, easeOutCubic)
+            menu.hide()
         }
         const v = this.flag
         setTimeout(() => onEnterMenu.emit(v), 400);

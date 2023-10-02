@@ -21,8 +21,11 @@ const coloredShaderSource: ShaderSource = {
     `,
     fragment: `
         varying mediump vec4 v_color;
+        uniform mediump float u_alpha;
         void main() {
-            gl_FragColor = v_color;
+            mediump vec4 color = vec4(v_color);
+            color.a = color.a * u_alpha;
+            gl_FragColor = color;
         }
     `
 }

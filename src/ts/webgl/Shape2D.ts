@@ -175,4 +175,10 @@ export class Shape2D {
 
     }
 
+    public static one(value: number, target: Float32Array | number[], offset: number, stride: number, count: number) {
+        for (let i = 0; i < count; i++) {
+            target[offset + stride * i] = value
+        }
+    }
+
 }

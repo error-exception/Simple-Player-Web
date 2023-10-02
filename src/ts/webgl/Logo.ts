@@ -1,14 +1,13 @@
-import { ImageLoader } from "../ImageResources";
+import {ImageLoader} from "../ImageResources";
 import Coordinate from "./Coordinate";
-import { BaseDrawableConfig, Drawable } from "./Drawable";
-import { Shape2D } from "./Shape2D";
-import { Shader } from "./core/Shader";
-import { Texture } from "./core/Texture";
-import { TransformUtils } from "./core/TransformUtils";
-import { Vector2 } from "./core/Vector2";
-import { VertexArray } from "./core/VertexArray";
-import { VertexBuffer } from "./core/VertexBuffer";
-import { VertexBufferLayout } from "./core/VertexBufferLayout";
+import {BaseDrawableConfig, Drawable} from "./Drawable";
+import {Shape2D} from "./Shape2D";
+import {Shader} from "./core/Shader";
+import {Texture} from "./core/Texture";
+import {Vector2} from "./core/Vector2";
+import {VertexArray} from "./core/VertexArray";
+import {VertexBuffer} from "./core/VertexBuffer";
+import {VertexBufferLayout} from "./core/VertexBufferLayout";
 
 const vertexShader = `
     attribute vec4 a_position;
