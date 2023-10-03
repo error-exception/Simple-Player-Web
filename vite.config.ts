@@ -13,8 +13,9 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         // balive2d: resolve(__dirname, 'balive2d/index.html')
-      }
-    }
+      },
+    },
+    minify: false
   },
   server: {
     port: 5555,
