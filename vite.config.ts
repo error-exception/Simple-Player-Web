@@ -7,15 +7,17 @@ export default defineConfig({
   define: {
     __DEV__: true
   },
+  base: './',
   plugins: [vue()],
   build: {
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
         // balive2d: resolve(__dirname, 'balive2d/index.html')
-      },
+      }
     },
-    minify: false
+    minify: false,
+    outDir: './doc'
   },
   server: {
     port: 5555,
