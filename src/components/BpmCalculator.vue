@@ -163,6 +163,7 @@ import PlayManager from "../ts/player/PlayManager";
 import {TimingInfo, TimingItem} from "../ts/type";
 import {useCollect, useStateFlow} from "../ts/util/use";
 import {PlayerState} from "../ts/player/PlayerState";
+import {PLAYER} from "../ts/build";
 
 const emit = defineEmits<{
     (e: 'close'): void
@@ -425,7 +426,10 @@ async function applyTiming() {
     
     // EventDispatcher.fireOnBpmChanged(store.state.currentMusic.id)
     // CurrentPlayState.onBpmChange.emit(store.state.currentMusic.id)
-    const isSuccess = await TimingManager.updateTiming(timingInfo)
+    let isSuccess = true
+    if (PLAYER) {
+        isSuccess = await TimingManager.updateTiming(timingInfo)
+    }
     Toaster.show(isSuccess ? '保存成功' : '保存失败')
     
 }

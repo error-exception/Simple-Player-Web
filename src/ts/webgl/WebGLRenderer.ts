@@ -1,6 +1,5 @@
 import {Drawable} from "./Drawable";
 import {Disposable} from "./core/Disposable";
-import {Viewport} from "./Viewport";
 import {MouseState} from "../MouseState";
 import Coordinate from "./Coordinate";
 
@@ -68,26 +67,12 @@ export class WebGLRenderer implements Disposable {
         drawableToDispose.dispose()
     }
 
-    /**
-     * 
-     * @param viewport 
-     * @deprecated
-     */
-    public setViewport(viewport: Viewport) {
-        // this.viewport = viewport
-        // this.isViewportChanged = true
-    }
-
     public render() {
         this.isEventReady = true
         const gl = this.gl
         if (this.isViewportChanged) {
             this.isViewportChanged = false
             gl.viewport(0, 0, Coordinate.width * window.devicePixelRatio, Coordinate.height * window.devicePixelRatio)
-            // gl.viewport(0, 0, window.innerWidth * window.devicePixelRatio, window.innerWidth * window.devicePixelRatio)
-            // for (let i = 0; i < this.drawables.length; i++) {
-            //     this.drawables[i].setViewport(this.viewport)
-            // }
             for (let i = 0; i < this.drawables.length; i++) {
                 this.drawables[i].onWindowResize()
             }

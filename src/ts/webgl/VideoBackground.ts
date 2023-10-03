@@ -1,15 +1,13 @@
 import Coordinate from "./Coordinate";
-import { Drawable } from "./Drawable";
+import {Drawable} from "./Drawable";
 import ShaderManager from "./ShaderManager";
-import { Shape2D } from "./Shape2D";
-import { Viewport } from "./Viewport";
-import { Shader } from "./core/Shader";
-import { Texture } from "./core/Texture";
-import { TransformUtils } from "./core/TransformUtils";
-import { Vector2 } from "./core/Vector2";
-import { VertexArray } from './core/VertexArray';
-import { VertexBuffer } from "./core/VertexBuffer";
-import { VertexBufferLayout } from "./core/VertexBufferLayout";
+import {Shape2D} from "./Shape2D";
+import {Shader} from "./core/Shader";
+import {Texture} from "./core/Texture";
+import {Vector2} from "./core/Vector2";
+import {VertexArray} from './core/VertexArray';
+import {VertexBuffer} from "./core/VertexBuffer";
+import {VertexBufferLayout} from "./core/VertexBufferLayout";
 
 export class VideoBackground extends Drawable {
     private readonly shader: Shader;

@@ -1,56 +1,56 @@
 import BackgroundLoader from "../BackgroundLoader";
-import { Box } from "./Box";
+import {Box} from "./Box";
 import Coordinate from "./Coordinate";
-import { Drawable } from "./Drawable";
+import {Drawable} from "./Drawable";
 import ShaderManager from "./ShaderManager";
-import { Shape2D } from "./Shape2D";
-import { Viewport } from "./Viewport";
-import { Shader } from "./core/Shader";
-import { Texture } from "./core/Texture";
-import { TransformUtils } from "./core/TransformUtils";
-import { Vector2, createV2 } from "./core/Vector2";
-import { VertexArray } from "./core/VertexArray";
-import { VertexBuffer } from "./core/VertexBuffer";
-import { VertexBufferLayout } from "./core/VertexBufferLayout";
-import { Axis } from "./layout/Axis";
+import {Shape2D} from "./Shape2D";
+import {Shader} from "./core/Shader";
+import {Texture} from "./core/Texture";
+import {TransformUtils} from "./core/TransformUtils";
+import {Vector2} from "./core/Vector2";
+import {VertexArray} from "./core/VertexArray";
+import {VertexBuffer} from "./core/VertexBuffer";
+import {VertexBufferLayout} from "./core/VertexBufferLayout";
+import {Time} from "../Time";
+import {easeOutQuint} from "../util/Easing";
 
-const vertexShader = `
-    attribute vec4 a_position;
-    attribute vec2 a_tex_coord;
-    
-    varying mediump vec2 v_tex_coord;
-    
-    uniform mat4 u_transform;
-    
-    void main() {
-        gl_Position = a_position * u_transform;
-        v_tex_coord = a_tex_coord;
-    }
-`
-// TODO: 调整高亮的位置
-const fragmentShader = `
-    varying mediump vec2 v_tex_coord;
-    uniform sampler2D u_sampler;
-    //uniform mediump vec2 u_brightness;
-    uniform mediump float u_alpha;
-    void main() {
-        mediump vec4 texelColor = texture2D(u_sampler, v_tex_coord);
-        /*
-        mediump float distance = 0.0;
-        mediump float target = 0.0;
-        
-        mediump float leftDistance = (0.15 - v_tex_coord.x) / 0.1;
-        mediump float rightDistance = (v_tex_coord.x - 0.85) / 0.1;
-        leftDistance = max(leftDistance, 0.0);
-        rightDistance = max(rightDistance, 0.0);
-        target = max(u_brightness.x * leftDistance, 0.0);
-        target = max(u_brightness.y * rightDistance, target);
-
-        texelColor.rgb = min(texelColor.rgb + target, 1.0);*/
-        texelColor.a = texelColor.a * u_alpha;
-        gl_FragColor = texelColor;
-    }
-`
+// const vertexShader = `
+//     attribute vec4 a_position;
+//     attribute vec2 a_tex_coord;
+//
+//     varying mediump vec2 v_tex_coord;
+//
+//     uniform mat4 u_transform;
+//
+//     void main() {
+//         gl_Position = a_position * u_transform;
+//         v_tex_coord = a_tex_coord;
+//     }
+// `
+// // TODO: 调整高亮的位置
+// const fragmentShader = `
+//     varying mediump vec2 v_tex_coord;
+//     uniform sampler2D u_sampler;
+//     //uniform mediump vec2 u_brightness;
+//     uniform mediump float u_alpha;
+//     void main() {
+//         mediump vec4 texelColor = texture2D(u_sampler, v_tex_coord);
+//         /*
+//         mediump float distance = 0.0;
+//         mediump float target = 0.0;
+//
+//         mediump float leftDistance = (0.15 - v_tex_coord.x) / 0.1;
+//         mediump float rightDistance = (v_tex_coord.x - 0.85) / 0.1;
+//         leftDistance = max(leftDistance, 0.0);
+//         rightDistance = max(rightDistance, 0.0);
+//         target = max(u_brightness.x * leftDistance, 0.0);
+//         target = max(u_brightness.y * rightDistance, target);
+//
+//         texelColor.rgb = min(texelColor.rgb + target, 1.0);*/
+//         texelColor.a = texelColor.a * u_alpha;
+//         gl_FragColor = texelColor;
+//     }
+// `
 
 interface ImageDrawInfo {
     drawWidth: number
@@ -259,37 +259,7 @@ export class Background extends Box {
         const next = new MovableBackground(gl, this.nextTextureUnit())
         this.add(next, current)
         this.backImage.isVisible = false
-        // this.backImage.setBackgroundImage(BackgroundLoader.getBackground())
         this.frontImage.setBackgroundImage(initImage ? initImage : BackgroundLoader.getBackground())
-        // this.updateBackground(current)
-        // this.updateBackground(next)
-        // EventDispatcher.register(this)
-        // AudioPlayerV2.onChange.collect(this.onSongChanged.bind(this))
-        // OSUPlayer.background.collect(bg => {
-        //     if (bg.image) {
-        //         this.currentBackground.setBackgroundImage(bg.image)
-        //     }
-        // })
-        // CurrentPlayState.onBackgroundUpdate.collect(image => {
-            // if (this.isFading) return;
-            // if (this.flag < 0) {
-            //     this.flag++
-            //     return
-            // }
-            // this.isFading = true
-            // this.displayNext = true
-            // this.currentBackground.fadeOut(() => {
-            //     // console.log("fade out complete")
-            //     console.log("upfda", image)
-            //     this.swap()
-            //     // this.updateBackground(this.nextBackground)
-            //     this.nextBackground.setBackgroundImage(image)
-            //     this.nextBackground.alpha = 1
-            //     this.isFading = false
-            //     this.displayNext = false
-            // })
-            // this.currentBackground.setBackgroundImage(image)
-        // })
     }
 
     private swap() {
@@ -306,19 +276,11 @@ export class Background extends Box {
         return this.childrenList[0] as MovableBackground
     }
 
-    private flag = -1
     private isFading = false
-    private displayNext = false
 
     public updateBackground2(image: ImageBitmap) {
-        // console.log(this.backImage.isVisible, this.backImage.textureUnit)
-        // console.log(this.frontImage.isVisible, this.frontImage.textureUnit)
         if (this.isFading) return
-        // if (this.flag++ < 0) return;
         this.isFading = true
-
-        // this.frontImage.setBackgroundImage(image)
-        // this.backImage.setBackgroundImage(image)
 
         this.backImage.setBackgroundImage(image)
         this.backImage.isVisible = true
@@ -331,14 +293,12 @@ export class Background extends Box {
     }
 
     set translate(v: Vector2) {
-        // super.translate = v;
         for (let i = 0; i < this.childrenList.length; i++) {
             this.childrenList[i].translate = v
         }
     }
 
     get translate(): Vector2 {
-        // return super.translate;
         return Vector2.newZero()
     }
 
@@ -354,5 +314,38 @@ export class Background extends Box {
         return this.textureUnits[this.textureUnitIndex]
     }
 
+
+}
+
+export class BackgroundBounce extends Box {
+
+    public background: Background
+
+    constructor(gl: WebGL2RenderingContext, backgroundImage: ImageBitmap | undefined) {
+        super(gl, {
+            size: ['fill-parent', 'fill-parent']
+        });
+
+        this.add((this.background = new Background(gl, backgroundImage)))
+    }
+
+    public in() {
+        const startTime = Time.currentTime + 300
+        this.scaleBegin(startTime)
+            .to(new Vector2(0.98, 0.98), 500, easeOutQuint)
+        this.translateBegin(startTime)
+            .translateTo(new Vector2(0, -40), 500, easeOutQuint)
+    }
+
+    public out() {
+        this.scaleBegin()
+            .to(new Vector2(1, 1), 500, easeOutQuint)
+        this.translateBegin()
+            .translateTo(Vector2.newZero(), 500, easeOutQuint)
+    }
+
+    public updateBackground2(image: ImageBitmap) {
+        this.background.updateBackground2(image)
+    }
 
 }

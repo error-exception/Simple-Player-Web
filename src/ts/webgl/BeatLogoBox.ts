@@ -14,6 +14,7 @@ import {Interpolation} from "./Interpolation";
 import {onEnterMenu} from "../GlobalState";
 import {inject} from "./DependencyInject";
 import {Menu} from "./menu/Menu";
+import {BackgroundBounce} from "./MovableBackground";
 
 class BeatLogo extends Box implements IBeat {
 
@@ -47,8 +48,8 @@ class BeatLogo extends Box implements IBeat {
         const volume = BeatState.nextBeatRMS
         const adjust = Math.min(volume + 0.4, 1)
         this.scaleBegin()
-            .scaleTo(1 - adjust * 0.03, 60, easeOut)
-            .scaleTo(1, gap * 2, easeOutQuint)
+            .to(new Vector2(1 - adjust * 0.03, 1 - adjust * 0.03), 60, easeOut)
+            .to(new Vector2(1, 1), gap * 2, easeOutQuint)
 
         this.triangles.velocityBegin()
             .transitionTo(1 + adjust + (BeatState.isKiai ? 4 : 0), 60, easeOut)
@@ -125,13 +126,13 @@ class LogoAmpBox extends Box {
 
     public onHover(): boolean {
         this.scaleBegin()
-            .scaleTo(1.1, 500, easeOutElastic)
+            .to(new Vector2(1.1, 1.1), 500, easeOutElastic)
         return true
     }
 
     public onHoverLost(): boolean {
         this.scaleBegin()
-            .scaleTo(1, 500, easeOutElastic)
+            .to(new Vector2(1, 1), 500, easeOutElastic)
         return true
     }
 }
@@ -186,22 +187,25 @@ export class BeatLogoBox extends Box {
     private flag = true
     public onClick(which: number): boolean {
         const menu = inject<Menu>('Menu')
+        const bg = inject<BackgroundBounce>('BackgroundBounce')
 
         if (this.flag) {
             this.translateBegin()
                 .translateTo(new Vector2(-240, 0), 400, easeInCubic)
             this.scaleBegin()
-                .scaleTo(0.5, 400, easeInCubic)
+                .to(new Vector2(0.5, 0.5), 400, easeInCubic)
             menu.show()
+            bg.in()
         } else {
             this.translateBegin()
                 .translateTo(new Vector2(0, 0), 400, easeOutCubic)
             this.scaleBegin()
-                .scaleTo(1, 400, easeOutCubic)
+                .to(new Vector2(1, 1), 400, easeOutCubic)
             menu.hide()
+            bg.out()
         }
         const v = this.flag
-        setTimeout(() => onEnterMenu.emit(v), 400);
+        onEnterMenu.emit(v)
         this.flag = !this.flag
         return true
     }

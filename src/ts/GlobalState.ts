@@ -14,3 +14,7 @@ export let beatmapDirectoryId = "beatmap"
 export let playingBeatmap: OSZ
 
 export const onEnterMenu = createMutableSharedFlow<boolean>()
+
+export const onLeftSide = createMutableSharedFlow<boolean>()
+
+export const onRightSide = createMutableSharedFlow<boolean>()

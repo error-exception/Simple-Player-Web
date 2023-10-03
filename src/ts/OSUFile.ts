@@ -1,6 +1,5 @@
-import { Vector2 } from "./webgl/core/Vector2";
-import { NoteData } from "./webgl/mania/ManiaPanel";
-import { StdNote } from "./webgl/std/StdNote";
+import {Vector2} from "./webgl/core/Vector2";
+import {NoteData} from "./webgl/mania/ManiaPanel";
 
 export interface OSUFile {
     General?: OSUFileGeneral

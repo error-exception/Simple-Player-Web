@@ -3,9 +3,6 @@ import {BaseDrawableConfig} from "../Drawable";
 import {ImageDrawable} from "../ImageDrawable";
 import {ImageLoader} from "../../ImageResources";
 import {easeOut, easeOutQuint} from "../../util/Easing";
-import { toHandlerKey } from "vue";
-import { init } from "../../Utils";
-import { Axis } from "../layout/Axis";
 
 export class FadeLogo extends BeatBox {
 

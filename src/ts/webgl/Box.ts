@@ -1,5 +1,4 @@
 import {Drawable} from "./Drawable";
-import {Viewport} from "./Viewport";
 import {Queue} from "../util/Queue";
 import {Vector2} from "./core/Vector2";
 import {MouseState} from "../MouseState";
@@ -129,13 +128,6 @@ export class Box extends Drawable {
     public onDraw() {}
 
     public unbind(): void {}
-
-    public setViewport(viewport: Viewport) {
-        super.setViewport(viewport)
-        for (let i = 0; i < this.childrenList.length; i++) {
-            this.childrenList[i].setViewport(viewport)
-        }
-    }
 
     public click(which: number, position: Vector2) {
         if (this.isAvailable && this.isInBound(position)) {

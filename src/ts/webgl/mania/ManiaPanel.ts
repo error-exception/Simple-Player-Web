@@ -46,8 +46,6 @@ const fragmentShader = `
     }
 `
 
-let count = 0
-
 const yellow = Color.fromHex(0xffff00)
 const green = Color.fromHex(0x00ff00)
 const red = Color.fromHex(0xff0000)
@@ -450,9 +448,9 @@ class Note {
 
     constructor(
         private panel: ManiaPanel,
-        private noteWidth: number,
+        noteWidth: number,
         private noteHeight: number,
-        private offsetLeft: number,
+        offsetLeft: number,
         private movementDuration: number,
         private judgementLinePosition: number,
         color: Color,
@@ -488,7 +486,6 @@ class Note {
             // EventDispatcher.fireOnManiaHit(++count)
         }
     }
-    private isHoldStart = false
     public updateVertex() {
         const currentTime = AudioPlayer.currentTime(); // 判定线处
         const noteArea = this.panel.height * (this.judgementLinePosition / 100);
@@ -544,6 +541,7 @@ class Note {
     }
 
     private lastTrigger = [false, false]
+    // @ts-ignore
     private triggerNoteReceive(isHold: boolean, isHoldEnd: boolean, check: boolean = true) {
         if (check && this.lastTrigger[0] === isHold && this.lastTrigger[1] === isHoldEnd) {
             return

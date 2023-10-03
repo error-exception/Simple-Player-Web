@@ -1,13 +1,14 @@
 import {Drawable} from "./Drawable";
 import {WebGLRenderer} from "./WebGLRenderer";
 import {Disposable} from "./core/Disposable";
+import {createMutableStateFlow, MutableStateFlow} from "../util/flow";
 
 class ScreenManager implements Disposable {
 
     private readonly screenMap = new Map<string, () => Drawable>();
 
     private currentScreen: Drawable | null = null;
-    private currentId: string = ''
+    currentId: MutableStateFlow<string> = createMutableStateFlow('')
     private renderer: WebGLRenderer | null = null;
 
     public init(renderer: WebGLRenderer) {
@@ -28,7 +29,7 @@ class ScreenManager implements Disposable {
     }
 
     public activeScreen(id: string) {
-        if (this.currentId === id) {
+        if (this.currentId.value === id) {
             return
         }
         const constructor = this.screenMap.get(id);
@@ -37,7 +38,7 @@ class ScreenManager implements Disposable {
                 this.renderer!.removeDrawable(this.currentScreen);
             }
             this.currentScreen = constructor()
-            this.currentId = id
+            this.currentId.value = id
             this.renderer!.addDrawable(this.currentScreen)
         }
     }

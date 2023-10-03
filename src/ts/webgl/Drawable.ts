@@ -3,14 +3,14 @@ import {Time} from "../Time";
 import {Box} from "./Box";
 import Coordinate from "./Coordinate";
 import {Transform} from "./Transform";
-import {FadeTransition, ScaleTransition, TranslateTransition,} from "./Transition";
-import {Viewport} from "./Viewport";
+import {FadeTransition, TranslateTransition,} from "./Transition";
 import {Bindable} from "./core/Bindable";
 import {Disposable} from "./core/Disposable";
 import {isUndef} from "./core/Utils";
 import {Vector2} from "./core/Vector2";
 import {Axis} from "./layout/Axis";
 import {provide, unprovide} from "./DependencyInject";
+import {Vector2Transition} from "./transition/Vector2Transition";
 
 export interface BaseDrawableConfig {
     size: [number | "fill-parent", number | "fill-parent"];
@@ -64,7 +64,7 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
         1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
     ]);
 
-    protected scaleTransition: ScaleTransition = new ScaleTransition(this);
+    protected scaleTransition: Vector2Transition = new Vector2Transition(this, 'scale');
     protected fadeTransition: FadeTransition = new FadeTransition(this);
     protected translateTransition: TranslateTransition =
         new TranslateTransition(this);
@@ -154,7 +154,7 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
         this.parent?.removeChild(this);
     }
 
-    public scaleBegin(atTime: number = Time.currentTime): ScaleTransition {
+    public scaleBegin(atTime: number = Time.currentTime): Vector2Transition {
         this.scaleTransition.setStartTime(atTime);
         return this.scaleTransition;
     }
@@ -250,12 +250,6 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
     }
 
     abstract onDraw(): void;
-
-    /**
-     *
-     * @deprecated
-     */
-    public setViewport(viewport: Viewport): void {}
 
     public onWindowResize() {
         this.updateBounding();

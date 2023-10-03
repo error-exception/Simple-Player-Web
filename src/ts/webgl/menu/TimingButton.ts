@@ -27,13 +27,13 @@ export class TimingButton extends Box {
 
     onHover(): boolean {
         this.background.scaleBegin()
-            .scaleTo(1, 500, easeOutElastic)
+            .to(new Vector2(1, 1), 500, easeOutElastic)
         return true
     }
 
     onHoverLost(): boolean {
         this.background.scaleBegin()
-            .scaleTo(0.9, 500, easeOutElastic)
+            .to(new Vector2(0.9, 0.9), 500, easeOutElastic)
         return true
     }
 

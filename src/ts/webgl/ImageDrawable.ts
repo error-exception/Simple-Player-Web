@@ -8,33 +8,33 @@ import {VertexArray} from "./core/VertexArray";
 import {VertexBuffer} from "./core/VertexBuffer";
 import {VertexBufferLayout} from "./core/VertexBufferLayout";
 
-const vertexShader = `
-    attribute vec2 a_position;
-    attribute vec2 a_tex_coord;
-//    attribute float a_tex_alpha;
-    varying mediump vec2 v_tex_coord;
-//    varying mediump float v_texture_alpha;
-    uniform mat4 u_transform;
-    
-    void main() {
-        gl_Position = vec4(a_position, 0.0, 1.0) * u_transform;
-        v_tex_coord = a_tex_coord;
-//        v_texture_alpha = a_tex_alpha;
-    }
-`
-
-const fragmentShader = `
-    varying mediump vec2 v_tex_coord;
-//    varying mediump float v_texture_alpha;
-    uniform sampler2D u_sampler;
-    uniform mediump float u_alpha;
-    void main() {
-        mediump vec4 texelColor = texture2D(u_sampler, v_tex_coord);
-        // texelColor.rgb = min(texelColor.rgb + (v_highlight * 0.05), 1.0);
-        texelColor.a = texelColor.a * u_alpha;
-        gl_FragColor = texelColor;
-    }
-`
+// const vertexShader = `
+//     attribute vec2 a_position;
+//     attribute vec2 a_tex_coord;
+// //    attribute float a_tex_alpha;
+//     varying mediump vec2 v_tex_coord;
+// //    varying mediump float v_texture_alpha;
+//     uniform mat4 u_transform;
+//
+//     void main() {
+//         gl_Position = vec4(a_position, 0.0, 1.0) * u_transform;
+//         v_tex_coord = a_tex_coord;
+// //        v_texture_alpha = a_tex_alpha;
+//     }
+// `
+//
+// const fragmentShader = `
+//     varying mediump vec2 v_tex_coord;
+// //    varying mediump float v_texture_alpha;
+//     uniform sampler2D u_sampler;
+//     uniform mediump float u_alpha;
+//     void main() {
+//         mediump vec4 texelColor = texture2D(u_sampler, v_tex_coord);
+//         // texelColor.rgb = min(texelColor.rgb + (v_highlight * 0.05), 1.0);
+//         texelColor.a = texelColor.a * u_alpha;
+//         gl_FragColor = texelColor;
+//     }
+// `
 
 export class ImageDrawable extends Drawable {
 

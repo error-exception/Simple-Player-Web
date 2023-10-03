@@ -2,9 +2,9 @@ import {Box} from "../Box";
 import {ColorDrawable} from "../ColorDrawable";
 import {Color} from "../Color";
 import {Axis} from "../layout/Axis";
-import {easeInCubic, easeOutCubic} from "../../util/Easing";
+import {easeInCubic, easeOutBack, easeOutCubic} from "../../util/Easing";
 import {Time} from "../../Time";
-import {TimingButton} from "./TimingButton";
+import {Vector2} from "../core/Vector2";
 
 export class Menu extends Box {
 
@@ -25,6 +25,7 @@ export class Menu extends Box {
             // timingButton
         )
         this.alpha = 0
+        this.scale = new Vector2(1, 0)
         this.isVisible = false
     }
 
@@ -32,11 +33,15 @@ export class Menu extends Box {
         this.isVisible = true
         this.fadeBegin(Time.currentTime + 300)
             .fadeTo(1, 220, easeInCubic)
+        this.scaleBegin(Time.currentTime + 300)
+            .to(new Vector2(1, 1), 400, easeOutBack)
     }
 
     public hide() {
         this.fadeBegin()
             .fadeTo(0, 220, easeOutCubic)
+        this.scaleBegin()
+            .to(new Vector2(1, 0), 220, easeOutCubic)
         setTimeout(() => {
             this.isVisible = false
         }, 220)

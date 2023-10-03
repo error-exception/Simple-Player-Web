@@ -19,7 +19,7 @@ export class OSZ {
     private async decompress() {
         const zip = await JSZip.loadAsync(this.oszFile)
         const filenames = Object.getOwnPropertyNames(zip.files)
-        const osuFilenames = filenames.filter(filename => filename.endsWith('.osu'))
+        // const osuFilenames = filenames.filter(filename => filename.endsWith('.osu'))
         const osuFilename = filenames.find(name => name.endsWith('.osu'))
         if (!osuFilename) return
         const content = await zip.file(osuFilename)?.async("string")

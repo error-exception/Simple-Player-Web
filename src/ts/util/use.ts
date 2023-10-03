@@ -1,4 +1,4 @@
-import { onUnmounted, ref, Ref, inject, onMounted } from 'vue';
+import {onMounted, onUnmounted, Ref, ref} from 'vue';
 import {Collector, Flow, MutableStateFlow} from "./flow";
 
 export function useCollect<T>(

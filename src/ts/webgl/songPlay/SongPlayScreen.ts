@@ -1,18 +1,14 @@
 import BackgroundLoader from "../../BackgroundLoader";
-import { MouseState } from "../../MouseState";
-import OSUPlayer, { OSUBackground } from "../../player/OSUPlayer";
-import { BeatLogoBox, LogoBounceBox } from "../BeatLogoBox";
-import { Box } from "../Box";
-import Coordinate from "../Coordinate";
-import { Logo } from "../Logo";
-import { Background } from "../MovableBackground";
-import { VideoBackground } from "../VideoBackground";
-import { Vector2 } from "../core/Vector2";
-import { Axis } from "../layout/Axis";
-import { FadeLogo } from "./FadeLogo";
-import { LegacyLogo } from "./LegacyLogo";
-import { LegacyLogoAlpha } from "./LegacyLogoAlpha";
-import { BackButton } from './BackButton';
+import {MouseState} from "../../MouseState";
+import OSUPlayer, {OSUBackground} from "../../player/OSUPlayer";
+import {LogoBounceBox} from "../BeatLogoBox";
+import {Box} from "../Box";
+import {Background} from "../MovableBackground";
+import {VideoBackground} from "../VideoBackground";
+import {Vector2} from "../core/Vector2";
+import {Axis} from "../layout/Axis";
+import {FadeLogo} from "./FadeLogo";
+import {easeOutBack} from "../../util/Easing";
 
 export class SongPlayScreen extends Box {
 
@@ -52,17 +48,7 @@ export class SongPlayScreen extends Box {
         this.background = new Background(gl, OSUPlayer.background.value.image)
         this.videoBackground = new VideoBackground(gl, null)
         OSUPlayer.background.collect(this.collector)
-        
-        // const logo = new LegacyLogo(gl, {
-        //     size: [250, 250],
-        //     anchor: Axis.X_RIGHT | Axis.Y_BOTTOM,
-        //     offset: [38, -65]
-        // })
-        // const alphaLogo = new LegacyLogoAlpha(gl, {
-        //     size: [250, 250],
-        //     anchor: Axis.X_RIGHT | Axis.Y_BOTTOM,
-        //     offset: [38, -65]
-        // })
+
         const fadeLogo = new FadeLogo(gl, {
             size: [250, 250]
         })
@@ -71,31 +57,22 @@ export class SongPlayScreen extends Box {
             anchor: Axis.X_RIGHT | Axis.Y_BOTTOM,
             offset: [ 250 - 66, -250 + 24]
         })
-        // logo.translate = new Vector2(
-        //     Coordinate.width / 2 - 250 + 38,
-        //     -(Coordinate.height / 2 - 250)
-        // )
         logo.scale = new Vector2(0.4, 0.4)
-        // const navigate = new Navigate(gl)
-        // const backButton = new BackButton(gl)
+        logo.translate = new Vector2(0, -128)
+        logo.translateBegin()
+            .translateTo(new Vector2(0, 0), 400, easeOutBack)
+
         this.add(
             this.background,
             this.videoBackground,
-            // navigate,
-            // logo,
-            // alphaLogo,
             fadeLogo,
-            logo,
-            // backButton
+            logo
         )
 
     }
     protected onUpdate() {
         super.onUpdate();
-        const {x, y} = MouseState.position
-        // const transX = (x - window.innerWidth / 2)
-        // const transY = (window.innerHeight / 2 - y)
-        this.background.translate = new Vector2(x, y)
+        this.background.translate = MouseState.position.copy()
     }
 
     public dispose() {

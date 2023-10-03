@@ -125,10 +125,3 @@ export function init<T>(target: T, scope: (this: T) => void): T {
     scope.call(target)
     return target
 }
-
-export function getClassName<T>(a: T): string {
-    if ('constructor' in a) {
-        return a.constructor.name
-    }
-    return 'unknown'
-}

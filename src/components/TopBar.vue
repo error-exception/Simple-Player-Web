@@ -60,6 +60,7 @@
             {{ Icon.Fullscreen }}
         </button>
         <button
+            v-if="PLAYER"
             class="ma light-gray-click"
             style="width: 48px; height: 48px; color: white"
             @click="$emit('bpmCalcClick')"
@@ -67,6 +68,7 @@
             {{ Icon.RadioButtonUnchecked }}
         </button>
         <button
+            v-if="PLAYER"
             class="ma light-gray-click"
             style="width: 48px; height: 48px; color: white"
             @click="openPlaylist()"
@@ -81,6 +83,7 @@ import { inject } from "vue";
 import { Icon } from "../ts/icon/Icon";
 import ScreenManager from "../ts/webgl/ScreenManager";
 import Row from "./Row.vue";
+import {PLAYER} from "../ts/build";
 
 defineProps<{
     stateText: string

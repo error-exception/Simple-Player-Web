@@ -6,32 +6,28 @@
 
 <script setup lang="ts">
 
-import { onMounted, onUnmounted, ref } from "vue";
+import {onMounted, onUnmounted, ref} from "vue";
 import backIcon from '../assets/back_white_48.png';
 import legacyLogo from '../assets/legacy_logo.png';
 import logoImg from '../assets/logo.png';
-import rippleImg from '../assets/ripple.png';
 import rippleNew from '../assets/ripple_new.png';
 import BackgroundLoader from "../ts/BackgroundLoader";
 import BeatBooster from "../ts/BeatBooster";
-import { BeatState } from "../ts/Beater";
-import { ImageLoader } from "../ts/ImageResources";
-import { MOUSE_KEY_LEFT, MOUSE_KEY_NONE, MOUSE_KEY_RIGHT, MouseState } from "../ts/MouseState";
-import { Time } from "../ts/Time";
-import { calcRMS } from "../ts/Utils";
+import {BeatState} from "../ts/Beater";
+import {ImageLoader} from "../ts/ImageResources";
+import {MOUSE_KEY_LEFT, MOUSE_KEY_NONE, MOUSE_KEY_RIGHT, MouseState} from "../ts/MouseState";
+import {Time} from "../ts/Time";
+import {calcRMS} from "../ts/Utils";
 import AudioPlayerV2 from "../ts/player/AudioPlayer";
 import OSUPlayer from "../ts/player/OSUPlayer";
-import { easeOut, easeOutQuint } from "../ts/util/Easing";
-import { MainScreen } from "../ts/webgl/MainScreen";
+import {easeOut, easeOutQuint} from "../ts/util/Easing";
+import {MainScreen} from "../ts/webgl/MainScreen";
 import ScreenManager from "../ts/webgl/ScreenManager";
 import ShaderManager from "../ts/webgl/ShaderManager";
-import { Viewport } from "../ts/webgl/Viewport";
-import { WebGLRenderer } from "../ts/webgl/WebGLRenderer";
-import { TestScreen } from '../ts/webgl/TestScreen';
+import {WebGLRenderer} from "../ts/webgl/WebGLRenderer";
 import Coordinate from '../ts/webgl/Coordinate'
-import { SongPlayScreen } from "../ts/webgl/songPlay/SongPlayScreen";
-import { ManiaScreen } from '../ts/webgl/mania/ManiaScreen';
-import { StdScreen } from "../ts/webgl/std/StdScreen";
+import {SongPlayScreen} from "../ts/webgl/songPlay/SongPlayScreen";
+import {ManiaScreen} from '../ts/webgl/mania/ManiaScreen';
 import approachCircle from '../assets/approachcircle.png'
 import stdNoteCircle from '../assets/hitcircleoverlay.png'
 
@@ -73,8 +69,8 @@ const mouseListener = {
             MouseState.receiveMouseDown(which, x, y)
     },
     mouseup(e: MouseEvent) {
-        const x = (e.x - window.innerWidth / 2)// * window.devicePixelRatio
-        const y = (window.innerHeight / 2 - e.y)// * window.devicePixelRatio
+        const x = (e.x - window.innerWidth / 2)
+        const y = (window.innerHeight / 2 - e.y)
         let which: number = MOUSE_KEY_NONE
         if (e.button === 0)
             which = MOUSE_KEY_LEFT
@@ -84,8 +80,8 @@ const mouseListener = {
             MouseState.receiveMouseUp(which, x, y)
     },
     mousemove(e: MouseEvent) {
-        const x = (e.x - window.innerWidth / 2)// * window.devicePixelRatio
-        const y = (window.innerHeight / 2 - e.y)// * window.devicePixelRatio
+        const x = (e.x - window.innerWidth / 2)
+        const y = (window.innerHeight / 2 - e.y)
         
         MouseState.receiveMouseMove(x, y)
     }
@@ -113,41 +109,21 @@ onMounted(async () => {
     await ImageLoader.load(approachCircle, "approachCircle")
     await BackgroundLoader.init()
     isOpen = true
-    // const viewport: Viewport = new Viewport({
-    //     x: 0,
-    //     y: 0,
-    //     width: c.clientWidth * window.devicePixelRatio,
-    //     height: c.clientHeight * window.devicePixelRatio
-    // })
     ShaderManager.init(webgl)
     renderer = new WebGLRenderer(webgl)
     window.onresize = () => {
         resizeCanvas()
-
-        // renderer.setViewport(new Viewport({
-        //     x: 0,
-        //     y: 0,
-        //     width: c.clientWidth * window.devicePixelRatio,
-        //     height: c.clientHeight * window.devicePixelRatio
-        // }))
-        
     }
     ScreenManager.init(renderer)
     ScreenManager.addScreen("main", () => {
         return new MainScreen(webgl)
     })
-    // ScreenManager.addScreen("test", () => {
-    //     return new TestScreen(webgl)
-    // })
     ScreenManager.addScreen("second", () => {
         return new SongPlayScreen(webgl)
     })
     ScreenManager.addScreen('mania', () => {
         return new ManiaScreen(webgl)
     })
-    // ScreenManager.addScreen('std', () => {
-    //     return new StdScreen(webgl)
-    // })
     ScreenManager.activeScreen("main")
     draw()
 })
@@ -174,12 +150,10 @@ function draw(timestamp: number = 0) {
     
     Time.currentTime = timestamp
     Time.elapsed = elapsed
-    // store.commit('setFrameTime', Time.elapsed)
     
-    BeatState.isKiai = BeatBooster.isKiai(time) //beater.isKiai(time)
-    BeatState.beatIndex = BeatBooster.getCurrentBeatCount() + 1 //beater.getBeatCount() + 1
-    BeatState.currentBeat = BeatBooster.updateBeat(time, easeOut, easeOutQuint)//beater.beat(time, easeOut, easeOutQuint)
-    // BeatState.beat = beater
+    BeatState.isKiai = BeatBooster.isKiai(time)
+    BeatState.beatIndex = BeatBooster.getCurrentBeatCount() + 1
+    BeatState.currentBeat = BeatBooster.updateBeat(time, easeOut, easeOutQuint)
     BeatState.isAvailable = BeatBooster.isAvailable
     BeatState.currentRMS = (player.isPlaying()) ? calcRMS(
         audioData.sampleRate,
@@ -188,7 +162,6 @@ function draw(timestamp: number = 0) {
         time,
         BeatBooster.isAvailable ? 1024 : 2048
     ) : 0
-    // console.log("rms", BeatState.currentRMS);
     
     BeatState.nextBeatRMS = (player.isPlaying()) ? calcRMS(
         audioData.sampleRate,
@@ -197,7 +170,6 @@ function draw(timestamp: number = 0) {
         (BeatBooster.getCurrentBeatCount() + 1) * BeatBooster.getGap() + BeatBooster.getOffset(),
         1024
     ) : 0
-    // debugger
     renderer.render()
 }
 
@@ -208,8 +180,8 @@ function resizeCanvas() {
         console.log(canvas.value.clientWidth, canvas.value.clientHeight);
         
         Coordinate.updateCoordinate(
-            canvas.value.clientWidth,// * window.devicePixelRatio,
-            canvas.value.clientHeight// * window.devicePixelRatio
+            canvas.value.clientWidth,
+            canvas.value.clientHeight
         )
         console.log("canvas", canvas.value.width, canvas.value.height);
         

@@ -8,10 +8,10 @@
                     <span class="player-artist">{{ artist }}</span>
                 </Column>
                 <Row class="fill-width" style="background-color: #00000080; height: 64px;" center>
-                    <button class="control-btn ma" @click="previous()">{{ Icon.SkipPrevious }}</button>
+                    <button v-if="PLAYER" class="control-btn ma" @click="previous()">{{ Icon.SkipPrevious }}</button>
                     <button class="control-btn ma" @click="play()">{{ playState ? Icon.Pause : Icon.PlayArrow }}</button>
                     <button class="control-btn ma" @click="stop()">{{ Icon.Stop }}</button>
-                    <button class="control-btn ma" @click="next()">{{ Icon.SkipNext }}</button>
+                    <button v-if="PLAYER" class="control-btn ma" @click="next()">{{ Icon.SkipNext }}</button>
                 </Row>
             </Column>
             <ProgressBar style="width: 100%; position: absolute; bottom: 0;" />
@@ -30,6 +30,7 @@ import Column from "./Column.vue";
 import ProgressBar from "./ProgressBar.vue";
 import Row from "./Row.vue";
 import { url } from "../ts/Utils";
+import {PLAYER} from "../ts/build";
 
 const artwork = ref("")
 const img = ref<HTMLImageElement | null>(null)

@@ -1,6 +1,5 @@
-import { NoteData } from './webgl/mania/ManiaPanel';
-import {OSUFile, OSUFileGeneral, OSUFileMetadata, OSUFileTimingPoints, OSUStdNote, isStdSpinner} from "./OSUFile";
-import { type } from './webgl/Viewport';
+import {NoteData} from './webgl/mania/ManiaPanel';
+import {OSUFile, OSUFileGeneral, OSUFileMetadata, OSUFileTimingPoints, OSUStdNote} from "./OSUFile";
 
 export class OSUParser {
 

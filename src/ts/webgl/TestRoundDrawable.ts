@@ -1,17 +1,11 @@
 import {Toaster} from '../Toaster';
-import {degreeToRadian} from '../Utils';
-import {Color} from './Color';
 import Coordinate from './Coordinate';
 import {Drawable} from './Drawable';
 import ShaderManager from './ShaderManager';
-import { Shape2D } from './Shape2D';
 import {Shader} from './core/Shader';
-import {TransformUtils} from './core/TransformUtils';
-import {Vector2} from './core/Vector2';
 import {VertexArray} from './core/VertexArray';
 import {VertexBuffer} from './core/VertexBuffer';
 import {VertexBufferLayout} from './core/VertexBufferLayout';
-import { brightness } from './std/StdNote';
 
 export class TestRoundDrawable extends Drawable {
 
@@ -54,131 +48,11 @@ export class TestRoundDrawable extends Drawable {
     private vertexCount = 0
 
     public createVertexArray() {
-        const color = Color.fromHex(0xff2000, 0xff)
         const vertexData: number[] = []
-        let offset = 0
-        const count = 50
-        offset += Shape2D.ring(
-            200, 10, color, count,
-            vertexData, offset, 6
-        )
-        offset += Shape2D.ring(
-            70, 5, Color.fromHex(0xffffff), count,
-            vertexData, offset, 6)
-        offset += Shape2D.ring(
-            50, 15, color, count,
-            vertexData, offset, 6
-        )
-        brightness(color, -.3)
-        offset += Shape2D.ring(
-            35, 15, color, count,
-            vertexData, offset, 6
-        )
-        brightness(color, -.3)
-        offset += Shape2D.ring(
-            0, 35, color, count,
-            vertexData, offset, 6
-        )
 
-        // const count = 60
-        // const innerRadius = 20
-        // const width = 2
-        // const inner = new Vector2(0, innerRadius)
-        // const outer = new Vector2(0, innerRadius + width)
-        // const rotate = 360 / count
-        // for (let i = 0; i < count; i++) {
-        //     const v1 = TransformUtils.applyRotate(
-        //         inner, degreeToRadian(rotate * i)
-        //     )
-        //     const v2 = TransformUtils.applyRotate(
-        //         outer, degreeToRadian(rotate * i)
-        //     )
-        //     const v3 = TransformUtils.applyRotate(
-        //         inner, degreeToRadian(rotate * (i + 1))
-        //     )
-        //     const v4 = TransformUtils.applyRotate(
-        //         outer, degreeToRadian(rotate * (i + 1))
-        //     )
-        //     vertexData.push(
-        //         v1.x, v1.y, r, g, b, a,
-        //         v2.x, v2.y, r, g, b, a,
-        //         v4.x, v4.y, r, g, b, a,
-        //         v4.x, v4.y, r, g, b, a,
-        //         v1.x, v1.y, r, g, b, a,
-        //         v3.x, v3.y, r, g, b, a
-
-        //     )
-        // }
    
         this.vertexCount = vertexData.length / 6
         Toaster.show(this.vertexCount + "")
-        return new Float32Array(vertexData)
-    }
-    /**
-     * triangle
-     */
-    private ring2() {
-
-    }
-
-    /**
-     * triangle_strip
-     */
-    private ring() {
-        const color = Color.fromHex(0xffffff, 0xff)
-        const r = color.red
-        const g = color.green
-        const b = color.blue
-        const a = color.alpha
-        const vertexData: number[] = []
-
-        const count = 60
-        const degree = 360 / count
-        const inner = new Vector2(0, 100)
-        const outer = new Vector2(0, 100 + 20)
-        for (let i = 0; i <= count; i++) {
-            const v1 = TransformUtils.applyRotate(outer, degreeToRadian(degree * i))
-            const v2 = TransformUtils.applyRotate(inner, degreeToRadian(degree * i))
-            vertexData.push(
-                v1.x, v1.y, r, g, b, a,
-                v2.x, v2.y, r, g, b, a,
-            )
-        }
-        this.vertexCount = vertexData.length / 6
-        return new Float32Array(vertexData)
-    }
-
-    /**
-     * triangle_strip
-     */
-    private circle2() {
-
-    }
-
-    private circle() {
-        const color = Color.fromHex(0xffffff)
-        const r = color.red
-        const g = color.green
-        const b = color.blue
-        const a = color.alpha
-        const vertexData: number[] = []
-
-        const radius = 200
-        // const length = 2 * radius * Math.PI
-        // const unit = 20
-        const count = 40
-        Toaster.show(count + "")
-        const rotate = 360 / count
-        vertexData.push(
-            0, 0, r, g, b, a,
-            0, radius, r, g, b, a
-        )
-        const v = new Vector2(0, radius)
-        for (let i = 0; i < count; i++) {
-            const t = TransformUtils.applyRotate(v, degreeToRadian(rotate * (i + 1)))
-            vertexData.push(t.x, t.y, r, g, b, a)
-        }
-        this.vertexCount = vertexData.length / 6
         return new Float32Array(vertexData)
     }
 

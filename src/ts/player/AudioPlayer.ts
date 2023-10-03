@@ -17,46 +17,16 @@ class AudioPlayer extends AbstractPlayer {
     private time: TimePlayer = new TimePlayer()
 
     private _duration = 0
-    // public isPlaying = ref(false)
-
     public volume = ref(1)
-    // public currentMusic: Music | null = null
     public onEnd = createMutableSharedFlow<boolean>()
-    // public onChange = createMutableSharedFlow<number>()
     public onSeeked = createMutableSharedFlow<boolean>()
     public playStateFlow = createMutableStateFlow(-1)
-    // public onReadyToPlay = createMutableSharedFlow<boolean/* from buffer */>()
 
     constructor() {
         super()
         this.audioContext = new AudioContext()
     }
 
-    // public src(music: Music): boolean {
-    //     if (
-    //         this.playStateFlow.value === PlayerState.STATE_DOWNLOADING ||
-    //         this.playStateFlow.value === PlayerState.STATE_DECODING ||
-    //         this.currentMusic?.id === music.id
-    //     ) {
-    //         return false;
-    //     }
-    //     this.currentMusic = music
-    //     this.pause()
-    //     this.isAvailable = false
-    //     this.load(music.id).then(() => {
-    //         this.isAvailable = true
-    //         this.time.reset()
-    //         this.duration.value = int(this.audioBuffer!!.duration * 1000)
-    //         if (this.needToPlay) {
-    //             this.needToPlay = false
-    //             this.play()
-    //         }
-    //         // EventDispatcher.fireOnSongChanged(music.id)
-    //         this.onChange.emit(music.id)
-    //         this.onReadyToPlay.emit(false)
-    //     })
-    //     return true
-    // }
 
     private _busyState = [PlayerState.STATE_DECODING]
     public async setSource(src: MediaDataSource): Promise<void> {
@@ -72,59 +42,11 @@ class AudioPlayer extends AbstractPlayer {
         this.isAvailable = true
         this.time.reset()
         this._duration = int(this.audioBuffer!.duration * 1000)
-        // if (this.needToPlay) {
-        //     this.needToPlay = false
-        //     this.play()
-        // }
-        // this.onReadyToPlay.emit(false)
     }
-
-    // private async downloadMusic(src: string): Promise<ArrayBuffer> {
-    //     this.playStateFlow.value = PlayerState.STATE_DOWNLOADING;
-    //     const response = await fetch(url(src))
-    //     return await response.arrayBuffer()
-    // }
 
     private isBusy() {
         return this._busyState.includes(this.playStateFlow.value)
     }
-
-    // public arrayBufferSrc(buffer: ArrayBuffer, ready?: () => void) {
-    //     // debugger
-    //     if (
-    //         this.playStateFlow.value === PlayerState.STATE_DOWNLOADING ||
-    //         this.playStateFlow.value === PlayerState.STATE_DECODING
-    //     ) {
-    //         return false;
-    //     }
-    //     // this.currentMusic = music
-    //     this.pause()
-    //     this.isAvailable = false
-    //
-    //     this.decode(buffer).then(() => {
-    //         this.isAvailable = true
-    //         this.time.reset()
-    //         this.duration.value = int(this.audioBuffer!!.duration * 1000)
-    //         if (this.needToPlay) {
-    //             this.needToPlay = false
-    //             this.play()
-    //         }
-    //         ready?.()
-    //         // EventDispatcher.fireOnSongChanged(-1)
-    //         this.onChange.emit(-1)
-    //         this.onReadyToPlay.emit(true);
-    //     })
-    //     return true
-    // }
-
-    // private async load(musicId: number) {
-    //
-    //     this.playStateFlow.value = PlayerState.STATE_DOWNLOADING;
-    //
-    //     const response = await fetch(url(`/music?id=${musicId}`))
-    //     const arrayBuffer = await response.arrayBuffer()
-    //     await this.decode(arrayBuffer)
-    // }
 
     private async decode(arrayBuffer: ArrayBuffer) {
 
@@ -136,6 +58,7 @@ class AudioPlayer extends AbstractPlayer {
 
     }
 
+    //@ts-ignore
     private needToPlay = false
 
     public async play() {

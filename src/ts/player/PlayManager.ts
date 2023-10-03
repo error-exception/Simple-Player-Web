@@ -7,6 +7,7 @@ import { PlayMode } from "./PlayMode"
 import MusicDao from "../dao/MusicDao";
 import TimingManager from "../TimingManager";
 import OSUPlayer from "./OSUPlayer";
+import {PLAYER} from "../build";
 
 class PlayManager {
     private _musicList = createMutableStateFlow<Bullet[]>([
@@ -19,7 +20,9 @@ class PlayManager {
 
     constructor() {
         AudioPlayerV2.onEnd.collect(() => {
-            this.next()
+            if (PLAYER) {
+                this.next()
+            }
         })
         // this.loadMusicList()
         TimingManager.onTimingUpdate.collect((timing) => {

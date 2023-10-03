@@ -5,15 +5,17 @@
 <!--            :frame-time="16"-->
 <!--            style="position: absolute; left: 4px; bottom: 4px"-->
 <!--        />-->
-        <TopBar
-            style="position: absolute; top: 0"
-            :stateText="stateText"
-            @settingsClick="ui.settings = !ui.settings"
-            @bpmCalcClick="ui.bpmCalculator = !ui.bpmCalculator"
-            @beatmapListClick="ui.beatmapList = !ui.beatmapList"
-            @hideUI="hideUI()"
-            v-show="ui.showUI"
-        />
+        <Transition name="top-bar">
+            <TopBar
+                style="position: absolute; top: 0"
+                :stateText="stateText"
+                @settingsClick="ui.settings = !ui.settings"
+                @bpmCalcClick="ui.bpmCalculator = !ui.bpmCalculator"
+                @beatmapListClick="ui.beatmapList = !ui.beatmapList"
+                @hideUI="hideUI()"
+                v-show="ui.showUI"
+            />
+        </Transition>
         <Transition name="mask">
             <div style="position: absolute" class="max-size mask" v-if="hasSomeUIShow" @click="closeAll()"></div>
         </Transition>
@@ -65,15 +67,24 @@ import PlayManager from "./ts/player/PlayManager";
 import { PlayerState } from "./ts/player/PlayerState";
 import { loadOSZ } from './ts/OSZ';
 import OSUBeatmapList from './components/OSUBeatmapList.vue';
-import { onEnterMenu } from './ts/GlobalState';
+import {onEnterMenu, onLeftSide, onRightSide} from './ts/GlobalState';
+import ScreenManager from "./ts/webgl/ScreenManager";
+import {useCollect} from "./ts/util/use";
+import {PLAYER} from "./ts/build";
 
 const ui = reactive({
     list: false,
     settings: false,
     bpmCalculator: false,
-    showUI: true,
+    showUI: false,
     miniPlayer: false,
     beatmapList: false
+})
+
+useCollect(ScreenManager.currentId, id => {
+    if (id === 'main') {
+        ui.showUI = false
+    }
 })
 
 provide("openList", () => {
@@ -83,6 +94,9 @@ provide("openList", () => {
 provide("openMiniPlayer", () => {
     ui.miniPlayer = true
 })
+
+watch(() => ui.settings, value => onLeftSide.emit(value))
+watch(() => ui.list, value => onRightSide.emit(value))
 
 useKeyboard('up', (evt) => {
     console.log(evt.code);
@@ -96,10 +110,10 @@ useKeyboard('up', (evt) => {
     if (ui.bpmCalculator) {
         return
     }
-    if (evt.code === 'ArrowRight') {
+    if (evt.code === 'ArrowRight' && PLAYER) {
         nextSong()
         Toaster.show("下一曲")
-    } else if (evt.code === 'ArrowLeft') {
+    } else if (evt.code === 'ArrowLeft' && PLAYER) {
         prevSong()
         Toaster.show("上一曲")
     } else if (evt.code === 'Space') {
@@ -126,7 +140,7 @@ function closeAll() {
 }
 
 const stateText = ref("")
-const collector = () => nextSong()
+const collector = () => PLAYER && nextSong()
 
 watch(() => ui.bpmCalculator, (value) => {
     if (value)
@@ -154,9 +168,11 @@ AudioPlayerV2.playStateFlow.collect((stateCode: number) => {
 onMounted(() => init())
 
 async function init() {
-    await PlayManager.loadMusicList()
-    await PlayManager.playAt(0)
-    OSUPlayer.pause()
+    if (PLAYER) {
+        await PlayManager.loadMusicList()
+        await PlayManager.playAt(0)
+        OSUPlayer.pause()
+    }
 }
 
 
@@ -219,7 +235,7 @@ function handleFile(e: DragEvent) {
 .mask-leave-active,
 .settings-enter-active,
 .settings-leave-active {
-    transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1)
+    transition: all 500ms cubic-bezier(0.16, 1, 0.3, 1)
 }
 
 .player-enter-active {
@@ -269,6 +285,24 @@ function handleFile(e: DragEvent) {
 
 .mask {
     background-color: #00000080;
+}
+
+.top-bar-enter-from, .top-bar-leave-to {
+    transform: translateY(-100%);
+}
+
+.top-bar-enter-to, .top-bar-leave-from  {
+    transform: translateY(0);
+}
+
+.top-bar-enter-active, .top-bar-leave-active {
+    transition-property: transform;
+    transition-duration: 500ms;
+    transition-delay: 300ms;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+.top-bar-leave-active {
+    transition-delay: 0s;
 }
 
 @keyframes player-enter-animation {
