@@ -17,7 +17,7 @@ export default defineConfig({
       }
     },
     minify: false,
-    outDir: './doc'
+    outDir: './docs'
   },
   server: {
     port: 5555,
