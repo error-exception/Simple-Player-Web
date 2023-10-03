@@ -63,29 +63,6 @@ function onDrop() {
   console.log('drop')
 }
 
-let isMouseDown: boolean = false
-// function down() {
-//   isMouseDown = true
-// }
-//
-// function move(e: MouseEvent) {
-//   if (!sliderBackground.value || !isMouseDown || !sliderThumb.value) {
-//     return
-//   }
-//   console.log(e.movementX)
-//   const x = e.clientX - sliderBackground.value.offsetLeft - sliderThumb.value.offsetWidth / 2
-//   progress.value = Math.max(Math.min(x / width.value, 1), 0)
-//   emit("update:modelValue", progress.value)
-// }
-//
-// function up() {
-//   isMouseDown = false
-// }
-//
-// function leave() {
-//   isMouseDown = false
-// }
-
 </script>
 
 <style scoped>

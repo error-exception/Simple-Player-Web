@@ -32,7 +32,6 @@ import approachCircle from '../assets/approachcircle.png'
 import stdNoteCircle from '../assets/hitcircleoverlay.png'
 
 const canvas = ref<HTMLCanvasElement | null>(null)
-let isOpen = false
 let renderer: WebGLRenderer
 
 
@@ -108,7 +107,6 @@ onMounted(async () => {
     await ImageLoader.load(stdNoteCircle, "stdNoteCircle")
     await ImageLoader.load(approachCircle, "approachCircle")
     await BackgroundLoader.init()
-    isOpen = true
     ShaderManager.init(webgl)
     renderer = new WebGLRenderer(webgl)
     window.onresize = () => {

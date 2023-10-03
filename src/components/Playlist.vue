@@ -40,8 +40,8 @@ onMounted(() => {
   if (!div) {
     return
   }
-  let scrollTop = 0
-  let viewHeight = div.offsetHeight
+  // let scrollTop = 0
+  // let viewHeight = div.offsetHeight
   const children = div.children
   let scrollY = 0
   for (let i = 0; i < Math.max(activeIndex.value - 3, 0); i++) {
@@ -49,14 +49,14 @@ onMounted(() => {
   }
   div.scrollTo(0, scrollY)
 
-  function getScrollTop(html: HTMLElement): number {
-    const offsetTop = html.offsetTop
-    return offsetTop - scrollTop
-  }
+  // function getScrollTop(html: HTMLElement): number {
+  //   const offsetTop = html.offsetTop
+  //   return offsetTop - scrollTop
+  // }
 
-  function isInViewport(html: HTMLElement): boolean {
-    return getScrollTop(html) > 0 && getScrollTop(html) < viewHeight
-  }
+  // function isInViewport(html: HTMLElement): boolean {
+  //   return getScrollTop(html) > 0 && getScrollTop(html) < viewHeight
+  // }
 
 
 })

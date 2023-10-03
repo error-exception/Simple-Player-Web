@@ -785,14 +785,11 @@ function drawWave() {
     
 }
 
-let lastBeatCount = -1
 
 function drawBeatWave() {
     if (!beater.isBeat()) {
         return
     }
-    
-    lastBeatCount = beater.getBeatCount()
     
     const beatIndex = beater.getBeatCount() - 4
     
