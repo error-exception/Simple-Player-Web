@@ -19,8 +19,8 @@
     </Column>
 </template>
 <script setup lang="ts">
-import Column from "./Column.vue";
-import Row from "./Row.vue";
+import Column from "./common/Column.vue";
+import Row from "./common/Row.vue";
 import {Score} from "../ts/Score";
 
 </script>

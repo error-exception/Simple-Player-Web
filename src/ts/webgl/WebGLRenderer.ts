@@ -1,7 +1,7 @@
-import {Drawable} from "./Drawable";
+import {Drawable} from "./drawable/Drawable";
 import {Disposable} from "./core/Disposable";
-import {MouseState} from "../MouseState";
-import Coordinate from "./Coordinate";
+import {MouseState} from "../global/MouseState";
+import Coordinate from "./base/Coordinate";
 
 export class WebGLRenderer implements Disposable {
 

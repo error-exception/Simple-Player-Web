@@ -26,9 +26,9 @@ import AudioPlayer from "../ts/player/AudioPlayer";
 import OSUPlayer from "../ts/player/OSUPlayer";
 import PlayManager from "../ts/player/PlayManager";
 import { useCollect, useStateFlow } from "../ts/util/use";
-import Column from "./Column.vue";
+import Column from "./common/Column.vue";
 import ProgressBar from "./ProgressBar.vue";
-import Row from "./Row.vue";
+import Row from "./common/Row.vue";
 import { url } from "../ts/Utils";
 import {PLAYER} from "../ts/build";
 

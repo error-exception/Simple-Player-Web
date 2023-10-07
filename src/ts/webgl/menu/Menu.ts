@@ -1,9 +1,9 @@
-import {Box} from "../Box";
-import {ColorDrawable} from "../ColorDrawable";
-import {Color} from "../Color";
+import {Box} from "../box/Box";
+import {ColorDrawable} from "../drawable/ColorDrawable";
+import {Color} from "../base/Color";
 import {Axis} from "../layout/Axis";
 import {easeInCubic, easeOutBack, easeOutCubic} from "../../util/Easing";
-import {Time} from "../../Time";
+import {Time} from "../../global/Time";
 import {Vector2} from "../core/Vector2";
 
 export class Menu extends Box {
@@ -15,7 +15,7 @@ export class Menu extends Box {
             size: ['fill-parent', 'fill-parent']
         });
         this.menuBackground = new ColorDrawable(gl, {
-            size: ['fill-parent', 128],
+            size: ['fill-parent', 96],
             anchor: Axis.X_LEFT | Axis.Y_CENTER,
             color: Color.fromHex(0x323232)
         })

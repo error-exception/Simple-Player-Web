@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import Column from "./Column.vue";
+import Column from "./common/Column.vue";
 import {ref, watch} from "vue";
 import {currentMilliseconds} from "../ts/Utils";
 

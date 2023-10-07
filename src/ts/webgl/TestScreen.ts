@@ -1,4 +1,4 @@
-import { Box } from "./Box";
+import { Box } from "./box/Box";
 import { TestRoundDrawable } from "./TestRoundDrawable";
 import { Axis } from "./layout/Axis";
 

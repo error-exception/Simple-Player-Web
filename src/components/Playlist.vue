@@ -18,7 +18,7 @@
 import {onMounted, ref, shallowRef} from "vue";
 import PlayManager from "../ts/player/PlayManager";
 import {useCollect, useStateFlow} from '../ts/util/use';
-import Row from "./Row.vue";
+import Row from "./common/Row.vue";
 import {Bullet} from "../ts/type";
 
 function playAt(i: number) {

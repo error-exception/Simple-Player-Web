@@ -19,6 +19,10 @@ export default defineConfig({
     minify: false,
     outDir: './docs'
   },
+  esbuild: {
+    jsxImportSource: 'vue',
+    jsx: 'preserve'
+  },
   server: {
     port: 5555,
     proxy: {

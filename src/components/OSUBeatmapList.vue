@@ -1,29 +1,46 @@
 <template>
     <!-- <Row class="fill-size" style="pointer-events: none;" center> -->
-        <Column class="osu-beatmap-list-box">
-            <Row style="height: 48px; padding: 0 16px;" center-vertical>
-                <button @click="show()" style="color: white; padding: 16px; margin-left: auto; ">访问文件系统</button>
-                <span style="color: white;" @click="$emit('close')">Close</span>
+    <AlertDialog class="osu-beatmap-list-box">
+        <template #title>
+            <Row class="w-full h-12 px-4" center-vertical>
+                <button @click="show()" class="text-white p-4 ml-auto">访问文件系统</button>
+                <span class="text-white" @click="$emit('close')">Close</span>
             </Row>
-            <Column class="fill-width flex-grow osu-beatmap-list-content no-scroller">
-                <Row class="fill-width osu-beatmap-list-content-item" v-for="(item, index) in files" @click="loadOSZ(item)" center-vertical :gap="32">
-                    <span style="color: #ffffff80;">{{ index + 1 }}</span>
-                    <Column class="fill-width" :gap="8">
-                        <span style="color: white; font-size: 16px;">{{ item.name }}</span>
-                        <span style="color: #ffffff80; font-size: 14px;">{{ (item.size / 1024 / 1024).toFixed(2) }} MB</span>
-                    </Column>
-                </Row>
-                
-            </Column>
+        </template>
+        <Column class="fill-width flex-grow osu-beatmap-list-content no-scroller">
+            <Row class="fill-width osu-beatmap-list-content-item" v-for="(item, index) in files" @click="loadOSZ(item)" center-vertical :gap="32">
+                <span style="color: #ffffff80;">{{ index + 1 }}</span>
+                <Column class="fill-width" :gap="8">
+                    <span class="text-white text-[16px]">{{ item.name }}</span>
+                    <span style="color: #ffffff80; font-size: 14px;">{{ (item.size / 1024 / 1024).toFixed(2) }} MB</span>
+                </Column>
+            </Row>
         </Column>
+    </AlertDialog>
+<!--        <Column class="osu-beatmap-list-box">-->
+<!--            <Row style="height: 48px; padding: 0 16px;" center-vertical>-->
+<!--                <button @click="show()" style="color: white; padding: 16px; margin-left: auto; ">访问文件系统</button>-->
+<!--                <span style="color: white;" @click="$emit('close')">Close</span>-->
+<!--            </Row>-->
+<!--            <Column class="fill-width flex-grow osu-beatmap-list-content no-scroller">-->
+<!--                <Row class="fill-width osu-beatmap-list-content-item" v-for="(item, index) in files" @click="loadOSZ(item)" center-vertical :gap="32">-->
+<!--                    <span style="color: #ffffff80;">{{ index + 1 }}</span>-->
+<!--                    <Column class="fill-width" :gap="8">-->
+<!--                        <span style="color: white; font-size: 16px;">{{ item.name }}</span>-->
+<!--                        <span style="color: #ffffff80; font-size: 14px;">{{ (item.size / 1024 / 1024).toFixed(2) }} MB</span>-->
+<!--                    </Column>-->
+<!--                </Row>-->
+<!--            </Column>-->
+<!--        </Column>-->
     <!-- </Row> -->
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
-import { GlobalState, beatmapDirectoryId } from '../ts/GlobalState';
-import { loadOSZ } from '../ts/OSZ';
-import Column from './Column.vue';
-import Row from './Row.vue';
+import { GlobalState, beatmapDirectoryId } from '../ts/global/GlobalState';
+import { loadOSZ } from '../ts/osu/OSZ';
+import Column from './common/Column.vue';
+import Row from './common/Row.vue';
+import AlertDialog from "./framework/AlertDialog.vue";
 
 const files = ref<File[]>()
 
@@ -49,8 +66,10 @@ async function showBeatmapList() {
         const file = await fileHandle.getFile() as File
         list.push(file)
     }
-    GlobalState.beatmapFileList = list
-    files.value = list
+    GlobalState.beatmapFileList = list.sort((a, b) => {
+        return b.lastModified - a.lastModified
+    })
+    files.value = GlobalState.beatmapFileList
 }
 
 </script>

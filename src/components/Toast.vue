@@ -7,8 +7,8 @@
 </template>
 
 <script setup lang="ts">
-import Row from "./Row.vue";
-import {Toaster} from "../ts/Toaster";
+import Row from "./common/Row.vue";
+import {Toaster} from "../ts/global/Toaster";
 import {reactive} from "vue";
 
 const state = reactive({

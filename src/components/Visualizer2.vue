@@ -11,23 +11,24 @@ import backIcon from '../assets/back_white_48.png';
 import legacyLogo from '../assets/legacy_logo.png';
 import logoImg from '../assets/logo.png';
 import rippleNew from '../assets/ripple_new.png';
-import BackgroundLoader from "../ts/BackgroundLoader";
-import BeatBooster from "../ts/BeatBooster";
-import {BeatState} from "../ts/Beater";
+import star from '../assets/star.png';
+import BackgroundLoader from "../ts/global/BackgroundLoader";
+import BeatBooster from "../ts/global/BeatBooster";
+import {BeatState} from "../ts/global/Beater";
 import {ImageLoader} from "../ts/ImageResources";
-import {MOUSE_KEY_LEFT, MOUSE_KEY_NONE, MOUSE_KEY_RIGHT, MouseState} from "../ts/MouseState";
-import {Time} from "../ts/Time";
+import {MOUSE_KEY_LEFT, MOUSE_KEY_NONE, MOUSE_KEY_RIGHT, MouseState} from "../ts/global/MouseState";
+import {Time} from "../ts/global/Time";
 import {calcRMS} from "../ts/Utils";
 import AudioPlayerV2 from "../ts/player/AudioPlayer";
 import OSUPlayer from "../ts/player/OSUPlayer";
 import {easeOut, easeOutQuint} from "../ts/util/Easing";
-import {MainScreen} from "../ts/webgl/MainScreen";
-import ScreenManager from "../ts/webgl/ScreenManager";
-import ShaderManager from "../ts/webgl/ShaderManager";
+import {MainScreen} from "../ts/webgl/screen/main/MainScreen";
+import ScreenManager from "../ts/webgl/util/ScreenManager";
+import ShaderManager from "../ts/webgl/util/ShaderManager";
 import {WebGLRenderer} from "../ts/webgl/WebGLRenderer";
-import Coordinate from '../ts/webgl/Coordinate'
-import {SongPlayScreen} from "../ts/webgl/songPlay/SongPlayScreen";
-import {ManiaScreen} from '../ts/webgl/mania/ManiaScreen';
+import Coordinate from '../ts/webgl/base/Coordinate'
+import {SongPlayScreen} from "../ts/webgl/screen/songPlay/SongPlayScreen";
+import {ManiaScreen} from '../ts/webgl/screen/mania/ManiaScreen';
 import approachCircle from '../assets/approachcircle.png'
 import stdNoteCircle from '../assets/hitcircleoverlay.png'
 
@@ -106,6 +107,7 @@ onMounted(async () => {
     await ImageLoader.load(backIcon, 'backIcon')
     await ImageLoader.load(stdNoteCircle, "stdNoteCircle")
     await ImageLoader.load(approachCircle, "approachCircle")
+    await ImageLoader.load(star, "star")
     await BackgroundLoader.init()
     ShaderManager.init(webgl)
     renderer = new WebGLRenderer(webgl)

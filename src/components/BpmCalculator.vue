@@ -1,23 +1,23 @@
 <template>
     <Column class="fill-size" style="background-color: #171c1a">
         <Row class="fill-width" style="background-color: #374340; height: 36px; padding: 0 16px">
-            <button class="font-white fill-height">Timing</button>
-            <span class="font-white fill-height flex-grow text-center">{{ loadState }}</span>
-            <button class="font-white fill-height bpm-close" @click="closeCalculator()">Close</button>
+            <button class="text-white fill-height">Timing</button>
+            <span class="text-white fill-height flex-grow text-center">{{ loadState }}</span>
+            <button class="text-white fill-height bpm-close" @click="closeCalculator()">Close</button>
         </Row>
         <Row class="fill-width">
             <Column class="fill-height" style="justify-content: space-evenly; padding-left: 4px; padding-right: 4px">
-                <button class="ma font-white" @click="DRAW_COUNT++">{{ Icon.ZoomOut }}</button>
-                <button class="font-white ma" @click="DRAW_COUNT--">{{ Icon.ZoomIn }}</button>
+                <button class="ma text-white" @click="DRAW_COUNT++">{{ Icon.ZoomOut }}</button>
+                <button class="text-white ma" @click="DRAW_COUNT--">{{ Icon.ZoomIn }}</button>
             </Column>
-            <div class="flex-grow font-white" style="height: 80px; background-color: #212926">
+            <div class="flex-grow text-white" style="height: 80px; background-color: #212926">
                 <canvas ref="wave" @wheel="changeByBpm"></canvas>
             </div>
         </Row>
         <Row class="flex-grow" :gap="8">
             <!-- Timing List -->
             <Column
-                class="font-white flex-grow"
+                class="text-white flex-grow"
                 style="background-color: #2e3835; padding: 16px 0"
             >
                 <Column class="flex-grow vertical-scroll no-scroller" style="height: 200px">
@@ -49,7 +49,7 @@
                     center-vertical
                     :gap="12"
                 >
-                    <span class="font-white" style="width: 50px;">BPM</span>
+                    <span class="text-white" style="width: 50px;">BPM</span>
                     <Row class="flex-grow bpm-adjust-box" center-horizontal>
                         <button class="bpm-adjust-btn ma" @click="adjustBpm(false)">
                             {{ Icon.Remove }}
@@ -63,7 +63,7 @@
                 
                 <Column class="fill-width block-box" :gap="12">
                     <Row class="fill-width" center-vertical :gap="12">
-                        <span class="font-white" style="width: 50px;">Offset</span>
+                        <span class="text-white" style="width: 50px;">Offset</span>
                         <Row class="flex-grow bpm-adjust-box" center-horizontal>
                             <button class="bpm-adjust-btn ma" @click="adjustOffset(false)">
                                 {{ Icon.Remove }}
@@ -74,7 +74,7 @@
                             </button>
                         </Row>
                     </Row>
-                    <Row class="fill-width font-white" :gap="16" center-horizontal>
+                    <Row class="fill-width text-white" :gap="16" center-horizontal>
                         <button class="radio-btn" @click="state.precisionIndex = 0"
                                 :style="`background-color: ${ state.precisionIndex == 0 ? '#33cb98' : 'transparent'}`">
                             1.0
@@ -109,14 +109,14 @@
                     <!--          <div class="bpm-side-beat" :style="`opacity: ${state.beatEffect.right}`" ></div>-->
                 </Column>
                 <Row class="fill-width block-box" center-vertical v-if="state.timing.list.length !== 0">
-                    <span class="font-white">Kiai Mode</span>
+                    <span class="text-white">Kiai Mode</span>
                     <CheckBox class="ml-auto" v-model="state.timing.selectedTiming.isKiai"/>
                 </Row>
             </Column>
         </Row>
-        <Row class="fill-width font-white" style="height: 80px">
+        <Row class="fill-width text-white" style="height: 80px">
             <Column center style="background-color: #222a27; padding: 0 16px">
-                <span class="font-white select-none" style="font-size: 26px; letter-spacing: 2px">{{
+                <span class="text-white select-none" style="font-size: 26px; letter-spacing: 2px">{{
                         state.currentTime
                     }}</span>
                 <span style="color: yellow" class="select-none">{{ state.beatInfo.bpm }} BPM</span>
@@ -125,14 +125,14 @@
                 <canvas ref="progress" class="fill-size" @mousedown="mouseState = true" @mouseup="changeProgress"
                         @mousemove="slideProgress" @mouseleave="changeProgress"></canvas>
             </div>
-            <button class="fill-height ma font-white" style="font-size: 36px" @click="playOrStart()">
+            <button class="fill-height ma text-white" style="font-size: 36px" @click="playOrStart()">
                 {{ playState === PlayerState.STATE_PLAYING ? Icon.Pause : Icon.PlayArrow }}
             </button>
-            <button class="fill-height ma font-white" style="font-size: 36px" @click="stopPlay()">
+            <button class="fill-height ma text-white" style="font-size: 36px" @click="stopPlay()">
                 {{ Icon.Stop }}
             </button>
             <button
-                class="font-white p-8"
+                class="text-white p-8"
                 v-for="(item, index) in playbackRate"
                 @click="state.playbackRateIndex = index"
                 :style="`background-color: ${ state.playbackRateIndex === index ? '#33cb98' : 'transparent' }`"
@@ -147,18 +147,18 @@
 </template>
 
 <script setup lang="ts">
-import Row from "./Row.vue";
-import Column from "./Column.vue";
+import Row from "./common/Row.vue";
+import Column from "./common/Column.vue";
 import {computed, onMounted, onUnmounted, reactive, Ref, ref, watch} from "vue";
 import {Icon} from "../ts/icon/Icon";
 import {calcRMS, currentMilliseconds, int, useKeyboard} from "../ts/Utils";
-import CheckBox from "./CheckBox.vue";
+import CheckBox from "./common/CheckBox.vue";
 import AudioPlayer from "../ts/player/AudioPlayer";
 import {TestBeater} from "../ts/TestBeater";
 import {simpleAnimate} from "../ts/util/Animation";
-import {Toaster} from "../ts/Toaster";
+import {Toaster} from "../ts/global/Toaster";
 import {ArrayUtils} from "../ts/util/ArrayUtils";
-import TimingManager from "../ts/TimingManager";
+import TimingManager from "../ts/global/TimingManager";
 import PlayManager from "../ts/player/PlayManager";
 import {TimingInfo, TimingItem} from "../ts/type";
 import {useCollect, useStateFlow} from "../ts/util/use";

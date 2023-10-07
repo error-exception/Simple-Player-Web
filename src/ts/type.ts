@@ -9,8 +9,8 @@
  * PreviewTime
  */
 
-import { OSUStdNote } from "./OSUFile"
-import { NoteData } from "./webgl/mania/ManiaPanel"
+import { OSUStdNote } from "./osu/OSUFile"
+import { NoteData } from "./webgl/screen/mania/ManiaPanel"
 
 export interface Music {
     title: string
@@ -118,3 +118,5 @@ export interface ResponseResult<T = any> {
 }
 
 export type Callback<T> = (it: T) => void
+
+export type Nullable<T> = T | null

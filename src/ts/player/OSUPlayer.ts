@@ -1,8 +1,8 @@
-import { OSUStdNote } from "../OSUFile";
+import { OSUStdNote } from "../osu/OSUFile";
 import {Bullet} from "../type";
 import {createMutableSharedFlow, createMutableStateFlow} from "../util/flow";
 import { isUndef } from "../webgl/core/Utils";
-import { NoteData } from "../webgl/mania/ManiaPanel";
+import { NoteData } from "../webgl/screen/mania/ManiaPanel";
 import AudioPlayerV2 from "./AudioPlayer";
 import VideoPlayer from "./VideoPlayer";
 

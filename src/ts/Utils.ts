@@ -1,5 +1,6 @@
 import {onMounted, onUnmounted, ref, Ref} from "vue";
 import {ArrayUtils} from "./util/ArrayUtils";
+import {Nullable} from "./type";
 
 export async function fetchJson(url: string) {
     const response = await fetch(url);
@@ -40,16 +41,6 @@ export function timeString(timeUnitS: number) {
 export function currentMilliseconds() {
     return Date.now()
 }
-
-// export function findMusic(store: any, id: number): Music | undefined {
-//     // const musicList = store.state.musicList;
-//     // for (let i = 0; i < musicList.length; i++) {
-//     //     if (musicList[i].id === id)
-//     //         return musicList[i]
-//     // }
-//     // return undefined
-//     return PlayManager.getMusicList().value.find(music => music.id === id)
-// }
 
 export function useKeyboard(type: 'up' | 'down', c: (e: KeyboardEvent) => void) {
 
@@ -124,4 +115,8 @@ export function isString(v: any): v is string {
 export function init<T>(target: T, scope: (this: T) => void): T {
     scope.call(target)
     return target
+}
+
+export function nullable<T>(initValue: Nullable<T> = null) {
+    return initValue
 }

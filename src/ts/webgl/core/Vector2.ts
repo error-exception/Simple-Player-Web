@@ -61,6 +61,6 @@ export class Vector2 {
 
 }
 
-export function createV2(x: number, y: number) {
-    return new Vector2(x, y)
+export function Vector(x: number = 0, y?: number) {
+    return new Vector2(x, y === undefined ? x : y)
 }

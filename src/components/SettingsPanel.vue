@@ -18,8 +18,8 @@
 </template>
 
 <script setup lang="ts">
-import Row from "./Row.vue";
-import Column from "./Column.vue";
+import Row from "./common/Row.vue";
+import Column from "./common/Column.vue";
 import {reactive} from "vue";
 import UISettings from "./settings/UISettings.vue";
 import VisualizerSettings from "./settings/VisualizerSettings.vue";

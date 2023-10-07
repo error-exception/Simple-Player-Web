@@ -21,8 +21,8 @@
 
 import { provide, ref } from "vue";
 import { Icon } from "../ts/icon/Icon";
-import Column from "./Column.vue";
-import Row from "./Row.vue";
+import Column from "./common/Column.vue";
+import Row from "./common/Row.vue";
 
 // withDefaults(defineProps<{
 //   accept: string,

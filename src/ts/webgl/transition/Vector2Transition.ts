@@ -1,6 +1,6 @@
 import {Vector2} from "../core/Vector2";
 import {linear, TimeFunction} from "../../util/Easing";
-import {Transition, TransitionGroup} from "../Transition";
+import {Transition, TransitionGroup} from "./Transition";
 
 export class Vector2Transition {
     private vecXTransition: TransitionGroup | null = null

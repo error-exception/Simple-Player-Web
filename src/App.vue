@@ -38,9 +38,7 @@
         <BpmCalculator style="position: absolute" v-if="ui.bpmCalculator"
                        @close="ui.bpmCalculator = false"/>
         <OSUBeatmapList style="position: absolute;" v-if="ui.beatmapList"/>
-           <!-- <UploadSong style="position: absolute"/> -->
-<!--        <HitCounter style="position: absolute; right: 0; top: 128px"/>-->
-<!--        <ScoreCounter style="position: absolute; right: 0; top: 280px;"/>-->
+<!--        <OSUBeatmapDetails style="position: absolute"/>-->
         <Toast style="position: absolute"/>
         <DevelopTip style="position: absolute; right: 0; bottom: 0"/>
     </div>
@@ -60,17 +58,18 @@ import TopBar from "./components/TopBar.vue";
 import Visualizer2 from "./components/Visualizer2.vue";
 import VolumeAdjuster from "./components/VolumeAdjuster.vue";
 import AudioPlayerV2 from "./ts/player/AudioPlayer";
-import { Toaster } from "./ts/Toaster";
+import { Toaster } from "./ts/global/Toaster";
 import { scope, useKeyboard } from './ts/Utils';
 import OSUPlayer from "./ts/player/OSUPlayer";
 import PlayManager from "./ts/player/PlayManager";
 import { PlayerState } from "./ts/player/PlayerState";
-import { loadOSZ } from './ts/OSZ';
+import { loadOSZ } from './ts/osu/OSZ';
 import OSUBeatmapList from './components/OSUBeatmapList.vue';
-import {onEnterMenu, onLeftSide, onRightSide} from './ts/GlobalState';
-import ScreenManager from "./ts/webgl/ScreenManager";
+import {onEnterMenu, onLeftSide, onRightSide} from './ts/global/GlobalState';
+import ScreenManager from "./ts/webgl/util/ScreenManager";
 import {useCollect} from "./ts/util/use";
 import {PLAYER} from "./ts/build";
+import OSUBeatmapDetails from "./components/OSUBeatmapDetails.vue";
 
 const ui = reactive({
     list: false,

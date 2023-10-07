@@ -6,7 +6,7 @@
 
 <script lang="ts" setup>
 
-import Column from "../Column.vue";
+import Column from "../common/Column.vue";
 
 </script>
 

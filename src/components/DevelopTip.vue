@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import Row from "./Row.vue";
+import Row from "./common/Row.vue";
 </script>
 
 <style scoped>

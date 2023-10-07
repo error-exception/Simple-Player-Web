@@ -1,3 +1,7 @@
+# 预览
+
+https://error-exception.github.io/Simple-Player-Web/
+
 # 开发
 
 需要安装 node.js

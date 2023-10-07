@@ -2,10 +2,10 @@ import AudioPlayerV2 from "./AudioPlayer";
 import { int } from "../Utils";
 import {Bullet, BulletTimingPointsItem, Music, newBullet, TimingInfo} from "../type"
 import { createMutableSharedFlow, createMutableStateFlow } from "../util/flow"
-import { Interpolation } from "../webgl/Interpolation";
+import { Interpolation } from "../webgl/util/Interpolation";
 import { PlayMode } from "./PlayMode"
 import MusicDao from "../dao/MusicDao";
-import TimingManager from "../TimingManager";
+import TimingManager from "../global/TimingManager";
 import OSUPlayer from "./OSUPlayer";
 import {PLAYER} from "../build";
 
