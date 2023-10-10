@@ -36,15 +36,6 @@ body {
   height: 100%;
   position: relative;
 }
-.click-scale {
-  cursor: pointer;
-  user-select: none;
-  transform: scale(1);
-  transition: all 110ms ease-in-out;
-}
-.click-scale:active {
-  transform: scale(.96);
-}
 button, input {
   outline: none;
   border: none;
@@ -73,16 +64,4 @@ button, input {
 .no-scroller::-webkit-scrollbar {
   width: 0;
   height: 0;
-}
-.light-gray-click {
-  user-select: none;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 110ms ease;
-}
-.light-gray-click:hover {
-  background-color: #00000020;
-}
-.light-gray-click:active {
-  background-color: #00000040;
 }

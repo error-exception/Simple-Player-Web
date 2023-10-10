@@ -1,56 +1,46 @@
-<template>
-  <div :class="checkState ? 'o-checked' : 'o-checkbox'" @click="check"></div>
-</template>
-
 <script setup lang="ts">
-
-import {ref, watch} from "vue";
-
+import {onMounted, ref, watch} from "vue";
+import {Nullable} from "../../ts/type";
 const props = withDefaults(defineProps<{
-  modelValue?: boolean,
   color?: string,
-  checked?: boolean
 }>(), {
   color: '#33cb98',
-  checked: false
 })
+const value = ref(false)
+const checkValue = defineModel<boolean>({ default: false })
+watch(value, v => checkValue.value = v)
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void,
-  (e: 'change'): void
-}>()
-
-const checkState = ref<boolean>(props.checked)
-watch(() => props.checked, (value) => {
-  checkState.value = value
-})
-watch(() => props.modelValue, (value) => {
-  checkState.value = value
-})
-function check() {
-  checkState.value = !checkState.value
-  emit("update:modelValue", checkState.value)
-  emit("change")
+const checkBox = ref<Nullable<HTMLInputElement>>(null)
+const callback = () => {
+  checkBox.value?.style.setProperty('--checkbox-color', props.color)
 }
+watch(() => props.color, callback)
+onMounted(callback)
 </script>
-
+<template>
+  <input type="checkbox" class="o-checkbox" v-model="value">
+</template>
 <style scoped>
 .o-checkbox {
+  --checkbox-color: #33cb98;
   transition: all 100ms ease-in-out;
   width: 36px;
   height: 16px;
-  border: 3px solid #33cb98;
+  border: 3px solid var(--checkbox-color);
   border-radius: 999px;
+  appearance: none;
 }
-.o-checkbox:hover, .o-checked:hover {
-  box-shadow: 0 0 8px #33cb98;
+.o-checkbox:hover, .o-checkbox:checked:hover {
+  box-shadow: 0 0 8px var(--checkbox-color);
+  width: 48px;
 }
-.o-checked {
+.o-checkbox:checked {
+  appearance: none;
   transition: all 100ms ease-in-out;
   height: 16px;
-  border: 3px solid #33cb98;
+  border: 3px solid var(--checkbox-color);
   border-radius: 999px;
-  background-color: #33cb98;
-  width: 48px;
+  background-color: var(--checkbox-color);
+  width: 36px;
 }
 </style>

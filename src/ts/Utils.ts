@@ -1,28 +1,6 @@
-import {onMounted, onUnmounted, ref, Ref} from "vue";
+import {onMounted, onUnmounted} from "vue";
 import {ArrayUtils} from "./util/ArrayUtils";
 import {Nullable} from "./type";
-
-export async function fetchJson(url: string) {
-    const response = await fetch(url);
-    return await response.json()
-}
-
-export function useMouse(): [Ref<number>, Ref<number>] {
-    const x = ref(0)
-    const y = ref(0)
-    const callback = (e: MouseEvent) => {
-        x.value = e.x
-        y.value = e.y
-    }
-    onMounted(() => {
-        window.addEventListener("mousemove", callback)
-    })
-    onUnmounted(() => {
-        window.removeEventListener("mousemove", callback)
-    })
-
-    return [x, y]
-}
 
 export function degreeToRadian(degree: number) {
     return degree * ( Math.PI / 180)
