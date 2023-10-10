@@ -307,11 +307,11 @@ function reset() {
   bpmInfo.bpm = 0
   previous = 0
 }
-
+//@ts-ignore
 function adjustBpm(dir: boolean) {
   bpmInfo.bpm += dir ? 1 : -1
 }
-
+//@ts-ignore
 function adjustOffset(dir: boolean) {
   if (dir) {
     if (state.precisionIndex === 3) {
@@ -410,6 +410,7 @@ function drawBeatWave() {
 
 // 5. progress bar
 let progressBound: { width: number, height: number }
+//@ts-ignore
 const currentTime = ref("00:00:000")
 const progress = ref<HTMLCanvasElement | null>(null)
 const mouseState = ref(false)
