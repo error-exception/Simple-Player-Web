@@ -7,7 +7,6 @@ import {calcRMS, currentMilliseconds, int, useKeyboard} from "../ts/Utils";
 import CheckBox from "./common/CheckBox.vue";
 import AudioPlayer from "../ts/player/AudioPlayer";
 import {TestBeater} from "../ts/TestBeater";
-import {simpleAnimate} from "../ts/util/Animation";
 import {Toaster} from "../ts/global/Toaster";
 import {ArrayUtils} from "../ts/util/ArrayUtils";
 import TimingManager from "../ts/global/TimingManager";
@@ -68,7 +67,6 @@ watch(() => bpmInfo.offset, (value) => {
 function changeByBpm(e: WheelEvent) {
   changeProgressByBeatGap(e.deltaY > 0)
 }
-
 function changeProgressByBeatGap(isPlus: boolean) {
   const offset = bpmInfo.offset
   const current = Math.max(player.currentTime() - offset, 0)
@@ -307,29 +305,6 @@ function reset() {
   bpmInfo.bpm = 0
   previous = 0
 }
-//@ts-ignore
-function adjustBpm(dir: boolean) {
-  bpmInfo.bpm += dir ? 1 : -1
-}
-//@ts-ignore
-function adjustOffset(dir: boolean) {
-  if (dir) {
-    if (state.precisionIndex === 3) {
-      const gap = 60 / bpmInfo.bpm * 1000
-      beatOffset.value += int(gap)
-    } else {
-      beatOffset.value += (10 ** state.precisionIndex)
-    }
-  } else {
-    if (state.precisionIndex === 3) {
-      const gap = 60 / bpmInfo.bpm * 1000
-      beatOffset.value -= int(gap)
-    } else {
-      beatOffset.value -= (10 ** state.precisionIndex)
-    }
-  }
-}
-
 function beat() {
   const time = player.currentTime()
   const scale = beater.beat(time)
@@ -337,7 +312,6 @@ function beat() {
   beatEffect.tapBeat = scale
   return scale
 }
-
 // 4. beat wave
 const beatWave = ref<HTMLCanvasElement | null>(null)
 const beatEffect = reactive({
@@ -410,8 +384,6 @@ function drawBeatWave() {
 
 // 5. progress bar
 let progressBound: { width: number, height: number }
-//@ts-ignore
-const currentTime = ref("00:00:000")
 const progress = ref<HTMLCanvasElement | null>(null)
 const mouseState = ref(false)
 
@@ -471,7 +443,6 @@ function drawProgressbar() {
   }
   ctx.fill()
   // draw progress bar
-  
   ctx.beginPath()
   ctx.lineWidth = 2
   ctx.strokeStyle = 'red'
@@ -503,7 +474,6 @@ function slideProgress(e: MouseEvent) {
 
 // 6. controls
 const playbackRate = ref([0.25, 0.5, 0.75, 1.0])
-const tapTestScale = ref(1)
 const loadState = ref("正在初始化......")
 
 async function applyTiming() {
@@ -524,7 +494,6 @@ async function applyTiming() {
       timestamp: timingListElement.timestamp
     })
   }
-  console.log(timingInfo)
   TimingManager.addTimingInfoToCache(timingInfo)
   
   let isSuccess = true
@@ -593,7 +562,6 @@ TimingManager.getTiming(currentMusic.metadata.id).then((res) => {
   beater.setTimingList(res.timingList)
   if (player.isPlaying()) {
     drawFlag.value = true
-    // draw()
   }
 })
 useKeyboard('down', (evt) => {
@@ -605,9 +573,6 @@ useKeyboard('down', (evt) => {
     state.playbackRateIndex = Math.min(state.playbackRateIndex + 1, 3)
   } else if (evt.code === "ArrowDown") {
     state.playbackRateIndex = Math.max(state.playbackRateIndex - 1, 0)
-  } else if (evt.code === "KeyG") {
-    tapTestScale.value = 0.96
-    simpleAnimate(tapTestScale).easeOutTo(1, 20)
   }
 })
 onMounted(() => {
@@ -653,8 +618,7 @@ function resizeCanvas(htmlRef: Ref<HTMLCanvasElement | null>, pixelRatio: number
   <Column class="fill-size bpm-calc-box" style="background-color: var(--bpm-color-1)">
     <Row class="w-full min-h-[36px]" style="background-color: #374340; padding: 0 16px">
       <button class="text-white fill-height">Timing</button>
-      <span class="text-white fill-height flex-grow text-center">{{ loadState }}</span>
-      <button class="text-white fill-height bpm-close" @click="closeCalculator()">Close</button>
+      <button class="text-white h-full bpm-close ml-auto" @click="closeCalculator()">Close</button>
     </Row>
     <Row class="w-full">
       <div class="h-full flex flex-col justify-evenly px-1" style="background-color: var(--bpm-color-3)">
@@ -778,15 +742,15 @@ function resizeCanvas(htmlRef: Ref<HTMLCanvasElement | null>, pixelRatio: number
 </template>
 <style scoped>
 .bpm-calc-box {
-  --bpm-color-1: #171c1a;
-  --bpm-color-2: #222a27;
-  --bpm-color-3: #2e3835;
-  --bpm-color-4: #394642;
-  --bpm-color-5: #45544f;
-  --bpm-color-6: #5c7069;
-  --bpm-color-7: #ffd966;
-  --bpm-color-8: #fff27f;
-  --bpm-color-9: #66ffcc;
+  --bpm-color-1:  #171c1a;
+  --bpm-color-2:  #222a27;
+  --bpm-color-3:  #2e3835;
+  --bpm-color-4:  #394642;
+  --bpm-color-5:  #45544f;
+  --bpm-color-6:  #5c7069;
+  --bpm-color-7:  #ffd966;
+  --bpm-color-8:  #fff27f;
+  --bpm-color-9:  #66ffcc;
   --bpm-color-10: #af00af;
   --bpm-color-11: #38e7ab;
 }
