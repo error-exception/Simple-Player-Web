@@ -7,6 +7,8 @@ export class Texture implements Disposable, Bindable {
     public imageWidth: number = 0;
     public imageHeight: number = 0;
 
+    public static NULL = Symbol()
+
     constructor(
         private gl: WebGL2RenderingContext,
         image: HTMLImageElement | HTMLVideoElement | null = null

@@ -11,6 +11,9 @@ import {Vector2} from "../core/Vector2";
 import {Axis} from "../layout/Axis";
 import {provide, unprovide} from "../util/DependencyInject";
 import {Vector2Transition} from "../transition/Vector2Transition";
+import {Texture} from "../core/Texture";
+import {Shader} from "../core/Shader";
+import {VertexBufferLayout} from "../core/VertexBufferLayout";
 
 export interface BaseDrawableConfig {
     size: [number | "fill-parent", number | "fill-parent"];
@@ -18,6 +21,9 @@ export interface BaseDrawableConfig {
     offset?: [number, number];
     // 设置变换中心
     origin?: number | number[]
+    texture?: Texture | symbol
+    shader?: Shader | symbol
+    layout?: VertexBufferLayout
 }
 
 /**

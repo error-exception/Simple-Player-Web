@@ -11,6 +11,7 @@ import backIcon from '../assets/back_white_48.png';
 import legacyLogo from '../assets/legacy_logo.png';
 import logoImg from '../assets/logo.png';
 import rippleNew from '../assets/ripple_new.png';
+import whiteRound from '../assets/white_round.png';
 import star from '../assets/star.png';
 import BackgroundLoader from "../ts/global/BackgroundLoader";
 import BeatBooster from "../ts/global/BeatBooster";
@@ -108,6 +109,7 @@ onMounted(async () => {
     await ImageLoader.load(stdNoteCircle, "stdNoteCircle")
     await ImageLoader.load(approachCircle, "approachCircle")
     await ImageLoader.load(star, "star")
+    await ImageLoader.load(whiteRound, 'whiteRound')
     await BackgroundLoader.init()
     ShaderManager.init(webgl)
     renderer = new WebGLRenderer(webgl)

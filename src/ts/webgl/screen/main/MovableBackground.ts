@@ -2,7 +2,6 @@ import BackgroundLoader from "../../../global/BackgroundLoader";
 import {Box} from "../../box/Box";
 import Coordinate from "../../base/Coordinate";
 import {Drawable} from "../../drawable/Drawable";
-import ShaderManager from "../../util/ShaderManager";
 import {Shape2D} from "../../util/Shape2D";
 import {Shader} from "../../core/Shader";
 import {Texture} from "../../core/Texture";
@@ -13,6 +12,15 @@ import {VertexBuffer} from "../../core/VertexBuffer";
 import {VertexBufferLayout} from "../../core/VertexBufferLayout";
 import {Time} from "../../../global/Time";
 import {easeOutQuint} from "../../../util/Easing";
+import {
+    ATTR_POSITION,
+    ATTR_TEXCOORD,
+    UNI_ALPHA,
+    UNI_ORTH,
+    UNI_SAMPLER,
+    UNI_TRANSFORM
+} from "../../shader/ShaderConstant";
+import StaticTextureShader from "../../shader/StaticTextureShader";
 
 // const vertexShader = `
 //     attribute vec4 a_position;
@@ -84,15 +92,14 @@ export class MovableBackground extends Drawable {
         vertexArray.bind()
         const buffer = new VertexBuffer(gl)
         const layout = new VertexBufferLayout(gl)
-        const shader = ShaderManager.newTextureShader()//new Shader(gl, vertexShader, fragmentShader)
+        const shader = StaticTextureShader.getShader(gl)//new Shader(gl, vertexShader, fragmentShader)
         const texture = new Texture(gl, null)
 
         buffer.bind()
         shader.bind()
 
-        shader.setUniform1i('u_sampler', this.textureUnit)
-        layout.pushFloat(shader.getAttributeLocation('a_position'), 2)
-        layout.pushFloat(shader.getAttributeLocation('a_tex_coord'), 2)
+        layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2)
+        layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2)
         vertexArray.addBuffer(buffer, layout)
 
         vertexArray.unbind()
@@ -231,9 +238,10 @@ export class MovableBackground extends Drawable {
         
         const gl = this.gl
         const shader = this.shader
-        shader.setUniformMatrix4fv('u_transform', this.matrixArray)
-        shader.setUniform1f('u_alpha', this.alpha)
-        shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
+        shader.setUniform1i(UNI_SAMPLER, this.textureUnit)
+        shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
+        shader.setUniform1f(UNI_ALPHA, this.alpha)
+        shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
         this.vertexArray.addBuffer(this.buffer, this.layout)
 
         gl.drawArrays(gl.TRIANGLES, 0, 6)
@@ -243,7 +251,7 @@ export class MovableBackground extends Drawable {
         super.dispose()
         this.texture.dispose()
         this.vertexArray.dispose()
-        this.shader.dispose()
+        StaticTextureShader.dispose()
         this.buffer.dispose()
     }
 }

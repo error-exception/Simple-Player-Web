@@ -6,6 +6,7 @@ export class Shader implements Bindable, Disposable {
     private readonly rendererId: WebGLProgram
     private uniformLocationCache: Record<string, WebGLUniformLocation | null> = {}
     private attributeLocationCache: Record<string, number> = {}
+    public static NULL = Symbol()
 
     constructor(
         private gl: WebGL2RenderingContext,

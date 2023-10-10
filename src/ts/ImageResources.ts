@@ -5,11 +5,11 @@ export class ImageLoader {
     public static cache = new ResourceCache<string, HTMLImageElement>(16)
 
     public static get(key: string): HTMLImageElement {
-        return ImageLoader.cache.get(key)!!
+        return this.cache.get(key)!
     }
 
-    public static async load(url: string, alias?: string): Promise<HTMLImageElement> {
-        const cache = ImageLoader.cache
+    public static async load(url: string, alias: string): Promise<HTMLImageElement> {
+        const cache = this.cache
         let image = cache.get(url)
         if (image !== undefined) {
             return image
@@ -17,13 +17,7 @@ export class ImageLoader {
         image = new Image()
         image.src = url
         await image.decode()
-        if (alias) {
-            cache.put(alias, image)
-        } else {
-            cache.put(url, image)
-        }
+        cache.put(alias, image)
         return image
     }
-
-
 }

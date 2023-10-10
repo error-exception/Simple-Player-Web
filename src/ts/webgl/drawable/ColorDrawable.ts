@@ -87,9 +87,10 @@ export class ColorDrawable extends Drawable<ColorDrawableConfig> {
             this.needUpdateVertex = false
             this.buffer.setBufferData(this.createVertexArray())
         }
-        this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
-        this.shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
-        this.shader.setUniform1f('u_alpha', this.appliedTransform.alpha)
+        const shader = this.shader
+        shader.setUniformMatrix4fv('u_transform', this.matrixArray)
+        shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
+        shader.setUniform1f('u_alpha', this.appliedTransform.alpha)
         this.vertexArray.addBuffer(this.buffer, this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, 6)
     }

@@ -13,35 +13,15 @@ import {Time} from "../../../global/Time";
 import {int} from "../../../Utils";
 import {easeOutQuint} from "../../../util/Easing";
 import BeatBooster from "../../../global/BeatBooster";
-
-const vertexShader = `
-    attribute vec2 a_position;
-    attribute vec2 a_tex_coord;
-    attribute float a_alpha;
-
-    varying mediump vec2 v_tex_coord;
-    varying mediump float v_alpha;
-    uniform mat4 u_orth;
-    uniform mat4 u_transform;
-    void main() {
-        vec4 position = vec4(a_position, 0.0, 1.0) * u_transform;
-        gl_Position = position * u_orth;
-        v_tex_coord = a_tex_coord;
-        v_alpha = a_alpha;
-    }
-`
-
-const fragmentShader = `
-    varying mediump vec2 v_tex_coord;
-    varying mediump float v_alpha;
-    uniform sampler2D u_sampler;
-
-    void main() {
-        mediump vec4 texelColor = texture2D(u_sampler, v_tex_coord);
-        texelColor.a = texelColor.a * v_alpha;
-        gl_FragColor = texelColor;
-    }
-`
+import {
+    ATTR_ALPHA,
+    ATTR_POSITION,
+    ATTR_TEXCOORD,
+    UNI_ORTH,
+    UNI_SAMPLER,
+    UNI_TRANSFORM
+} from "../../shader/ShaderConstant";
+import DynamicTextureShader from "../../shader/DynamicTextureShader";
 
 export class Ripples extends BeatDrawable {
 
@@ -62,15 +42,15 @@ export class Ripples extends BeatDrawable {
         vertexArray.bind()
         const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
         const layout = new VertexBufferLayout(gl)
-        const shader = new Shader(gl, vertexShader, fragmentShader)
+        // const shader = new Shader(gl, vertexShader, fragmentShader)
+        const shader = DynamicTextureShader.getShader(gl)
         const texture = new Texture(gl, ImageLoader.get("ripple"))
 
         buffer.bind()
         shader.bind()
-        shader.setUniform1i('u_sampler', this.textureUnit)
-        layout.pushFloat(shader.getAttributeLocation("a_position"), 2)
-        layout.pushFloat(shader.getAttributeLocation("a_tex_coord"), 2)
-        layout.pushFloat(shader.getAttributeLocation("a_alpha"), 1)
+        layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2)
+        layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2)
+        layout.pushFloat(shader.getAttributeLocation(ATTR_ALPHA), 1)
         vertexArray.addBuffer(buffer, layout)
 
         vertexArray.unbind()
@@ -146,8 +126,9 @@ export class Ripples extends BeatDrawable {
         const gl = this.gl
         const shader = this.shader
 
-        shader.setUniformMatrix4fv('u_transform', this.matrixArray)
-        shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
+        shader.setUniform1i(UNI_SAMPLER, this.textureUnit)
+        shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
+        shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
         if (this.vertexCount === 0) return
 
         this.buffer.setBufferData(this.vertexData)
@@ -159,7 +140,7 @@ export class Ripples extends BeatDrawable {
         super.dispose()
         this.texture.dispose()
         this.vertexArray.dispose()
-        this.shader.dispose()
+        DynamicTextureShader.dispose()
         this.buffer.dispose()
     }
 

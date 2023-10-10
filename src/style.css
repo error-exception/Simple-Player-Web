@@ -6,12 +6,10 @@
   margin: 0;
   box-sizing: border-box;
   user-select: none;
-  font-family: harmony;
 }
 :root {
   --settings-selector-bar-bg: #24222a;
   --settings-content-bg: #302e38;
-  --top-bar-bg: #191919
 }
 body {
   width: 100vw;
@@ -19,7 +17,15 @@ body {
   display: flex;
   flex-direction: column;
 }
-
+.stack {
+  position: relative;
+}
+.stack > * {
+  position: absolute;
+}
+.flex-center {
+  @apply items-center justify-center
+}
 .card {
   padding: 16px;
   background-color: #EDEDEDb0;

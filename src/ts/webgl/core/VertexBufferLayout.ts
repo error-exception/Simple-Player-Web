@@ -21,6 +21,8 @@ export class VertexBufferElement {
 
 export class VertexBufferLayout {
 
+    public static NULL = Symbol()
+
     public elements: VertexBufferElement[] = []
 
     public stride: number = 0

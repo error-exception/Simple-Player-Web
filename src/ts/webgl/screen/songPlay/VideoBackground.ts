@@ -1,6 +1,5 @@
 import Coordinate from "../../base/Coordinate";
 import {Drawable} from "../../drawable/Drawable";
-import ShaderManager from "../../util/ShaderManager";
 import {Shape2D} from "../../util/Shape2D";
 import {Shader} from "../../core/Shader";
 import {Texture} from "../../core/Texture";
@@ -8,6 +7,15 @@ import {Vector2} from "../../core/Vector2";
 import {VertexArray} from '../../core/VertexArray';
 import {VertexBuffer} from "../../core/VertexBuffer";
 import {VertexBufferLayout} from "../../core/VertexBufferLayout";
+import StaticTextureShader from "../../shader/StaticTextureShader";
+import {
+    ATTR_POSITION,
+    ATTR_TEXCOORD,
+    UNI_ALPHA,
+    UNI_ORTH,
+    UNI_SAMPLER,
+    UNI_TRANSFORM
+} from "../../shader/ShaderConstant";
 
 export class VideoBackground extends Drawable {
     private readonly shader: Shader;
@@ -29,16 +37,15 @@ export class VideoBackground extends Drawable {
         const vertexArray = new VertexArray(gl);
         vertexArray.bind();
         const buffer = new VertexBuffer(gl);
-        const shader = ShaderManager.newTextureShader()
+        const shader = StaticTextureShader.getShader(gl)
         const layout = new VertexBufferLayout(gl);
         const texture = new Texture(gl, video);
 
         buffer.bind();
         shader.bind();
 
-        shader.setUniform1i("u_sampler", this.textureUnit);
-        layout.pushFloat(shader.getAttributeLocation("a_position"), 2);
-        layout.pushFloat(shader.getAttributeLocation("a_tex_coord"), 2);
+        layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
+        layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
         vertexArray.addBuffer(buffer, layout);
 
         vertexArray.unbind();
@@ -59,22 +66,12 @@ export class VideoBackground extends Drawable {
     public createVertexArray() {
         const width = this.width;
         const height = this.height;
-        // this.position.y -= height * 0.007
         const { x, y } = this.position;
         const topLeft = new Vector2(x, y)
         const bottomRight = new Vector2(x + width, y - height)
-        // const vertex = [
-        //     new Vector2(x, y),
-        //     new Vector2(x + width, y),
-        //     new Vector2(x, y - height),
-        //     new Vector2(x + width, y),
-        //     new Vector2(x, y - height),
-        //     new Vector2(),
-        // ];
         const vertexData: number[] = []
-        Shape2D.quad(
-            topLeft.x, topLeft.y, 
-            bottomRight.x, bottomRight.y, 
+        Shape2D.quadVector2(
+            topLeft, bottomRight,
             vertexData, 0, 4
         )
         Shape2D.quad(
@@ -116,9 +113,10 @@ export class VideoBackground extends Drawable {
             this.buffer.setBufferData(this.createVertexArray());
             this.isVertexUpdate = false;
         }
-        this.shader.setUniformMatrix4fv("u_transform", this.matrixArray);
-        this.shader.setUniformMatrix4fv("u_orth", Coordinate.orthographicProjectionMatrix4);
-        this.shader.setUniform1f("u_alpha", this.alpha);
+        this.shader.setUniform1i(UNI_SAMPLER, this.textureUnit);
+        this.shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
+        this.shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4);
+        this.shader.setUniform1f(UNI_ALPHA, this.alpha);
         this.vertexArray.addBuffer(this.buffer, this.layout);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
@@ -126,7 +124,7 @@ export class VideoBackground extends Drawable {
     public dispose() {
         this.texture.dispose();
         this.vertexArray.dispose();
-        this.shader.dispose();
+        StaticTextureShader.dispose()
         this.buffer.dispose();
     }
 }
