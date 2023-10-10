@@ -18,7 +18,6 @@ import {PlayerState} from "../ts/player/PlayerState";
 import {PLAYER} from "../ts/build";
 import {useAnimationFrame} from "../ts/use/useAnimationFrame";
 import ValueAdjust from "./timing/ValueAdjust.vue";
-import ExpandMenu from "./timing/ExpandMenu.vue";
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -796,13 +795,6 @@ function resizeCanvas(htmlRef: Ref<HTMLCanvasElement | null>, pixelRatio: number
 
 .timing-item-selected {
   background-color: var(--bpm-color-9);
-}
-
-.round {
-  width: 40px;
-  aspect-ratio: 1/1;
-  border-radius: 50%;
-  background-color: yellow;
 }
 .btn {
   background-color: var(--bpm-color-9);

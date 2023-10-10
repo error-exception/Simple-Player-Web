@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, watch, nextTick} from "vue";
+import {ref, watch} from "vue";
 
 const props = defineProps<{
   modelValue: string,
@@ -59,9 +59,6 @@ const select = (index: number) => {
   transform: translateY(8px) translateX(-50%);
   left: 50%;
   z-index: 100;
-}
-.expand-item-list-hidden {
-  display: none;
 }
 .expand-item-list > div {
   padding: 8px 24px;
