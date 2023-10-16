@@ -69,6 +69,7 @@ import {onEnterMenu, onLeftSide, onRightSide} from './ts/global/GlobalState';
 import ScreenManager from "./ts/webgl/util/ScreenManager";
 import {useCollect} from "./ts/util/use";
 import {PLAYER} from "./ts/build";
+import TempOSUPlayManager from "./ts/player/TempOSUPlayManager";
 
 const ui = reactive({
   list: false,
@@ -108,10 +109,10 @@ useKeyboard('up', (evt) => {
   if (ui.bpmCalculator) {
     return
   }
-  if (evt.code === 'ArrowRight' && PLAYER) {
+  if (evt.code === 'ArrowRight') {
     nextSong()
     Toaster.show("下一曲")
-  } else if (evt.code === 'ArrowLeft' && PLAYER) {
+  } else if (evt.code === 'ArrowLeft') {
     prevSong()
     Toaster.show("上一曲")
   } else if (evt.code === 'Space') {
@@ -183,11 +184,17 @@ function play() {
 }
 
 function nextSong() {
-  PlayManager.next()
+  if (PLAYER)
+    PlayManager.next()
+  else
+    TempOSUPlayManager.next()
 }
 
 function prevSong() {
-  PlayManager.previous()
+  if (PLAYER)
+    PlayManager.previous()
+  else
+    TempOSUPlayManager.prev()
 }
 
 function handleDrop(e: DragEvent) {

@@ -1006,42 +1006,42 @@ button, input {
   background-color: yellow;
 }
 
-.mini-player-box[data-v-c74edb75] {
-    width: 500px;
-    height: 200px;
-    overflow: hidden;
-    border-radius: 8px;
-    background-color: black;
+.mini-player-box[data-v-cbc1ea2e] {
+  width: 500px;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: black;
 }
-img[data-v-c74edb75] {
-    -o-object-fit: cover;
-       object-fit: cover;
+img[data-v-cbc1ea2e] {
+  -o-object-fit: cover;
+     object-fit: cover;
 }
-.player-title[data-v-c74edb75] {
-    width: 100%;
-    color: white;
-    text-align: center;
-    font-size: 20px;
+.player-title[data-v-cbc1ea2e] {
+  width: 100%;
+  color: white;
+  text-align: center;
+  font-size: 20px;
 }
-.player-artist[data-v-c74edb75] {
-    width: 100%;
-    color: white;
-    font-size: 16px;
-    text-align: center;
+.player-artist[data-v-cbc1ea2e] {
+  width: 100%;
+  color: white;
+  font-size: 16px;
+  text-align: center;
 }
-.control-btn[data-v-c74edb75] {
-    width: 48px;
-    height: 48px;
-    font-size: 36px;
-    color: white;
-    border-radius: 8px;
-    transition: all 100ms ease-in-out;
+.control-btn[data-v-cbc1ea2e] {
+  width: 48px;
+  height: 48px;
+  font-size: 36px;
+  color: white;
+  border-radius: 8px;
+  transition: all 100ms ease-in-out;
 }
-.control-btn[data-v-c74edb75]:hover {
-    background-color: gold;
+.control-btn[data-v-cbc1ea2e]:hover {
+  background-color: gold;
 }
-.control-btn[data-v-c74edb75]:active {
-    transform: scale(.96);
+.control-btn[data-v-cbc1ea2e]:active {
+  transform: scale(.96);
 }
 
 .list-item[data-v-9a0c8d37] {
@@ -1148,92 +1148,92 @@ img[data-v-c74edb75] {
   opacity: 1;
 }
 
-.osu-beatmap-list-box[data-v-d67a2b8f] {
-    background-color: #2e3835;
-    border-radius: 8px;
-    width: 1200px;
-    pointer-events: auto;
-    left: 50%;
-    top: 50%;
-    transform: translateX(-50%) translateY(-50%);
+.osu-beatmap-list-box[data-v-bcb768ce] {
+  background-color: #2e3835;
+  border-radius: 8px;
+  width: 1200px;
+  pointer-events: auto;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
 }
-.osu-beatmap-list-content[data-v-d67a2b8f] {
-    max-height: 80vh;
-    overflow-y: scroll;
-    padding: 8px;
+.osu-beatmap-list-content[data-v-bcb768ce] {
+  max-height: 80vh;
+  overflow-y: scroll;
+  padding: 8px;
 }
-.osu-beatmap-list-content-item[data-v-d67a2b8f] {
-    padding: 8px 24px;
-    border-radius: 4px;
+.osu-beatmap-list-content-item[data-v-bcb768ce] {
+  padding: 8px 24px;
+  border-radius: 4px;
 }
-.osu-beatmap-list-content-item[data-v-d67a2b8f]:hover {
-    background-color: #556963;
+.osu-beatmap-list-content-item[data-v-bcb768ce]:hover {
+  background-color: #556963;
 }
-.osu-beatmap-list-content-item[data-v-d67a2b8f]:active {
-    background-color: #647c75;
+.osu-beatmap-list-content-item[data-v-bcb768ce]:active {
+  background-color: #647c75;
 }
 
-.list-enter-active[data-v-ad715583],
-.list-leave-active[data-v-ad715583],
-.mask-enter-active[data-v-ad715583],
-.mask-leave-active[data-v-ad715583],
-.settings-enter-active[data-v-ad715583],
-.settings-leave-active[data-v-ad715583] {
+.list-enter-active[data-v-78d7d630],
+.list-leave-active[data-v-78d7d630],
+.mask-enter-active[data-v-78d7d630],
+.mask-leave-active[data-v-78d7d630],
+.settings-enter-active[data-v-78d7d630],
+.settings-leave-active[data-v-78d7d630] {
   transition: all 500ms cubic-bezier(0.16, 1, 0.3, 1)
 }
-.player-enter-active[data-v-ad715583] {
+.player-enter-active[data-v-78d7d630] {
   transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.player-leave-active[data-v-ad715583] {
+.player-leave-active[data-v-78d7d630] {
   transition: all 200ms ease-out;
 }
-.list-enter-from[data-v-ad715583], .list-leave-to[data-v-ad715583] {
+.list-enter-from[data-v-78d7d630], .list-leave-to[data-v-78d7d630] {
   transform: translateX(100%);
 }
-.list-enter-to[data-v-ad715583], .list-leave-from[data-v-ad715583] {
+.list-enter-to[data-v-78d7d630], .list-leave-from[data-v-78d7d630] {
   transform: translateX(0);
 }
-.settings-enter-from[data-v-ad715583], .settings-leave-to[data-v-ad715583] {
+.settings-enter-from[data-v-78d7d630], .settings-leave-to[data-v-78d7d630] {
   transform: translateX(-100%);
 }
-.settings-enter-to[data-v-ad715583], .settings-leave-from[data-v-ad715583] {
+.settings-enter-to[data-v-78d7d630], .settings-leave-from[data-v-78d7d630] {
   transform: translateX(0);
 }
-.player-enter-from[data-v-ad715583], .player-leave-to[data-v-ad715583] {
+.player-enter-from[data-v-78d7d630], .player-leave-to[data-v-78d7d630] {
   transform-origin: top center;
   opacity: 0;
   transform: scale(0.8);
 }
-.player-enter-to[data-v-ad715583], .player-leave-from[data-v-ad715583] {
+.player-enter-to[data-v-78d7d630], .player-leave-from[data-v-78d7d630] {
   transform-origin: top center;
   opacity: 1;
   transform: scale(1);
 }
-.mask-enter-from[data-v-ad715583], .mask-leave-to[data-v-ad715583] {
+.mask-enter-from[data-v-78d7d630], .mask-leave-to[data-v-78d7d630] {
   opacity: 0;
 }
-.mask-enter-to[data-v-ad715583], .mask-leave-from[data-v-ad715583] {
+.mask-enter-to[data-v-78d7d630], .mask-leave-from[data-v-78d7d630] {
   opacity: 1;
 }
-.mask[data-v-ad715583] {
+.mask[data-v-78d7d630] {
   background-color: #00000080;
 }
-.top-bar-enter-from[data-v-ad715583], .top-bar-leave-to[data-v-ad715583] {
+.top-bar-enter-from[data-v-78d7d630], .top-bar-leave-to[data-v-78d7d630] {
   transform: translateY(-100%);
 }
-.top-bar-enter-to[data-v-ad715583], .top-bar-leave-from[data-v-ad715583] {
+.top-bar-enter-to[data-v-78d7d630], .top-bar-leave-from[data-v-78d7d630] {
   transform: translateY(0);
 }
-.top-bar-enter-active[data-v-ad715583], .top-bar-leave-active[data-v-ad715583] {
+.top-bar-enter-active[data-v-78d7d630], .top-bar-leave-active[data-v-78d7d630] {
   transition-property: transform;
   transition-duration: 500ms;
   transition-delay: 300ms;
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
-.top-bar-leave-active[data-v-ad715583] {
+.top-bar-leave-active[data-v-78d7d630] {
   transition-delay: 0s;
 }
-@keyframes player-enter-animation-ad715583 {
+@keyframes player-enter-animation-78d7d630 {
 0% {
     opacity: 0;
     transform: scale(0.8);
@@ -1267,7 +1267,7 @@ img[data-v-c74edb75] {
     transform: scale(1);
 }
 }
-@keyframes player-leave-animation-ad715583 {
+@keyframes player-leave-animation-78d7d630 {
 0% {
     opacity: 1;
     transform: scale(1);

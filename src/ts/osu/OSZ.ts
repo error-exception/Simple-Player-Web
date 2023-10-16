@@ -78,12 +78,12 @@ export class OSZ {
 
 }
 
-export function loadOSZ(file: File) {
+export function loadOSZ(file: File, preview = true) {
   OSZ.newOSZ(file).then(osz => {
-    load(osz)
+    load(osz, preview)
   })
 }
-async function load(osz: OSZ) {
+async function load(osz: OSZ, preview = true) {
   const timingList: BulletTimingPointsItem[] = []
   const osuFile = osz.osuFile!
   const osuTimingList = osuFile.TimingPoints!.timingList
@@ -130,6 +130,6 @@ async function load(osz: OSZ) {
     bullet.events.backgroundVideo = osz.backgroundVideo
   }
   await OSUPlayer.setSource(bullet)
-  await OSUPlayer.seek(bullet.general.previewTime)
+  preview && await OSUPlayer.seek(bullet.general.previewTime)
   await OSUPlayer.play()
 }
