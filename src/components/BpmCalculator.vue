@@ -262,6 +262,7 @@ function timeString(time: number): string {
 }
 
 // 3. measure bpm
+// @ts-ignore
 const beatOffset = computed({
   set(value: number) {
     if (typeof value !== "number") {

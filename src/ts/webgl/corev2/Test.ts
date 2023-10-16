@@ -101,7 +101,9 @@ interface DrawNode {
 export function SetupGL(webgl: WebGL2RenderingContext) {
   gl = webgl
 }
+// @ts-ignore
 const bufferData: number[] = []
+// @ts-ignore
 let currentIndex = 0, currentOffset = 0, currentVertexCount = 0
 
 /**
@@ -109,6 +111,7 @@ let currentIndex = 0, currentOffset = 0, currentVertexCount = 0
  */
 export function EndBatch() {}
 
+// @ts-ignore
 let currentDrawType: DrawType = DrawType.Quad
 /**
  * 加入 BufferData 数组
