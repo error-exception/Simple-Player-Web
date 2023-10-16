@@ -41,7 +41,6 @@ class PlayManager {
 
     public async loadMusicList() {
         const list = await MusicDao.getMusicList()
-        console.log(list)
         const musicList: Bullet[] = []
         for (let i = 0; i < list.length; i++) {
             const music = list[i]

@@ -92,7 +92,7 @@ export class MovableBackground extends Drawable {
         vertexArray.bind()
         const buffer = new VertexBuffer(gl)
         const layout = new VertexBufferLayout(gl)
-        const shader = StaticTextureShader.getShader(gl)//new Shader(gl, vertexShader, fragmentShader)
+        const shader = StaticTextureShader.newShader(gl)//new Shader(gl, vertexShader, fragmentShader)
         const texture = new Texture(gl, null)
 
         buffer.bind()
@@ -240,7 +240,7 @@ export class MovableBackground extends Drawable {
         const shader = this.shader
         shader.setUniform1i(UNI_SAMPLER, this.textureUnit)
         shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
-        shader.setUniform1f(UNI_ALPHA, this.alpha)
+        shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha)
         shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
         this.vertexArray.addBuffer(this.buffer, this.layout)
 
@@ -251,7 +251,7 @@ export class MovableBackground extends Drawable {
         super.dispose()
         this.texture.dispose()
         this.vertexArray.dispose()
-        StaticTextureShader.dispose()
+        this.shader.dispose()
         this.buffer.dispose()
     }
 }
@@ -343,6 +343,8 @@ export class BackgroundBounce extends Box {
             .to(new Vector2(0.98, 0.98), 500, easeOutQuint)
         this.translateBegin(startTime)
             .translateTo(new Vector2(0, -40), 500, easeOutQuint)
+        this.fadeBegin(startTime)
+          .fadeTo(0.7, 500, easeOutQuint)
     }
 
     public out() {
@@ -350,10 +352,17 @@ export class BackgroundBounce extends Box {
             .to(new Vector2(1, 1), 500, easeOutQuint)
         this.translateBegin()
             .translateTo(Vector2.newZero(), 500, easeOutQuint)
+        this.fadeBegin()
+          .fadeTo(1, 500, easeOutQuint)
     }
 
     public updateBackground2(image: ImageBitmap) {
         this.background.updateBackground2(image)
+    }
+
+    dispose() {
+        super.dispose();
+        console.log('background dispose')
     }
 
 }

@@ -141,16 +141,16 @@ class SmokeBooster {
     public fireRotateToInner() {
         this.degree = 157.5
         this.degreeBegin()
-            .transitionTo(22.5, 1500)
+            .transitionTo(22.5, this.duration)
     }
 
     public fireRotateToOuter() {
         this.degree = 22.5
         this.degreeBegin()
-            .transitionTo(157.5, 1500)
+            .transitionTo(157.5, this.duration)
     }
 
-    private duration = 1500
+    private duration = 800
     private startTime = -1
     public update() {
         this.degreeTransition.update(Time.currentTime)

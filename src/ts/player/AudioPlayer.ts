@@ -1,7 +1,7 @@
 // TODO: complete this class
 import {TimePlayer} from "../TimePlayer";
 import {ref} from "vue";
-import {int} from "../Utils";
+import {clamp, int} from "../Utils";
 import {VisualizerV2} from "../VisualizerV2";
 import {createMutableSharedFlow, createMutableStateFlow} from "../util/flow";
 import {PlayerState} from "./PlayerState";
@@ -150,7 +150,7 @@ class AudioPlayer extends AbstractPlayer {
     }
 
     public setVolume(v: number) {
-        this.volume.value = v
+        this.volume.value = clamp(v, 0, 1)
         if (!this.isAvailable)
             return
         //TODO: add volume control

@@ -58,13 +58,16 @@ export class WebGLRenderer implements Disposable {
         this.drawables.push(drawable)
         drawable.load()
         this.disposables.push(drawable)
+        console.log(this.drawables)
     }
 
     public removeDrawable(drawable: Drawable) {
-        const index = this.drawables.indexOf(drawable)
-        const drawableToDispose = this.drawables[index]
+        console.log('pending to remove ', drawable)
+        let index = this.drawables.indexOf(drawable)
         this.drawables.splice(index, 1)
-        drawableToDispose.dispose()
+        index = this.disposables.indexOf(drawable)
+        this.disposables.splice(index, 1)
+        drawable.dispose()
     }
 
     public render() {

@@ -37,7 +37,7 @@ export class VideoBackground extends Drawable {
         const vertexArray = new VertexArray(gl);
         vertexArray.bind();
         const buffer = new VertexBuffer(gl);
-        const shader = StaticTextureShader.getShader(gl)
+        const shader = StaticTextureShader.newShader(gl)
         const layout = new VertexBufferLayout(gl);
         const texture = new Texture(gl, video);
 
@@ -122,9 +122,11 @@ export class VideoBackground extends Drawable {
     }
 
     public dispose() {
+        super.dispose()
         this.texture.dispose();
         this.vertexArray.dispose();
-        StaticTextureShader.dispose()
+        this.shader.dispose()
         this.buffer.dispose();
+        console.log('background dispose')
     }
 }

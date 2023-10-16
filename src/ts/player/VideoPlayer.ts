@@ -12,16 +12,11 @@ class VideoPlayer extends AbstractPlayer {
     }
 
     public currentTime(): number {
-        if (this.isAvailable) {
-            return int(this.video.currentTime * 1000)
-        }
-        return 0
+        return this.isAvailable ? int(this.video.currentTime * 1000) : 0
     }
 
     public duration(): number {
-        if (this.isAvailable)
-            return int(this.video.duration * 1000)
-        return 0
+        return this.isAvailable ? int(this.video.duration * 1000) : 0
     }
 
     public pause(): void {
@@ -62,8 +57,8 @@ class VideoPlayer extends AbstractPlayer {
         this.isAvailable = true
     }
 
-    public setVolume(v: number): void {
-        this.video.volume = v
+    public setVolume(_: number): void {
+        // Do nothing
     }
 
     public speed(rate: number): void {

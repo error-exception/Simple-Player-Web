@@ -325,6 +325,7 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
         );
     }
 
+    // TODO: when mousedown and mouseup in a same bound, click still effect
     public click(which: number, position: Vector2) {
         if (this.isAvailable && this.isInBound(position)) {
             if ("onClick" in this && typeof this.onClick === "function")

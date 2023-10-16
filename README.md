@@ -48,3 +48,10 @@ export const PLAYER = true
 ```shell
 npm run build
 ```
+
+## TODO
+
+1. change click event
+2. add FlashDrawable
+3. add skew and rotate transform
+4. code a another webgl core(break change)

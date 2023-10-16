@@ -1,3 +1,6 @@
+import { OSUStdNote } from "./osu/OSUFile"
+import { NoteData } from "./webgl/screen/mania/ManiaPanel"
+
 /**
  * 音乐标题
  * 音乐艺术家
@@ -8,10 +11,6 @@
  * StoryBoard
  * PreviewTime
  */
-
-import { OSUStdNote } from "./osu/OSUFile"
-import { NoteData } from "./webgl/screen/mania/ManiaPanel"
-
 export interface Music {
     title: string
     artist: string
@@ -95,28 +94,10 @@ export function newBullet(): Bullet {
     }
 }
 
-export interface IEvent {
-
-    onMusicPlay?(): void
-
-    onMusicPause?(): void
-
-    onSongChanged?(id: number): void
-
-    onBpmChanged?(id: number): void
-
-    onMusicSeeked?(id: number, seekedTime: number): void
-
-    onManiaHit?(count: number): void
-
-}
-
 export interface ResponseResult<T = any> {
     code: number
     data: T | null | undefined
     message: string
 }
-
-export type Callback<T> = (it: T) => void
 
 export type Nullable<T> = T | null

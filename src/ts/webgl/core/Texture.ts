@@ -89,9 +89,6 @@ export class Texture implements Disposable, Bindable {
             gl.TEXTURE_2D,
             0,
             gl.RGBA,
-            // video.width,
-            // video.height,
-            // 0,
             gl.RGBA,
             gl.UNSIGNED_BYTE,
             video

@@ -7,7 +7,7 @@
                 <span class="text-white" @click="$emit('close')">Close</span>
             </Row>
         </template>
-        <Column class="fill-width flex-grow osu-beatmap-list-content no-scroller">
+        <Column class="fill-width flex-grow osu-beatmap-list-content">
             <Row class="fill-width osu-beatmap-list-content-item" v-for="(item, index) in files" @click="loadOSZ(item)" center-vertical :gap="32">
                 <span style="color: #ffffff80;">{{ index + 1 }}</span>
                 <Column class="fill-width" :gap="8">
@@ -73,7 +73,7 @@ async function showBeatmapList() {
 }
 
 </script>
-<style scope>
+<style scoped>
 .osu-beatmap-list-box {
     background-color: #2e3835;
     border-radius: 8px;

@@ -27,8 +27,7 @@ export class VertexBufferLayout {
 
     public stride: number = 0
 
-    constructor(private gl: WebGL2RenderingContext) {
-    }
+    constructor(private gl: WebGL2RenderingContext) {}
 
     public pushFloat(position: number, count: number) {
         const gl = this.gl

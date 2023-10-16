@@ -29,7 +29,7 @@ export class Box extends Drawable {
         const index = this.childrenList.indexOf(child)
         if (index >= 0) {
             console.log("child found, and can be removed, index", index)
-            ArrayUtils.removeAt(this.childrenList, index)
+            this.childrenList.splice(index, 1)
             child.dispose()
             console.log("has", this.childrenList.length, "child now")
         }

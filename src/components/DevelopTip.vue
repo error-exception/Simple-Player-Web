@@ -1,19 +1,5 @@
 <template>
-  <Row class="develop-box">
+  <div class="flex flex-row develop-box rounded-tl-[8px] py-2 px-4 text-white bg-[#00000080] pointer-events-none">
     <span>开发中版本</span>
-  </Row>
+  </div>
 </template>
-
-<script lang="ts" setup>
-import Row from "./common/Row.vue";
-</script>
-
-<style scoped>
-.develop-box {
-  border-top-left-radius: 8px;
-  padding: 8px 16px;
-  color: white;
-  background-color: #00000080;
-  pointer-events: none;
-}
-</style>

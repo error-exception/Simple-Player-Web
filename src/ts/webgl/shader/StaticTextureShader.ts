@@ -34,6 +34,10 @@ class StaticTextureShader implements Disposable {
     private shader: Nullable<Shader> = null
     private layout: Nullable<VertexBufferLayout> = null
 
+    public newShader(gl: WebGL2RenderingContext) {
+        return new Shader(gl, this.vertex, this.fragment)
+    }
+
     public getShader(gl: WebGL2RenderingContext) {
         if (this.shader === null) {
             const shader = new Shader(gl, this.vertex, this.fragment)
