@@ -5,11 +5,25 @@ import OSUPlayer, {OSUBackground} from "../../../player/OSUPlayer";
 import BackgroundLoader from "../../../global/BackgroundLoader";
 import {MouseState} from "../../../global/MouseState";
 import ScreenManager from "../../util/ScreenManager";
+import {Vector2} from "../../core/Vector2";
+import {easeOutCubic} from "../../../util/Easing";
+import {onLeftSide, onRightSide} from "../../../global/GlobalState";
 
 export class BackgroundScreen extends Box {
 
   private readonly background: BackgroundBounce
   private readonly videoBackground: VideoBackground
+  private leftSideCollector = (value: boolean) => {
+    const translate = value ? new Vector2(40, 0) : Vector2.newZero()
+    this.translateBegin()
+      .translateTo(translate, 500, easeOutCubic)
+  }
+
+  private rightSideCollector = (value: boolean) => {
+    const translate = value ? new Vector2(-40, 0) : Vector2.newZero()
+    this.translateBegin()
+      .translateTo(translate, 500, easeOutCubic)
+  }
 
   private collector = (bg: OSUBackground) => {
     this.setupImageBackground(bg)
@@ -19,21 +33,11 @@ export class BackgroundScreen extends Box {
   private setupVideoBackground(bg: OSUBackground) {
     if (bg.video)
       this.videoBackground.setVideo(bg.video)
-    if (ScreenManager.currentId.value === 'main') {
-      return
-    }
-    this.videoBackground.isVisible = bg.video !== undefined
   }
 
   private setupImageBackground(bg: OSUBackground) {
-    if (bg.video && ScreenManager.currentId.value !== 'main') {
-      this.background.isVisible = false
-      return
-    }
-    this.background.isVisible = true
     this.background.updateBackground2(bg.image ? bg.image : BackgroundLoader.getBackground())
   }
-
 
   constructor(gl: WebGL2RenderingContext) {
     super(gl, {
@@ -47,11 +51,15 @@ export class BackgroundScreen extends Box {
       this.videoBackground
     )
     ScreenManager.currentId.collect(screenId => {
-      this.videoBackground.isVisible = screenId !== 'main'
+      const bg = OSUPlayer.background.value
+      this.videoBackground.isVisible = bg.video !== undefined && (screenId !== 'main')
+      this.background.isVisible = screenId === 'main' || !bg.video
       if (screenId !== 'main') {
         this.background.out()
       }
     })
+    onLeftSide.collect(this.leftSideCollector)
+    onRightSide.collect(this.rightSideCollector)
   }
 
   protected onUpdate() {
@@ -62,6 +70,8 @@ export class BackgroundScreen extends Box {
   public dispose() {
     super.dispose();
     OSUPlayer.background.removeCollect(this.collector)
+    onLeftSide.removeCollect(this.leftSideCollector)
+    onRightSide.removeCollect(this.rightSideCollector)
   }
 
 }

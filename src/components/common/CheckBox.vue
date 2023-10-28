@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import {onMounted, ref, watch} from "vue";
 import {Nullable} from "../../ts/type";
+import {playSound, Sound} from "../../ts/player/SoundEffect";
 const props = withDefaults(defineProps<{
   color?: string,
 }>(), {
   color: '#33cb98',
 })
-const value = ref(false)
 const checkValue = defineModel<boolean>({ default: false })
-watch(value, v => checkValue.value = v)
+const value = ref(checkValue.value)
+watch(value, v => {
+  playSound(v ? Sound.CheckOn : Sound.CheckOff)
+  checkValue.value = v
+})
 
 const checkBox = ref<Nullable<HTMLInputElement>>(null)
 const callback = () => {

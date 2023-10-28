@@ -109,7 +109,6 @@ export class OSUParser {
     out.HitObjects = {
       stdNotes
     }
-    console.log(stdNotes)
   }
   private static parseGeneral(lines: string[], index: number, out: OSUFile) {
     let i = index
@@ -179,17 +178,3 @@ export class OSUParser {
     out.TimingPoints = timingPoints
   }
 }
-
-function bindProperty(obj: Record<any, any>, ...property: string[]) {
-  return (...data: any[]) => {
-    for (let i = 0; i < property.length; i++) {
-      obj[property[i]] = data[i]
-    }
-  }
-}
-const o = {
-  name: '',
-  age: 9
-}
-const receiver = bindProperty(o, ...Object.getOwnPropertyNames(o))
-receiver('jack', 12)

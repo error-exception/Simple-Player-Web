@@ -3,7 +3,7 @@ import {Time} from "../../global/Time";
 import {Box} from "../box/Box";
 import Coordinate from "../base/Coordinate";
 import {Transform} from "../base/Transform";
-import {FadeTransition, TranslateTransition,} from "../transition/Transition";
+import {FadeTransition, ObjectTransition, TranslateTransition,} from "../transition/Transition";
 import {Bindable} from "../core/Bindable";
 import {Disposable} from "../core/Disposable";
 import {isUndef} from "../core/Utils";
@@ -74,6 +74,7 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
     protected fadeTransition: FadeTransition = new FadeTransition(this);
     protected translateTransition: TranslateTransition =
         new TranslateTransition(this);
+    protected rotateTransition: ObjectTransition = new ObjectTransition(this, 'rotate')
 
     public isVisible = true;
 
@@ -115,7 +116,7 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
             height = Coordinate.height;
         }
 
-        let x = 0, y = 0,
+        let tx = 0, ty = 0,
             left = -width / 2,
             top = height / 2;
 
@@ -128,24 +129,36 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
         const yAxis = Axis.getYAxis(this.anchor);
 
         if (xAxis === Axis.X_LEFT) {
-            x = -Coordinate.width / 2;
+            tx = -Coordinate.width / 2;
         } else if (xAxis === Axis.X_CENTER) {
-            x = -width / 2;
+            tx = -width / 2;
         } else if (xAxis === Axis.X_RIGHT) {
-            x = Coordinate.width / 2 - width;
+            tx = Coordinate.width / 2 - width;
         }
         if (yAxis === Axis.Y_TOP) {
-            y = Coordinate.height / 2;
+            ty = Coordinate.height / 2;
         } else if (yAxis === Axis.Y_CENTER) {
-            y = height / 2;
+            ty = height / 2;
         } else if (yAxis === Axis.Y_BOTTOM) {
-            y = -Coordinate.height / 2 + height;
+            ty = -Coordinate.height / 2 + height;
         }
+
+
+
+        // offset
+        if (this.config.offset) {
+            const [ offsetX, offsetY ] = this.config.offset
+            tx += offsetX
+            ty += offsetY
+        }
+
+        tx += width / 2
+        ty -= height / 2
 
         // origin
         const origin = isUndef(this.config.origin)
-            ? Axis.X_CENTER | Axis.Y_CENTER
-            : this.config.origin
+          ? Axis.X_CENTER | Axis.Y_CENTER
+          : this.config.origin
         const isAxis = !Array.isArray(origin)
 
         if (isAxis) {
@@ -153,35 +166,40 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
             const y = Axis.getYAxis(origin)
             if (x === Axis.X_LEFT) {
                 left = 0
+                tx -= width / 2
             } else if (x === Axis.X_CENTER) {
                 left = -width / 2
             } else if (x === Axis.X_RIGHT) {
                 left = width / 2
+                tx += width / 2
             }
             if (y === Axis.Y_TOP) {
                 top = 0
+                ty += height / 2
             } else if (y === Axis.Y_CENTER) {
                 top = height / 2
             } else if (y === Axis.Y_BOTTOM) {
                 top = -height / 2
+                ty -= height / 2
             }
         } else {
             left = origin[0]
+            if (left < 0)
+                tx += left
+            else
+                tx -= left
             top = origin[1]
+            if (top < 0)
+                ty -= top
+            else
+                ty += top
         }
 
-        // offset
-        if (this.config.offset) {
-            const [ offsetX, offsetY ] = this.config.offset
-            x += offsetX
-            y += offsetY
-        }
-
-        const centerTranslate = new Vector2(x - left, y - top);
+        const layoutTranslate = new Vector2(tx, ty);
         this.position.set(left, top);
 
         this.size.set(width, height);
-        this.layoutTransform.translateTo(centerTranslate);
+        this.layoutTransform.translateTo(layoutTranslate);
     }
 
     /**
@@ -208,6 +226,11 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
         return this.translateTransition;
     }
 
+    public rotateBegin(atTime: number = Time.currentTime): ObjectTransition {
+        this.rotateTransition.setStartTime(atTime)
+        return this.rotateTransition
+    }
+
     public set scale(v: Vector2) {
         this.selfTransform.scaleTo(v);
     }
@@ -232,6 +255,14 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
         return this.selfTransform.alpha;
     }
 
+    public set rotate(r: number) {
+        this.selfTransform.rotateTo(r)
+    }
+
+    public get rotate() {
+        return this.selfTransform.rotate
+    }
+
     protected updateTransform() {
         const layoutTransform = this.layoutTransform;
         const selfTransform = this.selfTransform;
@@ -252,6 +283,10 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
         appliedTransform.alphaBy(layoutTransform.alpha);
         appliedTransform.alphaBy(selfTransform.alpha);
 
+        appliedTransform.rotateTo(parentTransform.rotate)
+        appliedTransform.rotateBy(layoutTransform.rotate)
+        appliedTransform.rotateBy(selfTransform.rotate)
+
         appliedTransform.extractToMatrix(this.matrixArray);
 
         this.onTransformApplied();
@@ -269,6 +304,7 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
             this.scaleTransition.update(Time.currentTime);
             this.fadeTransition.update(Time.currentTime);
             this.translateTransition.update(Time.currentTime);
+            this.rotateTransition.update(Time.currentTime);
         }
         if (this.isAvailable) {
             this.onUpdate();

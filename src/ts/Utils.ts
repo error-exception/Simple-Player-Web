@@ -71,3 +71,11 @@ export function scope<T>(target: T, scope: (this: T) => void) {
 export function isString(v: any): v is string {
   return typeof v === 'string'
 }
+
+export function sleep(m: number) {
+  return new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve()
+    }, m)
+  })
+}

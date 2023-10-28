@@ -15,6 +15,7 @@ defineEmits<{
   (e: 'bpmCalcClick'): void
   (e: 'hideUI'): void
   (e: 'beatmapListClick'): void
+  (e: 'notifyClick'): void
 }>()
 
 const openPlaylist = inject<Function>("openList")!!
@@ -27,26 +28,44 @@ const switchScreen = (id: string) => ScreenManager.activeScreen(id)
   <Column class="fill-width">
     <Row class="top-bar fill-size">
       <button
+        v-osu-top-bar-btn
         class="ma top-bar-icon-btn"
         @click="$emit('settingsClick')"
       >
         {{ Icon.Settings }}
       </button>
       <button
+        v-osu-top-bar-btn
         class="ma top-bar-icon-btn"
         @click="switchScreen('main')"
       >
         {{ Icon.ScreenLockLandscape }}
       </button>
       <button
+        v-osu-top-bar-btn
         class="ma top-bar-icon-btn"
         @click="switchScreen('second')"
       >
         {{ Icon.ScreenLockLandscape }}
       </button>
       <button
+        v-osu-top-bar-btn
         class="ma top-bar-icon-btn"
         @click="switchScreen('mania')"
+      >
+        {{ Icon.ScreenLockLandscape }}
+      </button>
+      <button
+        v-osu-top-bar-btn
+        class="ma top-bar-icon-btn"
+        @click="switchScreen('legacy')"
+      >
+        {{ Icon.ScreenLockLandscape }}
+      </button>
+      <button
+        v-osu-top-bar-btn
+        class="ma top-bar-icon-btn"
+        @click="switchScreen('test')"
       >
         {{ Icon.ScreenLockLandscape }}
       </button>
@@ -55,23 +74,27 @@ const switchScreen = (id: string) => ScreenManager.activeScreen(id)
       </Row>
       <button
         class="ma top-bar-icon-btn"
+        v-osu-top-bar-btn
         @click="openMiniPlayer()"
       >
         {{ Icon.MusicNote }}
       </button>
       <button
+        v-osu-top-bar-btn
         class="ma top-bar-icon-btn"
         @click="$emit('beatmapListClick')"
       >
         {{ Icon.FolderOpen }}
       </button>
       <button
+        v-osu-top-bar-btn
         class="ma top-bar-icon-btn"
         @click="$emit('hideUI')"
       >
         {{ Icon.Fullscreen }}
       </button>
       <button
+        v-osu-top-bar-btn
         v-if="PLAYER"
         class="ma top-bar-icon-btn"
         @click="$emit('bpmCalcClick')"
@@ -79,11 +102,19 @@ const switchScreen = (id: string) => ScreenManager.activeScreen(id)
         {{ Icon.RadioButtonUnchecked }}
       </button>
       <button
+        v-osu-top-bar-btn
         v-if="PLAYER"
         class="ma top-bar-icon-btn"
         @click="openPlaylist()"
       >
         {{ Icon.List }}
+      </button>
+      <button
+        v-osu-top-bar-btn
+        class="ma top-bar-icon-btn"
+        @click="$emit('notifyClick')"
+      >
+        {{ Icon.Notifications }}
       </button>
     </Row>
     <div class="top-bar-shadow"></div>

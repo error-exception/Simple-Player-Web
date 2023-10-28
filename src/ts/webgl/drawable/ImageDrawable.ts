@@ -108,7 +108,4 @@ export class ImageDrawable extends Drawable {
         StaticTextureShader.dispose()
         this.buffer.dispose()
     }
-
-
-
 }

@@ -8,7 +8,6 @@ import {VertexBuffer} from "../../core/VertexBuffer";
 import {Texture} from "../../core/Texture";
 import {Shader} from "../../core/Shader";
 import {VertexBufferLayout} from "../../core/VertexBufferLayout";
-import {ImageLoader} from "../../../ImageResources";
 import BeatBooster from "../../../global/BeatBooster";
 import {clamp, degreeToRadian, int} from "../../../Utils";
 import Coordinate from "../../base/Coordinate";
@@ -25,6 +24,7 @@ import {
     UNI_SAMPLER,
     UNI_TRANSFORM
 } from "../../shader/ShaderConstant";
+import {Images} from "../../util/ImageResource";
 
 class StarParticle {
 
@@ -183,7 +183,7 @@ class SmokeBooster {
 
     public createOrReuse(stars: StarParticle[], position: Vector2) {
         let star: StarParticle
-        const targetDistance = Interpolation.valueAt(Math.random(), 80, 150)
+        const targetDistance = Interpolation.valueAt(Math.random(), -40, 20)
         let degree = Interpolation.valueAt(Math.random(), this.degree - 10, this.degree + 10)
         if (position === this.rightPosition)
             degree = 180 - degree
@@ -245,10 +245,10 @@ export class StarSmoke extends BeatDrawable {
         vertexArray.bind()
         const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
         const layout = new VertexBufferLayout(gl)
-        const shader = DynamicTextureShader.getShader(gl)
+        const shader = DynamicTextureShader.newShader(gl)
         // const shader = new Shader(gl, vertexShader, fragmentShader)
 
-        const texture = new Texture(gl, ImageLoader.get("star"))
+        const texture = new Texture(gl, Images.Star)
 
         buffer.bind()
         shader.bind()
@@ -266,7 +266,6 @@ export class StarSmoke extends BeatDrawable {
         this.texture = texture
         this.layout = layout
         this.shader = shader
-
     }
 
     private lastKiai = false
@@ -332,7 +331,7 @@ export class StarSmoke extends BeatDrawable {
         super.dispose()
         this.texture.dispose()
         this.vertexArray.dispose()
-        DynamicTextureShader.dispose()
+        this.shader.dispose()
         this.buffer.dispose()
     }
 

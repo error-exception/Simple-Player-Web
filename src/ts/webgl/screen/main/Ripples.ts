@@ -4,14 +4,13 @@ import {VertexBuffer} from "../../core/VertexBuffer";
 import {Texture} from "../../core/Texture";
 import {Shader} from "../../core/Shader";
 import {VertexBufferLayout} from "../../core/VertexBufferLayout";
-import {ImageLoader} from "../../../ImageResources";
 import Coordinate from "../../base/Coordinate";
 import {Shape2D} from "../../util/Shape2D";
 import {BeatDrawable} from "../../drawable/BeatDrawable";
 import {ObjectTransition} from "../../transition/Transition";
 import {Time} from "../../../global/Time";
 import {int} from "../../../Utils";
-import {easeOutQuint} from "../../../util/Easing";
+import {easeOut} from "../../../util/Easing";
 import BeatBooster from "../../../global/BeatBooster";
 import {
     ATTR_ALPHA,
@@ -22,6 +21,7 @@ import {
     UNI_TRANSFORM
 } from "../../shader/ShaderConstant";
 import DynamicTextureShader from "../../shader/DynamicTextureShader";
+import {Images} from "../../util/ImageResource";
 
 export class Ripples extends BeatDrawable {
 
@@ -43,8 +43,8 @@ export class Ripples extends BeatDrawable {
         const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
         const layout = new VertexBufferLayout(gl)
         // const shader = new Shader(gl, vertexShader, fragmentShader)
-        const shader = DynamicTextureShader.getShader(gl)
-        const texture = new Texture(gl, ImageLoader.get("ripple"))
+        const shader = DynamicTextureShader.newShader(gl)
+        const texture = new Texture(gl, Images.Ripple)
 
         buffer.bind()
         shader.bind()
@@ -140,7 +140,7 @@ export class Ripples extends BeatDrawable {
         super.dispose()
         this.texture.dispose()
         this.vertexArray.dispose()
-        DynamicTextureShader.dispose()
+        this.shader.dispose()
         this.buffer.dispose()
     }
 
@@ -151,29 +151,30 @@ class Ripple {
     private readonly maxThickWidth: number
     private readonly innerRadius: number
     private currentThickWidth: number = 1
+    private readonly defaultAlpha = 0.05
     private transition: ObjectTransition = new ObjectTransition(this, 'currentThickWidth')
-    private alpha = 0.15
+    private alpha = this.defaultAlpha
     private alphaTransition: ObjectTransition = new ObjectTransition(this, 'alpha')
 
     constructor(
       parent: Ripples
     ) {
         this.innerRadius = parent.width / 2
-        this.maxThickWidth = this.innerRadius * 0.8
+        this.maxThickWidth = this.innerRadius * 0.5
         console.log(this.maxThickWidth)
         this.currentThickWidth = 0
     }
 
     public reset() {
         this.currentThickWidth = 0
-        this.alpha = 0.15
+        this.alpha = this.defaultAlpha
     }
 
     public start() {
         this.startTransition()
-          .transitionTo(this.maxThickWidth, 3000, easeOutQuint)
-        this.alphaBegin()
-          .transitionTo(0, 2800, easeOutQuint)
+          .transitionTo(this.maxThickWidth, 1000, easeOut)
+        this.alphaBegin(Time.currentTime + 800)
+          .transitionTo(0, 200)
     }
 
     public isEnd() {

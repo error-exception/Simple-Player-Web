@@ -9,7 +9,6 @@ class TempOSUPlayManager {
 
   constructor() {
     watch(this.list, list => {
-      console.log(list)
       if (list.length) {
         AudioPlayer.onEnd.collect(() => {
           this.next()

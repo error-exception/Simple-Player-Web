@@ -1,4 +1,3 @@
-import {ImageLoader} from "../../../ImageResources";
 import Coordinate from "../../base/Coordinate";
 import {BaseDrawableConfig, Drawable} from "../../drawable/Drawable";
 import {Shape2D} from "../../util/Shape2D";
@@ -17,6 +16,7 @@ import {
     UNI_TRANSFORM
 } from "../../shader/ShaderConstant";
 import StaticTextureShader from "../../shader/StaticTextureShader";
+import {Images} from "../../util/ImageResource";
 
 export class Logo extends Drawable {
 
@@ -38,7 +38,7 @@ export class Logo extends Drawable {
         const buffer = new VertexBuffer(gl)
         const shader = StaticTextureShader.getShader(gl)
         const layout = new VertexBufferLayout(gl)
-        const texture = new Texture(gl, ImageLoader.get("logo"))
+        const texture = new Texture(gl, Images.Logo)
 
         buffer.bind()
         shader.bind()
@@ -56,7 +56,6 @@ export class Logo extends Drawable {
         this.layout = layout
         this.shader = shader
         this.texture = texture
-
     }
 
     public createVertexArray() {

@@ -30,7 +30,11 @@ const fragmentShader = `
     }
 `
 
-export class RoundVisualizer extends Drawable {
+export interface RoundVisualizerConfig extends BaseDrawableConfig {
+    innerRadius?: number
+}
+
+export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
 
     private readonly vertexArray: VertexArray
     private readonly buffer: VertexBuffer
@@ -41,12 +45,15 @@ export class RoundVisualizer extends Drawable {
 
     private readonly visualizer: VisualizerV2
 
-
+    private innerRadius = 236
     constructor(
         gl: WebGL2RenderingContext,
-        config: BaseDrawableConfig
+        config: RoundVisualizerConfig
     ) {
         super(gl, config)
+        if (config.innerRadius) {
+            this.innerRadius = config.innerRadius
+        }
         const vertexArray = new VertexArray(gl)
         vertexArray.bind()
         const shader = new Shader(gl, vertexShader, fragmentShader)
@@ -108,7 +115,7 @@ export class RoundVisualizer extends Drawable {
             this.vertexData = new Float32Array(length * 8 * 5)
         }
         const array = this.vertexData
-        const innerRadius = 236
+        const innerRadius = this.innerRadius
         const lineWidth = (
             innerRadius / 2 * Math.sin(
                 degreeToRadian(360 / (length))

@@ -4,7 +4,7 @@ import {ATTR_COLOR, ATTR_POSITION, UNI_CIRCLE, UNI_ORTH, UNI_TRANSFORM} from "./
 import {Disposable} from "../core/Disposable";
 import {VertexBufferLayout} from "../core/VertexBufferLayout";
 
-export class RoundClipColoredShader implements Disposable {
+class RoundClipColoredShader implements Disposable {
 
     private vertex = `
         attribute vec2 ${ATTR_POSITION};
@@ -36,6 +36,10 @@ export class RoundClipColoredShader implements Disposable {
     private shader: Nullable<Shader> = null
     private layout: Nullable<VertexBufferLayout> = null
 
+    public newShader(gl: WebGL2RenderingContext) {
+        return new Shader(gl, this.vertex, this.fragment)
+    }
+
     public getShader(gl: WebGL2RenderingContext) {
         if (this.shader === null) {
             const shader = new Shader(gl, this.vertex, this.fragment)
@@ -61,3 +65,5 @@ export class RoundClipColoredShader implements Disposable {
     }
 
 }
+
+export default new RoundClipColoredShader()

@@ -1,23 +1,3 @@
-<template>
-  <div class="mini-player-box">
-    <div style="position: relative" class="fill-size">
-      <img ref="img" :src="image" alt="" width="500" height="240" style="position: absolute">
-      <Column class="fill-size" style="position: absolute; background-color: #00000040">
-        <Column class="fill-width flex-grow" center :gap="8">
-          <span class="player-title">{{ title }}</span>
-          <span class="player-artist">{{ artist }}</span>
-        </Column>
-        <Row class="fill-width" style="background-color: #00000080; height: 64px;" center>
-          <button class="control-btn ma" @click="previous()">{{ Icon.SkipPrevious }}</button>
-          <button class="control-btn ma" @click="play()">{{ playState === PlayerState.STATE_PLAYING ? Icon.Pause : Icon.PlayArrow }}</button>
-          <button class="control-btn ma" @click="stop()">{{ Icon.Stop }}</button>
-          <button class="control-btn ma" @click="next()">{{ Icon.SkipNext }}</button>
-        </Row>
-      </Column>
-      <ProgressBar style="width: 100%; position: absolute; bottom: 0;"/>
-    </div>
-  </div>
-</template>
 
 <script setup lang="ts">
 import {onMounted, onUnmounted, ref, shallowRef} from "vue";
@@ -99,12 +79,49 @@ const play = () => {
   }
 }
 
+const list = ref(false)
+
 </script>
+<template>
+  <Column class="w-fit mini-player gap-y-2">
+    <div style="position: relative" class="fill-size mini-player-box">
+      <img ref="img" :src="image" alt="" width="500" height="240" style="position: absolute">
+      <Column class="fill-size" style="position: absolute; background-color: #00000040">
+        <Column class="fill-width flex-grow" center :gap="8">
+          <span class="player-title">{{ title }}</span>
+          <span class="player-artist">{{ artist }}</span>
+        </Column>
+        <Row class="fill-width" style="background-color: #00000080; height: 56px;" center :gap="8">
+          <button v-osu-button class="control-btn ma" @click="previous()">{{ Icon.SkipPrevious }}</button>
+          <button v-osu-button class="control-btn ma" @click="play()">{{ playState === PlayerState.STATE_PLAYING ? Icon.Pause : Icon.PlayArrow }}</button>
+          <button v-osu-button class="control-btn ma" @click="stop()">{{ Icon.Stop }}</button>
+          <button v-osu-button class="control-btn ma" @click="next()">{{ Icon.SkipNext }}</button>
+          <button v-osu-button class="control-btn ma" @click="list = !list">{{ Icon.List }}</button>
+        </Row>
+      </Column>
+      <ProgressBar style="width: 100%; position: absolute; bottom: 0;"/>
+    </div>
+    <Transition name="mini-list">
+      <Column class="rounded-md bg-[--bpm-color-3] origin-top" v-if="list">
+      <span
+        v-osu-button
+        v-for="item in 'yes and'"
+        class="text-white"
+      >123</span>
+      </Column>
+    </Transition>
+  </Column>
+</template>
+
 
 <style scoped>
+.mini-player {
+  --bpm-color-3:  #2e3835;
+  --bpm-color-4:  #394642;
+}
 .mini-player-box {
-  width: 500px;
-  height: 200px;
+  width: 420px;
+  height: 160px;
   overflow: hidden;
   border-radius: 8px;
   background-color: black;
@@ -118,30 +135,40 @@ img {
   width: 100%;
   color: white;
   text-align: center;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .player-artist {
   width: 100%;
   color: white;
-  font-size: 16px;
+  font-size: 14px;
   text-align: center;
 }
 
 .control-btn {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   font-size: 36px;
   color: white;
   border-radius: 8px;
-  transition: all 100ms ease-in-out;
+  transition: all 220ms ease-in-out;
 }
 
 .control-btn:hover {
-  background-color: gold;
+  background-color: #FFD70080;
 }
 
 .control-btn:active {
   transform: scale(.96);
+  background-color: #FFD700FF;
+}
+.mini-list-leave-active, .mini-list-enter-active {
+  transition: all 220ms ease-out;
+}
+.mini-list-leave-from, .mini-enter-to {
+  transform: scaleY(1);
+}
+.mini-list-leave-to, .mini-list-enter-from {
+  transform: scaleY(0);
 }
 </style>

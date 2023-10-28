@@ -113,78 +113,12 @@ export class LogoTriangles extends Drawable {
         this.velocityTransition.update(Time.currentTime)
         const width = this.width;
         const height = this.height;
-        // const x = Coordinate.worldX(this.boundary.getAbsoluteLeft());
-        // const y = Coordinate.worldY(this.boundary.getAbsoluteTop());
-        
-        // const width = this.rawSize.x
-        // const height = this.rawSize.y
         const { x, y } = this.position
         const topLeft = new Vector2(x, y)
-        // const topRight = new Vector2(x + width, y)
-        // const bottomLeft = new Vector2(x, y - height)
         const bottomRight = new Vector2(x + width, y - height)
-        // TransformUtils.applyOrigin(topLeft, this.coordinateScale)
-        // TransformUtils.applyOrigin(topRight, this.coordinateScale)
-        // TransformUtils.applyOrigin(bottomLeft, this.coordinateScale)
-        // TransformUtils.applyOrigin(bottomRight, this.coordinateScale)
-        // const {red, green, blue, alpha} = this.startColor
         const vertex = this.vertex
         Shape2D.quadVector2(topLeft, bottomRight, vertex, 0, 6)
         Shape2D.oneColor(this.startColor, vertex, 2, 6)
-        // Shape2D.quad(
-        //     topLeft.x, topLeft.y,
-        //     bottomRight.x, bottomRight.y,
-        //     vertex, 0, 6
-        // )
-        // Shape2D.color(
-        //     red, green, blue, alpha,            
-        //     red, green, blue, alpha,            
-        //     red, green, blue, alpha,            
-        //     red, green, blue, alpha,
-        //     vertex, 2, 6            
-        // )
-        // vertex[0] = topLeft.x
-        // vertex[1] = topLeft.y
-        // vertex[2] = red
-        // vertex[3] = green
-        // vertex[4] = blue
-        // vertex[5] = alpha
-
-        // vertex[6] = bottomLeft.x
-        // vertex[7] = bottomLeft.y
-        // vertex[8] =  red
-        // vertex[9] =  green
-        // vertex[10] = blue
-        // vertex[11] = alpha
-
-
-        // vertex[12] = bottomRight.x
-        // vertex[13] = bottomLeft.y
-        // vertex[14] = red
-        // vertex[15] = green
-        // vertex[16] = blue
-        // vertex[17] = alpha
-
-        // vertex[18] = bottomRight.x
-        // vertex[19] = bottomRight.y
-        // vertex[20] = red
-        // vertex[21] = green
-        // vertex[22] = blue
-        // vertex[23] = alpha
-
-        // vertex[24] = topLeft.x
-        // vertex[25] = topLeft.y
-        // vertex[26] = red
-        // vertex[27] = green
-        // vertex[28] = blue
-        // vertex[29] = alpha
-
-        // vertex[30] = topRight.x
-        // vertex[31] = topRight.y
-        // vertex[32] = red
-        // vertex[33] = green
-        // vertex[34] = blue
-        // vertex[35] = alpha
 
         this.updateParticles()
     }
@@ -194,8 +128,6 @@ export class LogoTriangles extends Drawable {
             const triangle = this.particles[i]
             if (triangle.isFinish()) {
                 triangle.size = Interpolation.valueAt(Math.random(), this.MIN_SIZE, this.MAX_SIZE)
-                // const x = Coordinate.worldX(this.getLeft())
-                // const y = Coordinate.worldY(this.getTop())
                 const { x, y } = this.position
                 triangle.position = new Vector2(
                     Interpolation.valueAt(Math.random(), x, x + this.width),

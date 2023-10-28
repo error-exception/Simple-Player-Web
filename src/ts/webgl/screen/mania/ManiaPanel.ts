@@ -1,4 +1,3 @@
-import noteEffect from "../../../../assets/soft-hitwhistle.wav"
 import {OSUParser} from "../../../osu/OSUParser"
 import {Score} from "../../../Score"
 import {Time} from "../../../global/Time"
@@ -15,6 +14,7 @@ import {Vector2} from "../../core/Vector2"
 import {VertexArray} from "../../core/VertexArray"
 import {VertexBuffer} from "../../core/VertexBuffer"
 import {VertexBufferLayout} from "../../core/VertexBufferLayout"
+import {playSound, Sound} from "../../../player/SoundEffect";
 
 const vertexShader = `
     attribute vec2 a_position;
@@ -135,7 +135,6 @@ export class ManiaPanel extends Drawable {
             currentOffsetLeft += this.trackWidth + this.trackGap
             this.tracks.push(track)
         }
-        // console.log(this.tracks)
     }
 
     private vertexData = new Float32Array()
@@ -155,71 +154,13 @@ export class ManiaPanel extends Drawable {
         }
         this.songProgress.update()
         this.vertexArrayData = []
-        // const { x, y } = this.position
         let offset = 0
         // left edge
-        // Shape2D.quad(
-        //     x, y,
-        //     x + 10, y - this.height,
-        //     this.vertexArrayData,
-        //     offset,
-        //     6
-        // )
-        // Shape2D.color(
-        //     1, 1, 1, 1,
-        //     1, 1, 1, 1,
-        //     1, 1, 1, 1,
-        //     1, 1, 1, 1,
-        //     this.vertexArrayData,
-        //     offset + 2,
-        //     6
-        // )
-        // offset += 36
 
         for (let i = 0; i < this.tracks.length; i++) {
             offset += this.tracks[i].copyTo(this.vertexArrayData, offset)
         }
-        // right edge
-        // Shape2D.quad(
-        //     x + 10 + this.trackWidth * this.trackCount + this.trackGap * (this.trackCount + 1), y,
-        //     x + 20 + this.trackWidth * this.trackCount + this.trackGap * (this.trackCount + 1), y - this.height,
-        //     this.vertexArrayData,
-        //     offset,
-        //     6
-        // )
-        // Shape2D.color(
-        //     1, 1, 1, 1,
-        //     1, 1, 1, 1,
-        //     1, 1, 1, 1,
-        //     1, 1, 1, 1,
-        //     this.vertexArrayData,
-        //     offset + 2,
-        //     6
-        // )
-        // offset += 36
-        // judgementLine
-        // Shape2D.quad(
-        //     x + 10,
-        //     y - this.height * (this.judgementLinePosition / 100),
-        //     x + 10 + this.trackWidth * (this.trackCount) + this.trackGap * (this.trackCount + 1),
-        //     y - this.height * (this.judgementLinePosition / 100) - 10,
-        //     // -1 + Coordinate.glXLength(this.offsetLeft - 10), 1 - 2 * (this.judgementLinePosition / 100),
-        //     // -1 + Coordinate.glXLength(this.offsetLeft + this.trackWidth * this.trackCount + this.trackGap * (this.trackCount) + 10), 1 - 2 * (this.judgementLinePosition / 100) - Coordinate.glYLength(10),
-        //     this.vertexArrayData,
-        //     offset,
-        //     6
-        // )
-        // Shape2D.color(
-        //     1, 1, 1, 1,
-        //     1, 1, 1, 1,
-        //     1, 1, 1, 1,
-        //     1, 1, 1, 1,
-        //     this.vertexArrayData,
-        //     offset + 2,
-        //     6
-        // )
-        // offset += 36
-        // offset += this.songProgress.copyTo(this.vertexArrayData, offset, 6)
+        this.songProgress.copyTo(this.vertexArrayData, offset, 6)
         this.vertexData = new Float32Array(this.vertexArrayData)
         this.vertexCount = int(this.vertexArrayData.length / 6)
     }
@@ -244,9 +185,6 @@ export class ManiaPanel extends Drawable {
     }
 
 }
-
-const key = new Audio(noteEffect)
-key.load()
 
 class ManiaTrack {
 
@@ -306,14 +244,11 @@ class ManiaTrack {
             return
         }
         this.fadeTransition.update(Time.currentTime)
-        const currentTime = AudioPlayer.currentTime()
-        this.updateNoteQueue(currentTime)
+        this.updateNoteQueue()
     }
 
-    private updateNoteQueue(startTime: number) {
-        // const endTime = startTime + this.movementDuration
+    private updateNoteQueue() {
         const noteList = this.noteList
-        // const noteDataList = this.noteDataList
         for (let i = 0; i < noteList.length; i++) {
             noteList[i].update()
         }
@@ -322,7 +257,6 @@ class ManiaTrack {
     public hit() {
         const noteList = this.noteList
         this.alpha = .3
-        key.play()
         for (let i = 0; i < noteList.length; i++) {
             if (noteList[i].hit()) {
                 return
@@ -609,6 +543,7 @@ class Note {
             this.judgeResult = Note.JUDGE_PERFECT;
             Score.perfect.value++;
             this.onNoteReceive(false, true)
+            playSound(Sound.SoftHitwhistle)
         }
     }
 
@@ -635,14 +570,18 @@ class SongProgress {
 
     private topLeft: Vector2 = Vector2.newZero()
     private bottomRight: Vector2 = Vector2.newZero()
-    private color = Color.fromHex(0xffff00, 0x80)
-    private height = 10
+    private color = Color.fromHex(0x66ccff)
 
     public update() {
         const percent = AudioPlayer.currentTime() / AudioPlayer.duration()
-        const height = Coordinate.glYLength(this.height)
-        this.topLeft.set( -1, -1 + height)
-        this.bottomRight.set(-1 + 2 * percent, -1)
+        this.topLeft.set(
+          -Coordinate.width / 2,
+          -Coordinate.height / 2 + 10
+        )
+        this.bottomRight.set(
+          -Coordinate.width / 2 + Coordinate.width * percent,
+          -Coordinate.height / 2
+        )
     }
 
     public copyTo(out: number[], offset: number, stride: number) {
@@ -670,11 +609,9 @@ class SongProgress {
 }
 
 export interface NoteData {
-
     noteIndex: number
     startTime: number
     endTime: number
-
 }
 
 var text = `osu file format v14

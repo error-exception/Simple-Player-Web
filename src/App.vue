@@ -1,11 +1,12 @@
 <template>
-  <div class="fill-size" style="position: relative; overflow: hidden" @drop="handleDrop" @dragenter="handleDrop"
-       @dragleave="handleDrop" @dragover="handleDrop">
-    <Visualizer2 style="position: absolute"/>
-<!--            <FPSCounter-->
-<!--                :frame-time="16"-->
-<!--                style="position: absolute; left: 4px; bottom: 4px"-->
-<!--            />-->
+  <div
+    class="fill-size flex justify-center relative overflow-hidden"
+    @drop="handleDrop"
+    @dragenter="handleDrop"
+    @dragleave="handleDrop"
+    @dragover="handleDrop"
+  >
+    <Visualizer2 class="absolute"/>
     <Transition name="top-bar">
       <TopBar
         style="position: absolute; top: 0"
@@ -13,40 +14,49 @@
         @settingsClick="ui.settings = !ui.settings"
         @bpmCalcClick="ui.bpmCalculator = !ui.bpmCalculator"
         @beatmapListClick="ui.beatmapList = !ui.beatmapList"
+        @notifyClick="ui.notify = !ui.notify"
         @hideUI="hideUI()"
         v-show="ui.showUI"
       />
     </Transition>
     <Transition name="mask">
-      <div style="position: absolute" class="max-size mask" v-if="hasSomeUIShow" @click="closeAll()"></div>
+      <div class="max-size mask absolute" v-if="hasSomeUIShow" @click="closeAll()"></div>
     </Transition>
-    <VolumeAdjuster style="position: absolute; right: 0; bottom: 0"/>
+    <VolumeAdjuster class="absolute right-0 bottom-0"/>
     
     <Transition name="list">
-      <Playlist style="position: absolute; right: 0" v-if="ui.list"/>
+      <Playlist class="absolute right-0" v-if="ui.list"/>
     </Transition>
     
     <Transition name="settings">
       <SettingsPanel
         v-if="ui.settings"
-        style="position: absolute; left: 0"
+        class="absolute left-0"
       />
     </Transition>
     
     <Transition name="player">
       <MiniPlayer v-if="ui.miniPlayer" style="position: absolute; top: 48px; right: 80px"/>
     </Transition>
-    <BpmCalculator style="position: absolute" v-if="ui.bpmCalculator"
-                   @close="ui.bpmCalculator = false"/>
-    <OSUBeatmapList style="position: absolute;" v-if="ui.beatmapList"/>
-    <!--        <OSUBeatmapDetails style="position: absolute"/>-->
-    <Toast style="position: absolute"/>
-    <DevelopTip style="position: absolute; right: 0; bottom: 0"/>
+    <Transition name="list">
+      <Notification v-if="ui.notify" class="absolute right-0"/>
+    </Transition>
+    <BpmCalculator
+      v-if="ui.bpmCalculator"
+      class="absolute"
+      @close="ui.bpmCalculator = false"
+    />
+    <Transition name="popup">
+      <OSUBeatmapList class="absolute" v-if="ui.beatmapList" @close="ui.beatmapList = false"/>
+    </Transition>
+    <FloatNotification v-if="!ui.notify" class="absolute right-0"/>
+    <Toast class="absolute" style="position: absolute"/>
+    <DevelopTip class="absolute right-0 bottom-0"/>
   </div>
 </template>
 <script setup lang="ts">
 
-import {computed, onMounted, provide, reactive, watch, ref} from 'vue';
+import {computed, onMounted, provide, reactive, ref, watch} from 'vue';
 import '../public/Material_Icon/material-icons.css';
 import BpmCalculator from "./components/BpmCalculator.vue";
 import DevelopTip from "./components/DevelopTip.vue";
@@ -59,7 +69,7 @@ import Visualizer2 from "./components/Visualizer2.vue";
 import VolumeAdjuster from "./components/VolumeAdjuster.vue";
 import AudioPlayerV2 from "./ts/player/AudioPlayer";
 import {Toaster} from "./ts/global/Toaster";
-import {scope, useKeyboard} from './ts/Utils';
+import {scope, sleep, useKeyboard} from './ts/Utils';
 import OSUPlayer from "./ts/player/OSUPlayer";
 import PlayManager from "./ts/player/PlayManager";
 import {PlayerState} from "./ts/player/PlayerState";
@@ -70,6 +80,12 @@ import ScreenManager from "./ts/webgl/util/ScreenManager";
 import {useCollect} from "./ts/util/use";
 import {PLAYER} from "./ts/build";
 import TempOSUPlayManager from "./ts/player/TempOSUPlayManager";
+import Notification from "./components/notification/NotificationPanel.vue";
+import {notifyMessage, runTask} from "./ts/notify/OsuNotification";
+import {Icon} from "./ts/icon/Icon";
+import FloatNotification from "./components/notification/FloatNotification.vue";
+import {playSound, Sound} from "./ts/player/SoundEffect";
+import Column from "./components/common/Column.vue";
 
 const ui = reactive({
   list: false,
@@ -77,7 +93,8 @@ const ui = reactive({
   bpmCalculator: false,
   showUI: false,
   miniPlayer: false,
-  beatmapList: false
+  beatmapList: false,
+  notify: false
 })
 
 useCollect(ScreenManager.currentId, id => {
@@ -94,12 +111,25 @@ provide("openMiniPlayer", () => {
   ui.miniPlayer = true
 })
 
-watch(() => ui.settings, value => onLeftSide.emit(value))
-watch(() => ui.list, value => onRightSide.emit(value))
-
+watch(() => ui.settings, value => {
+  if (value) {
+    playSound(Sound.OverlayBigPopIn)
+  } else {
+    playSound(Sound.OverlayBigPopOut)
+  }
+  onLeftSide.emit(value)
+})
+watch(() => ui.notify, value => {
+  if (value) {
+    playSound(Sound.OverlayBigPopIn)
+  } else {
+    playSound(Sound.OverlayBigPopOut)
+  }
+  onRightSide.emit(value)
+})
+watch(() => ui.miniPlayer, value => playSound(value ? Sound.NowPlayingPopIn : Sound.NowPlayingPopOut))
+watch(() => ui.beatmapList, value => playSound(value ? Sound.WavePopIn : Sound.WavePopOut))
 useKeyboard('up', (evt) => {
-  console.log(evt.code);
-  
   if (evt.code === 'KeyO') {
     ui.showUI = true
   }
@@ -124,11 +154,11 @@ onEnterMenu.collect((value) => {
   ui.showUI = value
 })
 
-const hasSomeUIShow = computed(() => ui.list || ui.settings || ui.miniPlayer || ui.beatmapList)
+const hasSomeUIShow = computed(() => ui.list || ui.settings || ui.miniPlayer || ui.beatmapList || ui.notify)
 
 function hideUI() {
   ui.showUI = false
-  Toaster.show(`按“O“显示 `)
+  Toaster.show(`按“O“显示`)
 }
 
 function closeAll() {
@@ -136,6 +166,7 @@ function closeAll() {
   ui.list = false
   ui.miniPlayer = false
   ui.beatmapList = false
+  ui.notify = false
 }
 
 const stateText = ref("")
@@ -157,10 +188,11 @@ AudioPlayerV2.playStateFlow.collect((stateCode: number) => {
     [PlayerState.STATE_PLAYING]: '正在播放',
     [PlayerState.STATE_DECODE_DONE]: '准备就绪',
     [PlayerState.STATE_PAUSING]: '播放暂停'
-  }[stateCode]
+  }[stateCode] ?? ""
 })
 
 onMounted(() => init())
+notifyMessage("Welcome!")
 
 async function init() {
   if (PLAYER) {
@@ -289,9 +321,18 @@ function handleFile(e: DragEvent) {
   transition-delay: 300ms;
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
-
 .top-bar-leave-active {
   transition-delay: 0s;
+}
+
+.popup-enter-active, .popup-leave-active {
+  transition: all .5s ease;
+}
+.popup-enter-from, .popup-leave-to {
+  transform: translateY(100%);
+}
+.popup-enter-to, .popup-leave-from {
+  transform: translateY(0);
 }
 
 @keyframes player-enter-animation {

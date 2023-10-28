@@ -6,6 +6,8 @@ import {Vector2} from "../../core/Vector2";
 import {easeOutCubic} from "../../../util/Easing";
 import {onLeftSide, onRightSide} from "../../../global/GlobalState";
 import {StarSmoke} from "./StarSmoke";
+import {effectScope, watch} from "vue";
+import {UIState} from "../../../global/UISettings";
 
 export class MainScreen extends Box {
 
@@ -21,6 +23,8 @@ export class MainScreen extends Box {
             .translateTo(translate, 500, easeOutCubic)
     }
 
+    private scope = effectScope()
+
     constructor(gl: WebGL2RenderingContext) {
         super(gl, {
             size: ['fill-parent', 'fill-parent'],
@@ -28,7 +32,7 @@ export class MainScreen extends Box {
         const menu = new Menu(gl)
         const beatLogo = new BeatLogoBox(gl, { size: [520, 520] })
         const flashlight = new Flashlight(gl, { size: ['fill-parent', 'fill-parent'] })
-        const smoke = new StarSmoke(gl)
+        let smoke = new StarSmoke(gl)
         this.add(
             menu,
             flashlight,
@@ -37,12 +41,19 @@ export class MainScreen extends Box {
         )
         onLeftSide.collect(this.leftSideCollector)
         onRightSide.collect(this.rightSideCollector)
+        this.scope.run(() => {
+            watch(() => UIState.starSmoke, value => {
+                smoke.isVisible = value
+            }, { immediate: true })
+
+        })
     }
 
     public dispose(): void {
         super.dispose()
         onLeftSide.removeCollect(this.leftSideCollector)
         onRightSide.removeCollect(this.rightSideCollector)
+        this.scope.stop()
     }
 
 }

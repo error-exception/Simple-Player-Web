@@ -16,7 +16,6 @@ import star from '../assets/star.png';
 import BackgroundLoader from "../ts/global/BackgroundLoader";
 import BeatBooster from "../ts/global/BeatBooster";
 import {BeatState} from "../ts/global/Beater";
-import {ImageLoader} from "../ts/ImageResources";
 import {MOUSE_KEY_LEFT, MOUSE_KEY_NONE, MOUSE_KEY_RIGHT, MouseState} from "../ts/global/MouseState";
 import {Time} from "../ts/global/Time";
 import {calcRMS} from "../ts/Utils";
@@ -33,10 +32,17 @@ import {ManiaScreen} from '../ts/webgl/screen/mania/ManiaScreen';
 import approachCircle from '../assets/approachcircle.png'
 import stdNoteCircle from '../assets/hitcircleoverlay.png'
 import {BackgroundScreen} from "../ts/webgl/screen/background/BackgroundScreen";
+import {runTask} from "../ts/notify/OsuNotification";
+import {Icon} from "../ts/icon/Icon";
+import {loadSoundEffect} from "../ts/player/SoundEffect";
+import {Script} from "vm";
+import {TestScreen} from "../ts/webgl/screen/test/TestScreen";
+import {loadImage} from "../ts/webgl/util/ImageResource";
+import {LegacyScreen} from "../ts/webgl/screen/legacy/LegacyScreen";
+import AudioChannel from "../ts/player/AudioChannel";
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 let renderer: WebGLRenderer
-
 
 const player = AudioPlayerV2
 
@@ -102,16 +108,15 @@ onMounted(async () => {
     return;
   }
   resizeCanvas()
-  
-  await ImageLoader.load(logoImg, "logo")
-  await ImageLoader.load(rippleNew, "ripple")
-  await ImageLoader.load(legacyLogo, "legacyLogo")
-  await ImageLoader.load(backIcon, 'backIcon')
-  await ImageLoader.load(stdNoteCircle, "stdNoteCircle")
-  await ImageLoader.load(approachCircle, "approachCircle")
-  await ImageLoader.load(star, "star")
-  await ImageLoader.load(whiteRound, 'whiteRound')
-  await BackgroundLoader.init()
+  await runTask("download image", async task => {
+    task.progress.value = 0
+    await loadImage()
+    task.progress.value = .5
+    await BackgroundLoader.init()
+    task.progress.value = 1
+    task.finish("OK", Icon.Check)
+  })
+  await loadSoundEffect()
   ShaderManager.init(webgl)
   renderer = new WebGLRenderer(webgl)
   window.onresize = () => {
@@ -128,8 +133,14 @@ onMounted(async () => {
   ScreenManager.addScreen('mania', () => {
     return new ManiaScreen(webgl)
   })
+  ScreenManager.addScreen('test', () => {
+    return new TestScreen(webgl)
+  })
+  ScreenManager.addScreen('legacy', () => {
+    return new LegacyScreen(webgl)
+  })
   // debugger
-  ScreenManager.activeScreen("main")
+  ScreenManager.activeScreen("legacy")
   draw()
 })
 
@@ -155,6 +166,8 @@ function draw(timestamp: number = 0) {
   
   Time.currentTime = timestamp
   Time.elapsed = elapsed
+  
+  AudioChannel.update(time)
   
   BeatState.isKiai = BeatBooster.isKiai(time)
   BeatState.beatIndex = BeatBooster.getCurrentBeatCount() + 1
@@ -182,18 +195,11 @@ function resizeCanvas() {
   if (canvas.value) {
     canvas.value.height = canvas.value.clientHeight * window.devicePixelRatio
     canvas.value.width = canvas.value.clientWidth * window.devicePixelRatio
-    console.log(canvas.value.clientWidth, canvas.value.clientHeight);
     
     Coordinate.updateCoordinate(
       canvas.value.clientWidth,
       canvas.value.clientHeight
     )
-    console.log("canvas", canvas.value.width, canvas.value.height);
-    
   }
 }
 </script>
-
-<style scoped>
-
-</style>

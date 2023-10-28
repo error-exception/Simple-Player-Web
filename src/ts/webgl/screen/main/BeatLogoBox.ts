@@ -15,6 +15,9 @@ import {onEnterMenu} from "../../../global/GlobalState";
 import {inject} from "../../util/DependencyInject";
 import {Menu} from "../../menu/Menu";
 import {BackgroundBounce} from "./MovableBackground";
+import {effectScope, watch} from "vue";
+import {UIState} from "../../../global/UISettings";
+import AudioChannel from "../../../player/AudioChannel";
 
 class BeatLogo extends Box implements IBeat {
 
@@ -45,10 +48,10 @@ class BeatLogo extends Box implements IBeat {
         if (!BeatState.isAvailable) {
             return;
         }
-        const volume = BeatState.nextBeatRMS
+        const volume = AudioChannel.maxVolume()
         const adjust = Math.min(volume + 0.4, 1)
         this.scaleBegin()
-            .to(new Vector2(1 - adjust * 0.03, 1 - adjust * 0.03), 60, easeOut)
+            .to(new Vector2(1 - adjust * 0.02, 1 - adjust * 0.03), 60, easeOut)
             .to(new Vector2(1, 1), gap * 2, easeOutQuint)
 
         this.triangles.velocityBegin()
@@ -88,16 +91,13 @@ class LogoBeatBox extends Box {
                 const scale = this.scale
                 const a = Interpolation.dump(
                     scale.x,
-                    1 - Math.min(BeatState.currentRMS - 0.4,1) * 0.0635,
+                    1 - Math.max(0, AudioChannel.maxVolume() - 0.4) * 0.04,
                     0.9,
                     Time.elapsed
                 )
                 scale.x = a
                 scale.y = a
                 this.scale = scale
-            } else {
-                const a = 1 - BeatState.currentRMS * 0.08
-                this.scale = new Vector2(a, a)
             }
         }
     }
@@ -108,6 +108,8 @@ class LogoAmpBox extends Box {
 
     private readonly visualizer: RoundVisualizer
     private readonly logoBeatBox: LogoBeatBox
+    private logoHoverable = false
+    private scope = effectScope()
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
@@ -117,40 +119,65 @@ class LogoAmpBox extends Box {
             size: [500, 500]
         })
         this.logoBeatBox = new LogoBeatBox(gl, config)
+
         this.add(
           this.visualizer,
           ripple,
           this.logoBeatBox
         )
+        this.scope.run(() => {
+            watch(() => UIState.logoHover, val => this.logoHoverable = val, { immediate: true })
+        })
     }
 
     public onHover(): boolean {
+        if (!this.logoHoverable) {
+            return true
+        }
         this.scaleBegin()
             .to(new Vector2(1.1, 1.1), 500, easeOutElastic)
         return true
     }
 
     public onHoverLost(): boolean {
+        if (!this.logoHoverable) {
+            return true
+        }
         this.scaleBegin()
             .to(new Vector2(1, 1), 500, easeOutElastic)
         return true
+    }
+
+    public dispose() {
+        super.dispose();
+        this.scope.stop()
     }
 }
 
 export class LogoBounceBox extends Box {
 
     private readonly logoAmpBox: LogoAmpBox
+    private isDraggable = true
+    private scope = effectScope()
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
 
         this.logoAmpBox = new LogoAmpBox(gl, { size: config.size })
         this.add(this.logoAmpBox)
+        this.scope.run(() => {
+            watch(() => UIState.logoDrag, value => {
+                this.isDraggable = value
+            }, { immediate: true })
+        })
     }
 
     private flag = false
     private startPosition = Vector2.newZero()
     public onDrag(which: number): boolean {
+        if (!this.isDraggable) {
+            return true
+        }
         const position = MouseState.position
         if (!this.flag) {
             this.flag = true
@@ -166,10 +193,18 @@ export class LogoBounceBox extends Box {
     }
 
     public onDragLost(which: number): boolean {
+        if (!this.isDraggable) {
+            return true
+        }
         this.flag = false
         this.translateBegin()
             .translateTo(new Vector2(0, 0), 600, easeOutElastic)
         return true
+    }
+
+    public dispose() {
+        super.dispose();
+        this.scope.stop()
     }
 }
 

@@ -1,8 +1,8 @@
 import {BeatBox} from "../../box/BeatBox";
 import {BaseDrawableConfig} from "../../drawable/Drawable";
 import {ImageDrawable} from "../../drawable/ImageDrawable";
-import {ImageLoader} from "../../../ImageResources";
 import {easeOut, easeOutQuint} from "../../../util/Easing";
+import {Images} from "../../util/ImageResource";
 
 export class FadeLogo extends BeatBox {
 
@@ -13,7 +13,7 @@ export class FadeLogo extends BeatBox {
         config: BaseDrawableConfig
     ) {
         super(gl, { size: ['fill-parent', 'fill-parent'] });
-        this.logo = new ImageDrawable(gl, ImageLoader.get('logo'), 1, config)
+        this.logo = new ImageDrawable(gl, Images.Logo, 1, config)
         this.logo.alpha = 0.3
         this.add(this.logo)
     }

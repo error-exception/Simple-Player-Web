@@ -9,6 +9,7 @@ import {Time} from "../../../global/Time";
 import {BeatState} from "../../../global/Beater";
 import {easeInQuad} from "../../../util/Easing";
 import {Color} from "../../base/Color";
+import AudioChannel from "../../../player/AudioChannel";
 
 const vertexShader = `
     attribute vec2 a_position;
@@ -42,7 +43,11 @@ const fragmentShader = `
     }
 `
 
-export class Flashlight extends BeatDrawable {
+export interface FlashlightConfig extends BaseDrawableConfig {
+    color?: Color
+}
+
+export class Flashlight extends BeatDrawable<FlashlightConfig> {
 
     private readonly vertexArray: VertexArray
     private readonly shader: Shader
@@ -53,9 +58,9 @@ export class Flashlight extends BeatDrawable {
     private leftTransition: ObjectTransition = new ObjectTransition(this, 'leftLight')
     private rightTransition: ObjectTransition = new ObjectTransition(this, 'rightLight')
 
-    constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
+    constructor(gl: WebGL2RenderingContext, config: FlashlightConfig) {
         super(gl, config);
-
+        this.color = config.color ?? Color.fromHex(0x0090ff)
         const vertexArray = new VertexArray(gl)
         vertexArray.bind()
         const vertexBuffer = new VertexBuffer(gl, this.createVertex())
@@ -135,26 +140,28 @@ export class Flashlight extends BeatDrawable {
             return
         if (!BeatState.isAvailable)
             return;
-        const adjust = Math.min(BeatState.nextBeatRMS + 0.4, 1)
+        // const adjust = Math.min(BeatState.nextBeatRMS + 0.4, 1)
+        let leftAdjust = Math.min(AudioChannel.leftVolume() + 0.4, 1),
+          rightAdjust = Math.min(AudioChannel.leftVolume() + 0.4, 1)
         let left = 0, right = 0
         const lightTimeFunc = easeInQuad
         const beatLength = gap
         if (BeatState.isKiai) {
             if ((BeatState.beatIndex & 1) === 0) {
-                left = 0.6 * adjust
+                left = 0.6 * leftAdjust
                 this.leftLightBegin()
                     .transitionTo(left, 60)
                     .transitionTo(0, beatLength, lightTimeFunc)
             } else {
-                right = 0.6 * adjust
+                right = 0.6 * rightAdjust
                 this.rightLightBegin()
                     .transitionTo(right, 60)
                     .transitionTo(0, beatLength, lightTimeFunc)
             }
         } else {
             if ((BeatState.beatIndex & 0b11) === 0 && BeatState.beatIndex != 0) {
-                left = 0.4 * adjust
-                right = 0.4 * adjust
+                left = 0.4 * leftAdjust
+                right = 0.4 * rightAdjust
                 this.leftLightBegin()
                     .transitionTo(left, 60)
                     .transitionTo(0, beatLength, lightTimeFunc)

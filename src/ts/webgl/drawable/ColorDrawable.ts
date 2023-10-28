@@ -100,7 +100,4 @@ export class ColorDrawable extends Drawable<ColorDrawableConfig> {
         this.shader.dispose()
         this.buffer.dispose()
     }
-
-
-
 }

@@ -31,7 +31,7 @@ class ColorTextureShader implements Disposable {
         varying mediump vec2 v_tex_coord;
         uniform mediump float ${UNI_ALPHA};
         uniform sampler2D ${UNI_SAMPLER};
-        uniform vec4 ${UNI_COLOR};
+        uniform mediump vec4 ${UNI_COLOR};
     
         void main() {
             mediump vec4 texelColor = texture2D(${UNI_SAMPLER}, v_tex_coord);
@@ -45,6 +45,10 @@ class ColorTextureShader implements Disposable {
 
     private shader: Nullable<Shader> = null
     private layout: Nullable<VertexBufferLayout> = null
+
+    public newShader(gl: WebGL2RenderingContext) {
+        return new Shader(gl, this.vertex, this.fragment)
+    }
 
     public getShader(gl: WebGL2RenderingContext) {
         if (this.shader === null) {
