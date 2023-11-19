@@ -7,7 +7,7 @@ const audioContext = new AudioContext()
 export const Sound: Record<SoundName, AudioBuffer> = {}
 
 export async function loadSoundEffect() {
-  await runTask("downloading sound effect", async task => {
+  await runTask("Downloading sounds", async task => {
     let buffer: ArrayBuffer
     task.progress.value = 0
     let length = SoundEffectMap.length, i = 0
@@ -21,8 +21,8 @@ export async function loadSoundEffect() {
       task.progress.value = (++i) / length
     }
     task.progress.value = 1
-    task.finish("sound effect ok", Icon.Check)
-  })
+    task.finish("Sounds downloaded", Icon.Check)
+  }, true)
 }
 
 async function downloadSound(url: string) {

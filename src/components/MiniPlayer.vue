@@ -107,7 +107,7 @@ const list = ref(false)
         v-osu-button
         v-for="item in 'yes and'"
         class="text-white"
-      >123</span>
+      >123 {{item}}</span>
       </Column>
     </Transition>
   </Column>

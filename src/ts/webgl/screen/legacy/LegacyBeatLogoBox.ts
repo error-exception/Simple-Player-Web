@@ -15,7 +15,7 @@ import {BeatBox} from "../../box/BeatBox";
 import {LegacyRoundVisualizer} from "./LegacyRoundVisualizer";
 import AudioChannel from "../../../player/AudioChannel";
 
-const logoSize = 600
+const logoSize = 610
 
 class LegacyBeatLogo extends Box implements IBeat {
 
@@ -40,8 +40,7 @@ class LegacyBeatLogo extends Box implements IBeat {
     if (!BeatState.isAvailable) {
       return;
     }
-    const volume = AudioChannel.maxVolume()
-    console.log(volume)
+    const volume = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() + 0.4 : 0
     const adjust = Math.min(volume + 0.4, 1)
     this.logo.scaleBegin()
       .to(Vector(1 - adjust * 0.02), 60, easeOut)
@@ -84,12 +83,12 @@ class LegacyFadeBeatLogo extends Box implements IBeat {
     if (!BeatState.isAvailable) {
       return;
     }
-    const volume = AudioChannel.maxVolume()
-    const adjust = Math.min(volume + 0.4, 1)
+    const volume = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() + 0.4 : 0
+    const adjust = Math.min(volume, 1)
 
     this.logo.scaleBegin()
       .to(Vector(1 + adjust * 0.02), 60, easeOut)
-      .to(Vector(1.008), gap * 2, easeOutQuint)
+      .to(Vector(1), gap * 2, easeOutQuint)
   }
 
   public dispose() {
@@ -114,15 +113,17 @@ class LegacyLogoBeatBox extends Box {
     if (AudioPlayerV2.isPlaying()) {
       if (BeatState.isAvailable) {
         const scale = this.scale
-        const a = Interpolation.dump(
+        const adjust = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() - 0.4 : 0
+        const a = Interpolation.damp(
           scale.x,
-          1 - Math.max(0, AudioChannel.maxVolume() - 0.4) * 0.04,
-          0.9,
+          1 - Math.max(0, adjust) * 0.04,
+          0.94,
           Time.elapsed
         )
         scale.x = a
         scale.y = a
         this.scale = scale
+        // this.scale = Vector(1 - BeatState.currentRMS * 0.04)
       }
     }
   }
@@ -143,10 +144,11 @@ class LegacyFadeLogoBeatBox extends Box {
     if (AudioPlayerV2.isPlaying()) {
       if (BeatState.isAvailable) {
         const scale = this.scale
-        const a = Interpolation.dump(
+        const adjust = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() - 0.4 : 0
+        const a = Interpolation.damp(
           2 - scale.x,
-          1 - Math.max(0, AudioChannel.maxVolume() - 0.4) * 0.04,
-          0.9,
+          1 - Math.max(0, adjust) * 0.04,
+          0.94,
           Time.elapsed
         )
         // console.log(scale.x, a)
@@ -175,7 +177,7 @@ class LogoAmpBox extends BeatBox {
 
     this.visualizer = new LegacyRoundVisualizer(gl, {
       size: ['fill-parent', 'fill-parent'],
-      innerRadius: logoSize * 0.9 / 2
+      innerRadius: logoSize * 0.92 / 2
     })
     const ripple = new Ripples(gl, {
       size: [600, 600]

@@ -18,5 +18,9 @@ import {UIState} from "../../ts/global/UISettings";
       <span class="flex-row">Star Smoke</span>
       <CheckBox class="ml-auto" v-model="UIState.starSmoke"/>
     </Row>
+    <Row class="w-full" center-vertical>
+      <span class="flex-row">Use beatmap background</span>
+      <CheckBox class="ml-auto" v-model="UIState.beatmapBackground"/>
+    </Row>
   </Column>
 </template>

@@ -1,5 +1,7 @@
 import AudioPlayer from "./AudioPlayer";
 import OSUPlayer from "./OSUPlayer";
+import {ArrayUtils} from "../util/ArrayUtils";
+import {int} from "../Utils";
 
 class AudioChannel {
   private left: Float32Array = new Float32Array(0)
@@ -49,17 +51,13 @@ class AudioChannel {
 }
 
 function calculateAmplitude(sampleRate: number, channelData: Float32Array, time: number) {
-  const fromTime = time;
-  const toTime = time + (1 / 60) * 1000
-  const fromIndex = Math.min(Math.floor(fromTime * (sampleRate / 1000)), channelData.length)
-  const toIndex = Math.min(Math.floor(toTime * (sampleRate / 1000)), channelData.length)
-  let max = -1, min = 1
-  for (let i = fromIndex; i <= toIndex; i++) {
-    const value = channelData[i]
-    if (value > max) max = value
-    if (value < min) min = value
+  const fromIndex = Math.min(Math.floor(time * (sampleRate / 1000)), channelData.length),
+    toIndex = Math.min(Math.floor((time + (1 / 60) * 1000) * (sampleRate / 1000)), channelData.length)
+  let max = -1, min = 1, i = fromIndex
+  for (; i < toIndex; i++) {
+    max = Math.max(channelData[i], max)
+    min = Math.min(channelData[i], min)
   }
-  // console.log(max, min)
   return (max - min) / 2
 }
 
@@ -121,5 +119,26 @@ function calculateAmplitude(sampleRate: number, channelData: Float32Array, time:
 //   return clamp(Math.sqrt(sum / wind), 0, 1)
 // }
 //
+
+export function calcRMS(sampleRate: number, left: Float32Array, right: Float32Array, currentTime: number, wind: number = 2048) {
+  const unit = sampleRate / 1000
+  const index = int(currentTime * unit)
+  let sum = 0
+  if (!ArrayUtils.inBound(left, index)) {
+    return 0
+  }
+  if (left.length - index < wind) {
+    for (let i = left.length - 1; i > left.length - 1 - wind; i--) {
+      // const max = Math.max(left[i], right[i])
+      sum += (left[i] ** 2 + right[i] ** 2)// / 2
+    }
+  } else {
+    for (let i = index; i < index + wind; i++) {
+      // const max = Math.max(left[i], right[i])
+      sum += (left[i] ** 2 + right[i] ** 2)// / 2
+    }
+  }
+  return Math.sqrt(sum / wind)
+}
 
 export default new AudioChannel()

@@ -38,6 +38,9 @@ export class OsuNotification {
       this.pushTo(this.runningTasks, n)
     }
     this.pushTo(this.tempQueue, n)
+    if (n.always) {
+      return
+    }
     setTimeout(() => {
       this.removeFrom(this.tempQueue, n)
     }, 5000)
@@ -58,12 +61,14 @@ export class RunningTask {
   public icon = ref<Icon>(Icon.Check)
   public progress = ref(0)
   public state = RunningTask.STATE_WAIT
+  public always = false
 
   public async run<R>(scope: TaskScope<R>) {
     return scope(this)
   }
 
   public finish(text: string, icon: Icon = Icon.Info) {
+    this.always = false
     OsuNotification.removeFrom(OsuNotification.runningTasks, this)
     OsuNotification.removeFrom(OsuNotification.tempQueue, this)
     this.text.value = text
@@ -82,8 +87,9 @@ export function notifyMessage(text: string, icon: Icon = Icon.Info) {
   OsuNotification.push(task)
 }
 
-export async function runTask<R>(text: string, scope: TaskScope<R>): Promise<R | undefined> {
+export async function runTask<R>(text: string, scope: TaskScope<R>, isAlways = false): Promise<R | undefined> {
   const task = new RunningTask()
+  task.always = isAlways
   task.text.value = text
   task.state = RunningTask.STATE_RUNNING
   OsuNotification.push(task)

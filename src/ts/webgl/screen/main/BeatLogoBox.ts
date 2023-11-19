@@ -7,7 +7,7 @@ import {RoundVisualizer} from "./RoundVisualizer";
 import {easeInCubic, easeOut, easeOutCubic, easeOutElastic, easeOutQuint} from "../../../util/Easing";
 import AudioPlayerV2 from "../../../player/AudioPlayer";
 import {Time} from "../../../global/Time";
-import {Vector2} from "../../core/Vector2";
+import {Vector, Vector2} from "../../core/Vector2";
 import {LogoTriangles} from "./LogoTriangles";
 import {MouseState} from "../../../global/MouseState";
 import {Interpolation} from "../../util/Interpolation";
@@ -48,11 +48,11 @@ class BeatLogo extends Box implements IBeat {
         if (!BeatState.isAvailable) {
             return;
         }
-        const volume = AudioChannel.maxVolume()
-        const adjust = Math.min(volume + 0.4, 1)
+        const volume = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() + 0.4 : 0
+        const adjust = Math.min(volume, 1)
         this.scaleBegin()
-            .to(new Vector2(1 - adjust * 0.02, 1 - adjust * 0.03), 60, easeOut)
-            .to(new Vector2(1, 1), gap * 2, easeOutQuint)
+            .to(Vector(1 - adjust * 0.02), 60, easeOut)
+            .to(Vector(1), gap * 2, easeOutQuint)
 
         this.triangles.velocityBegin()
             .transitionTo(1 + adjust + (BeatState.isKiai ? 4 : 0), 60, easeOut)
@@ -89,10 +89,11 @@ class LogoBeatBox extends Box {
         if (AudioPlayerV2.isPlaying()) {
             if (BeatState.isAvailable) {
                 const scale = this.scale
-                const a = Interpolation.dump(
+                const adjust = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() - 0.4 : 0
+                const a = Interpolation.damp(
                     scale.x,
-                    1 - Math.max(0, AudioChannel.maxVolume() - 0.4) * 0.04,
-                    0.9,
+                    1 - Math.max(0, adjust) * 0.04,
+                    0.94,
                     Time.elapsed
                 )
                 scale.x = a
@@ -184,11 +185,11 @@ export class LogoBounceBox extends Box {
             this.startPosition.x = MouseState.position.x
             this.startPosition.y = MouseState.position.y
         }
-        this.translate = new Vector2(
-            (position.x - this.startPosition.x) * 0.05,
-            (position.y - this.startPosition.y) * 0.05
-        )
-        // console.log(this._translate)
+        let translateX = position.x - this.startPosition.x
+        let translateY = position.y - this.startPosition.y
+        translateX = Math.sqrt(Math.abs(translateX)) * (translateX < 0 ? -1 : 1)
+        translateY = Math.sqrt(Math.abs(translateY)) * (translateY < 0 ? -1 : 1)
+        this.translate = Vector(translateX, translateY)
         return true
     }
 

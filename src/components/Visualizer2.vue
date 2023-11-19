@@ -7,18 +7,11 @@
 <script setup lang="ts">
 
 import {onMounted, onUnmounted, ref} from "vue";
-import backIcon from '../assets/back_white_48.png';
-import legacyLogo from '../assets/legacy_logo.png';
-import logoImg from '../assets/logo.png';
-import rippleNew from '../assets/ripple_new.png';
-import whiteRound from '../assets/white_round.png';
-import star from '../assets/star.png';
 import BackgroundLoader from "../ts/global/BackgroundLoader";
 import BeatBooster from "../ts/global/BeatBooster";
 import {BeatState} from "../ts/global/Beater";
 import {MOUSE_KEY_LEFT, MOUSE_KEY_NONE, MOUSE_KEY_RIGHT, MouseState} from "../ts/global/MouseState";
 import {Time} from "../ts/global/Time";
-import {calcRMS} from "../ts/Utils";
 import AudioPlayerV2 from "../ts/player/AudioPlayer";
 import OSUPlayer from "../ts/player/OSUPlayer";
 import {easeOut, easeOutQuint} from "../ts/util/Easing";
@@ -29,13 +22,10 @@ import {WebGLRenderer} from "../ts/webgl/WebGLRenderer";
 import Coordinate from '../ts/webgl/base/Coordinate'
 import {SongPlayScreen} from "../ts/webgl/screen/songPlay/SongPlayScreen";
 import {ManiaScreen} from '../ts/webgl/screen/mania/ManiaScreen';
-import approachCircle from '../assets/approachcircle.png'
-import stdNoteCircle from '../assets/hitcircleoverlay.png'
 import {BackgroundScreen} from "../ts/webgl/screen/background/BackgroundScreen";
 import {runTask} from "../ts/notify/OsuNotification";
 import {Icon} from "../ts/icon/Icon";
 import {loadSoundEffect} from "../ts/player/SoundEffect";
-import {Script} from "vm";
 import {TestScreen} from "../ts/webgl/screen/test/TestScreen";
 import {loadImage} from "../ts/webgl/util/ImageResource";
 import {LegacyScreen} from "../ts/webgl/screen/legacy/LegacyScreen";
@@ -108,14 +98,14 @@ onMounted(async () => {
     return;
   }
   resizeCanvas()
-  await runTask("download image", async task => {
+  await runTask("Downloading images...", async task => {
     task.progress.value = 0
     await loadImage()
     task.progress.value = .5
     await BackgroundLoader.init()
     task.progress.value = 1
-    task.finish("OK", Icon.Check)
-  })
+    task.finish("Images downloaded", Icon.Check)
+  }, true)
   await loadSoundEffect()
   ShaderManager.init(webgl)
   renderer = new WebGLRenderer(webgl)
@@ -140,7 +130,7 @@ onMounted(async () => {
     return new LegacyScreen(webgl)
   })
   // debugger
-  ScreenManager.activeScreen("legacy")
+  ScreenManager.activeScreen("main")
   draw()
 })
 
@@ -173,21 +163,21 @@ function draw(timestamp: number = 0) {
   BeatState.beatIndex = BeatBooster.getCurrentBeatCount() + 1
   BeatState.currentBeat = BeatBooster.updateBeat(time, easeOut, easeOutQuint)
   BeatState.isAvailable = BeatBooster.isAvailable
-  BeatState.currentRMS = (player.isPlaying()) ? calcRMS(
-    audioData.sampleRate,
-    audioData.leftChannel,
-    audioData.rightChannel,
-    time,
-    BeatBooster.isAvailable ? 1024 : 2048
-  ) : 0
+  // BeatState.currentRMS = (player.isPlaying()) ? calcRMS(
+  //   audioData.sampleRate,
+  //   audioData.leftChannel,
+  //   audioData.rightChannel,
+  //   time,
+  //   BeatBooster.isAvailable ? 800 : 2048
+  // ) : 0
   
-  BeatState.nextBeatRMS = (player.isPlaying()) ? calcRMS(
-    audioData.sampleRate,
-    audioData.leftChannel,
-    audioData.rightChannel,
-    (BeatBooster.getCurrentBeatCount() + 1) * BeatBooster.getGap() + BeatBooster.getOffset(),
-    1024
-  ) : 0
+  // BeatState.nextBeatRMS = (player.isPlaying()) ? calcRMS(
+  //   audioData.sampleRate,
+  //   audioData.leftChannel,
+  //   audioData.rightChannel,
+  //   (BeatBooster.getCurrentBeatCount() + 1) * BeatBooster.getGap() + BeatBooster.getOffset(),
+  //   1024
+  // ) : 0
   renderer.render()
 }
 

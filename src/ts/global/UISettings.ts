@@ -1,11 +1,8 @@
-import {reactive, watch} from "vue";
+import {reactive} from "vue";
 
 export const UIState = reactive({
   starSmoke: false,
   logoDrag: true,
-  logoHover: true
-})
-
-watch(() => UIState.logoDrag, value => {
-  console.log("ui state logo drag", value)
+  logoHover: true,
+  beatmapBackground: true
 })

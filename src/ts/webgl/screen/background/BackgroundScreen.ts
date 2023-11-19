@@ -8,6 +8,7 @@ import ScreenManager from "../../util/ScreenManager";
 import {Vector2} from "../../core/Vector2";
 import {easeOutCubic} from "../../../util/Easing";
 import {onLeftSide, onRightSide} from "../../../global/GlobalState";
+import {UIState} from "../../../global/UISettings";
 
 export class BackgroundScreen extends Box {
 
@@ -26,17 +27,21 @@ export class BackgroundScreen extends Box {
   }
 
   private collector = (bg: OSUBackground) => {
-    this.setupImageBackground(bg)
     this.setupVideoBackground(bg)
+    this.setupImageBackground(bg)
   }
 
   private setupVideoBackground(bg: OSUBackground) {
-    if (bg.video)
+    if (bg.video) {
+      !['main', 'legacy'].includes(ScreenManager.currentId.value) && (this.videoBackground.isVisible = true)
       this.videoBackground.setVideo(bg.video)
+    } else {
+      this.videoBackground.isVisible = false
+    }
   }
 
   private setupImageBackground(bg: OSUBackground) {
-    this.background.updateBackground2(bg.image ? bg.image : BackgroundLoader.getBackground())
+    this.background.updateBackground2(bg.image && UIState.beatmapBackground ? bg.image : BackgroundLoader.getBackground())
   }
 
   constructor(gl: WebGL2RenderingContext) {
@@ -52,8 +57,8 @@ export class BackgroundScreen extends Box {
     )
     ScreenManager.currentId.collect(screenId => {
       const bg = OSUPlayer.background.value
-      this.videoBackground.isVisible = bg.video !== undefined && (screenId !== 'main')
-      this.background.isVisible = screenId === 'main' || !bg.video
+      console.log(bg)
+      this.videoBackground.isVisible = !!bg.video && (screenId !== 'main' && screenId !== 'legacy')
       if (screenId !== 'main') {
         this.background.out()
       }

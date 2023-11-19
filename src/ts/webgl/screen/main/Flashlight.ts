@@ -141,8 +141,8 @@ export class Flashlight extends BeatDrawable<FlashlightConfig> {
         if (!BeatState.isAvailable)
             return;
         // const adjust = Math.min(BeatState.nextBeatRMS + 0.4, 1)
-        let leftAdjust = Math.min(AudioChannel.leftVolume() + 0.4, 1),
-          rightAdjust = Math.min(AudioChannel.leftVolume() + 0.4, 1)
+        let leftAdjust = AudioChannel.leftVolume(),//Math.min(AudioChannel.leftVolume() + 0.4, 1),
+          rightAdjust = AudioChannel.rightVolume()//Math.min(AudioChannel.rightVolume() + 0.4, 1)
         let left = 0, right = 0
         const lightTimeFunc = easeInQuad
         const beatLength = gap
@@ -160,8 +160,8 @@ export class Flashlight extends BeatDrawable<FlashlightConfig> {
             }
         } else {
             if ((BeatState.beatIndex & 0b11) === 0 && BeatState.beatIndex != 0) {
-                left = 0.4 * leftAdjust
-                right = 0.4 * rightAdjust
+                left = 0.3 * leftAdjust
+                right = 0.3 * rightAdjust
                 this.leftLightBegin()
                     .transitionTo(left, 60)
                     .transitionTo(0, beatLength, lightTimeFunc)

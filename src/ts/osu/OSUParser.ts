@@ -1,5 +1,5 @@
 import {NoteData} from '../webgl/screen/mania/ManiaPanel';
-import {OSUFile, OSUFileGeneral, OSUFileMetadata, OSUFileTimingPoints, OSUStdNote} from "./OSUFile";
+import {OSUFile, OSUFileGeneral, OSUFileMetadata, OSUFileTimingPoints} from "./OSUFile";
 
 export class OSUParser {
 
@@ -17,8 +17,6 @@ export class OSUParser {
       if (line === this.hitObject && osuFile.General) {
         if (osuFile.General.Mode === 3) {
           this.parseMania(lines, i + 1, osuFile)
-        } else if (osuFile.General.Mode === 0) {
-          this.parseStd(lines, i + 1, osuFile)
         }
       } else if (line === this.general) {
         this.parseGeneral(lines, i + 1, osuFile)
@@ -58,7 +56,7 @@ export class OSUParser {
   private static parseMania(lines: string[], index: number, out: OSUFile) {
     let i = index
     const tracks: NoteData[][] = []
-    while (lines[i].length > 0 && lines[i].charAt(0) !== '[') {
+    while (lines[i] && lines[i].length > 0 && lines[i].charAt(0) !== '[') {
       const line = lines[i++]
       const [track, _1, startTime, _2, _3, endTime] = line.split(",")
       const trackNumber = parseInt(track)
@@ -92,24 +90,6 @@ export class OSUParser {
     out.NoteData = tracks
   }
 
-  private static parseStd(lines: string[], index: number, out: OSUFile) {
-    let i = index
-    const stdNotes: OSUStdNote[] = []
-    while (lines[i].length > 0 && lines[i].charAt(0) !== '[') {
-      const line = lines[i++]
-      const [x, y, startTime, objectType] = line.split(",")
-      const note: OSUStdNote = {
-        x: parseInt(x),
-        y: parseInt(y),
-        type: parseInt(objectType),
-        startTime: parseInt(startTime)
-      }
-      stdNotes.push(note)
-    }
-    out.HitObjects = {
-      stdNotes
-    }
-  }
   private static parseGeneral(lines: string[], index: number, out: OSUFile) {
     let i = index
     const general: OSUFileGeneral = {

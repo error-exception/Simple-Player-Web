@@ -69,7 +69,7 @@ import Visualizer2 from "./components/Visualizer2.vue";
 import VolumeAdjuster from "./components/VolumeAdjuster.vue";
 import AudioPlayerV2 from "./ts/player/AudioPlayer";
 import {Toaster} from "./ts/global/Toaster";
-import {scope, sleep, useKeyboard} from './ts/Utils';
+import {scope, useKeyboard} from './ts/Utils';
 import OSUPlayer from "./ts/player/OSUPlayer";
 import PlayManager from "./ts/player/PlayManager";
 import {PlayerState} from "./ts/player/PlayerState";
@@ -81,11 +81,9 @@ import {useCollect} from "./ts/util/use";
 import {PLAYER} from "./ts/build";
 import TempOSUPlayManager from "./ts/player/TempOSUPlayManager";
 import Notification from "./components/notification/NotificationPanel.vue";
-import {notifyMessage, runTask} from "./ts/notify/OsuNotification";
-import {Icon} from "./ts/icon/Icon";
+import {notifyMessage} from "./ts/notify/OsuNotification";
 import FloatNotification from "./components/notification/FloatNotification.vue";
 import {playSound, Sound} from "./ts/player/SoundEffect";
-import Column from "./components/common/Column.vue";
 
 const ui = reactive({
   list: false,

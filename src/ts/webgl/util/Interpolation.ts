@@ -1,6 +1,6 @@
 export class Interpolation {
 
-    public static dump(start: number, final: number, base: number, exponent: number) {
+    public static damp(start: number, final: number, base: number, exponent: number) {
         const amount = 1 - Math.pow(base, exponent)
         return start + (final - start) * amount
     }

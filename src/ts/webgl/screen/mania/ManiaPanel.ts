@@ -1,7 +1,7 @@
 import {OSUParser} from "../../../osu/OSUParser"
 import {Score} from "../../../Score"
 import {Time} from "../../../global/Time"
-import {clamp, int} from "../../../Utils"
+import {int} from "../../../Utils"
 import AudioPlayer from "../../../player/AudioPlayer"
 import {ease, easeOut} from "../../../util/Easing"
 import {Color} from "../../base/Color"
@@ -46,11 +46,7 @@ const fragmentShader = `
     }
 `
 
-const yellow = Color.fromHex(0xffff00)
-const green = Color.fromHex(0x00ff00)
-const red = Color.fromHex(0xff0000)
-const purple = Color.fromHex(0xff00ff)
-
+const blue = Color.fromHex(0x66ccff)
 export class ManiaPanel extends Drawable {
 
     private trackCount = 4
@@ -82,7 +78,7 @@ export class ManiaPanel extends Drawable {
         private offsetLeft = 800,
         private trackWidth = 120,
         private trackGap = 12,
-        noteData: NoteData[][]
+        private noteData: NoteData[][]
     ) {
         super(gl, {
             size: [trackWidth * 4 + trackGap * 5 + 20, 'fill-parent']
@@ -119,18 +115,23 @@ export class ManiaPanel extends Drawable {
         this.layout = layout
         this.shader = shader
         this.vertexArray = vertexArray
-        this.offsetLeft = this.position.x + 10 + this.trackGap
+
+    }
+
+    onLoad() {
+        super.onLoad();
+        this.offsetLeft -= Coordinate.width / 2
         let currentOffsetLeft = this.offsetLeft
-        const colors = [yellow, green, red, purple]
+        const colors = new Array(4).fill(blue)
         for (let i = 0; i < this.trackCount; i++) {
             const track = new ManiaTrack(
-                noteData[i],
-                this.judgementLinePosition,
-                350,
-                currentOffsetLeft,
-                this.trackWidth,
-                colors[i],
-                this
+              this.noteData[i],
+              this.judgementLinePosition,
+              450,
+              currentOffsetLeft,
+              this.trackWidth,
+              colors[i],
+              this
             )
             currentOffsetLeft += this.trackWidth + this.trackGap
             this.tracks.push(track)
@@ -190,6 +191,7 @@ class ManiaTrack {
 
     private noteList: Note[] = []
     private isFinish = false
+    // @ts-ignore
     private alpha = 0
 
     private fadeTransition = new ObjectTransition(this, 'alpha')
@@ -211,7 +213,7 @@ class ManiaTrack {
                 this.offsetLeft,
                 this.movementDuration,
                 this.judgementLinePosition,
-                this.mainColor,
+                undefined,
                 noteDataList[i],
                 (isHold, isHoldEnd) => {
                     if (isHold) {
@@ -283,12 +285,11 @@ class ManiaTrack {
           -this.panel.height / 2,
           out, offset, 6
         )
-        const brightness = 0.8
         Shape2D.color(
-          clamp(red - brightness, 0, 1), clamp(green - brightness, 0, 1), clamp(blue - brightness, 0, 1), 1,
-          clamp(red - brightness, 0, 1), clamp(green - brightness, 0, 1), clamp(blue - brightness, 0, 1), 1,
-          clamp(red - brightness, 0, 1), clamp(green - brightness, 0, 1), clamp(blue - brightness, 0, 1), 1,
-          clamp(red - brightness, 0, 1), clamp(green - brightness, 0, 1), clamp(blue - brightness, 0, 1), 1,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
           out, offset + 2, 6
         )
 
@@ -302,9 +303,9 @@ class ManiaTrack {
         )
         Shape2D.color(
             0, 0, 0, 0,
-            red, green, blue, this.alpha,
+            red, green, blue, 0,
             0, 0, 0, 0,
-            red, green, blue, this.alpha,
+            red, green, blue, 0,
             out, currentOffset + 2, 6
         )
 
@@ -313,14 +314,12 @@ class ManiaTrack {
         // 画 key 座
         Shape2D.quad(
             this.offsetLeft,
-            this.panel.position.y - (this.judgementLinePosition / 100) * this.panel.height,
+            this.panel.position.y - (this.judgementLinePosition / 100) * this.panel.height - 10,
             this.offsetLeft + this.trackWidth,
-            -this.panel.height / 2,
+            -this.panel.height / 2 + 20,
             out, currentOffset, 6
         )
-        const stageAlpha = Math.min(
-          this.alpha, 1
-        )
+        const stageAlpha = 0
         Shape2D.color(
           red, green, blue, stageAlpha,
           red, green, blue, stageAlpha,
@@ -350,7 +349,7 @@ class ManiaTrack {
           this.offsetLeft,
           this.panel.position.y - (this.judgementLinePosition / 100) * this.panel.height,
           this.offsetLeft + this.trackWidth,
-          this.panel.position.y - (this.judgementLinePosition / 100) * this.panel.height + 5,
+          this.panel.position.y - (this.judgementLinePosition / 100) * this.panel.height + 10,
           out, currentOffset, 6
         )
         Shape2D.color(
@@ -387,7 +386,7 @@ class Note {
         offsetLeft: number,
         private movementDuration: number,
         private judgementLinePosition: number,
-        color: Color,
+        color: Color = Color.fromHex(0x66ccff),
         public noteData: NoteData,
         public onNoteReceive: (isHold: boolean, isHoldEnd: boolean) => void
     ) {

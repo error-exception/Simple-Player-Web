@@ -12,9 +12,9 @@ export class ManiaScreen extends Box {
             size: ['fill-parent', 'fill-parent']
         })
 
-        const trackWidth: number[] = new Array(4).fill(80)
-        const offsetLeft = 400
-        const trackGap = 8
+        const trackWidth: number[] = new Array(4).fill(10)
+        const offsetLeft = 100
+        const trackGap = 80
         let data: NoteData[][]
         if (OSUPlayer.maniaNoteData.value !== null) {
             data = OSUPlayer.maniaNoteData.value
