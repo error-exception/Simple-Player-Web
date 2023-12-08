@@ -5,11 +5,10 @@
 一个模仿 OSU 的网页播放器，只可播放，不能游玩
 
 1. 部分支持`.osz`文件，可拖动打开
-2. 不支持动态 BPM
-3. BPM 测量（带服务端构建）
-4. 预览 Mania 4K（随机选择一个 Beatmap）
-5. 预览视频（如果存在且可播放）
-6. 不支持故事板
+2. BPM 测量（带服务端构建）
+3. 预览 Mania 4K（随机选择一个 Beatmap）
+4. 预览视频（如果存在且可播放）
+5. 不支持故事板
 
 ## 预览
 
@@ -54,4 +53,4 @@ npm run build
 1. change click event
 2. add FlashDrawable
 3. add skew and rotate transform
-4. code a another webgl core(break change)
+4. code an another webgl core(break change)

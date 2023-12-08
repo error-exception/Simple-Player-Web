@@ -5,64 +5,74 @@ import {Axis} from "../../layout/Axis";
 import {ColoredImageDrawable} from "./ColoredImageDrawable";
 import {Vector} from "../../core/Vector2";
 import {Images} from "../../util/ImageResource";
+import {Time} from "../../../global/Time";
+import {easeIn} from "../../../util/Easing";
 
 export class TestScreen extends Box {
 
   private readonly red: ColoredImageDrawable
   private readonly green: ColoredImageDrawable
   private readonly yellow: ColoredImageDrawable
-  private readonly blue: ColoredImageDrawable
+  private readonly pink: ColoredImageDrawable
 
   constructor(gl: WebGL2RenderingContext) {
     super(gl, {
       size: ['fill-parent', 'fill-parent']
     });
+    const size: [number | 'fill-parent', number | 'fill-parent'] = [470, 470]
     this.red = new ColoredImageDrawable(gl, {
-      size: [50, 50],
+      size,
       origin: Axis.X_RIGHT | Axis.Y_CENTER,
-      // offset: [-200, 0],
       image: Images.WhiteRound,
       color: Color.fromHex(0xff0000)
     })
-    this.red.scale = Vector(2.2)
+    this.red.rotate = 180
+    this.red.scale = Vector()
     this.yellow = new ColoredImageDrawable(gl, {
-      size: [480, 480],
+      size,
       origin: Axis.X_LEFT | Axis.Y_CENTER,
-      offset: [200, 0],
       image: Images.WhiteRound,
       color: Color.fromHex(0xffff00)
     })
-    this.yellow.scale = Vector(0.2)
+    this.yellow.rotate = 180
+    this.yellow.scale = Vector()
     this.green = new ColoredImageDrawable(gl, {
-      size: [480, 480],
+      size,
       origin: Axis.X_CENTER | Axis.Y_TOP,
-      offset: [0, -200],
       image: Images.WhiteRound,
       color: Color.fromHex(0x00ff00)
     })
-    this.green.scale = Vector(0.2)
-    this.blue = new ColoredImageDrawable(gl, {
-      size: [480, 480],
+    this.green.rotate = 180
+    this.green.scale = Vector()
+    this.pink = new ColoredImageDrawable(gl, {
+      size,
       origin: Axis.X_CENTER | Axis.Y_BOTTOM,
-      offset: [0, 200],
       image: Images.WhiteRound,
-      color: Color.fromHex(0x0000ff)
+      color: Color.fromHex(0xff7db7)
     })
-    this.blue.scale = Vector(0.2)
+    this.pink.rotate = 180
+    this.pink.scale = Vector()
     this.add(
       new CircleBackground(gl, {
         size: ['fill-parent', 'fill-parent']
       }),
-      this.red, /*this.green, this.yellow, this.blue*/
+      this.red, this.green, this.yellow, this.pink
     )
 
-    // setTimeout(() => {
-    //   const time = Time.currentTime
-    //   this.red.rotateBegin(time).transitionTo(-180, 1000)
-    //   this.green.rotateBegin(time + 100).transitionTo(-180, 1000)
-    //   this.yellow.rotateBegin(time + 200).transitionTo(-180, 1000)
-    //   this.blue.rotateBegin(time + 300).transitionTo(-180, 1000)
-    // })
+    setTimeout(() => {
+      const time = Time.currentTime
+      const targetScale = Vector(1)
+      const targetDegree = 0
+      const ease = easeIn
+      const rounds = [this.red, this.green, this.yellow, this.pink]
+      const duration = 1000
+      rounds.forEach((item, i) => {
+        item.rotateBegin(time + (i * 50))
+          .transitionTo(targetDegree, duration - (i * 50), ease)
+        item.scaleBegin(time + (i * 50))
+          .to(targetScale, duration - (i * 50), ease)
+      })
+    })
   }
 
 }

@@ -25,7 +25,6 @@ export default defineConfig({
     outDir: './docs'
   },
   server: {
-    port: 5555,
     proxy: {
       '/api': {
         target: 'http://192.168.42.129:8888',

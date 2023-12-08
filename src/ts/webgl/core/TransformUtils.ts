@@ -39,12 +39,12 @@ export class TransformUtils {
             0, 0, 0, 1
         ])
         let x_orth = 2 / (right - left);
-		let y_orth = 2 / (top - bottom);
-		let z_orth = -2 / (far - near);
+		    let y_orth = 2 / (top - bottom);
+		    let z_orth = -2 / (far - near);
 
-		let tx = -(right + left) / (right - left);
-		let ty = -(top + bottom) / (top - bottom);
-		let tz = -(far + near) / (far - near);
+		    let tx = -(right + left) / (right - left);
+		    let ty = -(top + bottom) / (top - bottom);
+		    let tz = -(far + near) / (far - near);
         mat4[0] = x_orth
         mat4[1] = 0
         mat4[2] = 0

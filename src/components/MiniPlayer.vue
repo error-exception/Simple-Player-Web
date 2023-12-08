@@ -13,43 +13,30 @@ import {url} from "../ts/Utils";
 import {PLAYER} from "../ts/build";
 import TempOSUPlayManager from "../ts/player/TempOSUPlayManager";
 import {PlayerState} from "../ts/player/PlayerState";
+import {collect, collectLatest} from "../ts/util/eventRef";
 
 const img = ref<HTMLImageElement | null>(null)
 
-const title = useStateFlow(OSUPlayer.title)
-const artist = useStateFlow(OSUPlayer.artist)
+const title = OSUPlayer.title
+const artist = OSUPlayer.artist
 
-const playState = useStateFlow(AudioPlayer.playStateFlow)
+const playState = AudioPlayer.playState
 
-useCollect(OSUPlayer.onChanged, bullet => {
-  if (bullet.general.from === 'default') {
-    image.value = url("/artwork?id=" + bullet.metadata.id)
-  }
-  
-})
+// useCollect(OSUPlayer.onChanged, bullet => {
+//   if (bullet.general.from === 'default') {
+//     image.value = url("/artwork?id=" + bullet.metadata.id)
+//   }
+// })
 
 const image = shallowRef<string>()
 
-const collector = (bg: OSUBackground) => {
-  // if (bg.imageBlob) image.value = bg.imageBlob
+collectLatest(OSUPlayer.background, (bg: OSUBackground) => {
   if (image.value) {
     URL.revokeObjectURL(image.value)
   }
   if (bg.imageBlob) {
     image.value = URL.createObjectURL(bg.imageBlob)
   }
-}
-
-onMounted(() => {
-  OSUPlayer.background.collect(collector)
-  // console.log(OSUPlayer.background.value.imageBlob);
-  // if (img.value && OSUPlayer.background.value.imageBlob) {
-  //   img.value.src = URL.createObjectURL(OSUPlayer.background.value.imageBlob)
-  // }
-})
-
-onUnmounted(() => {
-  OSUPlayer.background.removeCollect(collector)
 })
 
 const next = () => {
@@ -67,8 +54,7 @@ const previous = () => {
 }
 
 const stop = () => {
-  OSUPlayer.seek(0)
-  OSUPlayer.pause()
+  OSUPlayer.stop()
 }
 
 const play = () => {
@@ -80,11 +66,15 @@ const play = () => {
 }
 
 const list = ref(false)
+const playlist = TempOSUPlayManager.list
+function playAt(i: number) {
+  TempOSUPlayManager.playAt(i, false)
+}
 
 </script>
 <template>
   <Column class="w-fit mini-player gap-y-2">
-    <div style="position: relative" class="fill-size mini-player-box">
+    <div style="position: relative" class="mini-player-box">
       <img ref="img" :src="image" alt="" width="500" height="240" style="position: absolute">
       <Column class="fill-size" style="position: absolute; background-color: #00000040">
         <Column class="fill-width flex-grow" center :gap="8">
@@ -102,12 +92,17 @@ const list = ref(false)
       <ProgressBar style="width: 100%; position: absolute; bottom: 0;"/>
     </div>
     <Transition name="mini-list">
-      <Column class="rounded-md bg-[--bpm-color-3] origin-top" v-if="list">
+      <Column
+        class="rounded-md bg-[--bpm-color-3] origin-top w-[420px] overflow-y-scroll no-scroller"
+        v-if="list"
+        style="height: calc(100vh - var(--top-bar-height) - 16px - 160px)"
+      >
       <span
         v-osu-button
-        v-for="item in 'yes and'"
-        class="text-white"
-      >123 {{item}}</span>
+        v-for="(item, i) in playlist"
+        class="text-white w-full hover:bg-[--bpm-color-4] p-2 text-sm"
+        @click="playAt(i)"
+      >{{item.name}}</span>
       </Column>
     </Transition>
   </Column>

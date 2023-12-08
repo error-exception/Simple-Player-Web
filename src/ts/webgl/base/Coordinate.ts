@@ -2,6 +2,8 @@ import {TransformUtils} from "../core/TransformUtils"
 
 class Coordinate {
 
+    public static readonly MAX_WIDTH = 1536
+
     private _width: number = 0;
     private _height: number = 0;
 
@@ -15,8 +17,8 @@ class Coordinate {
     ])
 
     public updateCoordinate(width: number, height: number) {
-        console.log("window resize");
-        
+        console.log("window resize", width, height);
+
         this._width = width;
         this._height = height;
 

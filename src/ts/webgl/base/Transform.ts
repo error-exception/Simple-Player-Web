@@ -2,6 +2,7 @@ import { Matrix3 } from "../core/Matrix3"
 import {Vector, Vector2} from "../core/Vector2"
 import {MatrixUtils} from "../core/MatrixUtils";
 import {degreeToRadian} from "../../Utils";
+import {TransformUtils} from "../core/TransformUtils";
 
 export class Transform {
 
@@ -15,7 +16,7 @@ export class Transform {
 
     public transformMatrix = Matrix3.newIdentify()
 
-    public extractToMatrix(matrix4: Float32Array | number[]) {
+    public extractToMatrix4(matrix4: Float32Array | number[]) {
         // matrix4[0] = this.scale.x
         // matrix4[5] = this.scale.y
         // matrix4[3] = this.translate.x
@@ -28,6 +29,16 @@ export class Transform {
 
         const m4 = MatrixUtils.m4Multi(tM4, rM4)
         MatrixUtils.m4MultiTo(m4, scM4, matrix4)
+    }
+
+    public extractToMatrix3(matrix3: Matrix3) {
+        const sc = this.scale, t = this.translate, r = this.rotate;
+        const scM3 = TransformUtils.scale(sc.x, sc.y)
+        const tM3 = TransformUtils.translate(t.x, t.y)
+        const rM3 = TransformUtils.rotate(degreeToRadian(r))
+
+        const m3 = MatrixUtils.m3Multi(tM3, rM3)
+        MatrixUtils.m3MultiTo(m3, scM3, matrix3)
     }
 
     public translateTo(v: Vector2) {

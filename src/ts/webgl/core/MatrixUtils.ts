@@ -3,8 +3,10 @@ import {Matrix3} from "./Matrix3";
 export class MatrixUtils {
 
     public static m3Multi(mt1: Matrix3, mt2: Matrix3): Matrix3 {
-        const result = new Matrix3()
+        return this.m3MultiTo(mt1, mt2, new Matrix3())
+    }
 
+    public static m3MultiTo(mt1: Matrix3, mt2: Matrix3, result: Matrix3) {
         result.M11 = mt1.M11 * mt2.M11 + mt1.M12 * mt2.M21 + mt1.M13 * mt2.M31
         result.M12 = mt1.M11 * mt2.M12 + mt1.M12 * mt2.M22 + mt1.M13 * mt2.M32
         result.M13 = mt1.M11 * mt2.M13 + mt1.M12 * mt2.M23 + mt1.M13 * mt2.M33
@@ -16,6 +18,22 @@ export class MatrixUtils {
         result.M31 = mt1.M31 * mt2.M11 + mt1.M32 * mt2.M21 + mt1.M33 * mt2.M31
         result.M32 = mt1.M31 * mt2.M12 + mt1.M32 * mt2.M22 + mt1.M33 * mt2.M32
         result.M33 = mt1.M31 * mt2.M13 + mt1.M32 * mt2.M23 + mt1.M33 * mt2.M33
+
+        return result
+    }
+
+    public static m3MultiToArray(mt1: Matrix3, mt2: Matrix3, result: Float32Array | number[]) {
+        result[0] = mt1.M11 * mt2.M11 + mt1.M12 * mt2.M21 + mt1.M13 * mt2.M31
+        result[1] = mt1.M11 * mt2.M12 + mt1.M12 * mt2.M22 + mt1.M13 * mt2.M32
+        result[2] = mt1.M11 * mt2.M13 + mt1.M12 * mt2.M23 + mt1.M13 * mt2.M33
+
+        result[3] = mt1.M21 * mt2.M11 + mt1.M22 * mt2.M21 + mt1.M23 * mt2.M31
+        result[4] = mt1.M21 * mt2.M12 + mt1.M22 * mt2.M22 + mt1.M23 * mt2.M32
+        result[5] = mt1.M21 * mt2.M13 + mt1.M22 * mt2.M23 + mt1.M23 * mt2.M33
+
+        result[6] = mt1.M31 * mt2.M11 + mt1.M32 * mt2.M21 + mt1.M33 * mt2.M31
+        result[7] = mt1.M31 * mt2.M12 + mt1.M32 * mt2.M22 + mt1.M33 * mt2.M32
+        result[8] = mt1.M31 * mt2.M13 + mt1.M32 * mt2.M23 + mt1.M33 * mt2.M33
 
         return result
     }

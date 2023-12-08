@@ -14,7 +14,7 @@ import {VertexBufferLayout} from "../core/VertexBufferLayout";
 
 class StaticTextureShader implements Disposable {
 
-  private vertex = `
+  protected vertex = `
         attribute vec2 ${ATTR_POSITION};
         attribute vec2 ${ATTR_TEXCOORD};
     
@@ -27,7 +27,7 @@ class StaticTextureShader implements Disposable {
             v_tex_coord = ${ATTR_TEXCOORD};
         }
     `
-  private fragment = `
+  protected fragment = `
         varying mediump vec2 v_tex_coord;
         uniform mediump float ${UNI_ALPHA};
         uniform sampler2D ${UNI_SAMPLER};
@@ -41,8 +41,8 @@ class StaticTextureShader implements Disposable {
         }
     `
 
-  private shader: Nullable<Shader> = null
-  private layout: Nullable<VertexBufferLayout> = null
+  protected shader: Nullable<Shader> = null
+  protected layout: Nullable<VertexBufferLayout> = null
 
   public newShader(gl: WebGL2RenderingContext) {
     return new Shader(gl, this.vertex, this.fragment)

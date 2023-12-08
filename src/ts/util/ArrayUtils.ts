@@ -48,4 +48,26 @@ export class ArrayUtils {
             arr[i] = param2(arr[i])
         }
     }
+
+    public static maxOf<T>(arr: T[], p: (it: T) => number) {
+        let max = Number.MIN_VALUE
+        for (let i = 0; i < arr.length; i++) {
+            const v = p(arr[i])
+            if (v > max) {
+                max = v
+            }
+        }
+        return max
+    }
+
+    public static minOf<T>(arr: T[], p: (it: T) => number) {
+        let min = Number.MAX_VALUE
+        for (let i = 0; i < arr.length; i++) {
+            const v = p(arr[i])
+            if (v < min) {
+                min = v
+            }
+        }
+        return min
+    }
 }

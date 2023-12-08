@@ -1,9 +1,10 @@
 import {linear, TimeFunction} from "../../util/Easing";
 import {Drawable} from "../drawable/Drawable";
 import {Vector2} from "../core/Vector2";
+import {Nullable} from "../../type";
 export class Transition {
 
-    public next: Transition | null = null
+    public next: Nullable<Transition> = null
 
     public constructor(
         public readonly startTime: number = 0,

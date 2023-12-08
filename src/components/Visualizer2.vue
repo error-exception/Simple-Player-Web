@@ -30,29 +30,13 @@ import {TestScreen} from "../ts/webgl/screen/test/TestScreen";
 import {loadImage} from "../ts/webgl/util/ImageResource";
 import {LegacyScreen} from "../ts/webgl/screen/legacy/LegacyScreen";
 import AudioChannel from "../ts/player/AudioChannel";
+import {StoryScreen} from "../ts/webgl/screen/story/StoryScreen";
+import {useKeyboard} from "../ts/Utils";
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 let renderer: WebGLRenderer
 
 const player = AudioPlayerV2
-
-const audioData = {
-  sampleRate: 0,
-  leftChannel: new Float32Array(0),
-  rightChannel: new Float32Array(0)
-}
-
-OSUPlayer.onChanged.collect(() => {
-  const audioBuffer = player.getAudioBuffer();
-  audioData.sampleRate = audioBuffer.sampleRate
-  if (audioBuffer.numberOfChannels < 2) {
-    audioData.leftChannel = audioBuffer.getChannelData(0)
-    audioData.rightChannel = audioData.leftChannel
-  } else {
-    audioData.leftChannel = audioBuffer.getChannelData(0)
-    audioData.rightChannel = audioBuffer.getChannelData(1)
-  }
-})
 
 const mouseListener = {
   mousedown(e: MouseEvent) {
@@ -129,7 +113,9 @@ onMounted(async () => {
   ScreenManager.addScreen('legacy', () => {
     return new LegacyScreen(webgl)
   })
-  // debugger
+  ScreenManager.addScreen("story", () => {
+    return new StoryScreen(webgl)
+  })
   ScreenManager.activeScreen("main")
   draw()
 })
@@ -163,21 +149,7 @@ function draw(timestamp: number = 0) {
   BeatState.beatIndex = BeatBooster.getCurrentBeatCount() + 1
   BeatState.currentBeat = BeatBooster.updateBeat(time, easeOut, easeOutQuint)
   BeatState.isAvailable = BeatBooster.isAvailable
-  // BeatState.currentRMS = (player.isPlaying()) ? calcRMS(
-  //   audioData.sampleRate,
-  //   audioData.leftChannel,
-  //   audioData.rightChannel,
-  //   time,
-  //   BeatBooster.isAvailable ? 800 : 2048
-  // ) : 0
-  
-  // BeatState.nextBeatRMS = (player.isPlaying()) ? calcRMS(
-  //   audioData.sampleRate,
-  //   audioData.leftChannel,
-  //   audioData.rightChannel,
-  //   (BeatBooster.getCurrentBeatCount() + 1) * BeatBooster.getGap() + BeatBooster.getOffset(),
-  //   1024
-  // ) : 0
+
   renderer.render()
 }
 
@@ -190,6 +162,18 @@ function resizeCanvas() {
       canvas.value.clientWidth,
       canvas.value.clientHeight
     )
+  }
+}
+
+useKeyboard("up", e => {
+  if (e.code === "KeyF") {
+    canvasFullscreen()
+  }
+})
+
+function canvasFullscreen() {
+  if (canvas.value) {
+    canvas.value.requestFullscreen()
   }
 }
 </script>

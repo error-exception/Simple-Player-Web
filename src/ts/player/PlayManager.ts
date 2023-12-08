@@ -8,6 +8,7 @@ import MusicDao from "../dao/MusicDao";
 import TimingManager from "../global/TimingManager";
 import OSUPlayer from "./OSUPlayer";
 import {PLAYER} from "../build";
+import {collect} from "../util/eventRef";
 
 class PlayManager {
     private _musicList = createMutableStateFlow<Bullet[]>([
@@ -19,11 +20,14 @@ class PlayManager {
     public currentPlayMode = createMutableStateFlow(PlayMode.None);
 
     constructor() {
-        AudioPlayerV2.onEnd.collect(() => {
-            if (PLAYER) {
-                this.next()
-            }
+        collect(AudioPlayerV2.onEnd, () => {
+            PLAYER && this.next()
         })
+        // AudioPlayerV2.onEnd.collect(() => {
+        //     if (PLAYER) {
+        //         this.next()
+        //     }
+        // })
         // this.loadMusicList()
         TimingManager.onTimingUpdate.collect((timing) => {
             const id = timing.id
@@ -33,7 +37,7 @@ class PlayManager {
                 offset: timing.offset,
                 beatGap: 60 / timing.bpm * 1000,
                 timingList: timing.timingList.map<BulletTimingPointsItem>(v => {
-                    return { offset: v.timestamp, isKiai: v.isKiai }
+                    return { time: v.timestamp, isKiai: v.isKiai }
                 })
             }
         })
@@ -134,7 +138,7 @@ class PlayManager {
         bullet.timingPoints.beatGap = 60 / info.bpm * 1000
         bullet.timingPoints.offset = info.offset
         bullet.timingPoints.timingList = info.timingList.map<BulletTimingPointsItem>(v => {
-            return { offset: v.timestamp, isKiai: v.isKiai }
+            return { time: v.timestamp, isKiai: v.isKiai }
         })
         return bullet
     }

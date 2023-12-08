@@ -7,6 +7,7 @@
     @dragover="handleDrop"
   >
     <Visualizer2 class="absolute"/>
+    <ManiaOverlay v-if="screenId === 'mania'"/>
     <Transition name="top-bar">
       <TopBar
         style="position: absolute; top: 0"
@@ -36,7 +37,7 @@
     </Transition>
     
     <Transition name="player">
-      <MiniPlayer v-if="ui.miniPlayer" style="position: absolute; top: 48px; right: 80px"/>
+      <MiniPlayer v-if="ui.miniPlayer" style="position: absolute; top: var(--top-bar-height); right: 80px"/>
     </Transition>
     <Transition name="list">
       <Notification v-if="ui.notify" class="absolute right-0"/>
@@ -84,6 +85,8 @@ import Notification from "./components/notification/NotificationPanel.vue";
 import {notifyMessage} from "./ts/notify/OsuNotification";
 import FloatNotification from "./components/notification/FloatNotification.vue";
 import {playSound, Sound} from "./ts/player/SoundEffect";
+import ManiaOverlay from "./components/game/ManiaOverlay.vue";
+import {collect, collectLatest} from "./ts/util/eventRef";
 
 const ui = reactive({
   list: false,
@@ -94,8 +97,9 @@ const ui = reactive({
   beatmapList: false,
   notify: false
 })
-
+const screenId = ref("main")
 useCollect(ScreenManager.currentId, id => {
+  screenId.value = id
   if (id === 'main') {
     ui.showUI = false
   }
@@ -170,16 +174,23 @@ function closeAll() {
 const stateText = ref("")
 const collector = () => PLAYER && nextSong()
 
-watch(() => ui.bpmCalculator, (value) => {
-  if (value)
-    AudioPlayerV2.onEnd.removeCollect(collector)
-  else
-    AudioPlayerV2.onEnd.collect(collector)
+// watch(() => ui.bpmCalculator, (value) => {
+//   if (value)
+//     AudioPlayerV2.onEnd.removeCollect(collector)
+//   else
+//     AudioPlayerV2.onEnd.collect(collector)
+// })
+
+collect(AudioPlayerV2.onEnd, () => {
+  const isBpmCalculatorOpen = ui.bpmCalculator
+  if (isBpmCalculatorOpen) {
+    return
+  }
+  PLAYER && nextSong()
 })
 
-AudioPlayerV2.onEnd.collect(collector)
-
-AudioPlayerV2.playStateFlow.collect((stateCode: number) => {
+// AudioPlayerV2.onEnd.collect(collector)
+collectLatest(AudioPlayerV2.playState, stateCode => {
   stateText.value = {
     [PlayerState.STATE_DOWNLOADING]: '正在下载',
     [PlayerState.STATE_DECODING]: '正在解码',
@@ -188,6 +199,15 @@ AudioPlayerV2.playStateFlow.collect((stateCode: number) => {
     [PlayerState.STATE_PAUSING]: '播放暂停'
   }[stateCode] ?? ""
 })
+// AudioPlayerV2.playStateFlow.collect((stateCode: number) => {
+//   stateText.value = {
+//     [PlayerState.STATE_DOWNLOADING]: '正在下载',
+//     [PlayerState.STATE_DECODING]: '正在解码',
+//     [PlayerState.STATE_PLAYING]: '正在播放',
+//     [PlayerState.STATE_DECODE_DONE]: '准备就绪',
+//     [PlayerState.STATE_PAUSING]: '播放暂停'
+//   }[stateCode] ?? ""
+// })
 
 onMounted(() => init())
 notifyMessage("Welcome!")
@@ -243,8 +263,14 @@ function handleFile(e: DragEvent) {
   if (files.length > 1) {
     return
   }
+  notifyMessage("开始加载拖动的 osz 文件")
   loadOSZ(files.item(0)!)
 }
+setTimeout(() => {
+  // debugger
+  // testOSBParser()
+}, 1000)
+
 </script>
 
 <style scoped>

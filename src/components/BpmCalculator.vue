@@ -17,6 +17,11 @@ import {PlayerState} from "../ts/player/PlayerState";
 import {PLAYER} from "../ts/build";
 import {useAnimationFrame} from "../ts/use/useAnimationFrame";
 import ValueAdjust from "./timing/ValueAdjust.vue";
+import {collectLatest} from "../ts/util/eventRef";
+
+/**
+ * this component should update to fit dynamic bpm and new kiai alg
+ */
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -32,7 +37,7 @@ let waveContext: CanvasRenderingContext2D
 let beatWaveContext: CanvasRenderingContext2D
 let intervals: number[] = []
 const drawFlag = ref(false)
-const playState = useStateFlow(AudioPlayer.playStateFlow)
+const playState = AudioPlayer.playState
 const player = AudioPlayer
 
 // 1. wave
@@ -545,7 +550,7 @@ useKeyboard("down", (evt: KeyboardEvent) => {
   }
 })
 
-useCollect(player.playStateFlow, (value) => {
+collectLatest(player.playState, (value) => {
   drawFlag.value = value === PlayerState.STATE_PLAYING;
 })
 watch(() => state.playbackRateIndex, (value) => {

@@ -1,5 +1,5 @@
 import {Box} from "../../box/Box";
-import {BeatDispatcher, BeatState, IBeat} from "../../../global/Beater";
+import {BeatState} from "../../../global/Beater";
 import {BaseDrawableConfig} from "../../drawable/Drawable";
 import {Logo} from "./Logo";
 import {Ripples} from "./Ripples";
@@ -18,8 +18,9 @@ import {BackgroundBounce} from "./MovableBackground";
 import {effectScope, watch} from "vue";
 import {UIState} from "../../../global/UISettings";
 import AudioChannel from "../../../player/AudioChannel";
+import {BeatBox} from "../../box/BeatBox";
 
-class BeatLogo extends Box implements IBeat {
+class BeatLogo extends BeatBox {
 
     // @ts-ignore
     private readonly logo: Logo
@@ -40,8 +41,6 @@ class BeatLogo extends Box implements IBeat {
             triangles,
             logo
         )
-        BeatDispatcher.register(this)
-
     }
 
     public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {
@@ -67,7 +66,6 @@ class BeatLogo extends Box implements IBeat {
 
     public dispose() {
         super.dispose();
-        BeatDispatcher.unregister(this)
     }
 
 }
@@ -87,7 +85,7 @@ class LogoBeatBox extends Box {
 
     protected onUpdate() {
         if (AudioPlayerV2.isPlaying()) {
-            if (BeatState.isAvailable) {
+            // if (BeatState.isAvailable) {
                 const scale = this.scale
                 const adjust = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() - 0.4 : 0
                 const a = Interpolation.damp(
@@ -99,7 +97,7 @@ class LogoBeatBox extends Box {
                 scale.x = a
                 scale.y = a
                 this.scale = scale
-            }
+            // }
         }
     }
 

@@ -10,6 +10,7 @@ import {Shape2D} from "../../util/Shape2D";
 import {ObjectTransition} from "../../transition/Transition";
 import {Time} from "../../../global/Time";
 import {Color} from "../../base/Color";
+import {easeIn} from "../../../util/Easing";
 
 export class CircleBackground extends Drawable {
 
@@ -18,8 +19,8 @@ export class CircleBackground extends Drawable {
   private readonly layout: VertexBufferLayout
   private readonly vertexArray: VertexArray
 
-  private radius = 50
-  private thickWidth = 10
+  private radius = 240
+  private thickWidth = 0
   private radiusTransition = new ObjectTransition(this, 'radius')
   private thickWidthTransition = new ObjectTransition(this, 'thickWidth')
 
@@ -51,13 +52,14 @@ export class CircleBackground extends Drawable {
     this.shader = shader
 
     setTimeout(() => {
+      const ease = easeIn
       this.radiusBegin()
-        .transitionTo(200 * window.devicePixelRatio, 1000)
+        .transitionTo(260 * window.devicePixelRatio, 1000, ease)
       this.thickWidthBegin()
-        .transitionTo(400, 1000)
+        .transitionTo(520, 1000, ease)
       this.rotateBegin()
-        .transitionTo(-90, 1000)
-    }, 1000)
+        .transitionTo(-90, 1000, ease)
+    })
 
 
   }

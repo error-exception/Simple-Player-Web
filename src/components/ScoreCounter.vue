@@ -2,26 +2,26 @@
     <Column class="score-box" :gap="8">
         <Row center-vertical>
             <span style="color: dodgerblue" class="score-name">PERFECT</span>
-            <span class="score-value">{{ Score.perfect }}</span>
+            <span class="score-value">{{ Judge.perfect }}</span>
         </Row>
         <Row center-vertical>
             <span style="color: greenyellow" class="score-name">GOOD</span>
-            <span class="score-value">{{ Score.good }}</span>
+            <span class="score-value">{{ Judge.good }}</span>
         </Row>
         <Row center-vertical>
             <span style="color: yellow;" class="score-name">BAD</span>
-            <span class="score-value">{{ Score.bad }}</span>
+            <span class="score-value">{{ Judge.bad }}</span>
         </Row>
         <Row center-vertical>
             <span style="color: red" class="score-name">MISS</span>
-            <span class="score-value">{{ Score.miss }}</span>
+            <span class="score-value">{{ Judge.miss }}</span>
         </Row>
     </Column>
 </template>
 <script setup lang="ts">
 import Column from "./common/Column.vue";
 import Row from "./common/Row.vue";
-import {Score} from "../ts/Score";
+import {Judge} from "../ts/Judge";
 
 </script>
 

@@ -9,6 +9,7 @@ import legacyLogo from '../../../assets/legacy_logo.png'
 import stdNoteCircle from '../../../assets/hitcircleoverlay.png'
 import bar from '../../../assets/bar.png'
 import borderBar from '../../../assets/border_bar.png'
+import square from '../../../assets/square.png'
 
 export type ImageName = string |
   'Logo' |
@@ -21,7 +22,8 @@ export type ImageName = string |
   'WhiteRound' |
   'Cursor' |
   'Bar' |
-  'BorderBar'
+  'BorderBar' |
+  'Square'
 
 interface ImageSrc {
   name: ImageName,
@@ -72,5 +74,9 @@ export const ImageResourceMap: ImageSrc[] = [
   {
     name: "BorderBar",
     url: borderBar
+  },
+  {
+    name: "Square",
+    url: square
   }
 ]

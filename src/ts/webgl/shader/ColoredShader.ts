@@ -6,7 +6,7 @@ import {VertexBufferLayout} from "../core/VertexBufferLayout";
 
 class ColoredShader implements Disposable {
 
-    private vertex = `
+    protected vertex = `
         attribute vec2 ${ATTR_POSITION};
         attribute vec4 ${ATTR_COLOR};
 
@@ -19,7 +19,7 @@ class ColoredShader implements Disposable {
             v_color = ${ATTR_COLOR};
         }
     `
-    private fragment = `
+    protected fragment = `
         varying mediump vec4 v_color;
         uniform mediump float ${UNI_ALPHA};
         void main() {
@@ -29,8 +29,8 @@ class ColoredShader implements Disposable {
         }
     `
 
-    private shader: Nullable<Shader> = null
-    private layout: Nullable<VertexBufferLayout> = null
+    protected shader: Nullable<Shader> = null
+    protected layout: Nullable<VertexBufferLayout> = null
 
     public getShader(gl: WebGL2RenderingContext): Shader {
         if (this.shader === null) {

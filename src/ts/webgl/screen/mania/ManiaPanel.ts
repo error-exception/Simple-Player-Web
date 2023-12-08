@@ -1,9 +1,9 @@
 import {OSUParser} from "../../../osu/OSUParser"
-import {Score} from "../../../Score"
+import {Judge} from "../../../Judge"
 import {Time} from "../../../global/Time"
 import {int} from "../../../Utils"
 import AudioPlayer from "../../../player/AudioPlayer"
-import {ease, easeOut} from "../../../util/Easing"
+import {easeOut, easeOutQuint} from "../../../util/Easing"
 import {Color} from "../../base/Color"
 import Coordinate from "../../base/Coordinate"
 import {Drawable} from "../../drawable/Drawable"
@@ -14,7 +14,7 @@ import {Vector2} from "../../core/Vector2"
 import {VertexArray} from "../../core/VertexArray"
 import {VertexBuffer} from "../../core/VertexBuffer"
 import {VertexBufferLayout} from "../../core/VertexBufferLayout"
-import {playSound, Sound} from "../../../player/SoundEffect";
+import {maniaCombo} from "../../../global/ManiaState";
 
 const vertexShader = `
     attribute vec2 a_position;
@@ -46,571 +46,543 @@ const fragmentShader = `
     }
 `
 
-const blue = Color.fromHex(0x66ccff)
 export class ManiaPanel extends Drawable {
 
-    private trackCount = 4
-    private tracks: ManiaTrack[] = []
-    private keys = ['KeyS', 'KeyD', 'KeyJ', 'KeyK']
-    private keyState = [false, false, false, false]
-    private judgementLinePosition = 80 // from top to bottom, percent
+  private trackCount = 4
+  private tracks: ManiaTrack[] = []
+  private judgementLinePosition = 80 // from top to bottom, percent
 
 
-    private readonly vertexArray: VertexArray
-    private readonly vertexBuffer: VertexBuffer
-    private readonly shader: Shader
-    private readonly layout: VertexBufferLayout
+  private readonly vertexArray: VertexArray
+  private readonly vertexBuffer: VertexBuffer
+  private readonly shader: Shader
+  private readonly layout: VertexBufferLayout
 
-    private songProgress = new SongProgress()
+  private songProgress = new SongProgress()
 
-    private onKeyDown = (e: KeyboardEvent) => {
-        const index = this.keys.indexOf(e.code)
-        if (index < 0 || index >= this.tracks.length)
-            return
-        if (!this.keyState[index]) {
-            this.keyState[index] = true
-            this.tracks[index].hit()
-        }
+  constructor(
+    gl: WebGL2RenderingContext,
+    // @ts-ignore
+    private offsetLeft = 800,
+    private trackWidth = 120,
+    private trackGap = 12,
+    private noteData: NoteData[][]
+  ) {
+    super(gl, {
+      size: [trackWidth * 4 + trackGap * 5 + 20, 'fill-parent']
+    });
+
+    const vertexArray = new VertexArray(gl)
+    vertexArray.bind()
+    const vertexBuffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
+    const layout = new VertexBufferLayout(gl)
+    const shader = new Shader(gl, vertexShader, fragmentShader)
+
+    vertexBuffer.bind()
+    shader.bind()
+
+    layout.pushFloat(shader.getAttributeLocation("a_position"), 2)
+    layout.pushFloat(shader.getAttributeLocation("a_color"), 4)
+    vertexArray.addBuffer(vertexBuffer, layout)
+
+    vertexArray.unbind()
+    vertexBuffer.unbind()
+    shader.unbind()
+
+    this.vertexBuffer = vertexBuffer
+    this.layout = layout
+    this.shader = shader
+    this.vertexArray = vertexArray
+
+  }
+
+  onLoad() {
+    super.onLoad();
+    this.offsetLeft -= Coordinate.width / 2
+    let currentOffsetLeft = this.position.x
+    const colors = new Array(4).fill(Color.fromHex(0xffffff))
+    for (let i = 0; i < this.trackCount; i++) {
+      const track = new ManiaTrack(
+        this.noteData[i],
+        this.judgementLinePosition,
+        660,
+        currentOffsetLeft,
+        this.trackWidth,
+        colors[i],
+        this
+      )
+      currentOffsetLeft += this.trackWidth + this.trackGap
+      this.tracks.push(track)
     }
+  }
 
-    constructor(
-        gl: WebGL2RenderingContext, 
-        private offsetLeft = 800,
-        private trackWidth = 120,
-        private trackGap = 12,
-        private noteData: NoteData[][]
-    ) {
-        super(gl, {
-            size: [trackWidth * 4 + trackGap * 5 + 20, 'fill-parent']
-        });
-        window.addEventListener('keydown', this.onKeyDown, {
-            passive: true
-        })
-        window.addEventListener('keyup', (e) => {
-            const index = this.keys.indexOf(e.code)
-            if (index < 0 || index >= this.tracks.length)
-                return
-            this.tracks[index].hitUp()
-            this.keyState[index] = false
-        })
+  private vertexData = new Float32Array()
+  private vertexArrayData: number[] = []
+  private vertexCount = 0
 
-        const vertexArray = new VertexArray(gl)
-        vertexArray.bind()
-        const vertexBuffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
-        const layout = new VertexBufferLayout(gl)
-        const shader = new Shader(gl, vertexShader, fragmentShader)
+  public bind() {
+    this.vertexArray.bind()
+    this.vertexBuffer.bind()
+    this.shader.bind()
+  }
 
-        vertexBuffer.bind()
-        shader.bind()
-
-        layout.pushFloat(shader.getAttributeLocation("a_position"), 2)
-        layout.pushFloat(shader.getAttributeLocation("a_color"), 4)
-        vertexArray.addBuffer(vertexBuffer, layout)
-
-        vertexArray.unbind()
-        vertexBuffer.unbind()
-        shader.unbind()
-
-        this.vertexBuffer = vertexBuffer
-        this.layout = layout
-        this.shader = shader
-        this.vertexArray = vertexArray
-
+  protected onUpdate() {
+    super.onUpdate()
+    for (let i = 0; i < this.tracks.length; i++) {
+      this.tracks[i].update()
     }
+    this.songProgress.update()
+    this.vertexArrayData = []
+    let offset = 0
 
-    onLoad() {
-        super.onLoad();
-        this.offsetLeft -= Coordinate.width / 2
-        let currentOffsetLeft = this.offsetLeft
-        const colors = new Array(4).fill(blue)
-        for (let i = 0; i < this.trackCount; i++) {
-            const track = new ManiaTrack(
-              this.noteData[i],
-              this.judgementLinePosition,
-              450,
-              currentOffsetLeft,
-              this.trackWidth,
-              colors[i],
-              this
-            )
-            currentOffsetLeft += this.trackWidth + this.trackGap
-            this.tracks.push(track)
-        }
+    for (let i = 0; i < this.tracks.length; i++) {
+      offset += this.tracks[i].copyTo(this.vertexArrayData, offset)
     }
+    this.songProgress.copyTo(this.vertexArrayData, offset, 6)
+    this.vertexData = new Float32Array(this.vertexArrayData)
+    this.vertexCount = int(this.vertexArrayData.length / 6)
+  }
 
-    private vertexData = new Float32Array()
-    private vertexArrayData: number[] = []
-    private vertexCount = 0
+  public unbind() {
+    this.vertexArray.unbind()
+    this.vertexBuffer.unbind()
+    this.shader.unbind()
+  }
 
-    public bind() {
-        this.vertexArray.bind()
-        this.vertexBuffer.bind()
-        this.shader.bind()
-    }
+  public onDraw() {
+    const gl = this.gl
+    this.shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
+    this.vertexBuffer.setBufferData(this.vertexData)
+    this.vertexArray.addBuffer(this.vertexBuffer, this.layout)
+    gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
+  }
 
-    protected onUpdate() {
-        super.onUpdate()
-        for (let i = 0; i < this.tracks.length; i++) {
-            this.tracks[i].update()
-        }
-        this.songProgress.update()
-        this.vertexArrayData = []
-        let offset = 0
-        // left edge
+}
 
-        for (let i = 0; i < this.tracks.length; i++) {
-            offset += this.tracks[i].copyTo(this.vertexArrayData, offset)
-        }
-        this.songProgress.copyTo(this.vertexArrayData, offset, 6)
-        this.vertexData = new Float32Array(this.vertexArrayData)
-        this.vertexCount = int(this.vertexArrayData.length / 6)
-    }
-
-    public unbind() {
-        this.vertexArray.unbind()
-        this.vertexBuffer.unbind()
-        this.shader.unbind()
-    }
-
-    public onDraw() {
-        const gl = this.gl
-        this.shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
-        this.vertexBuffer.setBufferData(this.vertexData)
-        this.vertexArray.addBuffer(this.vertexBuffer, this.layout)
-        gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
-    }
-
-    public dispose() {
-        super.dispose();
-        window.removeEventListener("keydown", this.onKeyDown)
-    }
-
+const JudgeRange = {
+  perfect: 30,
+  good: 40,
+  bad: 60,
+  miss: 80
 }
 
 class ManiaTrack {
 
-    private noteList: Note[] = []
-    private isFinish = false
-    // @ts-ignore
-    private alpha = 0
+  private noteList: Note[] = []
+  private isFinish = false
+  // @ts-ignore
+  private alpha = 0
 
-    private fadeTransition = new ObjectTransition(this, 'alpha')
-    constructor(
-        noteDataList: NoteData[], // sorted by start time
-        private judgementLinePosition: number,
-        private movementDuration: number, // 运动时间
-        private offsetLeft: number,
-        private trackWidth: number,
-        private mainColor: Color,
-        private panel: ManiaPanel
-    ) {
-        // this.updateNoteQueue(0)
-        for (let i = 0; i < noteDataList.length; i++) {
-            const note = new Note(
-                panel,
-                this.trackWidth,
-                12,
-                this.offsetLeft,
-                this.movementDuration,
-                this.judgementLinePosition,
-                undefined,
-                noteDataList[i],
-                (isHold, isHoldEnd) => {
-                    if (isHold) {
-                        if (isHoldEnd) {
-                            this.fadeBegin()
-                              .transitionTo(0, 200, ease)
-                        } else {
-                            this.fadeBegin()
-                              .transitionTo(0.3, 60, easeOut)
-                        }
-                    } else {
-                        this.fadeBegin()
-                          .transitionTo(0.3, 60, easeOut)
-                          .transitionTo(0, 200, ease)
-                    }
+  private fadeTransition = new ObjectTransition(this, 'alpha')
+  constructor(
+    noteDataList: NoteData[], // sorted by start time
+    private judgementLinePosition: number,
+    private movementDuration: number, // 运动时间
+    private offsetLeft: number,
+    private trackWidth: number,
+    private mainColor: Color,
+    private panel: ManiaPanel
+  ) {
+    for (let i = 0; i < noteDataList.length; i++) {
+      const note = new Note(
+        panel,
+        this.trackWidth,
+        12,
+        this.offsetLeft,
+        this.movementDuration,
+        this.judgementLinePosition,
+        undefined,
+        noteDataList[i]
+      )
+      this.noteList.push(note)
+    }
+  }
 
-                }
-            )
-            this.noteList.push(note)
+  private fadeBegin(time = Time.currentTime) {
+    this.fadeTransition.setStartTime(time)
+    return this.fadeTransition
+  }
+
+  public update() {
+    if (this.isFinish) {
+      return
+    }
+    this.fadeTransition.update(Time.currentTime)
+    this.updateNoteQueue()
+    this.judgeNote(true)
+  }
+  public static readonly PRESS_STATE_DOWN = 0
+  public static readonly PRESS_STATE_UP = 1
+  public static readonly PRESS_STATE_TAP = 2
+  private pressState = ManiaTrack.PRESS_STATE_UP
+
+  private judgeNote(auto = false) {
+    const current = AudioPlayer.currentTime()
+    const endTime = current + this.movementDuration
+    const noteList = this.noteList
+    for (let i = 0; i < noteList.length; i++) {
+      const note = noteList[i]
+      const data = note.noteData
+      if (note.judgeResult !== Note.JUDGE_NONE && note.judgeState === Note.STATE_JUDGED) {
+        continue
+      }
+      if (note.startTime > endTime) {
+        break
+      }
+      const time = data.startTime
+      const diffTime = Math.abs(time - current)
+      if (note.judgeResult === Note.JUDGE_NONE && note.judgeState === Note.STATE_NO_JUDGE) {
+        if (diffTime <= JudgeRange.perfect) {
+          auto && this.effectTap(note, current)
+          Judge.perfect++
+          note.judgeResult = Note.JUDGE_PERFECT
+          maniaCombo.value++
+        } else if (diffTime <= JudgeRange.good && !auto) {
+          Judge.good++
+          note.judgeResult = Note.JUDGE_GOOD
+          maniaCombo.value++
+        } else if (diffTime <= JudgeRange.bad && !auto) {
+          Judge.bad++
+          note.judgeResult = Note.JUDGE_BAD
+          maniaCombo.value++
+        } else if (time - current < -JudgeRange.miss) {
+          Judge.miss++
+          note.judgeResult = Note.JUDGE_MISS
+          note.judgeState = Note.STATE_JUDGED
+          maniaCombo.value = 0
+          continue
         }
+      } else {
+        auto && this.effectTap(note, current)
+      }
+      break
     }
+  }
 
-    private fadeBegin(time = Time.currentTime) {
-        this.fadeTransition.setStartTime(time)
-        return this.fadeTransition
+  private effectTap(note: Note, currentTime: number) {
+    const data = note.noteData
+    const isHold = data.endTime > 0
+    if (note.judgeState === Note.STATE_JUDGED) {
+      return
     }
-
-    public update() {
-        if (this.isFinish) {
-            return
-        }
-        this.fadeTransition.update(Time.currentTime)
-        this.updateNoteQueue()
+    if (isHold) {
+      if (currentTime >= data.endTime) {
+        this.pressUp()
+        note.judgeState = Note.STATE_JUDGED
+      } else {
+        this.pressDown()
+        note.judgeState = Note.STATE_JUDGING
+      }
+    } else {
+      this.tap()
+      note.judgeState = Note.STATE_JUDGED
     }
+  }
 
-    private updateNoteQueue() {
-        const noteList = this.noteList
-        for (let i = 0; i < noteList.length; i++) {
-            noteList[i].update()
-        }
+  private pressDown() {
+    if (this.pressState === ManiaTrack.PRESS_STATE_DOWN) {
+      return
     }
+    this.pressState = ManiaTrack.PRESS_STATE_DOWN
+    this.fadeBegin()
+      .transitionTo(.3, 60, easeOut)
+  }
 
-    public hit() {
-        const noteList = this.noteList
-        this.alpha = .3
-        for (let i = 0; i < noteList.length; i++) {
-            if (noteList[i].hit()) {
-                return
-            }
-        }
+  private pressUp() {
+    this.pressState = ManiaTrack.PRESS_STATE_UP
+    this.fadeBegin()
+      .transitionTo(0, 500, easeOutQuint)
+  }
+
+  private tap() {
+    this.pressState = ManiaTrack.PRESS_STATE_TAP
+    this.fadeBegin()
+      .transitionTo(.3, 60, easeOut)
+      .transitionTo(0, 500, easeOutQuint)
+  }
+
+  private updateNoteQueue() {
+    const noteList = this.noteList
+    for (let i = 0; i < noteList.length; i++) {
+      noteList[i].update()
     }
+  }
 
-    public hitUp() {
-        this.alpha = 0
+  public copyTo(out: number[], offset: number): number {
+    const noteList = this.noteList
+    const currentTime = AudioPlayer.currentTime()
+    const endTime = currentTime + this.movementDuration
+
+    const { red, green, blue } = this.mainColor
+
+    // track bg
+    Shape2D.quad(
+      this.offsetLeft, Coordinate.height / 2,
+      this.offsetLeft + this.trackWidth,
+      // this.panel.position.y - this.panel.height * (this.judgementLinePosition / 100),
+      -this.panel.height / 2,
+      out, offset, 6
+    )
+    Shape2D.color(
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      out, offset + 2, 6
+    )
+
+    let currentOffset = offset + 36
+    // hit
+    Shape2D.quad(
+      this.offsetLeft, Coordinate.height / 2 * 0.4,
+      this.offsetLeft + this.trackWidth,
+      this.panel.position.y - this.panel.height * (this.judgementLinePosition / 100),
+      out, currentOffset, 6
+    )
+    Shape2D.color(
+      0, 0, 0, 0,
+      red, green, blue, this.alpha,
+      0, 0, 0, 0,
+      red, green, blue, this.alpha,
+      out, currentOffset + 2, 6
+    )
+
+    currentOffset += 36
+
+    // 画 key 座
+    Shape2D.quad(
+      this.offsetLeft,
+      this.panel.position.y - (this.judgementLinePosition / 100) * this.panel.height - 10,
+      this.offsetLeft + this.trackWidth,
+      -this.panel.height / 2 + 20,
+      out, currentOffset, 6
+    )
+    const stageAlpha = this.alpha / 0.3
+    Shape2D.color(
+      red, green, blue, stageAlpha,
+      red, green, blue, stageAlpha,
+      red, green, blue, stageAlpha,
+      red, green, blue, stageAlpha,
+      out, currentOffset + 2, 6
+    )
+
+    currentOffset += 36
+
+
+    for (let i = 0; i < noteList.length; i++) {
+      const note = noteList[i]
+      const data = noteList[i].noteData
+      if (data.startTime > endTime) {
+        break
+      }
+      if (note.isJudged()) {
+        continue
+      }
+      currentOffset += note.copyTo(out, currentOffset, 6)
     }
-
-    public copyTo(out: number[], offset: number): number {
-        const noteList = this.noteList
-        const currentTime = AudioPlayer.currentTime()
-        const endTime = currentTime + this.movementDuration
-
-        const { red, green, blue } = this.mainColor
-
-        // track bg
-        Shape2D.quad(
-          this.offsetLeft, Coordinate.height / 2,
-          this.offsetLeft + this.trackWidth,
-          // this.panel.position.y - this.panel.height * (this.judgementLinePosition / 100),
-          -this.panel.height / 2,
-          out, offset, 6
-        )
-        Shape2D.color(
-          0, 0, 0, 0,
-          0, 0, 0, 0,
-          0, 0, 0, 0,
-          0, 0, 0, 0,
-          out, offset + 2, 6
-        )
-
-        let currentOffset = offset + 36
-        // hit
-        Shape2D.quad(
-            this.offsetLeft, Coordinate.height / 2 * 0.4,
-            this.offsetLeft + this.trackWidth, 
-            this.panel.position.y - this.panel.height * (this.judgementLinePosition / 100),
-            out, currentOffset, 6
-        )
-        Shape2D.color(
-            0, 0, 0, 0,
-            red, green, blue, 0,
-            0, 0, 0, 0,
-            red, green, blue, 0,
-            out, currentOffset + 2, 6
-        )
-
-        currentOffset += 36
-
-        // 画 key 座
-        Shape2D.quad(
-            this.offsetLeft,
-            this.panel.position.y - (this.judgementLinePosition / 100) * this.panel.height - 10,
-            this.offsetLeft + this.trackWidth,
-            -this.panel.height / 2 + 20,
-            out, currentOffset, 6
-        )
-        const stageAlpha = 0
-        Shape2D.color(
-          red, green, blue, stageAlpha,
-          red, green, blue, stageAlpha,
-          red, green, blue, stageAlpha,
-          red, green, blue, stageAlpha,
-          out, currentOffset + 2, 6
-        )
-
-        currentOffset += 36
-
-
-        for (let i = 0; i < noteList.length; i++) {
-            const data = noteList[i].noteData
-            if (data.startTime > endTime) {
-                continue
-            }
-            if (data.endTime > 0 && data.endTime < currentTime) {
-                continue
-            }
-            if (data.startTime < currentTime && data.endTime === 0) {
-                continue
-            }
-            currentOffset += noteList[i].copyTo(out, currentOffset, 6)
-        }
-        // 判定线
-        Shape2D.quad(
-          this.offsetLeft,
-          this.panel.position.y - (this.judgementLinePosition / 100) * this.panel.height,
-          this.offsetLeft + this.trackWidth,
-          this.panel.position.y - (this.judgementLinePosition / 100) * this.panel.height + 10,
-          out, currentOffset, 6
-        )
-        Shape2D.color(
-          1, 1, 1, 1,
-          1, 1, 1, 1,
-          1, 1, 1, 1,
-          1, 1, 1, 1,
-          out, currentOffset + 2, 6
-        )
-        currentOffset += 36
-        return currentOffset
-    }
+    // 判定线
+    Shape2D.quad(
+      this.offsetLeft,
+      this.panel.position.y - (this.judgementLinePosition / 100) * this.panel.height,
+      this.offsetLeft + this.trackWidth,
+      this.panel.position.y - (this.judgementLinePosition / 100) * this.panel.height + 10,
+      out, currentOffset, 6
+    )
+    Shape2D.color(
+      1, 1, 1, 1,
+      1, 1, 1, 1,
+      1, 1, 1, 1,
+      1, 1, 1, 1,
+      out, currentOffset + 2, 6
+    )
+    currentOffset += 36
+    return currentOffset
+  }
 
 }
 
 class Note {
-    public static readonly JUDGE_NONE = -1;
-    public static readonly JUDGE_MISS = 0;
-    public static readonly JUDGE_BAD = 1;
-    public static readonly JUDGE_GOOD = 2;
-    public static readonly JUDGE_PERFECT = 3;
+  public static readonly JUDGE_NONE = -1;
+  public static readonly JUDGE_MISS = 0;
+  public static readonly JUDGE_BAD = 1;
+  public static readonly JUDGE_GOOD = 2;
+  public static readonly JUDGE_PERFECT = 3;
 
-    public static readonly VERTEX_COUNT = 6;
-    public judgeResult = Note.JUDGE_NONE;
+  public static readonly STATE_NO_JUDGE = 0
+  public static readonly STATE_JUDGING = 1
+  public static readonly STATE_JUDGED = 2
 
-    public position = Vector2.newZero();
-    public topLeft = Vector2.newZero();
-    public bottomRight = Vector2.newZero();
+  public static readonly VERTEX_COUNT = 6;
+  public judgeResult = Note.JUDGE_NONE;
+  public judgeState = Note.STATE_NO_JUDGE
 
-    constructor(
-        private panel: ManiaPanel,
-        noteWidth: number,
-        private noteHeight: number,
-        offsetLeft: number,
-        private movementDuration: number,
-        private judgementLinePosition: number,
-        color: Color = Color.fromHex(0x66ccff),
-        public noteData: NoteData,
-        public onNoteReceive: (isHold: boolean, isHoldEnd: boolean) => void
-    ) {
-        this.color = color
-        this.position.x = offsetLeft;
-        this.position.y = panel.height / 2;
-        const topLeft = this.topLeft;
-        const bottomRight = this.bottomRight;
-        topLeft.x = this.position.x;
-        topLeft.y = this.position.y;
-        bottomRight.x = this.position.x + noteWidth;
-        bottomRight.y = this.position.y - noteHeight;
+  public position = Vector2.newZero();
+  public topLeft = Vector2.newZero();
+  public bottomRight = Vector2.newZero();
+
+  constructor(
+    private panel: ManiaPanel,
+    noteWidth: number,
+    private noteHeight: number,
+    offsetLeft: number,
+    private movementDuration: number,
+    private judgementLinePosition: number,
+    color: Color = Color.fromHex(0x66ccff),
+    public noteData: NoteData
+  ) {
+    this.color = color
+    this.position.x = offsetLeft;
+    this.position.y = panel.height / 2;
+    const topLeft = this.topLeft;
+    const bottomRight = this.bottomRight;
+    topLeft.x = this.position.x;
+    topLeft.y = this.position.y;
+    bottomRight.x = this.position.x + noteWidth;
+    bottomRight.y = this.position.y - noteHeight;
+  }
+
+  public isHold() {
+    return this.noteData.endTime > this.noteData.startTime
+  }
+
+  public isJudged() {
+    return this.judgeState === Note.STATE_JUDGED
+  }
+
+  public update() {
+    const currentTime = AudioPlayer.currentTime();
+    const endTime = currentTime + this.movementDuration;
+    if (this.startTime > endTime) {
+      return;
+    }
+    this.updateVertex()
+  }
+  public updateVertex() {
+    const currentTime = AudioPlayer.currentTime(); // 判定线处
+    const top = this.panel.height / 2
+    const moveLength = this.panel.height * (this.judgementLinePosition / 100)
+    const bottom = top - moveLength;
+    const duration = this.movementDuration
+    const endTime = currentTime + duration; // 顶部
+    const noteStartTime = this.noteData.startTime;
+    const noteEndTime = this.noteData.endTime;
+    const noteHeight = this.noteHeight;
+    let topY = 0, bottomY = 0
+
+    if (this.isHold()) {
+      const holdStartPosition = (noteStartTime - currentTime) / duration
+      const holdEndPosition = (noteEndTime - currentTime) / duration
+      if (noteEndTime >= endTime) {
+        topY = top
+      } else {
+        topY = top - (1 - holdEndPosition) * moveLength - noteHeight
+      }
+      if (noteStartTime <= currentTime) {
+        bottomY = bottom
+      } else {
+        bottomY = top - (1 - holdStartPosition) * moveLength
+      }
+    } else {
+      const noteStartPosition = (noteStartTime - currentTime) / duration
+      topY = top - (1 - noteStartPosition) * moveLength - noteHeight
+      bottomY = topY + noteHeight
     }
 
-    public update() {
-        const currentTime = AudioPlayer.currentTime();
-        const endTime = currentTime + this.movementDuration;
-        if (this.startTime > endTime) {
-            return;
-        }
-        this.autoHit()
-        this.updateVertex()
-        if (this.judgeResult >= 0) {
-            return;
-        }
-        const diffTime = this.startTime - currentTime;
-        if (diffTime <= -120 && this.judgeResult === Note.JUDGE_NONE) {
-            this.judgeResult = Note.JUDGE_MISS;
-            Score.miss.value++;
-            // EventDispatcher.fireOnManiaHit(++count)
-        }
-    }
-    public updateVertex() {
-        const currentTime = AudioPlayer.currentTime(); // 判定线处
-        const noteArea = this.panel.height * (this.judgementLinePosition / 100);
-        const endTime = currentTime + this.movementDuration; // 顶部
-        const noteStartTime = this.noteData.startTime;
-        const noteEndTime = this.noteData.endTime;
-        const startPercent =
-            (noteStartTime - currentTime) / (endTime - currentTime);
-        const endPercent =
-            (noteEndTime - currentTime) / (endTime - currentTime);
-        const noteHeight = this.noteHeight;
 
-        const panelTop = this.panel.height / 2;
-        let topY = panelTop,
-            bottomY = -this.panel.height / 2;
-        if (noteEndTime > 0) {
-            // hold
-            if (noteEndTime > endTime) {
-                topY = panelTop;
-            } else if (endPercent < 0) {
-                // finish hold
-                // if (this.isHoldStart) {
-                //     this.triggerNoteReceive(true, true)
-                //     this.isHoldStart = false
-                // }
-                topY = panelTop - noteArea;
-            } else {
-                // holding
-                // this.isHoldStart && this.triggerNoteReceive(true, false)
-                topY = panelTop - (1 - endPercent) * noteArea;
-            }
-            if (startPercent < 0) {
-                // if (!this.isHoldStart) {
-                //     console.log('start hold')
-                //     this.triggerNoteReceive(true, false)
-                //     this.isHoldStart = true
-                // }
-                bottomY = panelTop - noteArea;
-            } else {
-                // start hold
-                bottomY = panelTop - (1 - startPercent) * noteArea;
-            }
-        } else {
-            // this.triggerNoteReceive(false, true, false)
-            // note
-            topY = panelTop - (1 - startPercent) * noteArea - noteHeight;
-            bottomY = panelTop - (1 - startPercent) * noteArea;
-        }
+    // const panelTop = this.panel.height / 2;
+    //
+    // if (noteEndTime > 0) {
+    //   // hold
+    //   if (noteEndTime > endTime) {
+    //     topY = panelTop;
+    //   } else if (endPosition < 0) {
+    //     topY = panelTop - end;
+    //   } else {
+    //     // holding
+    //     topY = panelTop - (1 - endPosition) * end;
+    //   }
+    //   if (startPosition < 0) {
+    //     bottomY = panelTop - end;
+    //   } else {
+    //     // start hold
+    //     bottomY = panelTop - (1 - startPosition) * end;
+    //   }
+    // } else {
+    //   // note
+    //   topY = panelTop - (1 - startPosition) * end - noteHeight;
+    //   bottomY = panelTop - (1 - startPosition) * end;
+    // }
 
-        this.position.y = bottomY;
-        this.topLeft.y = topY;
-        this.bottomRight.y = this.position.y;
-    }
+    this.position.y = bottomY;
+    this.topLeft.y = topY;
+    this.bottomRight.y = this.position.y;
+  }
 
-    private lastTrigger = [false, false]
-    // @ts-ignore
-    private triggerNoteReceive(isHold: boolean, isHoldEnd: boolean, check: boolean = true) {
-        if (check && this.lastTrigger[0] === isHold && this.lastTrigger[1] === isHoldEnd) {
-            return
-        }
-        this.lastTrigger[0] = isHold
-        this.lastTrigger[1] = isHoldEnd
-        this.onNoteReceive(isHold, isHoldEnd)
-    }
-
-    public hit() {
-        // console.log('hit start', this.noteData)
-        if (this.judgeResult !== Note.JUDGE_NONE) {
-            return false;
-        }
-        // console.log('hit unjudge')
-        const currentTime = AudioPlayer.currentTime();
-        const endTime = currentTime + this.movementDuration;
-        const data = this.noteData;
-        if (data.startTime > endTime) {
-            return false;
-        }
-        if (data.endTime > 0 && data.endTime < currentTime) {
-            return false;
-        }
-        // console.log('hit start judge')
-        const diffTime = this.startTime - currentTime;
-        const absDiffTime = Math.abs(diffTime);
-        if (absDiffTime <= 60) {
-            this.judgeResult = Note.JUDGE_PERFECT;
-            Score.perfect.value++;
-        } else if (absDiffTime <= 80) {
-            this.judgeResult = Note.JUDGE_GOOD;
-            Score.good.value++;
-        } else if (absDiffTime <= 100) {
-            this.judgeResult = Note.JUDGE_BAD;
-            Score.bad.value++;
-        } else if (diffTime >= 120) {
-            this.judgeResult = Note.JUDGE_MISS;
-            Score.miss.value++;
-        } else {
-            return false;
-        }
-        // console.log('hit me')
-        return true;
-    }
-
-    private autoHit() {
-        // console.log('hit start', this.noteData)
-        if (this.judgeResult !== Note.JUDGE_NONE) {
-            return false;
-        }
-        // console.log('hit unjudge')
-        const currentTime = AudioPlayer.currentTime();
-        const endTime = currentTime + this.movementDuration;
-        const data = this.noteData;
-        if (data.startTime > endTime) {
-            return false;
-        }
-        if (data.endTime > 0 && data.endTime < currentTime) {
-            return false;
-        }
-        const diffTime = this.startTime - currentTime;
-        const absDiffTime = Math.abs(diffTime);
-        if (absDiffTime <= 60 || diffTime < 0) {
-            this.judgeResult = Note.JUDGE_PERFECT;
-            Score.perfect.value++;
-            this.onNoteReceive(false, true)
-            playSound(Sound.SoftHitwhistle)
-        }
-    }
-
-    public get startTime() {
-        return this.noteData.startTime;
-    }
-    private color = Color.fromHex(0x00ffff);
-    public copyTo(out: number[], offset: number, stride: number) {
-        // 12
-        Shape2D.quadVector2(
-            this.topLeft,
-            this.bottomRight,
-            out,
-            offset,
-            stride
-        );
-        // 24
-        Shape2D.oneColor(this.color, out, offset + 2, stride);
-        return 36;
-    }
+  public get startTime() {
+    return this.noteData.startTime;
+  }
+  private color = Color.fromHex(0x00ffff);
+  public copyTo(out: number[], offset: number, stride: number) {
+    // 12
+    Shape2D.quadVector2(
+      this.topLeft,
+      this.bottomRight,
+      out,
+      offset,
+      stride
+    );
+    // 24
+    Shape2D.oneColor(this.color, out, offset + 2, stride);
+    return 36;
+  }
 }
 
 class SongProgress {
 
-    private topLeft: Vector2 = Vector2.newZero()
-    private bottomRight: Vector2 = Vector2.newZero()
-    private color = Color.fromHex(0x66ccff)
+  private topLeft: Vector2 = Vector2.newZero()
+  private bottomRight: Vector2 = Vector2.newZero()
+  private color = Color.fromHex(0x66ccff)
 
-    public update() {
-        const percent = AudioPlayer.currentTime() / AudioPlayer.duration()
-        this.topLeft.set(
-          -Coordinate.width / 2,
-          -Coordinate.height / 2 + 10
-        )
-        this.bottomRight.set(
-          -Coordinate.width / 2 + Coordinate.width * percent,
-          -Coordinate.height / 2
-        )
-    }
+  public update() {
+    const percent = AudioPlayer.currentTime() / AudioPlayer.duration()
+    this.topLeft.set(
+      -Coordinate.width / 2,
+      -Coordinate.height / 2 + 10
+    )
+    this.bottomRight.set(
+      -Coordinate.width / 2 + Coordinate.width * percent,
+      -Coordinate.height / 2
+    )
+  }
 
-    public copyTo(out: number[], offset: number, stride: number) {
-        Shape2D.quad(
-            this.topLeft.x, this.topLeft.y,
-            this.bottomRight.x, this.bottomRight.y,
-            out,
-            offset,
-            stride
-        )
-        const r = this.color.red
-        const g = this.color.green
-        const b = this.color.blue
-        const a = this.color.alpha
-        Shape2D.color(
-            r, g, b, a,
-            r, g, b, a,
-            r, g, b, a,
-            r, g, b, a,
-            out, offset + 2, stride
-        )
-        return 36
-    }
+  public copyTo(out: number[], offset: number, stride: number) {
+    Shape2D.quad(
+      this.topLeft.x, this.topLeft.y,
+      this.bottomRight.x, this.bottomRight.y,
+      out,
+      offset,
+      stride
+    )
+    const r = this.color.red
+    const g = this.color.green
+    const b = this.color.blue
+    const a = this.color.alpha
+    Shape2D.color(
+      r, g, b, a,
+      r, g, b, a,
+      r, g, b, a,
+      r, g, b, a,
+      out, offset + 2, stride
+    )
+    return 36
+  }
 
 }
 
 export interface NoteData {
-    noteIndex: number
-    startTime: number
-    endTime: number
+  noteIndex: number
+  startTime: number
+  endTime: number
 }
 
 var text = `osu file format v14

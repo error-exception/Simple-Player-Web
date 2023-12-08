@@ -3,10 +3,11 @@ import {Shader} from "../core/Shader";
 import {ATTR_COLOR, ATTR_POSITION, UNI_CIRCLE, UNI_ORTH, UNI_TRANSFORM} from "./ShaderConstant";
 import {Disposable} from "../core/Disposable";
 import {VertexBufferLayout} from "../core/VertexBufferLayout";
+import {BaseShader} from "./BaseShader";
 
-class RoundClipColoredShader implements Disposable {
+class RoundClipColoredShader extends BaseShader implements Disposable {
 
-    private vertex = `
+    protected vertex = `
         attribute vec2 ${ATTR_POSITION};
         attribute vec4 ${ATTR_COLOR};
         
@@ -20,7 +21,7 @@ class RoundClipColoredShader implements Disposable {
             v_color = ${ATTR_COLOR};
         }
     `
-    private fragment = `
+    protected fragment = `
         varying mediump vec4 v_color;
         uniform mediump vec3 ${UNI_CIRCLE};
         void main() {
@@ -33,8 +34,8 @@ class RoundClipColoredShader implements Disposable {
         }
     `
 
-    private shader: Nullable<Shader> = null
-    private layout: Nullable<VertexBufferLayout> = null
+    protected shader: Nullable<Shader> = null
+    protected layout: Nullable<VertexBufferLayout> = null
 
     public newShader(gl: WebGL2RenderingContext) {
         return new Shader(gl, this.vertex, this.fragment)

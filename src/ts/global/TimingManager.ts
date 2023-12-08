@@ -63,7 +63,7 @@ class TimingManager {
             beatGap: 60 / timingInfo.bpm * 1000,
             offset: timingInfo.offset,
             timingList: timingInfo.timingList.map<BulletTimingPointsItem>(v => {
-                return { offset: v.timestamp, isKiai: v.isKiai }
+                return { time: v.timestamp, isKiai: v.isKiai }
             })
         }
     }

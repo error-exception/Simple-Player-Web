@@ -27,6 +27,10 @@ export class VertexBuffer implements Bindable, Disposable {
         gl.bufferData(gl.ARRAY_BUFFER, data, this.usage)
     }
 
+    public setBufferSubData(data: Float32Array, byteOffset: GLintptr) {
+        this.gl.bufferSubData(this.gl.ARRAY_BUFFER, byteOffset, data)
+    }
+
     public bind() {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rendererId)
     }

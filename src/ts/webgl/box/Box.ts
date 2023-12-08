@@ -120,9 +120,11 @@ export class Box extends Drawable {
         if (!this.isVisible) {
             return
         }
+        this.bind()
         for (let i = 0; i < this.childrenList.length; i++) {
             this.childrenList[i].draw()
         }
+        this.unbind()
     }
 
     public onDraw() {}

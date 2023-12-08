@@ -8,7 +8,7 @@ class MusicDao {
 
     async downloadMusic(id: number): Promise<ArrayBuffer> {
         // TODO: remove below
-        AudioPlayerV2.playStateFlow.value = PlayerState.STATE_DOWNLOADING
+        AudioPlayerV2.playState.value = PlayerState.STATE_DOWNLOADING
         const response = await fetch(url(`/music?id=${id}`))
         return await response.arrayBuffer()
     }

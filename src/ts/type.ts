@@ -1,5 +1,4 @@
-import { OSUStdNote } from "./osu/OSUFile"
-import { NoteData } from "./webgl/screen/mania/ManiaPanel"
+import {NoteData} from "./webgl/screen/mania/ManiaPanel"
 
 /**
  * 音乐标题
@@ -40,7 +39,6 @@ export interface Bullet {
     timingPoints: BulletTimingPoints
     events: BulletEvents
     noteData?: NoteData[][]
-    stdNotes?: OSUStdNote[]
     available: boolean
 }
 
@@ -57,19 +55,19 @@ export interface BulletGeneral {
 }
 
 export interface BulletTimingPoints {
-    offset: number
-    beatGap: number
     timingList: BulletTimingPointsItem[]
 }
 
 export interface BulletTimingPointsItem {
     isKiai: boolean
-    offset: number
+    time: number
+    beatLength: number // if beatLength < 0 then use last beatLength
 }
 
 export interface BulletEvents {
     backgroundImage?: Blob
     backgroundVideo?: Blob
+    videoOffset?: number
 }
 
 export function newBullet(): Bullet {
@@ -85,8 +83,6 @@ export function newBullet(): Bullet {
             id: -1
         },
         timingPoints: {
-            beatGap: 1000,
-            offset: 0,
             timingList: []
         },
         events: {},

@@ -15,8 +15,8 @@ const state = reactive({
 })
 const progressBar = ref<HTMLDivElement | null>(null)
 
-const duration = useStateFlow(OSUPlayer.duration)
-const current = useStateFlow(OSUPlayer.currentTime)
+const duration = OSUPlayer.duration
+const current = OSUPlayer.currentTime
 
 const progress = computed(() => {
   return `width: ${current.value / duration.value * state.width}px`

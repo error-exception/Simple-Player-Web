@@ -9,6 +9,8 @@ import {Vector2} from "../../core/Vector2";
 import {easeOutCubic} from "../../../util/Easing";
 import {onLeftSide, onRightSide} from "../../../global/GlobalState";
 import {UIState} from "../../../global/UISettings";
+import {effectScope, watch} from "vue";
+import {collectLatest} from "../../../util/eventRef";
 
 export class BackgroundScreen extends Box {
 
@@ -50,21 +52,45 @@ export class BackgroundScreen extends Box {
     });
     this.background = new BackgroundBounce(gl, OSUPlayer.background.value.image)
     this.videoBackground = new VideoBackground(gl, null)
-    OSUPlayer.background.collect(this.collector)
+    // OSUPlayer.background.collect(this.collector)
+    this.addDisposable(() => {
+      return collectLatest(OSUPlayer.background, this.collector)
+    })
+
     this.add(
       this.background,
       this.videoBackground
     )
     ScreenManager.currentId.collect(screenId => {
+      this.isVisible = screenId !== "story"
       const bg = OSUPlayer.background.value
-      console.log(bg)
-      this.videoBackground.isVisible = !!bg.video && (screenId !== 'main' && screenId !== 'legacy')
+      this.videoBackground.isVisible = !!bg.video && (screenId !== 'main' && screenId !== 'legacy' && UIState.beatmapBackground)
       if (screenId !== 'main') {
         this.background.out()
       }
     })
     onLeftSide.collect(this.leftSideCollector)
     onRightSide.collect(this.rightSideCollector)
+    this.addDisposable(() => {
+      const scope = effectScope()
+      scope.run(() => {
+        watch(() => UIState.beatmapBackground, value => {
+          if (!value) {
+            this.videoBackground.isVisible = false
+            this.background.updateBackground2(BackgroundLoader.getBackground())
+          } else {
+            const bg = OSUPlayer.background.value
+            if (bg.video && !['main', 'legacy'].includes(ScreenManager.currentId.value)) {
+              this.videoBackground.isVisible = true
+              this.videoBackground.setVideo(bg.video)
+            }
+            this.background.updateBackground2(bg.image ?? BackgroundLoader.getBackground())
+          }
+        })
+
+      })
+      return scope.stop
+    })
   }
 
   protected onUpdate() {
@@ -74,7 +100,7 @@ export class BackgroundScreen extends Box {
 
   public dispose() {
     super.dispose();
-    OSUPlayer.background.removeCollect(this.collector)
+    // OSUPlayer.background.removeCollect(this.collector)
     onLeftSide.removeCollect(this.leftSideCollector)
     onRightSide.removeCollect(this.rightSideCollector)
   }

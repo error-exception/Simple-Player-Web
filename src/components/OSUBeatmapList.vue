@@ -31,9 +31,10 @@ async function showBeatmapList() {
 }
 
 const play = (file: File, index: number) => {
-  loadOSZ(file)
-  if (!PLAYER)
-    TempOSUPlayManager.currentIndex.value = index
+  TempOSUPlayManager.playAt(index, true)
+  // loadOSZ(file)
+  // if (!PLAYER)
+  //   TempOSUPlayManager.currentIndex.value = index
 }
 
 </script>

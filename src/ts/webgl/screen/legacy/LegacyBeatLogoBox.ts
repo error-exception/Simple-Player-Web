@@ -111,7 +111,6 @@ class LegacyLogoBeatBox extends Box {
 
   protected onUpdate() {
     if (AudioPlayerV2.isPlaying()) {
-      if (BeatState.isAvailable) {
         const scale = this.scale
         const adjust = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() - 0.4 : 0
         const a = Interpolation.damp(
@@ -123,8 +122,6 @@ class LegacyLogoBeatBox extends Box {
         scale.x = a
         scale.y = a
         this.scale = scale
-        // this.scale = Vector(1 - BeatState.currentRMS * 0.04)
-      }
     }
   }
 
@@ -142,7 +139,6 @@ class LegacyFadeLogoBeatBox extends Box {
 
   protected onUpdate() {
     if (AudioPlayerV2.isPlaying()) {
-      if (BeatState.isAvailable) {
         const scale = this.scale
         const adjust = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() - 0.4 : 0
         const a = Interpolation.damp(
@@ -155,10 +151,6 @@ class LegacyFadeLogoBeatBox extends Box {
         scale.x = 2 - a
         scale.y = 2 - a
         this.scale = scale
-      } else {
-        const a = 1 + AudioChannel.maxVolume() * 0.08
-        this.scale = new Vector2(a, a)
-      }
     }
   }
 

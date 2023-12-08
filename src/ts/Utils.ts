@@ -5,6 +5,10 @@ export function degreeToRadian(degree: number) {
   return degree * ( Math.PI / 180)
 }
 
+export function radianToDegree(radian: number) {
+  return radian * (180 / Math.PI)
+}
+
 export function timeString(timeUnitS: number) {
   if (isNaN(timeUnitS)) {
     return '00:00'
@@ -78,4 +82,8 @@ export function sleep(m: number) {
       resolve()
     }, m)
   })
+}
+
+export function isFloatZero(f: number): boolean {
+  return Math.abs(f) < 0.00001
 }

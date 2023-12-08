@@ -37,16 +37,25 @@ export class OSUParser {
     while (lines[i].length > 0 && lines[i].charAt(0) !== '[') {
       const line = lines[i++]
       if (line.startsWith("Video")) {
-        const firstIndex = line.indexOf('"');
-        const lastIndex = line.lastIndexOf('"');
+        let firstIndex = line.indexOf('"');
+        let lastIndex = line.lastIndexOf('"');
         if (firstIndex >= 0 && lastIndex > 0) {
-          out.Events.videoBackground = line.substring(firstIndex + 1, lastIndex)
+          out.Events.videoBackground = line.substring(firstIndex + 1, lastIndex).toLowerCase()
+        }
+        firstIndex = line.indexOf(',')
+        lastIndex = line.indexOf(',', firstIndex + 1)
+        if (firstIndex >= 0 && lastIndex > 0) {
+          try {
+            out.Events.videoOffset = parseInt(line.substring(firstIndex + 1, lastIndex).trim())
+          } catch (_) {
+            out.Events.videoOffset = 0
+          }
         }
       } else if (line.startsWith('0,0')) {
         const firstIndex = line.indexOf('"')
         const lastIndex = line.lastIndexOf('"')
         if (firstIndex >= 0 && lastIndex > 0) {
-          out.Events.imageBackground = line.substring(firstIndex + 1, lastIndex)
+          out.Events.imageBackground = line.substring(firstIndex + 1, lastIndex).toLowerCase()
         }
       }
     }
@@ -100,7 +109,7 @@ export class OSUParser {
     while (lines[i].length > 0 && lines[i].charAt(0) !== '[') {
       const [ key, value ] = lines[i++].split(':').map(v => v.trim())
       if (key === "AudioFilename") {
-        general.AudioFilename = value
+        general.AudioFilename = value.toLowerCase()
       } else if (key === "PreviewTime") {
         general.PreviewTime = parseInt(value)
       } else if (key === "Mode") {
@@ -133,27 +142,15 @@ export class OSUParser {
   private static parseTimingPoints(lines: string[], index: number, out: OSUFile) {
     let i = index
     const timingPoints: OSUFileTimingPoints = {
-      offset: 0,
-      beatGap: 200,
       timingList: []
     }
-    let lineIndex = 0
     while (lines[i].length > 0 && lines[i].charAt(0) !== '[') {
-      if (lineIndex === 0) {
-        const [offset, beatGap] = lines[i++]
-          .split(",")
-          .map((v) => v.trim());
-        timingPoints.beatGap = parseFloat(beatGap);
-        timingPoints.offset = parseInt(offset);
-      } else {
-        const [offset, _0, _1, _2, _3, _4, _5, isKiai] = lines[i++].split(',').map(s => {
-          return parseInt(s.trim());
-        })
-        timingPoints.timingList.push({
-          offset, isKiai: isKiai === 1
-        })
-      }
-      lineIndex++
+      const [time, beatLength, _1, _2, _3, _4, _5, isKiai] = lines[i++].split(",").map(v => v.trim())
+      timingPoints.timingList.push({
+        time: parseInt(time),
+        beatLength: parseFloat(beatLength),
+        isKiai: isKiai === '1'
+      })
     }
     out.TimingPoints = timingPoints
   }

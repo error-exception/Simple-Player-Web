@@ -4,6 +4,8 @@ import {Box} from "../../box/Box";
 import {Color} from "../../base/Color";
 import {ColorDrawable} from "../../drawable/ColorDrawable";
 import {ManiaPanel, NoteData, osuFile} from "./ManiaPanel";
+import {resetJudge} from "../../../Judge";
+import {maniaCombo, maniaTotalCombo} from "../../../global/ManiaState";
 
 export class ManiaScreen extends Box {
 
@@ -12,9 +14,13 @@ export class ManiaScreen extends Box {
             size: ['fill-parent', 'fill-parent']
         })
 
-        const trackWidth: number[] = new Array(4).fill(10)
-        const offsetLeft = 100
-        const trackGap = 80
+        resetJudge()
+        maniaCombo.value = 0
+        maniaTotalCombo.value = 0
+
+        const trackWidth: number[] = new Array(4).fill(80)
+        const offsetLeft = 750
+        const trackGap = 10
         let data: NoteData[][]
         if (OSUPlayer.maniaNoteData.value !== null) {
             data = OSUPlayer.maniaNoteData.value
@@ -22,6 +28,10 @@ export class ManiaScreen extends Box {
             data = osuFile.NoteData!
             Toaster.show("Mania Note is Empty, use default")
         }
+        for (let i = 0; i < data.length; i++) {
+            maniaTotalCombo.value += data[i].length
+        }
+        console.log("mania key count", data)
         const mania = new ManiaPanel(
             gl,
             offsetLeft,

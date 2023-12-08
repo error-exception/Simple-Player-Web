@@ -1,6 +1,7 @@
-import {ref, watch} from "vue";
+import {ref} from "vue";
 import AudioPlayer from "./AudioPlayer";
 import {loadOSZ} from "../osu/OSZ";
+import {collect} from "../util/eventRef";
 
 class TempOSUPlayManager {
 
@@ -8,17 +9,21 @@ class TempOSUPlayManager {
   public readonly currentIndex = ref(0)
 
   constructor() {
-    watch(this.list, list => {
-      if (list.length) {
-        AudioPlayer.onEnd.collect(() => {
-          this.next()
-        })
-      }
+    collect(AudioPlayer.onEnd, () => {
+      this.list.value.length && this.next()
     })
+    // watch(this.list, list => {
+    //   if (list.length) {
+    //     AudioPlayer.onEnd.collect(() => {
+    //       this.next()
+    //     })
+    //   }
+    // })
   }
 
   public playAt(index: number, preview = true) {
     loadOSZ(this.list.value[index], preview)
+    this.currentIndex.value = index
   }
 
   public next() {

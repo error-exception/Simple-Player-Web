@@ -10,9 +10,10 @@ import {
 import {Nullable} from "../../type";
 import {Shader} from "../core/Shader";
 import {VertexBufferLayout} from "../core/VertexBufferLayout";
+import {BaseShader} from "./BaseShader";
 
-class DynamicTextureShader implements Disposable {
-    private vertex = `
+class DynamicTextureShader extends BaseShader implements Disposable {
+    protected vertex = `
         attribute vec2 ${ATTR_POSITION};
         attribute vec2 ${ATTR_TEXCOORD};
         attribute float ${ATTR_ALPHA};
@@ -28,7 +29,7 @@ class DynamicTextureShader implements Disposable {
             v_alpha = ${ATTR_ALPHA};
         }
     `
-    private fragment = `
+    protected fragment = `
         varying mediump float v_alpha;
         varying mediump vec2 v_tex_coord;
         uniform sampler2D ${UNI_SAMPLER};
@@ -40,8 +41,8 @@ class DynamicTextureShader implements Disposable {
         }
     `
 
-    private shader: Nullable<Shader> = null
-    private layout: Nullable<VertexBufferLayout> = null
+    protected shader: Nullable<Shader> = null
+    protected layout: Nullable<VertexBufferLayout> = null
 
     public newShader(gl: WebGL2RenderingContext) {
         return new Shader(gl, this.vertex, this.fragment)

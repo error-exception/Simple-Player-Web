@@ -69,6 +69,13 @@ const switchScreen = (id: string) => ScreenManager.activeScreen(id)
       >
         {{ Icon.ScreenLockLandscape }}
       </button>
+      <button
+        v-osu-top-bar-btn
+        class="ma top-bar-icon-btn"
+        @click="switchScreen('story')"
+      >
+        {{ Icon.ScreenLockLandscape }}
+      </button>
       <Row style="flex-grow: 1" center>
         <span class="text-white">{{ stateText }}</span>
       </Row>
@@ -122,7 +129,7 @@ const switchScreen = (id: string) => ScreenManager.activeScreen(id)
 </template>
 <style scoped>
 .top-bar {
-  height: 52px;
+  height: var(--top-bar-height);
   background-color: #191919;
   padding: 2px;
 }

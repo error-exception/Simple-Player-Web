@@ -1,108 +1,132 @@
-import { OSUStdNote } from "../osu/OSUFile";
-import {Bullet} from "../type";
-import {createMutableSharedFlow, createMutableStateFlow} from "../util/flow";
-import { isUndef } from "../webgl/core/Utils";
-import { NoteData } from "../webgl/screen/mania/ManiaPanel";
+import {OSUFile} from "../osu/OSUFile";
+import {createMutableStateFlow} from "../util/flow";
+import {NoteData} from "../webgl/screen/mania/ManiaPanel";
 import AudioPlayerV2 from "./AudioPlayer";
 import VideoPlayer from "./VideoPlayer";
+import videoPlayer from "./VideoPlayer";
+import {ref, shallowRef} from "vue";
+import {OSZFile} from "../osu/OSZ";
+import {eventRef} from "../util/eventRef";
+import * as os from "os";
 
 export interface OSUBackground {
-    image?: ImageBitmap
-    video?: HTMLVideoElement
-    imageBlob?: Blob
+  image?: ImageBitmap
+  video?: HTMLVideoElement
+  imageBlob?: Blob
 }
 
 class OSUPlayer {
 
-    public title = createMutableStateFlow("None")
-    public artist = createMutableStateFlow("None")
-    public background = createMutableStateFlow<OSUBackground>({})
-    public currentTime = createMutableStateFlow(0)
-    public duration = createMutableStateFlow(0)
-    public onChanged = createMutableSharedFlow<Bullet>()
-    public maniaNoteData = createMutableStateFlow<NoteData[][] | null>(null)
-    public osuStdNotes = createMutableStateFlow<OSUStdNote[] | null>(null)
-    // public onTimingChanged = createMutableSharedFlow<Bullet>()
+  public title = ref("None")
+  public artist = ref("None")
+  public background = shallowRef<OSUBackground>({})
+  public currentTime = ref(0)
+  public duration = ref(0)
+  public onChanged = eventRef<[OSUFile, OSZFile]>()
+  public maniaNoteData = createMutableStateFlow<NoteData[][] | null>(null)
 
-    private isVideoAvailable = false
+  public static readonly EMPTY_OSU: OSUFile = {}
+  // @ts-ignore
+  public static readonly EMPTY_OSZ: OSZFile = {}
 
-    constructor() {
-        // BackgroundLoader.init()
+  public currentOSUFile = shallowRef<OSUFile>(OSUPlayer.EMPTY_OSU)
+  public currentOSZFile = shallowRef<OSZFile>(OSUPlayer.EMPTY_OSZ)
+
+  private isVideoAvailable = false
+
+  constructor() {
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        // 让视频和音频尽量保持同步
+        videoPlayer.seek(AudioPlayerV2.currentTime())
+      }
+    })
+  }
+
+  public async setSource(osu: OSUFile, src: OSZFile) {
+    this.isVideoAvailable = false
+    const { Events, Metadata } = osu
+    const { audio, image, video } = src.source
+    if (!audio) {
+      console.warn("audio is null")
+      return
     }
-
-    public async setSource(src: Bullet) {
-        console.log(src)
+    await AudioPlayerV2.setSource(audio)
+    this.title.value = Metadata?.TitleUnicode ?? "None"
+    this.artist.value = Metadata?.ArtistUnicode ?? "None"
+    this.duration.value = AudioPlayerV2.duration()
+    const background: OSUBackground = {}
+    if (video) {
+      try {
+        VideoPlayer.baseOffset = Events?.videoOffset ?? 0
+        await VideoPlayer.setSource(video)
+        this.isVideoAvailable = true
+        background.video = VideoPlayer.getVideoElement()
+      } catch (_) {
+        console.log(_)
         this.isVideoAvailable = false
-        // this.onTimingChanged.emit(src)
-        this.title.value = src.metadata.title
-        this.artist.value = src.metadata.artist
-        await AudioPlayerV2.setSource(src.metadata.source)
-        this.duration.value = AudioPlayerV2.duration()
-        const background: OSUBackground = {}
-        if (src.events.backgroundVideo) {
-            try {
-                await VideoPlayer.setSource(src.events.backgroundVideo)
-                this.isVideoAvailable = true
-                background.video = VideoPlayer.getVideoElement()
-            } catch (_) {
-                console.log(_)
-                this.isVideoAvailable = false
-                background.video = undefined
-            }
-        }
-        if (src.events.backgroundImage) {
-            background.imageBlob = src.events.backgroundImage
-            background.image = await createImageBitmap(src.events.backgroundImage)
-            // console.log(background)
-        } else {
-            // if (BackgroundLoader.isInit) {
-            //     await BackgroundLoader.init()
-            // }
-            // background.image = BackgroundLoader.getBackground()
-        }
-        this.maniaNoteData.value = isUndef(src.noteData) ? null : src.noteData
-        this.osuStdNotes.value = isUndef(src.stdNotes) ? null : src.stdNotes
-
-        this.background.value = background
-        this.onChanged.emit(src)
+        background.video = undefined
+      }
     }
-
-    public async play() {
-        if (this.isVideoAvailable) {
-            await VideoPlayer.play()
-        }
-        await AudioPlayerV2.play()
+    if (image) {
+      background.imageBlob = image
+      background.image = await createImageBitmap(image)
     }
+    // this.maniaNoteData.value = isUndef(src.noteData) ? null : src.noteData
+    this.background.value = background
+    this.onChanged.emit([osu, src])
+    this.currentOSUFile.value = osu
+    this.currentOSZFile.value = src
+  }
 
-    public pause() {
-        if (this.isVideoAvailable) {
-            VideoPlayer.pause()
-        }
-        AudioPlayerV2.pause()
-    }
+  public async play() {
+    await Promise.all([this.playVideo(), this.playAudio()])
+  }
 
-    public async seek(v: number) {
-        if (this.isVideoAvailable) {
-            await VideoPlayer.seek(v)
-        }
-        await AudioPlayerV2.seek(v)
-    }
+  private async playAudio() {
+    await AudioPlayerV2.play()
+  }
 
-    public speed(s: number) {
-        AudioPlayerV2.speed(s)
-        if (this.isVideoAvailable) {
-            VideoPlayer.speed(s)
-        }
+  private async playVideo() {
+    if (this.isVideoAvailable) {
+      await VideoPlayer.play()
     }
+  }
 
-    // driven by requestAnimationFrame()
-    public update() {
-        this.currentTime.value = AudioPlayerV2.currentTime()
+  public pause() {
+    if (this.isVideoAvailable) {
+      VideoPlayer.pause()
     }
+    AudioPlayerV2.pause()
+  }
 
-    public isPlaying() {
-        return AudioPlayerV2.isPlaying()
+  public async seek(v: number) {
+    if (this.isVideoAvailable) {
+      await VideoPlayer.seek(v)
     }
+    await AudioPlayerV2.seek(v)
+  }
+
+  public speed(s: number) {
+    AudioPlayerV2.speed(s)
+    if (this.isVideoAvailable) {
+      VideoPlayer.speed(s)
+    }
+  }
+
+  // driven by requestAnimationFrame()
+  public update() {
+    this.currentTime.value = AudioPlayerV2.currentTime()
+  }
+
+  public isPlaying() {
+    return AudioPlayerV2.isPlaying()
+  }
+
+  public stop() {
+    AudioPlayerV2.stop()
+    VideoPlayer.stop()
+  }
 
 }
 

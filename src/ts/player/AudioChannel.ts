@@ -2,6 +2,7 @@ import AudioPlayer from "./AudioPlayer";
 import OSUPlayer from "./OSUPlayer";
 import {ArrayUtils} from "../util/ArrayUtils";
 import {int} from "../Utils";
+import {collect} from "../util/eventRef";
 
 class AudioChannel {
   private left: Float32Array = new Float32Array(0)
@@ -11,7 +12,7 @@ class AudioChannel {
     length: 1
   })
   constructor() {
-    OSUPlayer.onChanged.collect(() => {
+    collect(OSUPlayer.onChanged, () => {
       const audioBuffer = AudioPlayer.getAudioBuffer()
       this.buffer = audioBuffer
       if (audioBuffer.numberOfChannels >= 2) {

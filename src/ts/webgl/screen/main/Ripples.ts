@@ -161,7 +161,6 @@ class Ripple {
     ) {
         this.innerRadius = parent.width / 2
         this.maxThickWidth = this.innerRadius * 0.5
-        console.log(this.maxThickWidth)
         this.currentThickWidth = 0
     }
 
