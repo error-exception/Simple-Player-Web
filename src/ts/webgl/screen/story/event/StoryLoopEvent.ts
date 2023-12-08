@@ -29,7 +29,10 @@ export class StoryLoopEvent extends TransitionEvent<TransitionEvent<any, any>, a
       scale = new StoryScaleEvent(sprite),
       rotate = new StoryRotateEvent(sprite),
       color = new StoryColorEvent(sprite),
-      param = new StoryParamEvent(sprite)
+      // param = new StoryParamEvent(sprite),
+      vFlip = new StoryParamEvent(sprite, "V"),
+      hFlip = new StoryParamEvent(sprite, "H"),
+      additive = new StoryParamEvent(sprite, "A")
     for (const event of children) {
       if (event.type === "S" || event.type === "V") {
         scale.addEvent(event as OSBValueEvent)
@@ -42,7 +45,15 @@ export class StoryLoopEvent extends TransitionEvent<TransitionEvent<any, any>, a
       } else if (event.type === "C") {
         color.addEvent(event as OSBColorEvent)
       } else if (event.type === "P") {
-        param.addEvent(event as OSBParamEvent)
+        const e = event as OSBParamEvent
+        if (e.p === "V") {
+          vFlip.addEvent(e)
+        } else if (e.p === "H") {
+          hFlip.addEvent(e)
+        } else if (e.p === "A") {
+          additive.addEvent(e)
+        }
+        // param.addEvent(event as OSBParamEvent)
       }
     }
     this.addEvent(fade)
@@ -50,7 +61,10 @@ export class StoryLoopEvent extends TransitionEvent<TransitionEvent<any, any>, a
     this.addEvent(scale)
     this.addEvent(rotate)
     this.addEvent(color)
-    this.addEvent(param)
+    // this.addEvent(param)
+    this.addEvent(vFlip)
+    this.addEvent(hFlip)
+    this.addEvent(additive)
   }
   addEvent(event: TransitionEvent<any, any>): void {
     this.events.push(event)
@@ -97,7 +111,7 @@ export class StoryLoopEvent extends TransitionEvent<TransitionEvent<any, any>, a
     if (this.durationPerLoop < 0)
       this.calculateDurationPerLoop()
     const durationPerLoop = this.durationPerLoop
-    const remainsTime = timestamp - this.loopStartTime
+    const remainsTime = Math.max(timestamp - this.loopStartTime, 0)
     const count = Math.ceil(remainsTime / durationPerLoop)
     if (count > this.loopCount) {
       return;

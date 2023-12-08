@@ -7,6 +7,9 @@ class Coordinate {
     private _width: number = 0;
     private _height: number = 0;
 
+    private _nativeWidth = 0
+    private _nativeHeight = 0
+
     public onWindowResize: (() => void) | null = null;
 
     public orthographicProjectionMatrix4: Float32Array = new Float32Array([
@@ -16,14 +19,21 @@ class Coordinate {
         0, 0, 0, 1
     ])
 
+    public ratio = 1
     public updateCoordinate(width: number, height: number) {
         console.log("window resize", width, height);
 
-        this._width = width;
-        this._height = height;
+        this._nativeWidth = width
+        this._nativeHeight = height
+
+        this.ratio = Coordinate.MAX_WIDTH / width
+
+        this._width = Coordinate.MAX_WIDTH;
+        this._height = height * this.ratio;
+        console.log("adjust", this.ratio)
 
         this.orthographicProjectionMatrix4 = TransformUtils.orth(
-            -width / 2, width / 2, -height / 2, height / 2,
+            -this._width / 2, this._width / 2, -this._height / 2, this._height / 2,
             0, 1
         )
 
@@ -36,6 +46,14 @@ class Coordinate {
 
     public get height() {
         return this._height;
+    }
+
+    public get nativeWidth() {
+        return this._nativeWidth
+    }
+
+    public get nativeHeight() {
+        return this._nativeHeight
     }
 
     public get centerX() {

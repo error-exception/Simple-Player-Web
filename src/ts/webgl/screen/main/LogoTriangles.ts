@@ -170,15 +170,12 @@ export class LogoTriangles extends Drawable {
     protected onTransformApplied() {
         super.onTransformApplied();
         const transform = this.appliedTransform
-        const scaledWidth = this.width * window.devicePixelRatio * transform.scale.x
-        const scaledHeight = this.height * window.devicePixelRatio * transform.scale.y
+        const scaledWidth = this.width / Coordinate.ratio * transform.scale.x * window.devicePixelRatio
+        const scaledHeight = this.height / Coordinate.ratio * transform.scale.y * window.devicePixelRatio
         const circleMaxRadius = Math.min(scaledWidth, scaledHeight) / 2
         const circleCenter = new Vector2(
-            (Coordinate.width / 2 + transform.translate.x) * window.devicePixelRatio,
-            (Coordinate.height / 2 + transform.translate.y) * window.devicePixelRatio
-            // transform.translate.x,
-            // transform.translate.y
-            // 0, 0
+            (Coordinate.nativeWidth / 2 + transform.translate.x) * window.devicePixelRatio,
+            (Coordinate.nativeHeight / 2 + transform.translate.y)* window.devicePixelRatio
         )
         this.circleInfo[0] = circleCenter.x
         this.circleInfo[1] = circleCenter.y

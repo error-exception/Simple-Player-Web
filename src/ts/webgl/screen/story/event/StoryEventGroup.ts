@@ -6,7 +6,6 @@ import {StoryColorEvent} from "./StoryColorEvent";
 import {StoryParamEvent} from "./StoryParamEvent";
 import {StoryLoopEvent} from "./StoryLoopEvent";
 import {Sprite} from "../Sprite";
-import {Nullable} from "../../../../type";
 import {
   isLoopEvent,
   OSBColorEvent,
@@ -24,9 +23,14 @@ export class StoryEventGroup {
   private rotate: StoryRotateEvent
   private scale: StoryScaleEvent
   private color: StoryColorEvent
-  private param: StoryParamEvent
+  // private param: StoryParamEvent
 
-  private loop: Nullable<StoryLoopEvent>
+  private vFlip: StoryParamEvent
+  private hFlip: StoryParamEvent
+  private additive: StoryParamEvent
+
+
+  private loopList: StoryLoopEvent[] = []
 
   private readonly _startTime = Number.MAX_VALUE
   private readonly _endTime = Number.MIN_VALUE
@@ -37,7 +41,10 @@ export class StoryEventGroup {
     this.rotate = new StoryRotateEvent(sprite)
     this.scale = new StoryScaleEvent(sprite)
     this.color = new StoryColorEvent(sprite)
-    this.param = new StoryParamEvent(sprite)
+
+    this.vFlip = new StoryParamEvent(sprite, "V")
+    this.hFlip = new StoryParamEvent(sprite, "H")
+    this.additive = new StoryParamEvent(sprite, "A")
 
     for (const event of events) {
       if (event.type === "S" || event.type === "V") {
@@ -51,23 +58,44 @@ export class StoryEventGroup {
       } else if (event.type === "C") {
         this.color.addEvent(event as OSBColorEvent)
       } else if (event.type === "P") {
-        this.param.addEvent(event as OSBParamEvent)
+        const e = event as OSBParamEvent
+        if (e.p === "V") {
+          this.vFlip.addEvent(e)
+        } else if (e.p === "H") {
+          this.hFlip.addEvent(e)
+        } else if (e.p === "A") {
+          this.additive.addEvent(e)
+        }
+        // this.param.addEvent(event as OSBParamEvent)
       }
     }
     let startTime = Math.min(
-      this.move.startTime(), this.scale.startTime(), this.color.startTime(), this.rotate.startTime(), this.param.startTime(), this.fade.startTime()
+      this.move.startTime(),
+      this.scale.startTime(),
+      this.color.startTime(),
+      this.rotate.startTime(),
+      this.fade.startTime(),
+      this.vFlip.startTime(),
+      this.hFlip.startTime(),
+      this.additive.startTime()
     )
     let endTime = Math.max(
-      this.move.endTime(), this.scale.endTime(), this.color.endTime(), this.rotate.endTime(), this.param.endTime(), this.fade.endTime()
+      this.move.endTime(),
+      this.scale.endTime(),
+      this.color.endTime(),
+      this.rotate.endTime(),
+      this.fade.endTime(),
+      this.vFlip.endTime(),
+      this.hFlip.endTime(),
+      this.additive.endTime()
     )
 
-    const loopEvent = events.find(v => isLoopEvent(v))
-    if (loopEvent) {
-      this.loop = new StoryLoopEvent(sprite, loopEvent as OSBLoopEvent)
-      startTime = Math.min(this.loop.startTime(), startTime)
-      endTime = Math.max(this.loop.endTime(), endTime)
-    } else {
-      this.loop = null
+    const loopEvent = events.filter(v => isLoopEvent(v))
+    for (let i = 0; i < loopEvent.length; i++) {
+      const loop = new StoryLoopEvent(sprite, loopEvent[i] as OSBLoopEvent)
+      endTime = Math.max(loop.endTime(), endTime)
+      startTime = Math.min(loop.startTime(), startTime)
+      this.loopList.push(loop)
     }
     console.log(sprite.path, "story group", startTime, endTime)
     this._startTime = startTime
@@ -75,14 +103,19 @@ export class StoryEventGroup {
   }
 
   public update(timestamp: number) {
-    this.loop?.update(timestamp)
+    const loopList = this.loopList
+    for (let i = 0; i < loopList.length; i++) {
+      loopList[i].update(timestamp)
+    }
 
     this.fade.update(timestamp)
     this.move.update(timestamp)
     this.color.update(timestamp)
     this.scale.update(timestamp)
     this.rotate.update(timestamp)
-    this.param.update(timestamp)
+    this.vFlip.update(timestamp)
+    this.hFlip.update(timestamp)
+    this.additive.update(timestamp)
   }
 
   public startTime() {

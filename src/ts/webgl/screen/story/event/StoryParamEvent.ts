@@ -5,14 +5,30 @@ import {IEntry} from "../IEntry";
 export class StoryParamEvent extends TransitionEvent<OSBParamEvent, void>{
 
   private paramList: OSBParamEvent[] = []
+  private updateSprite: (value: boolean) => void
 
-  constructor(sprite: IEntry) {
+  constructor(sprite: IEntry, private paramType: "A" | "V" | "H") {
     super(sprite);
+    if (paramType === "A") {
+      this.updateSprite = (value) => {
+        sprite.additiveBlend = value
+      }
+    } else if (paramType === "V") {
+      this.updateSprite = (value) => {
+        sprite.verticalFlip = value
+      }
+    } else {
+      this.updateSprite = (value) => {
+        sprite.horizontalFlip = value
+      }
+    }
   }
 
   addEvent(event: OSBParamEvent): void {
-    this.paramList.push(event)
-    this.eventCount++
+    if (event.p === this.paramType) {
+      this.paramList.push(event)
+      this.eventCount++
+    }
   }
 
   hasEvent(): boolean {
@@ -46,22 +62,27 @@ export class StoryParamEvent extends TransitionEvent<OSBParamEvent, void>{
   }
 
   update(timestamp: number): void {
-    const list = this.paramList, sprite = this.sprite
+    const list = this.paramList
     if (list.length === 0) {
       return
     }
-    let hf = false, vf = false, ab = false
-    for (let i = 0; i < list.length; i++) {
-      const e = list[i]
-      if (timestamp >= e.startTime && timestamp <= e.endTime) {
-        ab = e.p === "A"
-        vf = e.p === "V"
-        hf = e.p === "H"
+    let value = false
+    if (timestamp <= list[0].startTime) {
+      value = list[0].p === this.paramType
+      this.updateSprite(value)
+      return;
+    } else if (timestamp <= list[list.length - 1].endTime) {
+      value = list[0].p === this.paramType
+      this.updateSprite(value)
+    } else {
+      for (let i = 1; i < list.length - 1; i++) {
+        const e = list[i]
+        if (timestamp >= e.startTime && timestamp <= e.endTime) {
+          value = e.p === this.paramType
+        }
       }
+      this.updateSprite(value)
     }
-    sprite.additiveBlend = ab
-    sprite.verticalFlip = vf
-    sprite.horizontalFlip = hf
   }
 
   startValue(): void {

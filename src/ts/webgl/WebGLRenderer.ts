@@ -13,7 +13,7 @@ export class WebGLRenderer implements Disposable {
 
     constructor(gl: WebGL2RenderingContext) {
         this.gl = gl
-        gl.viewport(0, 0, Coordinate.width * window.devicePixelRatio, Coordinate.height * window.devicePixelRatio)
+        gl.viewport(0, 0, Coordinate.nativeWidth * window.devicePixelRatio, Coordinate.nativeHeight * window.devicePixelRatio)
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         MouseState.onClick = this.onClick.bind(this)
@@ -73,7 +73,7 @@ export class WebGLRenderer implements Disposable {
         const gl = this.gl
         if (this.isViewportChanged) {
             this.isViewportChanged = false
-            gl.viewport(0, 0, Coordinate.width * window.devicePixelRatio, Coordinate.height * window.devicePixelRatio)
+            gl.viewport(0, 0, Coordinate.nativeWidth * window.devicePixelRatio, Coordinate.nativeHeight * window.devicePixelRatio)
             for (let i = 0; i < this.drawables.length; i++) {
                 this.drawables[i].onWindowResize()
             }
