@@ -1,6 +1,6 @@
 <template>
-  <div class="fill-size" style="pointer-events: none">
-    <canvas style="width: 100vw; height: 100vh" ref="canvas"></canvas>
+  <div class="fill-size" style="pointer-events: none;">
+    <canvas style="width: 100vw; height: 100vh;" ref="canvas"></canvas>
   </div>
 </template>
 

@@ -34,48 +34,6 @@ const switchScreen = (id: string) => ScreenManager.activeScreen(id)
       >
         {{ Icon.Settings }}
       </button>
-      <button
-        v-osu-top-bar-btn
-        class="ma top-bar-icon-btn"
-        @click="switchScreen('main')"
-      >
-        {{ Icon.ScreenLockLandscape }}
-      </button>
-      <button
-        v-osu-top-bar-btn
-        class="ma top-bar-icon-btn"
-        @click="switchScreen('second')"
-      >
-        {{ Icon.ScreenLockLandscape }}
-      </button>
-      <button
-        v-osu-top-bar-btn
-        class="ma top-bar-icon-btn"
-        @click="switchScreen('mania')"
-      >
-        {{ Icon.ScreenLockLandscape }}
-      </button>
-      <button
-        v-osu-top-bar-btn
-        class="ma top-bar-icon-btn"
-        @click="switchScreen('legacy')"
-      >
-        {{ Icon.ScreenLockLandscape }}
-      </button>
-      <button
-        v-osu-top-bar-btn
-        class="ma top-bar-icon-btn"
-        @click="switchScreen('test')"
-      >
-        {{ Icon.ScreenLockLandscape }}
-      </button>
-      <button
-        v-osu-top-bar-btn
-        class="ma top-bar-icon-btn"
-        @click="switchScreen('story')"
-      >
-        {{ Icon.ScreenLockLandscape }}
-      </button>
       <Row style="flex-grow: 1" center>
         <span class="text-white">{{ stateText }}</span>
       </Row>

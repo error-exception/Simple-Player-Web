@@ -35,6 +35,15 @@
         class="absolute left-0"
       />
     </Transition>
+    <SideButton
+      @sideClick="ui.screenSelector = true"
+    />
+    <Transition name="settings">
+      <ScreenSelector
+        v-if="ui.screenSelector"
+        @close="ui.screenSelector = false"
+      />
+    </Transition>
     
     <Transition name="player">
       <MiniPlayer v-if="ui.miniPlayer" style="position: absolute; top: var(--top-bar-height); right: 80px"/>
@@ -87,6 +96,8 @@ import FloatNotification from "./components/notification/FloatNotification.vue";
 import {playSound, Sound} from "./ts/player/SoundEffect";
 import ManiaOverlay from "./components/game/ManiaOverlay.vue";
 import {collect, collectLatest} from "./ts/util/eventRef";
+import ScreenSelector from "./components/ScreenSelector.vue";
+import SideButton from "./components/SideButton.vue";
 
 const ui = reactive({
   list: false,
@@ -95,7 +106,8 @@ const ui = reactive({
   showUI: false,
   miniPlayer: false,
   beatmapList: false,
-  notify: false
+  notify: false,
+  screenSelector: false
 })
 const screenId = ref("main")
 useCollect(ScreenManager.currentId, id => {
@@ -138,6 +150,13 @@ useKeyboard('up', (evt) => {
   if (evt.code === 'Escape') {
     ui.showUI = false
   }
+  if (evt.code === 'KeyP') {
+    OSUPlayer.stop()
+    Toaster.show("停止")
+  }
+  if (evt.code === 'KeyM') {
+    ui.miniPlayer = !ui.miniPlayer
+  }
   if (ui.bpmCalculator) {
     return
   }
@@ -156,7 +175,7 @@ onEnterMenu.collect((value) => {
   ui.showUI = value
 })
 
-const hasSomeUIShow = computed(() => ui.list || ui.settings || ui.miniPlayer || ui.beatmapList || ui.notify)
+const hasSomeUIShow = computed(() => ui.list || ui.settings || ui.miniPlayer || ui.beatmapList || ui.notify || ui.screenSelector)
 
 function hideUI() {
   ui.showUI = false
@@ -199,15 +218,6 @@ collectLatest(AudioPlayerV2.playState, stateCode => {
     [PlayerState.STATE_PAUSING]: '播放暂停'
   }[stateCode] ?? ""
 })
-// AudioPlayerV2.playStateFlow.collect((stateCode: number) => {
-//   stateText.value = {
-//     [PlayerState.STATE_DOWNLOADING]: '正在下载',
-//     [PlayerState.STATE_DECODING]: '正在解码',
-//     [PlayerState.STATE_PLAYING]: '正在播放',
-//     [PlayerState.STATE_DECODE_DONE]: '准备就绪',
-//     [PlayerState.STATE_PAUSING]: '播放暂停'
-//   }[stateCode] ?? ""
-// })
 
 onMounted(() => init())
 notifyMessage("Welcome!")
@@ -266,10 +276,6 @@ function handleFile(e: DragEvent) {
   notifyMessage("开始加载拖动的 osz 文件")
   loadOSZ(files.item(0)!)
 }
-setTimeout(() => {
-  // debugger
-  // testOSBParser()
-}, 1000)
 
 </script>
 

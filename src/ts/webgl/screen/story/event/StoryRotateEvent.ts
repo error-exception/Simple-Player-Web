@@ -4,13 +4,14 @@ import {Transition} from "../../../transition/Transition";
 import {easeFunction} from "../StoryEvent2";
 import {radianToDegree} from "../../../../Utils";
 import {TransitionEvent} from "./TransitionEvent";
-import {IEntry} from "../IEntry";
+import {Sprite} from "../Sprite";
 
 export class StoryRotateEvent extends TransitionEvent<OSBValueEvent, number> {
   private transitionQueue = new TransitionQueue()
+  private transitionList: Transition[] = []
   protected eventCount = 0
 
-  constructor(sprite: IEntry) {
+  constructor(sprite: Sprite) {
     super(sprite);
   }
 
@@ -19,8 +20,16 @@ export class StoryRotateEvent extends TransitionEvent<OSBValueEvent, number> {
     const transition = new Transition(
       startTime, endTime, easeFunction[ease], to, from
     )
-    this.transitionQueue.add(transition)
+    // this.transitionQueue.add(transition)
+    this.transitionList.push(transition)
     this.eventCount++
+  }
+
+  public commit() {
+    this.transitionList.sort(this.transitionSortCompare)
+    for (const transition of this.transitionList) {
+      this.transitionQueue.add(transition)
+    }
   }
 
   public update(timestamp: number) {

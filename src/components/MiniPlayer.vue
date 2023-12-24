@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import {onMounted, onUnmounted, ref, shallowRef} from "vue";
+import {onMounted, onUnmounted, ref, shallowRef, watch} from "vue";
 import {Icon} from "../ts/icon/Icon";
 import AudioPlayer from "../ts/player/AudioPlayer";
 import OSUPlayer, {OSUBackground} from "../ts/player/OSUPlayer";
@@ -14,6 +14,8 @@ import {PLAYER} from "../ts/build";
 import TempOSUPlayManager from "../ts/player/TempOSUPlayManager";
 import {PlayerState} from "../ts/player/PlayerState";
 import {collect, collectLatest} from "../ts/util/eventRef";
+import {Nullable} from "../ts/type";
+import {Toaster} from "../ts/global/Toaster";
 
 const img = ref<HTMLImageElement | null>(null)
 
@@ -71,6 +73,24 @@ function playAt(i: number) {
   TempOSUPlayManager.playAt(i, false)
 }
 
+const listContainer = ref<Nullable<HTMLDivElement>>(null)
+const playIndex = TempOSUPlayManager.currentIndex
+watch(listContainer, () => {
+  if (!listContainer.value) {
+    return
+  }
+  const container = listContainer.value
+  const children = container.children
+  const targetIndex = Math.max(
+    TempOSUPlayManager.currentIndex.value - 3, 0
+  )
+  let scrollY = 0
+  for (let i = 0; i < targetIndex; i++) {
+    scrollY += children[i].clientHeight
+  }
+  container.scrollTo(0, scrollY)
+})
+
 </script>
 <template>
   <Column class="w-fit mini-player gap-y-2">
@@ -92,18 +112,23 @@ function playAt(i: number) {
       <ProgressBar style="width: 100%; position: absolute; bottom: 0;"/>
     </div>
     <Transition name="mini-list">
-      <Column
-        class="rounded-md bg-[--bpm-color-3] origin-top w-[420px] overflow-y-scroll no-scroller"
+      <div
+        class="flex flex-col rounded-md bg-[--bpm-color-3] origin-top w-[420px] overflow-y-scroll no-scroller p-1"
         v-if="list"
         style="height: calc(100vh - var(--top-bar-height) - 16px - 160px)"
+        ref="listContainer"
       >
       <span
         v-osu-button
         v-for="(item, i) in playlist"
-        class="text-white w-full hover:bg-[--bpm-color-4] p-2 text-sm"
+        class="rounded-md text-white w-full hover:bg-[--bpm-color-4] p-2 text-sm"
+        :class="{
+          'bg-[--bpm-color-11]': playIndex === i,
+          'bg-transparent': playIndex !== i
+        }"
         @click="playAt(i)"
       >{{item.name}}</span>
-      </Column>
+      </div>
     </Transition>
   </Column>
 </template>
@@ -111,8 +136,17 @@ function playAt(i: number) {
 
 <style scoped>
 .mini-player {
+  --bpm-color-1:  #171c1a;
+  --bpm-color-2:  #222a27;
   --bpm-color-3:  #2e3835;
   --bpm-color-4:  #394642;
+  --bpm-color-5:  #45544f;
+  --bpm-color-6:  #5c7069;
+  --bpm-color-7:  #ffd966;
+  --bpm-color-8:  #fff27f;
+  --bpm-color-9:  #66ffcc;
+  --bpm-color-10: #af00af;
+  --bpm-color-11: #38e7ab;
 }
 .mini-player-box {
   width: 420px;

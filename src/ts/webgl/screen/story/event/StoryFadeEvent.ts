@@ -3,24 +3,33 @@ import {OSBValueEvent} from "../../../../osu/OSUFile";
 import {Transition} from "../../../transition/Transition";
 import {easeFunction} from "../StoryEvent2";
 import {TransitionEvent} from "./TransitionEvent";
-import {IEntry} from "../IEntry";
+import {Sprite} from "../Sprite";
 
 export class StoryFadeEvent extends TransitionEvent<OSBValueEvent, number> {
 
   private transitionQueue = new TransitionQueue()
   protected eventCount = 0
 
-  constructor(sprite: IEntry) {
+  constructor(sprite: Sprite) {
     super(sprite);
   }
 
+  private transitionList: Transition[] = []
   public addEvent(event: OSBValueEvent) {
     const { startTime, endTime, ease, from, to } = event
     const transition = new Transition(
       startTime, endTime, easeFunction[ease], to, from
     )
-    this.transitionQueue.add(transition)
+    this.transitionList.push(transition)
     this.eventCount++
+  }
+
+  public commit() {
+    const list = this.transitionList
+    list.sort(this.transitionSortCompare)
+    for (let i = 0; i < list.length; i++) {
+      this.transitionQueue.add(list[i])
+    }
   }
 
   public update(timestamp: number) {

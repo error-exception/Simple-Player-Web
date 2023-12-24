@@ -1,13 +1,13 @@
 import {TransitionEvent} from "./TransitionEvent";
 import {OSBParamEvent} from "../../../../osu/OSUFile";
-import {IEntry} from "../IEntry";
+import {Sprite} from "../Sprite";
 
 export class StoryParamEvent extends TransitionEvent<OSBParamEvent, void>{
 
   private paramList: OSBParamEvent[] = []
-  private updateSprite: (value: boolean) => void
+  private readonly updateSprite: (value: boolean) => void
 
-  constructor(sprite: IEntry, private paramType: "A" | "V" | "H") {
+  constructor(sprite: Sprite, private paramType: "A" | "V" | "H") {
     super(sprite);
     if (paramType === "A") {
       this.updateSprite = (value) => {
@@ -29,6 +29,10 @@ export class StoryParamEvent extends TransitionEvent<OSBParamEvent, void>{
       this.paramList.push(event)
       this.eventCount++
     }
+  }
+
+  public commit() {
+    this.paramList.sort((a, b) => a.startTime - b.startTime)
   }
 
   hasEvent(): boolean {
@@ -61,27 +65,27 @@ export class StoryParamEvent extends TransitionEvent<OSBParamEvent, void>{
     return this._startTime;
   }
 
+  private currentIndex: number = -1
   update(timestamp: number): void {
     const list = this.paramList
-    if (list.length === 0) {
+    if (list.length === 0 || this.eventCount === 0) {
       return
     }
-    let value = false
-    if (timestamp <= list[0].startTime) {
-      value = list[0].p === this.paramType
-      this.updateSprite(value)
-      return;
-    } else if (timestamp <= list[list.length - 1].endTime) {
-      value = list[0].p === this.paramType
-      this.updateSprite(value)
+    let currentIndex = this.currentIndex
+    if (currentIndex < 0 || timestamp < list[currentIndex].startTime) {
+      currentIndex = 0
+    }
+    while (timestamp >= list[currentIndex].startTime && currentIndex < list.length - 1 && timestamp >= list[currentIndex + 1].startTime) {
+      currentIndex++
+    }
+    this.currentIndex = currentIndex
+    const event = list[currentIndex]
+    if (event.startTime === event.endTime) {
+      this.updateSprite(true)
+    } else if (timestamp >= event.startTime && timestamp <= event.endTime) {
+      this.updateSprite(true)
     } else {
-      for (let i = 1; i < list.length - 1; i++) {
-        const e = list[i]
-        if (timestamp >= e.startTime && timestamp <= e.endTime) {
-          value = e.p === this.paramType
-        }
-      }
-      this.updateSprite(value)
+      this.updateSprite(false)
     }
   }
 

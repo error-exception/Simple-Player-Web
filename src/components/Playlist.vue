@@ -43,8 +43,9 @@ onMounted(() => {
   // let scrollTop = 0
   // let viewHeight = div.offsetHeight
   const children = div.children
+  const targetIndex = Math.max(activeIndex.value - 3, 0)
   let scrollY = 0
-  for (let i = 0; i < Math.max(activeIndex.value - 3, 0); i++) {
+  for (let i = 0; i < targetIndex; i++) {
     scrollY += children[i].clientHeight
   }
   div.scrollTo(0, scrollY)

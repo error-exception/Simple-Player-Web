@@ -3,15 +3,19 @@ import {isValueEvent, isVectorEvent, OSBValueEvent, OSBVectorEvent} from "../../
 import {Transition} from "../../../transition/Transition";
 import {easeFunction} from "../StoryEvent2";
 import {TransitionEvent} from "./TransitionEvent";
-import {IEntry} from "../IEntry";
 import {Vector, Vector2} from "../../../core/Vector2";
+import {Sprite} from "../Sprite";
 
 export class StoryScaleEvent extends TransitionEvent<OSBValueEvent | OSBVectorEvent, Vector2> {
   private transitionXQueue = new TransitionQueue()
   private transitionYQueue = new TransitionQueue()
+
+  private transitionXList: Transition[] = []
+  private transitionYList: Transition[] = []
+
   protected eventCount = 0
 
-  constructor(sprite: IEntry) {
+  constructor(sprite: Sprite) {
     super(sprite);
   }
 
@@ -24,8 +28,10 @@ export class StoryScaleEvent extends TransitionEvent<OSBValueEvent | OSBVectorEv
       const transitionY = new Transition(
         startTime, endTime, easeFunction[ease], to, from
       )
-      this.transitionXQueue.add(transitionX)
-      this.transitionYQueue.add(transitionY)
+      // this.transitionXQueue.add(transitionX)
+      // this.transitionYQueue.add(transitionY)
+      this.transitionXList.push(transitionX)
+      this.transitionYList.push(transitionY)
       this.eventCount++
     } else if (isVectorEvent(event)) {
       const { startTime, endTime, ease, from, to } = event
@@ -35,9 +41,22 @@ export class StoryScaleEvent extends TransitionEvent<OSBValueEvent | OSBVectorEv
       const transitionY = new Transition(
         startTime, endTime, easeFunction[ease], to.y, from.y
       )
-      this.transitionXQueue.add(transitionX)
-      this.transitionYQueue.add(transitionY)
+      // this.transitionXQueue.add(transitionX)
+      // this.transitionYQueue.add(transitionY)
+      this.transitionXList.push(transitionX)
+      this.transitionYList.push(transitionY)
       this.eventCount++
+    }
+  }
+
+  public commit() {
+    this.transitionXList.sort(this.transitionSortCompare)
+    this.transitionYList.sort(this.transitionSortCompare)
+    for (const transitionX of this.transitionXList) {
+      this.transitionXQueue.add(transitionX)
+    }
+    for (const transitionY of this.transitionYList) {
+      this.transitionYQueue.add(transitionY)
     }
   }
 

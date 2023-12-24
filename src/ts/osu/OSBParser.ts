@@ -142,14 +142,17 @@ export class OSBParser {
       baseEvent.to = to
       events.push(baseEvent)
       // const remainsLength = splits.length - 6
+      const duration = baseEvent.endTime - baseEvent.startTime
+      let currentEvent = baseEvent
       for (let index = 6; index < splits.length; index++) {
-        const copied = this.shallowCopy(baseEvent)
-        const duration = copied.endTime - copied.startTime
+        const copied = this.shallowCopy(currentEvent)
+        // const duration = copied.endTime - copied.startTime
         copied.startTime += duration
         copied.endTime += duration
         copied.from = copied.to
         copied.to = parseFloat(splits[index])
         events.push(copied)
+        currentEvent = copied
       }
     } else if (isVectorEvent(baseEvent)) {
       baseEvent.from = Vector(parseFloat(splits[4]), parseFloat(splits[5]))
@@ -160,14 +163,17 @@ export class OSBParser {
       }
       events.push(baseEvent)
       // const remainsLength = splits.length - 8
+      const duration = baseEvent.endTime - baseEvent.startTime
+      let currentEvent = baseEvent
       for (let index = 8; index < splits.length; index += 2) {
-        const copied = this.shallowCopy(baseEvent)
-        const duration = copied.endTime - copied.startTime
+        const copied = this.shallowCopy(currentEvent)
+        // const duration = copied.endTime - copied.startTime
         copied.startTime += duration
         copied.endTime += duration
         copied.from = copied.to
         copied.to = Vector(parseFloat(splits[index]), parseFloat(splits[index + 1]))
         events.push(copied)
+        currentEvent = copied
       }
     } else if (isColorEvent(baseEvent)) {
       baseEvent.from = new Color(
@@ -187,9 +193,11 @@ export class OSBParser {
         )
       }
       events.push(baseEvent)
+      const duration = baseEvent.endTime - baseEvent.startTime
+      let currentEvent = baseEvent
       for (let index = 10; index < splits.length; index += 3) {
-        const copied = this.shallowCopy(baseEvent)
-        const duration = copied.endTime - copied.startTime
+        const copied = this.shallowCopy(currentEvent)
+        // const duration = copied.endTime - copied.startTime
         copied.startTime += duration
         copied.endTime += duration
         copied.from = copied.to
@@ -200,10 +208,21 @@ export class OSBParser {
           1,
         )
         events.push(copied)
+        currentEvent = copied
       }
     } else if (isParamEvent(baseEvent)) {
       baseEvent.p = splits[4]
       events.push(baseEvent)
+      const duration = baseEvent.endTime - baseEvent.startTime
+      let currentEvent = baseEvent
+      for (let index = 5; index < splits.length; index++) {
+        const copied = this.shallowCopy(currentEvent)
+        copied.startTime += duration
+        copied.endTime += duration
+        copied.p = splits[index]
+        events.push(copied)
+        currentEvent = copied
+      }
     }
     return lineIndex + 1
     // if (isValueEvent(baseEvent) && (baseEvent.type === "S" || baseEvent.type === "R" || baseEvent.type === "F")) {

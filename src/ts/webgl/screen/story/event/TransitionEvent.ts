@@ -1,9 +1,17 @@
-import {IEntry} from "../IEntry";
+import {Transition} from "../../../transition/Transition";
+import {Sprite} from "../Sprite";
 
 export abstract class TransitionEvent<T, V> {
   protected eventCount = 0
 
-  protected constructor(protected sprite: IEntry) {}
+  protected transitionSortCompare = (a: Transition, b: Transition) => {
+    if (a.startTime !== b.startTime)
+      return a.startTime - b.startTime
+    else
+      return a.endTime - b.endTime
+  }
+
+  protected constructor(protected sprite: Sprite) {}
 
   public abstract addEvent(event: T): void
 
@@ -18,4 +26,6 @@ export abstract class TransitionEvent<T, V> {
   public abstract startValue(): V
 
   public abstract endValue(): V
+
+  public commit() {}
 }

@@ -3,16 +3,21 @@ import {OSBColorEvent} from "../../../../osu/OSUFile";
 import {Transition} from "../../../transition/Transition";
 import {easeFunction} from "../StoryEvent2";
 import {TransitionEvent} from "./TransitionEvent";
-import {IEntry} from "../IEntry";
 import {Color} from "../../../base/Color";
+import {Sprite} from "../Sprite";
 
 export class StoryColorEvent extends TransitionEvent<OSBColorEvent, Color> {
   private transitionRQueue = new TransitionQueue()
   private transitionGQueue = new TransitionQueue()
   private transitionBQueue = new TransitionQueue()
+
+  private transitionRList: Transition[] = []
+  private transitionGList: Transition[] = []
+  private transitionBList: Transition[] = []
+
   protected eventCount = 0
 
-  constructor(sprite: IEntry) {
+  constructor(sprite: Sprite) {
     super(sprite);
   }
 
@@ -27,10 +32,28 @@ export class StoryColorEvent extends TransitionEvent<OSBColorEvent, Color> {
     const blueTransition = new Transition(
       startTime, endTime, easeFunction[ease], to.blue, from.blue
     )
-    this.transitionRQueue.add(redTransition)
-    this.transitionGQueue.add(greenTransition)
-    this.transitionBQueue.add(blueTransition)
+    // this.transitionRQueue.add(redTransition)
+    // this.transitionGQueue.add(greenTransition)
+    // this.transitionBQueue.add(blueTransition)
+    this.transitionRList.push(redTransition)
+    this.transitionGList.push(greenTransition)
+    this.transitionBList.push(blueTransition)
     this.eventCount++
+  }
+
+  public commit() {
+    this.transitionRList.sort(this.transitionSortCompare)
+    this.transitionGList.sort(this.transitionSortCompare)
+    this.transitionBList.sort(this.transitionSortCompare)
+    for (const transitionR of this.transitionRList) {
+      this.transitionRQueue.add(transitionR)
+    }
+    for (const transitionG of this.transitionGList) {
+      this.transitionGQueue.add(transitionG)
+    }
+    for (const transitionB of this.transitionBList) {
+      this.transitionBQueue.add(transitionB)
+    }
   }
 
   public update(timestamp: number) {

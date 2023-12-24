@@ -24,16 +24,11 @@ class ColoredTextureShader extends BaseShader implements Disposable {
     varying mediump vec2 v_texcoord;
     
     uniform sampler2D u_sampler;
-    uniform mediump float u_alpha;
-    uniform mediump vec3 u_color;
+    uniform highp vec4 u_color;
     
     void main() {
-        mediump vec4 tex_color = texture2D(u_sampler, v_texcoord);
-        tex_color.a = min(tex_color.a * u_alpha, 1.0);
-        
-        tex_color.r = min(tex_color.r * u_color.r, 1.0);
-        tex_color.g = min(tex_color.g * u_color.g, 1.0);
-        tex_color.b = min(tex_color.b * u_color.b, 1.0);
+        highp vec4 tex_color = texture2D(u_sampler, v_texcoord);
+        tex_color = tex_color * u_color;
         gl_FragColor = tex_color;
     }
   `

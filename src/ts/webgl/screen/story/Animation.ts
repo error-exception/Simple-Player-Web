@@ -54,6 +54,9 @@ export class Animation extends Sprite {
   private getFrameIndex(): number {
     const showTime = this.showTime, current = AudioPlayer.currentTime()
     const time = current - showTime
+    if (time < 0) {
+      return -1
+    }
     const frameNum = Math.floor(time / this.frameDelay)
     // console.log("Animation Frame Num", frameNum)
     this.loopedCount = Math.floor(frameNum / this.frameCount)
@@ -82,25 +85,26 @@ export class Animation extends Sprite {
       this.needUpdateVertex = false
     }
     shader.setUniformMatrix4fv("u_transform", this.transformMatrix4)
-    shader.setUniform1f("u_alpha", this.color.alpha)
     const array = this.colorArray, color = this.color
     array[0] = color.red
     array[1] = color.green
     array[2] = color.blue
-    shader.setUniform3fv("u_color", array)
+    array[3] = color.alpha
+    shader.setUniform4fv("u_color", array)
     vertexArray.addBuffer(this.vertexBuffer, ColoredTextureShader.getLayout())
     StoryTextureManager.tryBind(this.frames[frameIndex])
     if (this.additiveBlend) {
-      // gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD)
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE)
+      gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD)
+      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE)
+      // gl.blendFunc(gl.ONE, gl.ONE)
 
-      // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE)
       gl.drawArrays(gl.TRIANGLES, 0, 6)
     } else {
       // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      // gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD)
-      // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ZERO, gl.ONE, gl.ZERO)
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD)
+      // gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE)
+      // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE)
       gl.drawArrays(gl.TRIANGLES, 0, 6)
     }
     this.vertexBuffer.unbind()

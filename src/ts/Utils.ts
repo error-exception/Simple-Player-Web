@@ -87,3 +87,14 @@ export function sleep(m: number) {
 export function isFloatZero(f: number): boolean {
   return Math.abs(f) < 0.00001
 }
+
+export function shallowCopy<T extends object>(source: T): T {
+  const result = {}
+  const keys = Object.getOwnPropertyNames(source)
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
+    //@ts-ignore
+    result[key] = source[key]
+  }
+  return result as T
+}
