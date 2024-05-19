@@ -10,7 +10,7 @@ import {BeatDrawable} from "../../drawable/BeatDrawable";
 import {ObjectTransition} from "../../transition/Transition";
 import {Time} from "../../../global/Time";
 import {int} from "../../../Utils";
-import {easeInQuart, easeInQuint, easeOut, easeOutQuint} from "../../../util/Easing";
+import {easeInQuart, easeOut} from "../../../util/Easing";
 import BeatBooster from "../../../global/BeatBooster";
 import {
     ATTR_ALPHA,

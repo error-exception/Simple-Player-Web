@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {inject} from "vue";
 import {Icon} from "../ts/icon/Icon";
-import ScreenManager from "../ts/webgl/util/ScreenManager";
 import Row from "./common/Row.vue";
 import {PLAYER} from "../ts/build";
 import Column from "./common/Column.vue";
@@ -20,8 +19,6 @@ defineEmits<{
 
 const openPlaylist = inject<Function>("openList")!!
 const openMiniPlayer = inject<Function>("openMiniPlayer")!!
-
-const switchScreen = (id: string) => ScreenManager.activeScreen(id)
 
 </script>
 <template>

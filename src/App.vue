@@ -189,7 +189,7 @@ function closeAll() {
 }
 
 const stateText = ref("")
-const collector = () => PLAYER && nextSong()
+// const collector = () => PLAYER && nextSong()
 
 // watch(() => ui.bpmCalculator, (value) => {
 //   if (value)

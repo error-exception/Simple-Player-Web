@@ -10,7 +10,6 @@ import {Vector2} from "../../core/Vector2";
 import {VertexArray} from "../../core/VertexArray";
 import {VertexBuffer} from "../../core/VertexBuffer";
 import {VertexBufferLayout} from "../../core/VertexBufferLayout";
-import {Time} from "../../../global/Time";
 import {easeOutQuint} from "../../../util/Easing";
 import {
     ATTR_POSITION,
@@ -339,7 +338,7 @@ export class BackgroundBounce extends Box {
     }
 
     public in() {
-        const startTime = Time.currentTime + 300
+        // const startTime = Time.currentTime + 300
         const transition = this.transform()
         transition.delay(300).scaleTo(new Vector2(0.98, 0.98), 500, easeOutQuint)
           .delay(300).moveTo(new Vector2(0, -40), 500, easeOutQuint)

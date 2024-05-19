@@ -1,9 +1,3 @@
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
 var __accessCheck = (obj, member, msg) => {
   if (!member.has(obj))
     throw TypeError("Cannot " + msg);
@@ -1181,6 +1175,27 @@ const shallowUnwrapHandlers = {
 function proxyRefs(objectWithRefs) {
   return isReactive(objectWithRefs) ? objectWithRefs : new Proxy(objectWithRefs, shallowUnwrapHandlers);
 }
+class CustomRefImpl {
+  constructor(factory) {
+    this.dep = void 0;
+    this.__v_isRef = true;
+    const { get: get2, set: set2 } = factory(
+      () => trackRefValue(this),
+      () => triggerRefValue(this)
+    );
+    this._get = get2;
+    this._set = set2;
+  }
+  get value() {
+    return this._get();
+  }
+  set value(newVal) {
+    this._set(newVal);
+  }
+}
+function customRef(factory) {
+  return new CustomRefImpl(factory);
+}
 class ComputedRefImpl {
   constructor(getter, _setter, isReadonly2, isSSR) {
     this._setter = _setter;
@@ -1737,6 +1752,9 @@ function queueEffectWithSuspense(fn, suspense) {
   } else {
     queuePostFlushCb(fn);
   }
+}
+function watchEffect(effect, options) {
+  return doWatch(effect, null, options);
 }
 const INITIAL_WATCHER_VALUE = {};
 function watch(source, cb, options) {
@@ -6383,7 +6401,7 @@ function normalizeContainer(container) {
 }
 const style = "";
 const materialIcons = "";
-const _sfc_main$l = /* @__PURE__ */ defineComponent({
+const _sfc_main$n = /* @__PURE__ */ defineComponent({
   __name: "Row",
   props: {
     center: { type: Boolean },
@@ -6433,8 +6451,8 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const Row = /* @__PURE__ */ _export_sfc(_sfc_main$l, [["__scopeId", "data-v-98094a68"]]);
-const _sfc_main$k = /* @__PURE__ */ defineComponent({
+const Row = /* @__PURE__ */ _export_sfc(_sfc_main$n, [["__scopeId", "data-v-98094a68"]]);
+const _sfc_main$m = /* @__PURE__ */ defineComponent({
   __name: "Column",
   props: {
     center: { type: Boolean },
@@ -6477,7 +6495,7 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
   }
 });
 const Column_vue_vue_type_style_index_0_scoped_5a6a4ea8_lang = "";
-const Column = /* @__PURE__ */ _export_sfc(_sfc_main$k, [["__scopeId", "data-v-5a6a4ea8"]]);
+const Column = /* @__PURE__ */ _export_sfc(_sfc_main$m, [["__scopeId", "data-v-5a6a4ea8"]]);
 var Icon = /* @__PURE__ */ ((Icon2) => {
   Icon2["ThreeDRotation"] = "";
   Icon2["AcUnit"] = "";
@@ -7454,9 +7472,32 @@ class ArrayUtils {
       arr[i] = param2(arr[i]);
     }
   }
+  static maxOf(arr, p2) {
+    let max = Number.MIN_VALUE;
+    for (let i = 0; i < arr.length; i++) {
+      const v = p2(arr[i]);
+      if (v > max) {
+        max = v;
+      }
+    }
+    return max;
+  }
+  static minOf(arr, p2) {
+    let min = Number.MAX_VALUE;
+    for (let i = 0; i < arr.length; i++) {
+      const v = p2(arr[i]);
+      if (v < min) {
+        min = v;
+      }
+    }
+    return min;
+  }
 }
 function degreeToRadian(degree) {
   return degree * (Math.PI / 180);
+}
+function radianToDegree(radian) {
+  return radian * (180 / Math.PI);
 }
 function currentMilliseconds() {
   return Date.now();
@@ -7506,6 +7547,22 @@ function scope(target, scope2) {
 function isString$1(v) {
   return typeof v === "string";
 }
+function sleep(m) {
+  return new Promise((resolve2) => {
+    setTimeout(() => {
+      resolve2();
+    }, m);
+  });
+}
+function shallowCopy(source) {
+  const result = {};
+  const keys = Object.getOwnPropertyNames(source);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    result[key] = source[key];
+  }
+  return result;
+}
 let id$1 = 0;
 function nextId() {
   if (id$1 >= Number.MAX_SAFE_INTEGER - 10) {
@@ -7513,7 +7570,7 @@ function nextId() {
   }
   return id$1++;
 }
-class OsuNotification {
+const _OsuNotification = class _OsuNotification {
   static removeFrom(r, item) {
     const index = r.value.indexOf(item);
     index >= 0 && r.value.splice(index, 1);
@@ -7541,18 +7598,19 @@ class OsuNotification {
       this.removeFrom(this.tempQueue, n);
     }, 5e3);
   }
-}
-__publicField(OsuNotification, "messages", shallowRef([]));
-__publicField(OsuNotification, "runningTasks", shallowRef([]));
-__publicField(OsuNotification, "tempQueue", shallowRef([]));
+};
+_OsuNotification.messages = shallowRef([]);
+_OsuNotification.runningTasks = shallowRef([]);
+_OsuNotification.tempQueue = shallowRef([]);
+let OsuNotification = _OsuNotification;
 const _RunningTask = class _RunningTask {
   constructor() {
-    __publicField(this, "id", nextId());
-    __publicField(this, "text", ref(""));
-    __publicField(this, "icon", ref(Icon.Check));
-    __publicField(this, "progress", ref(0));
-    __publicField(this, "state", _RunningTask.STATE_WAIT);
-    __publicField(this, "always", false);
+    this.id = nextId();
+    this.text = ref("");
+    this.icon = ref(Icon.Check);
+    this.progress = ref(0);
+    this.state = _RunningTask.STATE_WAIT;
+    this.always = false;
   }
   async run(scope2) {
     return scope2(this);
@@ -7568,9 +7626,9 @@ const _RunningTask = class _RunningTask {
     OsuNotification.push(this);
   }
 };
-__publicField(_RunningTask, "STATE_WAIT", 0);
-__publicField(_RunningTask, "STATE_RUNNING", 1);
-__publicField(_RunningTask, "STATE_FINISH", 2);
+_RunningTask.STATE_WAIT = 0;
+_RunningTask.STATE_RUNNING = 1;
+_RunningTask.STATE_FINISH = 2;
 let RunningTask = _RunningTask;
 function notifyMessage(text2, icon = Icon.Info) {
   const task = new RunningTask();
@@ -7912,7 +7970,7 @@ function playSound(buffer) {
     source.disconnect();
   };
 }
-const _sfc_main$j = /* @__PURE__ */ defineComponent({
+const _sfc_main$l = /* @__PURE__ */ defineComponent({
   __name: "CheckBox",
   props: mergeModels({
     color: { default: "#33cb98" }
@@ -7947,14 +8005,14 @@ const _sfc_main$j = /* @__PURE__ */ defineComponent({
   }
 });
 const CheckBox_vue_vue_type_style_index_0_scoped_baa6d9c1_lang = "";
-const CheckBox = /* @__PURE__ */ _export_sfc(_sfc_main$j, [["__scopeId", "data-v-baa6d9c1"]]);
+const CheckBox = /* @__PURE__ */ _export_sfc(_sfc_main$l, [["__scopeId", "data-v-baa6d9c1"]]);
 class TimePlayer {
   constructor() {
-    __publicField(this, "previousTime", 0);
-    __publicField(this, "startTime", 0);
-    __publicField(this, "isPlaying", false);
-    __publicField(this, "_current", ref(0));
-    __publicField(this, "sp", 1);
+    this.previousTime = 0;
+    this.startTime = 0;
+    this.isPlaying = false;
+    this._current = ref(0);
+    this.sp = 1;
   }
   reset() {
     this.sp = 1;
@@ -7990,12 +8048,11 @@ class TimePlayer {
 }
 class VisualizerV2 {
   constructor(analyse) {
-    // @ts-ignore
-    __publicField(this, "source", null);
-    __publicField(this, "fftBuffer", new Uint8Array(0));
-    __publicField(this, "emptyBuffer", new Uint8Array(0));
-    __publicField(this, "isAvailable", false);
     this.analyse = analyse;
+    this.source = null;
+    this.fftBuffer = new Uint8Array(0);
+    this.emptyBuffer = new Uint8Array(0);
+    this.isAvailable = false;
     analyse.smoothingTimeConstant = 0.3;
     analyse.minDecibels = -45;
     analyse.maxDecibels = 0;
@@ -8023,201 +8080,6 @@ class VisualizerV2 {
     return this.emptyBuffer;
   }
 }
-function createJob(collector, value) {
-  return {
-    id: nextID(),
-    active: true,
-    func: collector,
-    value
-  };
-}
-let id = Number.MIN_SAFE_INTEGER + 10;
-function nextID() {
-  const i = id++;
-  if (id >= Number.MAX_SAFE_INTEGER - 10) {
-    id = Number.MIN_SAFE_INTEGER + 10;
-  }
-  return i;
-}
-class Flow {
-}
-class StateFlow extends Flow {
-}
-const resolve = Promise.resolve();
-class MutableStateFlow extends StateFlow {
-  constructor(value) {
-    super();
-    __publicField(this, "_value");
-    __publicField(this, "collectorList", []);
-    __publicField(this, "jobQueue", []);
-    __publicField(this, "flushIndex", 0);
-    __publicField(this, "isFlushing", false);
-    __publicField(this, "isFlushPending", false);
-    this._value = value;
-  }
-  set value(newValue) {
-    this.emit(newValue);
-  }
-  emit(newValue) {
-    const oldValue = this._value;
-    if (oldValue === newValue) {
-      return;
-    }
-    this._value = newValue;
-    const collectorList = this.collectorList;
-    for (let i = 0; i < collectorList.length; i++) {
-      const collector = collectorList[i];
-      collector.value = newValue;
-      const jobQueue = this.jobQueue;
-      if (!jobQueue.includes(
-        collector,
-        this.isFlushing ? this.flushIndex + 1 : this.flushIndex
-      )) {
-        jobQueue.splice(this.findInsertionIndex(collector.id), 0, collector);
-      }
-    }
-    this.flushQueue();
-  }
-  get value() {
-    return this._value;
-  }
-  findInsertionIndex(id2) {
-    const jobQueue = this.jobQueue;
-    let start = this.flushIndex + 1;
-    let end = jobQueue.length;
-    while (start < end) {
-      const middle = start + end >>> 1;
-      const middleJobId = jobQueue[middle].id;
-      middleJobId < id2 ? start = middle + 1 : end = middle;
-    }
-    return start;
-  }
-  flushQueue() {
-    if (!this.isFlushing && !this.isFlushPending) {
-      this.isFlushPending = true;
-      resolve.then(this.flushJob.bind(this));
-    }
-  }
-  flushJob() {
-    this.isFlushPending = false;
-    this.isFlushing = true;
-    this.jobQueue.sort((a, b) => a.id - b.id);
-    try {
-      for (this.flushIndex = 0; this.flushIndex < this.jobQueue.length; this.flushIndex++) {
-        const job = this.jobQueue[this.flushIndex];
-        if (job.active) {
-          try {
-            job.func(job.value);
-          } catch (e) {
-            console.error(e);
-          }
-        }
-      }
-    } finally {
-      this.flushIndex = 0;
-      this.jobQueue.length = 0;
-      this.isFlushing = false;
-    }
-  }
-  collect(collector) {
-    const job = createJob(collector, this._value);
-    this.collectorList.push(job);
-    job.func(job.value);
-  }
-  removeCollect(collector) {
-    const index = this.collectorList.findIndex((v) => v.func === collector);
-    this.collectorList[index].active = false;
-    this.collectorList.splice(index, 1);
-  }
-  clear() {
-    this.collectorList.length = 0;
-    this.jobQueue.length = 0;
-  }
-}
-class MutableSharedFlow extends Flow {
-  constructor() {
-    super();
-    __publicField(this, "_value", null);
-    __publicField(this, "collectorList", []);
-    __publicField(this, "jobQueue", []);
-    __publicField(this, "flushIndex", 0);
-    __publicField(this, "isFlushing", false);
-    __publicField(this, "isFlushPending", false);
-  }
-  emit(newValue) {
-    this._value = newValue;
-    const collectorList = this.collectorList;
-    for (let i = 0; i < collectorList.length; i++) {
-      const collector = collectorList[i];
-      collector.value = newValue;
-      const jobQueue = this.jobQueue;
-      if (!jobQueue.includes(
-        collector,
-        this.isFlushing ? this.flushIndex + 1 : this.flushIndex
-      )) {
-        jobQueue.splice(this.findInsertionIndex(collector.id), 0, collector);
-      }
-    }
-    this.flushQueue();
-  }
-  findInsertionIndex(id2) {
-    const jobQueue = this.jobQueue;
-    let start = this.flushIndex + 1;
-    let end = jobQueue.length;
-    while (start < end) {
-      const middle = start + end >>> 1;
-      const middleJobId = jobQueue[middle].id;
-      middleJobId < id2 ? start = middle + 1 : end = middle;
-    }
-    return start;
-  }
-  flushQueue() {
-    if (!this.isFlushing && !this.isFlushPending) {
-      this.isFlushPending = true;
-      resolve.then(this.flushJob.bind(this));
-    }
-  }
-  flushJob() {
-    this.isFlushPending = false;
-    this.isFlushing = true;
-    this.jobQueue.sort((a, b) => a.id - b.id);
-    try {
-      for (this.flushIndex = 0; this.flushIndex < this.jobQueue.length; this.flushIndex++) {
-        const job = this.jobQueue[this.flushIndex];
-        if (job.active) {
-          try {
-            job.func(job.value);
-          } catch (e) {
-            console.error(e);
-          }
-        }
-      }
-    } finally {
-      this.flushIndex = 0;
-      this.jobQueue.length = 0;
-      this.isFlushing = false;
-    }
-  }
-  collect(collector) {
-    const job = createJob(collector, this._value);
-    this.collectorList.push(job);
-  }
-  removeCollect(collector) {
-    const index = this.collectorList.findIndex((v) => v.func === collector);
-    this.collectorList[index].active = false;
-    this.collectorList.splice(index, 1);
-  }
-  clear() {
-    this.collectorList.length = 0;
-    this.jobQueue.length = 0;
-  }
-}
-function createMutableStateFlow(a) {
-  return new MutableStateFlow(a);
-}
-function createMutableSharedFlow() {
-  return new MutableSharedFlow();
-}
 const PlayerState = {
   STATE_DOWNLOADING: 0,
   STATE_DECODING: 1,
@@ -8227,25 +8089,60 @@ const PlayerState = {
 };
 class AbstractPlayer {
 }
+function eventRef(val) {
+  const event = customRef((track2, trigger2) => {
+    let value = val;
+    return {
+      get() {
+        track2();
+        return value;
+      },
+      set(newValue) {
+        value = newValue;
+        trigger2();
+      }
+    };
+  });
+  event.emit = function(val2) {
+    this.value = val2;
+  };
+  return event;
+}
+function collect(r, callback) {
+  let skipFirst = true;
+  let newValue = r.value;
+  const job = () => {
+    callback(newValue);
+  };
+  return watchEffect(() => {
+    newValue = r.value;
+    if (skipFirst) {
+      skipFirst = false;
+      return;
+    }
+    queuePostFlushCb(job);
+  });
+}
+function collectLatest(r, callback) {
+  return watch(r, callback, { immediate: true });
+}
 class AudioPlayer extends AbstractPlayer {
   constructor() {
     super();
-    __publicField(this, "audioContext");
-    __publicField(this, "source", null);
-    __publicField(this, "audioBuffer", null);
-    __publicField(this, "isAvailable", false);
-    __publicField(this, "time", new TimePlayer());
-    __publicField(this, "_duration", 0);
-    __publicField(this, "volume", ref(1));
-    __publicField(this, "onEnd", createMutableSharedFlow());
-    __publicField(this, "onSeeked", createMutableSharedFlow());
-    __publicField(this, "playStateFlow", createMutableStateFlow(-1));
-    __publicField(this, "_busyState", [PlayerState.STATE_DECODING]);
-    //@ts-ignore
-    __publicField(this, "needToPlay", false);
-    __publicField(this, "seekTime", -1);
-    __publicField(this, "playbackRate", 1);
-    __publicField(this, "visualizer", null);
+    this.source = null;
+    this.audioBuffer = null;
+    this.isAvailable = false;
+    this.time = new TimePlayer();
+    this._duration = 0;
+    this.volume = ref(1);
+    this.onEnd = eventRef();
+    this.onSeeked = eventRef();
+    this.playState = ref(-1);
+    this._busyState = [PlayerState.STATE_DECODING];
+    this.needToPlay = false;
+    this.seekTime = -1;
+    this.playbackRate = 1;
+    this.visualizer = null;
     this.audioContext = new AudioContext();
   }
   async setSource(src) {
@@ -8381,18 +8278,64 @@ class AudioPlayer extends AbstractPlayer {
   }
 }
 const AudioPlayerV2 = new AudioPlayer();
-const ease = cubicBezier(0.25, 0.1, 0.25, 1);
+const easeIn = cubicBezier(0.25, 0.1, 0.25, 1);
+const easeInSine = cubicBezier(0.12, 0, 0.39, 0);
 const easeInQuad = cubicBezier(0.11, 0, 0.5, 0);
 const easeInCubic = cubicBezier(0.32, 0, 0.67, 0);
+const easeInQuart = cubicBezier(0.5, 0, 0.75, 0);
+const easeInQuint = cubicBezier(0.64, 0, 0.78, 0);
+const easeInExpo = cubicBezier(0.7, 0, 0.84, 0);
+const easeInCirc = cubicBezier(0.55, 0, 1, 0.45);
+const easeInBack = cubicBezier(0.36, 0, 0.66, -0.56);
+const easeInElastic = (x) => {
+  const c4 = 2 * Math.PI / 3;
+  return x === 0 ? 0 : x === 1 ? 1 : -Math.pow(2, 10 * x - 10) * Math.sin((x * 10 - 10.75) * c4);
+};
+const easeInBounce = (x) => {
+  return 1 - easeOutBounce(1 - x);
+};
 const easeOut = cubicBezier(0, 0, 0.58, 1);
+const easeOutSine = cubicBezier(0.61, 1, 0.88, 1);
+const easeOutQuad = cubicBezier(0.5, 1, 0.89, 1);
 const easeOutCubic = cubicBezier(0.33, 1, 0.68, 1);
+const easeOutQuart = cubicBezier(0.25, 1, 0.5, 1);
 const easeOutQuint = cubicBezier(0.22, 1, 0.36, 1);
+const easeOutExpo = cubicBezier(0.16, 1, 0.3, 1);
+const easeOutCirc = cubicBezier(0, 0.55, 0.45, 1);
 const easeOutBack = cubicBezier(0.34, 1.56, 0.64, 1);
 const easeOutElastic = (x) => {
   const c4 = 2 * Math.PI / 3;
   return x === 0 ? 0 : x === 1 ? 1 : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
 };
+const easeOutBounce = (x) => {
+  const n1 = 7.5625;
+  const d1 = 2.75;
+  if (x < 1 / d1) {
+    return n1 * x * x;
+  } else if (x < 2 / d1) {
+    return n1 * (x -= 1.5 / d1) * x + 0.75;
+  } else if (x < 2.5 / d1) {
+    return n1 * (x -= 2.25 / d1) * x + 0.9375;
+  } else {
+    return n1 * (x -= 2.625 / d1) * x + 0.984375;
+  }
+};
 const easeInOut = cubicBezier(0.42, 0, 0.58, 1);
+const easeInOutSine = cubicBezier(0.37, 0, 0.63, 1);
+const easeInOutQuad = cubicBezier(0.45, 0, 0.55, 1);
+const easeInOutCubic = cubicBezier(0.65, 0, 0.35, 1);
+const easeInOutQuart = cubicBezier(0.76, 0, 0.24, 1);
+const easeInOutQuint = cubicBezier(0.83, 0, 0.17, 1);
+const easeInOutExpo = cubicBezier(0.87, 0, 0.13, 1);
+const easeInOutCirc = cubicBezier(0.85, 0, 0.15, 1);
+const easeInOutBack = cubicBezier(0.68, -0.6, 0.32, 1.6);
+const easeInOutElastic = (x) => {
+  const c5 = 2 * Math.PI / 4.5;
+  return x === 0 ? 0 : x === 1 ? 1 : x < 0.5 ? -(Math.pow(2, 20 * x - 10) * Math.sin((20 * x - 11.125) * c5)) / 2 : Math.pow(2, -20 * x + 10) * Math.sin((20 * x - 11.125) * c5) / 2 + 1;
+};
+const easeInOutBounce = (x) => {
+  return x < 0.5 ? (1 - easeOutBounce(1 - 2 * x)) / 2 : (1 + easeOutBounce(2 * x - 1)) / 2;
+};
 const linear = cubicBezier(0, 0, 1, 1);
 function cubicBezier(p1x, p1y, p2x, p2y) {
   const ZERO_LIMIT = 1e-6;
@@ -8450,12 +8393,12 @@ function cubicBezier(p1x, p1y, p2x, p2y) {
 }
 class TestBeater {
   constructor() {
-    __publicField(this, "gap", 0);
-    __publicField(this, "offset", 0);
-    __publicField(this, "timingList", []);
-    __publicField(this, "beatCount", 0);
-    __publicField(this, "beatFlag", false);
-    __publicField(this, "prevBeat", -1);
+    this.gap = 0;
+    this.offset = 0;
+    this.timingList = [];
+    this.beatCount = 0;
+    this.beatFlag = false;
+    this.prevBeat = -1;
   }
   getGap() {
     return this.gap;
@@ -8528,13 +8471,207 @@ class TestBeater {
     return this.beatFlag;
   }
 }
-class Toaster {
+function createJob(collector, value) {
+  return {
+    id: nextID(),
+    active: true,
+    func: collector,
+    value
+  };
+}
+let id = Number.MIN_SAFE_INTEGER + 10;
+function nextID() {
+  const i = id++;
+  if (id >= Number.MAX_SAFE_INTEGER - 10) {
+    id = Number.MIN_SAFE_INTEGER + 10;
+  }
+  return i;
+}
+class Flow {
+}
+class StateFlow extends Flow {
+}
+const resolve = Promise.resolve();
+class MutableStateFlow extends StateFlow {
+  constructor(value) {
+    super();
+    this.collectorList = [];
+    this.jobQueue = [];
+    this.flushIndex = 0;
+    this.isFlushing = false;
+    this.isFlushPending = false;
+    this._value = value;
+  }
+  set value(newValue) {
+    this.emit(newValue);
+  }
+  emit(newValue) {
+    const oldValue = this._value;
+    if (oldValue === newValue) {
+      return;
+    }
+    this._value = newValue;
+    const collectorList = this.collectorList;
+    for (let i = 0; i < collectorList.length; i++) {
+      const collector = collectorList[i];
+      collector.value = newValue;
+      const jobQueue = this.jobQueue;
+      if (!jobQueue.includes(
+        collector,
+        this.isFlushing ? this.flushIndex + 1 : this.flushIndex
+      )) {
+        jobQueue.splice(this.findInsertionIndex(collector.id), 0, collector);
+      }
+    }
+    this.flushQueue();
+  }
+  get value() {
+    return this._value;
+  }
+  findInsertionIndex(id2) {
+    const jobQueue = this.jobQueue;
+    let start = this.flushIndex + 1;
+    let end = jobQueue.length;
+    while (start < end) {
+      const middle = start + end >>> 1;
+      const middleJobId = jobQueue[middle].id;
+      middleJobId < id2 ? start = middle + 1 : end = middle;
+    }
+    return start;
+  }
+  flushQueue() {
+    if (!this.isFlushing && !this.isFlushPending) {
+      this.isFlushPending = true;
+      resolve.then(this.flushJob.bind(this));
+    }
+  }
+  flushJob() {
+    this.isFlushPending = false;
+    this.isFlushing = true;
+    this.jobQueue.sort((a, b) => a.id - b.id);
+    try {
+      for (this.flushIndex = 0; this.flushIndex < this.jobQueue.length; this.flushIndex++) {
+        const job = this.jobQueue[this.flushIndex];
+        if (job.active) {
+          try {
+            job.func(job.value);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+    } finally {
+      this.flushIndex = 0;
+      this.jobQueue.length = 0;
+      this.isFlushing = false;
+    }
+  }
+  collect(collector) {
+    const job = createJob(collector, this._value);
+    this.collectorList.push(job);
+    job.func(job.value);
+  }
+  removeCollect(collector) {
+    const index = this.collectorList.findIndex((v) => v.func === collector);
+    this.collectorList[index].active = false;
+    this.collectorList.splice(index, 1);
+  }
+  clear() {
+    this.collectorList.length = 0;
+    this.jobQueue.length = 0;
+  }
+}
+class MutableSharedFlow extends Flow {
+  constructor() {
+    super();
+    this._value = null;
+    this.collectorList = [];
+    this.jobQueue = [];
+    this.flushIndex = 0;
+    this.isFlushing = false;
+    this.isFlushPending = false;
+  }
+  emit(newValue) {
+    this._value = newValue;
+    const collectorList = this.collectorList;
+    for (let i = 0; i < collectorList.length; i++) {
+      const collector = collectorList[i];
+      collector.value = newValue;
+      const jobQueue = this.jobQueue;
+      if (!jobQueue.includes(
+        collector,
+        this.isFlushing ? this.flushIndex + 1 : this.flushIndex
+      )) {
+        jobQueue.splice(this.findInsertionIndex(collector.id), 0, collector);
+      }
+    }
+    this.flushQueue();
+  }
+  findInsertionIndex(id2) {
+    const jobQueue = this.jobQueue;
+    let start = this.flushIndex + 1;
+    let end = jobQueue.length;
+    while (start < end) {
+      const middle = start + end >>> 1;
+      const middleJobId = jobQueue[middle].id;
+      middleJobId < id2 ? start = middle + 1 : end = middle;
+    }
+    return start;
+  }
+  flushQueue() {
+    if (!this.isFlushing && !this.isFlushPending) {
+      this.isFlushPending = true;
+      resolve.then(this.flushJob.bind(this));
+    }
+  }
+  flushJob() {
+    this.isFlushPending = false;
+    this.isFlushing = true;
+    this.jobQueue.sort((a, b) => a.id - b.id);
+    try {
+      for (this.flushIndex = 0; this.flushIndex < this.jobQueue.length; this.flushIndex++) {
+        const job = this.jobQueue[this.flushIndex];
+        if (job.active) {
+          try {
+            job.func(job.value);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+    } finally {
+      this.flushIndex = 0;
+      this.jobQueue.length = 0;
+      this.isFlushing = false;
+    }
+  }
+  collect(collector) {
+    const job = createJob(collector, this._value);
+    this.collectorList.push(job);
+  }
+  removeCollect(collector) {
+    const index = this.collectorList.findIndex((v) => v.func === collector);
+    this.collectorList[index].active = false;
+    this.collectorList.splice(index, 1);
+  }
+  clear() {
+    this.collectorList.length = 0;
+    this.jobQueue.length = 0;
+  }
+}
+function createMutableStateFlow(a) {
+  return new MutableStateFlow(a);
+}
+function createMutableSharedFlow() {
+  return new MutableSharedFlow();
+}
+const _Toaster = class _Toaster {
   static show(message) {
     this.toast.emit(message);
   }
-}
-// public static onToast: ((message: string) => void) | null = null
-__publicField(Toaster, "toast", createMutableSharedFlow());
+};
+_Toaster.toast = createMutableSharedFlow();
+let Toaster = _Toaster;
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -10562,16 +10699,16 @@ class MusicDao {
 const MusicDao$1 = new MusicDao();
 class TimingManager {
   constructor() {
-    __publicField(this, "defaultTiming", {
+    this.defaultTiming = {
       version: "1.0",
       bpm: 60,
       offset: 0,
       id: -1,
       timingList: []
-    });
-    __publicField(this, "onTimingUpdate", createMutableSharedFlow());
-    __publicField(this, "timingCache", /* @__PURE__ */ new Map());
-    __publicField(this, "isInit", false);
+    };
+    this.onTimingUpdate = createMutableSharedFlow();
+    this.timingCache = /* @__PURE__ */ new Map();
+    this.isInit = false;
   }
   async init() {
     const list = await MusicDao$1.getAllTimingList();
@@ -10611,12 +10748,16 @@ class TimingManager {
     return success;
   }
   toBulletTimingPoints(timingInfo) {
+    const beatLength = 60 / timingInfo.bpm * 1e3;
+    const timingList = timingInfo.timingList.map((value) => {
+      return {
+        isKiai: value.isKiai,
+        time: value.timestamp,
+        beatLength
+      };
+    });
     return {
-      beatGap: 60 / timingInfo.bpm * 1e3,
-      offset: timingInfo.offset,
-      timingList: timingInfo.timingList.map((v) => {
-        return { offset: v.timestamp, isKiai: v.isKiai };
-      })
+      timingList
     };
   }
 }
@@ -10634,8 +10775,6 @@ function newBullet() {
       id: -1
     },
     timingPoints: {
-      beatGap: 1e3,
-      offset: 0,
       timingList: []
     },
     events: {},
@@ -10657,15 +10796,13 @@ var PlayMode = /* @__PURE__ */ ((PlayMode2) => {
   PlayMode2[PlayMode2["None"] = 2] = "None";
   return PlayMode2;
 })(PlayMode || {});
-function isUndef(v) {
-  return typeof v === "undefined";
-}
 class VideoPlayer extends AbstractPlayer {
   constructor() {
     super();
-    __publicField(this, "video", document.createElement("video"));
-    __publicField(this, "isAvailable", false);
-    this.video.muted = true;
+    this.video = document.createElement("video");
+    this.isAvailable = false;
+    this.baseOffset = 0;
+    this.isStop = false;
   }
   currentTime() {
     return this.isAvailable ? int(this.video.currentTime * 1e3) : 0;
@@ -10677,6 +10814,10 @@ class VideoPlayer extends AbstractPlayer {
     this.video.pause();
   }
   async play() {
+    if (this.isStop) {
+      await this.seek(0);
+      this.isStop = false;
+    }
     await this.video.play();
   }
   isPlaying() {
@@ -10687,7 +10828,21 @@ class VideoPlayer extends AbstractPlayer {
       this.video.onseeked = () => {
         resolve2();
       };
-      this.video.currentTime = milliseconds / 1e3;
+      const targetCurrentTime = milliseconds - this.baseOffset;
+      if (targetCurrentTime >= 0) {
+        this.video.currentTime = targetCurrentTime / 1e3;
+      } else {
+        const tick = currentMilliseconds();
+        setTimeout(() => {
+          const gap = currentMilliseconds() - tick;
+          console.log("VideoPlayer gap", gap);
+          if (gap > -targetCurrentTime) {
+            this.video.currentTime = (gap + targetCurrentTime) / 1e3;
+          } else {
+            this.video.currentTime = 0;
+          }
+        }, -targetCurrentTime);
+      }
     });
   }
   async setSource(src) {
@@ -10711,38 +10866,49 @@ class VideoPlayer extends AbstractPlayer {
     this.video.playbackRate = rate;
   }
   stop() {
+    this.isStop = true;
     this.video.pause();
-    this.seek(0);
   }
   getVideoElement() {
     return this.video;
   }
 }
 const VideoPlayer$1 = new VideoPlayer();
-class OSUPlayer {
+const _OSUPlayer = class _OSUPlayer {
   constructor() {
-    __publicField(this, "title", createMutableStateFlow("None"));
-    __publicField(this, "artist", createMutableStateFlow("None"));
-    __publicField(this, "background", createMutableStateFlow({}));
-    __publicField(this, "currentTime", createMutableStateFlow(0));
-    __publicField(this, "duration", createMutableStateFlow(0));
-    __publicField(this, "onChanged", createMutableSharedFlow());
-    __publicField(this, "maniaNoteData", createMutableStateFlow(null));
-    __publicField(this, "osuStdNotes", createMutableStateFlow(null));
-    // public onTimingChanged = createMutableSharedFlow<Bullet>()
-    __publicField(this, "isVideoAvailable", false);
-  }
-  async setSource(src) {
-    console.log(src);
+    this.title = ref("None");
+    this.artist = ref("None");
+    this.background = shallowRef({});
+    this.currentTime = ref(0);
+    this.duration = ref(0);
+    this.onChanged = eventRef();
+    this.maniaNoteData = createMutableStateFlow(null);
+    this.currentOSUFile = shallowRef(_OSUPlayer.EMPTY_OSU);
+    this.currentOSZFile = shallowRef(_OSUPlayer.EMPTY_OSZ);
     this.isVideoAvailable = false;
-    this.title.value = src.metadata.title;
-    this.artist.value = src.metadata.artist;
-    await AudioPlayerV2.setSource(src.metadata.source);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        VideoPlayer$1.seek(AudioPlayerV2.currentTime());
+      }
+    });
+  }
+  async setSource(osu, src) {
+    this.isVideoAvailable = false;
+    const { Events, Metadata } = osu;
+    const { audio, image, video } = src.source;
+    if (!audio) {
+      console.warn("audio is null");
+      return;
+    }
+    await AudioPlayerV2.setSource(audio);
+    this.title.value = (Metadata == null ? void 0 : Metadata.TitleUnicode) ?? "None";
+    this.artist.value = (Metadata == null ? void 0 : Metadata.ArtistUnicode) ?? "None";
     this.duration.value = AudioPlayerV2.duration();
     const background = {};
-    if (src.events.backgroundVideo) {
+    if (video) {
       try {
-        await VideoPlayer$1.setSource(src.events.backgroundVideo);
+        VideoPlayer$1.baseOffset = (Events == null ? void 0 : Events.videoOffset) ?? 0;
+        await VideoPlayer$1.setSource(video);
         this.isVideoAvailable = true;
         background.video = VideoPlayer$1.getVideoElement();
       } catch (_) {
@@ -10751,20 +10917,25 @@ class OSUPlayer {
         background.video = void 0;
       }
     }
-    if (src.events.backgroundImage) {
-      background.imageBlob = src.events.backgroundImage;
-      background.image = await createImageBitmap(src.events.backgroundImage);
+    if (image) {
+      background.imageBlob = image;
+      background.image = await createImageBitmap(image);
     }
-    this.maniaNoteData.value = isUndef(src.noteData) ? null : src.noteData;
-    this.osuStdNotes.value = isUndef(src.stdNotes) ? null : src.stdNotes;
     this.background.value = background;
-    this.onChanged.emit(src);
+    this.onChanged.emit([osu, src]);
+    this.currentOSUFile.value = osu;
+    this.currentOSZFile.value = src;
   }
   async play() {
+    await Promise.all([this.playVideo(), this.playAudio()]);
+  }
+  async playAudio() {
+    await AudioPlayerV2.play();
+  }
+  async playVideo() {
     if (this.isVideoAvailable) {
       await VideoPlayer$1.play();
     }
-    await AudioPlayerV2.play();
   }
   pause() {
     if (this.isVideoAvailable) {
@@ -10791,31 +10962,32 @@ class OSUPlayer {
   isPlaying() {
     return AudioPlayerV2.isPlaying();
   }
-}
+  stop() {
+    AudioPlayerV2.stop();
+    VideoPlayer$1.stop();
+  }
+};
+_OSUPlayer.EMPTY_OSU = {};
+_OSUPlayer.EMPTY_OSZ = {};
+let OSUPlayer = _OSUPlayer;
 const OSUPlayer$1 = new OSUPlayer();
 const PLAYER = false;
 class PlayManager {
   constructor() {
-    __publicField(this, "_musicList", createMutableStateFlow([
+    this._musicList = createMutableStateFlow([
       newBullet()
-    ]));
-    __publicField(this, "currentIndex", createMutableStateFlow(0));
-    __publicField(this, "onSongChanged", createMutableSharedFlow());
-    __publicField(this, "currentPlayMode", createMutableStateFlow(PlayMode.None));
-    AudioPlayerV2.onEnd.collect(() => {
+    ]);
+    this.currentIndex = createMutableStateFlow(0);
+    this.onSongChanged = createMutableSharedFlow();
+    this.currentPlayMode = createMutableStateFlow(PlayMode.None);
+    collect(AudioPlayerV2.onEnd, () => {
     });
     TimingManager$1.onTimingUpdate.collect((timing) => {
       const id2 = timing.id;
       const music = this.findMusic(id2);
       if (!music)
         return;
-      music.timingPoints = {
-        offset: timing.offset,
-        beatGap: 60 / timing.bpm * 1e3,
-        timingList: timing.timingList.map((v) => {
-          return { offset: v.timestamp, isKiai: v.isKiai };
-        })
-      };
+      music.timingPoints = TimingManager$1.toBulletTimingPoints(timing);
     });
   }
   async loadMusicList() {
@@ -10847,12 +11019,12 @@ class PlayManager {
   findMusic(id2) {
     return this._musicList.value.find((v) => v.metadata.id === id2);
   }
+  /**
+   * @deprecated
+   * @param index
+   */
   async playAt(index) {
-    const music = this._musicList.value[index];
-    music.metadata.source = await MusicDao$1.downloadMusic(music.metadata.id);
-    await OSUPlayer$1.setSource(music);
-    await OSUPlayer$1.play();
-    this.currentIndex.value = index;
+    throw new Error();
   }
   next() {
     const playMode = this.currentPlayMode.value;
@@ -10896,26 +11068,11 @@ class PlayManager {
     bullet.metadata.title = music.title;
     bullet.metadata.artist = music.artist;
     bullet.available = info.id >= 0;
-    bullet.timingPoints.beatGap = 60 / info.bpm * 1e3;
-    bullet.timingPoints.offset = info.offset;
-    bullet.timingPoints.timingList = info.timingList.map((v) => {
-      return { offset: v.timestamp, isKiai: v.isKiai };
-    });
+    bullet.timingPoints = TimingManager$1.toBulletTimingPoints(info);
     return bullet;
   }
 }
 const PlayManager$1 = new PlayManager();
-function useCollect(flow, collector) {
-  flow.collect(collector);
-  onUnmounted(() => {
-    flow.removeCollect(collector);
-  });
-}
-function useStateFlow(stateFlow) {
-  const value = ref(stateFlow.value);
-  useCollect(stateFlow, (v) => value.value = v);
-  return value;
-}
 function useAnimationFrame(key, callback) {
   let handle;
   const k = isRef(key) ? key : ref(null);
@@ -10935,10 +11092,10 @@ function useAnimationFrame(key, callback) {
     handle !== void 0 && cancelAnimationFrame(handle);
   });
 }
-const _hoisted_1$c = { class: "relative" };
-const _hoisted_2$9 = ["value"];
+const _hoisted_1$d = { class: "relative" };
+const _hoisted_2$a = ["value"];
 const _hoisted_3$5 = ["onClick"];
-const _sfc_main$i = /* @__PURE__ */ defineComponent({
+const _sfc_main$k = /* @__PURE__ */ defineComponent({
   __name: "ExpandMenu",
   props: {
     modelValue: {},
@@ -10957,14 +11114,14 @@ const _sfc_main$i = /* @__PURE__ */ defineComponent({
       hidden.value = true;
     };
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$c, [
+      return openBlock(), createElementBlock("div", _hoisted_1$d, [
         createBaseVNode("input", {
           onFocus: _cache[0] || (_cache[0] = ($event) => hidden.value = false),
           autofocus: "",
           class: "expand-select text-center",
           readonly: "",
           value: _ctx.items[selectedIndex.value]
-        }, null, 40, _hoisted_2$9),
+        }, null, 40, _hoisted_2$a),
         createBaseVNode("div", {
           class: "expand-item-list",
           style: normalizeStyle({
@@ -10983,10 +11140,10 @@ const _sfc_main$i = /* @__PURE__ */ defineComponent({
   }
 });
 const ExpandMenu_vue_vue_type_style_index_0_scoped_e33839d5_lang = "";
-const ExpandMenu = /* @__PURE__ */ _export_sfc(_sfc_main$i, [["__scopeId", "data-v-e33839d5"]]);
-const _hoisted_1$b = { class: "w-full text-center text-white text-sm" };
-const _hoisted_2$8 = ["value"];
-const _sfc_main$h = /* @__PURE__ */ defineComponent({
+const ExpandMenu = /* @__PURE__ */ _export_sfc(_sfc_main$k, [["__scopeId", "data-v-e33839d5"]]);
+const _hoisted_1$c = { class: "w-full text-center text-white text-sm" };
+const _hoisted_2$9 = ["value"];
+const _sfc_main$j = /* @__PURE__ */ defineComponent({
   __name: "ValueAdjust",
   props: mergeModels({
     label: {}
@@ -11014,11 +11171,11 @@ const _sfc_main$h = /* @__PURE__ */ defineComponent({
         gap: 8
       }, {
         default: withCtx(() => [
-          createBaseVNode("span", _hoisted_1$b, toDisplayString(_ctx.label), 1),
+          createBaseVNode("span", _hoisted_1$c, toDisplayString(_ctx.label), 1),
           createBaseVNode("input", {
             class: "w-full bg-black text-white rounded text-center text-[22px] py-2",
             value: value.value
-          }, null, 8, _hoisted_2$8),
+          }, null, 8, _hoisted_2$9),
           createVNode(Row, {
             class: "w-full text-white",
             gap: 8
@@ -11048,10 +11205,10 @@ const _sfc_main$h = /* @__PURE__ */ defineComponent({
   }
 });
 const ValueAdjust_vue_vue_type_style_index_0_scoped_cc3e4111_lang = "";
-const ValueAdjust = /* @__PURE__ */ _export_sfc(_sfc_main$h, [["__scopeId", "data-v-cc3e4111"]]);
-const _withScopeId$2 = (n) => (pushScopeId("data-v-40faac5e"), n = n(), popScopeId(), n);
-const _hoisted_1$a = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("button", { class: "text-white fill-height" }, "Timing", -1));
-const _hoisted_2$7 = {
+const ValueAdjust = /* @__PURE__ */ _export_sfc(_sfc_main$j, [["__scopeId", "data-v-cc3e4111"]]);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-98e9724f"), n = n(), popScopeId(), n);
+const _hoisted_1$b = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("button", { class: "text-white fill-height" }, "Timing", -1));
+const _hoisted_2$8 = {
   class: "h-full flex flex-col justify-evenly px-1",
   style: { "background-color": "var(--bpm-color-3)" }
 };
@@ -11085,7 +11242,7 @@ const _hoisted_13 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createB
 ], -1));
 const _hoisted_14 = ["onClick"];
 const WINDOW = 12;
-const _sfc_main$g = /* @__PURE__ */ defineComponent({
+const _sfc_main$i = /* @__PURE__ */ defineComponent({
   __name: "BpmCalculator",
   emits: ["close"],
   setup(__props, { emit: emit2 }) {
@@ -11099,7 +11256,7 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
     let beatWaveContext;
     let intervals = [];
     const drawFlag = ref(false);
-    const playState = useStateFlow(AudioPlayerV2.playState);
+    const playState = AudioPlayerV2.playState;
     const player = AudioPlayerV2;
     const wave = ref(null);
     let DRAW_COUNT = 12;
@@ -11536,7 +11693,7 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
         reset();
       }
     });
-    useCollect(player.playState, (value) => {
+    collectLatest(player.playState, (value) => {
       drawFlag.value = value === PlayerState.STATE_PLAYING;
     });
     watch(() => state.playbackRateIndex, (value) => {
@@ -11612,7 +11769,7 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
             style: { "background-color": "#374340", "padding": "0 16px" }
           }, {
             default: withCtx(() => [
-              _hoisted_1$a,
+              _hoisted_1$b,
               createBaseVNode("button", {
                 class: "text-white h-full bpm-close ml-auto",
                 onClick: _cache[0] || (_cache[0] = ($event) => closeCalculator())
@@ -11622,7 +11779,7 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
           }),
           createVNode(Row, { class: "w-full" }, {
             default: withCtx(() => [
-              createBaseVNode("div", _hoisted_2$7, [
+              createBaseVNode("div", _hoisted_2$8, [
                 createBaseVNode("button", {
                   class: "ma text-white",
                   onClick: _cache[1] || (_cache[1] = ($event) => isRef(DRAW_COUNT) ? DRAW_COUNT.value++ : DRAW_COUNT++)
@@ -11845,27 +12002,27 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const BpmCalculator_vue_vue_type_style_index_0_scoped_40faac5e_lang = "";
-const BpmCalculator = /* @__PURE__ */ _export_sfc(_sfc_main$g, [["__scopeId", "data-v-40faac5e"]]);
-const _sfc_main$f = {};
-const _hoisted_1$9 = { class: "flex flex-row develop-box rounded-tl-[8px] py-2 px-4 text-white bg-[#00000080] pointer-events-none" };
-const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode("span", null, "开发中版本", -1);
+const BpmCalculator_vue_vue_type_style_index_0_scoped_98e9724f_lang = "";
+const BpmCalculator = /* @__PURE__ */ _export_sfc(_sfc_main$i, [["__scopeId", "data-v-98e9724f"]]);
+const _sfc_main$h = {};
+const _hoisted_1$a = { class: "flex flex-row develop-box rounded-tl-[8px] py-2 px-4 text-white bg-[#00000080] pointer-events-none" };
+const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode("span", null, "开发中版本", -1);
 const _hoisted_3$3 = [
-  _hoisted_2$6
+  _hoisted_2$7
 ];
 function _sfc_render(_ctx, _cache) {
-  return openBlock(), createElementBlock("div", _hoisted_1$9, _hoisted_3$3);
+  return openBlock(), createElementBlock("div", _hoisted_1$a, _hoisted_3$3);
 }
-const DevelopTip = /* @__PURE__ */ _export_sfc(_sfc_main$f, [["render", _sfc_render]]);
-const _sfc_main$e = /* @__PURE__ */ defineComponent({
+const DevelopTip = /* @__PURE__ */ _export_sfc(_sfc_main$h, [["render", _sfc_render]]);
+const _sfc_main$g = /* @__PURE__ */ defineComponent({
   __name: "ProgressBar",
   setup(__props) {
     const state = reactive({
       width: 0
     });
     const progressBar = ref(null);
-    const duration = useStateFlow(OSUPlayer$1.duration);
-    const current = useStateFlow(OSUPlayer$1.currentTime);
+    const duration = OSUPlayer$1.duration;
+    const current = OSUPlayer$1.currentTime;
     const progress = computed(() => {
       return `width: ${current.value / duration.value * state.width}px`;
     });
@@ -11893,8 +12050,8 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ProgressBar_vue_vue_type_style_index_0_scoped_27cf0c27_lang = "";
-const ProgressBar = /* @__PURE__ */ _export_sfc(_sfc_main$e, [["__scopeId", "data-v-27cf0c27"]]);
+const ProgressBar_vue_vue_type_style_index_0_scoped_2949efd0_lang = "";
+const ProgressBar = /* @__PURE__ */ _export_sfc(_sfc_main$g, [["__scopeId", "data-v-2949efd0"]]);
 var commonjsGlobal = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
@@ -12044,8 +12201,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       function n(e2, t2, r2, n2, i2, s2) {
         var a, o, h2 = e2.file, u = e2.compression, l = s2 !== O.utf8encode, f = I.transformTo("string", s2(h2.name)), c = I.transformTo("string", O.utf8encode(h2.name)), d = h2.comment, p2 = I.transformTo("string", s2(d)), m = I.transformTo("string", O.utf8encode(d)), _ = c.length !== h2.name.length, g = m.length !== d.length, b = "", v = "", y = "", w = h2.dir, k = h2.date, x = { crc32: 0, compressedSize: 0, uncompressedSize: 0 };
         t2 && !r2 || (x.crc32 = e2.crc32, x.compressedSize = e2.compressedSize, x.uncompressedSize = e2.uncompressedSize);
-        var S = 0;
-        t2 && (S |= 8), l || !_ && !g || (S |= 2048);
+        var S2 = 0;
+        t2 && (S2 |= 8), l || !_ && !g || (S2 |= 2048);
         var z = 0, C = 0;
         w && (z |= 16), "UNIX" === i2 ? (C = 798, z |= function(e3, t3) {
           var r3 = e3;
@@ -12054,9 +12211,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           return 63 & (e3 || 0);
         }(h2.dosPermissions)), a = k.getUTCHours(), a <<= 6, a |= k.getUTCMinutes(), a <<= 5, a |= k.getUTCSeconds() / 2, o = k.getUTCFullYear() - 1980, o <<= 4, o |= k.getUTCMonth() + 1, o <<= 5, o |= k.getUTCDate(), _ && (v = A(1, 1) + A(B(f), 4) + c, b += "up" + A(v.length, 2) + v), g && (y = A(1, 1) + A(B(p2), 4) + m, b += "uc" + A(y.length, 2) + y);
         var E = "";
-        return E += "\n\0", E += A(S, 2), E += u.magic, E += A(a, 2), E += A(o, 2), E += A(x.crc32, 4), E += A(x.compressedSize, 4), E += A(x.uncompressedSize, 4), E += A(f.length, 2), E += A(b.length, 2), { fileRecord: R.LOCAL_FILE_HEADER + E + f + b, dirRecord: R.CENTRAL_FILE_HEADER + A(C, 2) + E + A(p2.length, 2) + "\0\0\0\0" + A(z, 4) + A(n2, 4) + f + b + p2 };
+        return E += "\n\0", E += A(S2, 2), E += u.magic, E += A(a, 2), E += A(o, 2), E += A(x.crc32, 4), E += A(x.compressedSize, 4), E += A(x.uncompressedSize, 4), E += A(f.length, 2), E += A(b.length, 2), { fileRecord: R2.LOCAL_FILE_HEADER + E + f + b, dirRecord: R2.CENTRAL_FILE_HEADER + A(C, 2) + E + A(p2.length, 2) + "\0\0\0\0" + A(z, 4) + A(n2, 4) + f + b + p2 };
       }
-      var I = e("../utils"), i = e("../stream/GenericWorker"), O = e("../utf8"), B = e("../crc32"), R = e("../signature");
+      var I = e("../utils"), i = e("../stream/GenericWorker"), O = e("../utf8"), B = e("../crc32"), R2 = e("../signature");
       function s(e2, t2, r2, n2) {
         i.call(this, "ZipFileWorker"), this.bytesWritten = 0, this.zipComment = t2, this.zipPlatform = r2, this.encodeFileName = n2, this.streamFiles = e2, this.accumulate = false, this.contentBuffer = [], this.dirRecords = [], this.currentSourceOffset = 0, this.entriesCount = 0, this.currentFile = null, this._sources = [];
       }
@@ -12076,7 +12233,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var t2 = this.streamFiles && !e2.file.dir, r2 = n(e2, t2, true, this.currentSourceOffset, this.zipPlatform, this.encodeFileName);
         if (this.dirRecords.push(r2.dirRecord), t2)
           this.push({ data: function(e3) {
-            return R.DATA_DESCRIPTOR + A(e3.crc32, 4) + A(e3.compressedSize, 4) + A(e3.uncompressedSize, 4);
+            return R2.DATA_DESCRIPTOR + A(e3.crc32, 4) + A(e3.compressedSize, 4) + A(e3.uncompressedSize, 4);
           }(e2), meta: { percent: 100 } });
         else
           for (this.push({ data: r2.fileRecord, meta: { percent: 0 } }); this.contentBuffer.length; )
@@ -12087,7 +12244,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           this.push({ data: this.dirRecords[t2], meta: { percent: 100 } });
         var r2 = this.bytesWritten - e2, n2 = function(e3, t3, r3, n3, i2) {
           var s2 = I.transformTo("string", i2(n3));
-          return R.CENTRAL_DIRECTORY_END + "\0\0\0\0" + A(e3, 2) + A(e3, 2) + A(t3, 4) + A(r3, 4) + A(s2.length, 2) + s2;
+          return R2.CENTRAL_DIRECTORY_END + "\0\0\0\0" + A(e3, 2) + A(e3, 2) + A(t3, 4) + A(r3, 4) + A(s2.length, 2) + s2;
         }(this.dirRecords.length, r2, e2, this.zipComment, this.encodeFileName);
         this.push({ data: n2, meta: { percent: 100 } });
       }, s.prototype.prepareNextSource = function() {
@@ -13421,8 +13578,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         return -1 ^ e2;
       };
     }, {}], 46: [function(e, t, r) {
-      var h2, c = e("../utils/common"), u = e("./trees"), d = e("./adler32"), p2 = e("./crc32"), n = e("./messages"), l = 0, f = 4, m = 0, _ = -2, g = -1, b = 4, i = 2, v = 8, y = 9, s = 286, a = 30, o = 19, w = 2 * s + 1, k = 15, x = 3, S = 258, z = S + x + 1, C = 42, E = 113, A = 1, I = 2, O = 3, B = 4;
-      function R(e2, t2) {
+      var h2, c = e("../utils/common"), u = e("./trees"), d = e("./adler32"), p2 = e("./crc32"), n = e("./messages"), l = 0, f = 4, m = 0, _ = -2, g = -1, b = 4, i = 2, v = 8, y = 9, s = 286, a = 30, o = 19, w = 2 * s + 1, k = 15, x = 3, S2 = 258, z = S2 + x + 1, C = 42, E = 113, A = 1, I = 2, O = 3, B = 4;
+      function R2(e2, t2) {
         return e2.msg = n[t2], t2;
       }
       function T(e2) {
@@ -13432,12 +13589,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         for (var t2 = e2.length; 0 <= --t2; )
           e2[t2] = 0;
       }
-      function F(e2) {
+      function F2(e2) {
         var t2 = e2.state, r2 = t2.pending;
         r2 > e2.avail_out && (r2 = e2.avail_out), 0 !== r2 && (c.arraySet(e2.output, t2.pending_buf, t2.pending_out, r2, e2.next_out), e2.next_out += r2, t2.pending_out += r2, e2.total_out += r2, e2.avail_out -= r2, t2.pending -= r2, 0 === t2.pending && (t2.pending_out = 0));
       }
       function N(e2, t2) {
-        u._tr_flush_block(e2, 0 <= e2.block_start ? e2.block_start : -1, e2.strstart - e2.block_start, t2), e2.block_start = e2.strstart, F(e2.strm);
+        u._tr_flush_block(e2, 0 <= e2.block_start ? e2.block_start : -1, e2.strstart - e2.block_start, t2), e2.block_start = e2.strstart, F2(e2.strm);
       }
       function U(e2, t2) {
         e2.pending_buf[e2.pending++] = t2;
@@ -13446,14 +13603,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         e2.pending_buf[e2.pending++] = t2 >>> 8 & 255, e2.pending_buf[e2.pending++] = 255 & t2;
       }
       function L(e2, t2) {
-        var r2, n2, i2 = e2.max_chain_length, s2 = e2.strstart, a2 = e2.prev_length, o2 = e2.nice_match, h3 = e2.strstart > e2.w_size - z ? e2.strstart - (e2.w_size - z) : 0, u2 = e2.window, l2 = e2.w_mask, f2 = e2.prev, c2 = e2.strstart + S, d2 = u2[s2 + a2 - 1], p3 = u2[s2 + a2];
+        var r2, n2, i2 = e2.max_chain_length, s2 = e2.strstart, a2 = e2.prev_length, o2 = e2.nice_match, h3 = e2.strstart > e2.w_size - z ? e2.strstart - (e2.w_size - z) : 0, u2 = e2.window, l2 = e2.w_mask, f2 = e2.prev, c2 = e2.strstart + S2, d2 = u2[s2 + a2 - 1], p3 = u2[s2 + a2];
         e2.prev_length >= e2.good_match && (i2 >>= 2), o2 > e2.lookahead && (o2 = e2.lookahead);
         do {
           if (u2[(r2 = t2) + a2] === p3 && u2[r2 + a2 - 1] === d2 && u2[r2] === u2[s2] && u2[++r2] === u2[s2 + 1]) {
             s2 += 2, r2++;
             do {
             } while (u2[++s2] === u2[++r2] && u2[++s2] === u2[++r2] && u2[++s2] === u2[++r2] && u2[++s2] === u2[++r2] && u2[++s2] === u2[++r2] && u2[++s2] === u2[++r2] && u2[++s2] === u2[++r2] && u2[++s2] === u2[++r2] && s2 < c2);
-            if (n2 = S - (c2 - s2), s2 = c2 - S, a2 < n2) {
+            if (n2 = S2 - (c2 - s2), s2 = c2 - S2, a2 < n2) {
               if (e2.match_start = t2, o2 <= (a2 = n2))
                 break;
               d2 = u2[s2 + a2 - 1], p3 = u2[s2 + a2];
@@ -13522,7 +13679,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         }
         return e2.match_available && (n2 = u._tr_tally(e2, 0, e2.window[e2.strstart - 1]), e2.match_available = 0), e2.insert = e2.strstart < x - 1 ? e2.strstart : x - 1, t2 === f ? (N(e2, true), 0 === e2.strm.avail_out ? O : B) : e2.last_lit && (N(e2, false), 0 === e2.strm.avail_out) ? A : I;
       }
-      function M(e2, t2, r2, n2, i2) {
+      function M2(e2, t2, r2, n2, i2) {
         this.good_length = e2, this.max_lazy = t2, this.nice_length = r2, this.max_chain = n2, this.func = i2;
       }
       function H() {
@@ -13530,7 +13687,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
       function G(e2) {
         var t2;
-        return e2 && e2.state ? (e2.total_in = e2.total_out = 0, e2.data_type = i, (t2 = e2.state).pending = 0, t2.pending_out = 0, t2.wrap < 0 && (t2.wrap = -t2.wrap), t2.status = t2.wrap ? C : E, e2.adler = 2 === t2.wrap ? 0 : 1, t2.last_flush = l, u._tr_init(t2), m) : R(e2, _);
+        return e2 && e2.state ? (e2.total_in = e2.total_out = 0, e2.data_type = i, (t2 = e2.state).pending = 0, t2.pending_out = 0, t2.wrap < 0 && (t2.wrap = -t2.wrap), t2.status = t2.wrap ? C : E, e2.adler = 2 === t2.wrap ? 0 : 1, t2.last_flush = l, u._tr_init(t2), m) : R2(e2, _);
       }
       function K(e2) {
         var t2 = G(e2);
@@ -13543,12 +13700,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           return _;
         var a2 = 1;
         if (t2 === g && (t2 = 6), n2 < 0 ? (a2 = 0, n2 = -n2) : 15 < n2 && (a2 = 2, n2 -= 16), i2 < 1 || y < i2 || r2 !== v || n2 < 8 || 15 < n2 || t2 < 0 || 9 < t2 || s2 < 0 || b < s2)
-          return R(e2, _);
+          return R2(e2, _);
         8 === n2 && (n2 = 9);
         var o2 = new H();
         return (e2.state = o2).strm = e2, o2.wrap = a2, o2.gzhead = null, o2.w_bits = n2, o2.w_size = 1 << o2.w_bits, o2.w_mask = o2.w_size - 1, o2.hash_bits = i2 + 7, o2.hash_size = 1 << o2.hash_bits, o2.hash_mask = o2.hash_size - 1, o2.hash_shift = ~~((o2.hash_bits + x - 1) / x), o2.window = new c.Buf8(2 * o2.w_size), o2.head = new c.Buf16(o2.hash_size), o2.prev = new c.Buf16(o2.w_size), o2.lit_bufsize = 1 << i2 + 6, o2.pending_buf_size = 4 * o2.lit_bufsize, o2.pending_buf = new c.Buf8(o2.pending_buf_size), o2.d_buf = 1 * o2.lit_bufsize, o2.l_buf = 3 * o2.lit_bufsize, o2.level = t2, o2.strategy = s2, o2.method = r2, K(e2);
       }
-      h2 = [new M(0, 0, 0, 0, function(e2, t2) {
+      h2 = [new M2(0, 0, 0, 0, function(e2, t2) {
         var r2 = 65535;
         for (r2 > e2.pending_buf_size - 5 && (r2 = e2.pending_buf_size - 5); ; ) {
           if (e2.lookahead <= 1) {
@@ -13565,16 +13722,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             return A;
         }
         return e2.insert = 0, t2 === f ? (N(e2, true), 0 === e2.strm.avail_out ? O : B) : (e2.strstart > e2.block_start && (N(e2, false), e2.strm.avail_out), A);
-      }), new M(4, 4, 8, 4, Z), new M(4, 5, 16, 8, Z), new M(4, 6, 32, 32, Z), new M(4, 4, 16, 16, W), new M(8, 16, 32, 32, W), new M(8, 16, 128, 128, W), new M(8, 32, 128, 256, W), new M(32, 128, 258, 1024, W), new M(32, 258, 258, 4096, W)], r.deflateInit = function(e2, t2) {
+      }), new M2(4, 4, 8, 4, Z), new M2(4, 5, 16, 8, Z), new M2(4, 6, 32, 32, Z), new M2(4, 4, 16, 16, W), new M2(8, 16, 32, 32, W), new M2(8, 16, 128, 128, W), new M2(8, 32, 128, 256, W), new M2(32, 128, 258, 1024, W), new M2(32, 258, 258, 4096, W)], r.deflateInit = function(e2, t2) {
         return Y(e2, t2, v, 15, 8, 0);
       }, r.deflateInit2 = Y, r.deflateReset = K, r.deflateResetKeep = G, r.deflateSetHeader = function(e2, t2) {
         return e2 && e2.state ? 2 !== e2.state.wrap ? _ : (e2.state.gzhead = t2, m) : _;
       }, r.deflate = function(e2, t2) {
         var r2, n2, i2, s2;
         if (!e2 || !e2.state || 5 < t2 || t2 < 0)
-          return e2 ? R(e2, _) : _;
+          return e2 ? R2(e2, _) : _;
         if (n2 = e2.state, !e2.output || !e2.input && 0 !== e2.avail_in || 666 === n2.status && t2 !== f)
-          return R(e2, 0 === e2.avail_out ? -5 : _);
+          return R2(e2, 0 === e2.avail_out ? -5 : _);
         if (n2.strm = e2, r2 = n2.last_flush, n2.last_flush = t2, n2.status === C)
           if (2 === n2.wrap)
             e2.adler = 0, U(n2, 31), U(n2, 139), U(n2, 8), n2.gzhead ? (U(n2, (n2.gzhead.text ? 1 : 0) + (n2.gzhead.hcrc ? 2 : 0) + (n2.gzhead.extra ? 4 : 0) + (n2.gzhead.name ? 8 : 0) + (n2.gzhead.comment ? 16 : 0)), U(n2, 255 & n2.gzhead.time), U(n2, n2.gzhead.time >> 8 & 255), U(n2, n2.gzhead.time >> 16 & 255), U(n2, n2.gzhead.time >> 24 & 255), U(n2, 9 === n2.level ? 2 : 2 <= n2.strategy || n2.level < 2 ? 4 : 0), U(n2, 255 & n2.gzhead.os), n2.gzhead.extra && n2.gzhead.extra.length && (U(n2, 255 & n2.gzhead.extra.length), U(n2, n2.gzhead.extra.length >> 8 & 255)), n2.gzhead.hcrc && (e2.adler = p2(e2.adler, n2.pending_buf, n2.pending, 0)), n2.gzindex = 0, n2.status = 69) : (U(n2, 0), U(n2, 0), U(n2, 0), U(n2, 0), U(n2, 0), U(n2, 9 === n2.level ? 2 : 2 <= n2.strategy || n2.level < 2 ? 4 : 0), U(n2, 3), n2.status = E);
@@ -13584,7 +13741,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           }
         if (69 === n2.status)
           if (n2.gzhead.extra) {
-            for (i2 = n2.pending; n2.gzindex < (65535 & n2.gzhead.extra.length) && (n2.pending !== n2.pending_buf_size || (n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p2(e2.adler, n2.pending_buf, n2.pending - i2, i2)), F(e2), i2 = n2.pending, n2.pending !== n2.pending_buf_size)); )
+            for (i2 = n2.pending; n2.gzindex < (65535 & n2.gzhead.extra.length) && (n2.pending !== n2.pending_buf_size || (n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p2(e2.adler, n2.pending_buf, n2.pending - i2, i2)), F2(e2), i2 = n2.pending, n2.pending !== n2.pending_buf_size)); )
               U(n2, 255 & n2.gzhead.extra[n2.gzindex]), n2.gzindex++;
             n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p2(e2.adler, n2.pending_buf, n2.pending - i2, i2)), n2.gzindex === n2.gzhead.extra.length && (n2.gzindex = 0, n2.status = 73);
           } else
@@ -13593,7 +13750,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           if (n2.gzhead.name) {
             i2 = n2.pending;
             do {
-              if (n2.pending === n2.pending_buf_size && (n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p2(e2.adler, n2.pending_buf, n2.pending - i2, i2)), F(e2), i2 = n2.pending, n2.pending === n2.pending_buf_size)) {
+              if (n2.pending === n2.pending_buf_size && (n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p2(e2.adler, n2.pending_buf, n2.pending - i2, i2)), F2(e2), i2 = n2.pending, n2.pending === n2.pending_buf_size)) {
                 s2 = 1;
                 break;
               }
@@ -13606,7 +13763,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           if (n2.gzhead.comment) {
             i2 = n2.pending;
             do {
-              if (n2.pending === n2.pending_buf_size && (n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p2(e2.adler, n2.pending_buf, n2.pending - i2, i2)), F(e2), i2 = n2.pending, n2.pending === n2.pending_buf_size)) {
+              if (n2.pending === n2.pending_buf_size && (n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p2(e2.adler, n2.pending_buf, n2.pending - i2, i2)), F2(e2), i2 = n2.pending, n2.pending === n2.pending_buf_size)) {
                 s2 = 1;
                 break;
               }
@@ -13615,13 +13772,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p2(e2.adler, n2.pending_buf, n2.pending - i2, i2)), 0 === s2 && (n2.status = 103);
           } else
             n2.status = 103;
-        if (103 === n2.status && (n2.gzhead.hcrc ? (n2.pending + 2 > n2.pending_buf_size && F(e2), n2.pending + 2 <= n2.pending_buf_size && (U(n2, 255 & e2.adler), U(n2, e2.adler >> 8 & 255), e2.adler = 0, n2.status = E)) : n2.status = E), 0 !== n2.pending) {
-          if (F(e2), 0 === e2.avail_out)
+        if (103 === n2.status && (n2.gzhead.hcrc ? (n2.pending + 2 > n2.pending_buf_size && F2(e2), n2.pending + 2 <= n2.pending_buf_size && (U(n2, 255 & e2.adler), U(n2, e2.adler >> 8 & 255), e2.adler = 0, n2.status = E)) : n2.status = E), 0 !== n2.pending) {
+          if (F2(e2), 0 === e2.avail_out)
             return n2.last_flush = -1, m;
         } else if (0 === e2.avail_in && T(t2) <= T(r2) && t2 !== f)
-          return R(e2, -5);
+          return R2(e2, -5);
         if (666 === n2.status && 0 !== e2.avail_in)
-          return R(e2, -5);
+          return R2(e2, -5);
         if (0 !== e2.avail_in || 0 !== n2.lookahead || t2 !== l && 666 !== n2.status) {
           var o2 = 2 === n2.strategy ? function(e3, t3) {
             for (var r3; ; ) {
@@ -13636,17 +13793,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             return e3.insert = 0, t3 === f ? (N(e3, true), 0 === e3.strm.avail_out ? O : B) : e3.last_lit && (N(e3, false), 0 === e3.strm.avail_out) ? A : I;
           }(n2, t2) : 3 === n2.strategy ? function(e3, t3) {
             for (var r3, n3, i3, s3, a3 = e3.window; ; ) {
-              if (e3.lookahead <= S) {
-                if (j(e3), e3.lookahead <= S && t3 === l)
+              if (e3.lookahead <= S2) {
+                if (j(e3), e3.lookahead <= S2 && t3 === l)
                   return A;
                 if (0 === e3.lookahead)
                   break;
               }
               if (e3.match_length = 0, e3.lookahead >= x && 0 < e3.strstart && (n3 = a3[i3 = e3.strstart - 1]) === a3[++i3] && n3 === a3[++i3] && n3 === a3[++i3]) {
-                s3 = e3.strstart + S;
+                s3 = e3.strstart + S2;
                 do {
                 } while (n3 === a3[++i3] && n3 === a3[++i3] && n3 === a3[++i3] && n3 === a3[++i3] && n3 === a3[++i3] && n3 === a3[++i3] && n3 === a3[++i3] && n3 === a3[++i3] && i3 < s3);
-                e3.match_length = S - (s3 - i3), e3.match_length > e3.lookahead && (e3.match_length = e3.lookahead);
+                e3.match_length = S2 - (s3 - i3), e3.match_length > e3.lookahead && (e3.match_length = e3.lookahead);
               }
               if (e3.match_length >= x ? (r3 = u._tr_tally(e3, 1, e3.match_length - x), e3.lookahead -= e3.match_length, e3.strstart += e3.match_length, e3.match_length = 0) : (r3 = u._tr_tally(e3, 0, e3.window[e3.strstart]), e3.lookahead--, e3.strstart++), r3 && (N(e3, false), 0 === e3.strm.avail_out))
                 return A;
@@ -13655,13 +13812,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           }(n2, t2) : h2[n2.level].func(n2, t2);
           if (o2 !== O && o2 !== B || (n2.status = 666), o2 === A || o2 === O)
             return 0 === e2.avail_out && (n2.last_flush = -1), m;
-          if (o2 === I && (1 === t2 ? u._tr_align(n2) : 5 !== t2 && (u._tr_stored_block(n2, 0, 0, false), 3 === t2 && (D(n2.head), 0 === n2.lookahead && (n2.strstart = 0, n2.block_start = 0, n2.insert = 0))), F(e2), 0 === e2.avail_out))
+          if (o2 === I && (1 === t2 ? u._tr_align(n2) : 5 !== t2 && (u._tr_stored_block(n2, 0, 0, false), 3 === t2 && (D(n2.head), 0 === n2.lookahead && (n2.strstart = 0, n2.block_start = 0, n2.insert = 0))), F2(e2), 0 === e2.avail_out))
             return n2.last_flush = -1, m;
         }
-        return t2 !== f ? m : n2.wrap <= 0 ? 1 : (2 === n2.wrap ? (U(n2, 255 & e2.adler), U(n2, e2.adler >> 8 & 255), U(n2, e2.adler >> 16 & 255), U(n2, e2.adler >> 24 & 255), U(n2, 255 & e2.total_in), U(n2, e2.total_in >> 8 & 255), U(n2, e2.total_in >> 16 & 255), U(n2, e2.total_in >> 24 & 255)) : (P(n2, e2.adler >>> 16), P(n2, 65535 & e2.adler)), F(e2), 0 < n2.wrap && (n2.wrap = -n2.wrap), 0 !== n2.pending ? m : 1);
+        return t2 !== f ? m : n2.wrap <= 0 ? 1 : (2 === n2.wrap ? (U(n2, 255 & e2.adler), U(n2, e2.adler >> 8 & 255), U(n2, e2.adler >> 16 & 255), U(n2, e2.adler >> 24 & 255), U(n2, 255 & e2.total_in), U(n2, e2.total_in >> 8 & 255), U(n2, e2.total_in >> 16 & 255), U(n2, e2.total_in >> 24 & 255)) : (P(n2, e2.adler >>> 16), P(n2, 65535 & e2.adler)), F2(e2), 0 < n2.wrap && (n2.wrap = -n2.wrap), 0 !== n2.pending ? m : 1);
       }, r.deflateEnd = function(e2) {
         var t2;
-        return e2 && e2.state ? (t2 = e2.state.status) !== C && 69 !== t2 && 73 !== t2 && 91 !== t2 && 103 !== t2 && t2 !== E && 666 !== t2 ? R(e2, _) : (e2.state = null, t2 === E ? R(e2, -3) : m) : _;
+        return e2 && e2.state ? (t2 = e2.state.status) !== C && 69 !== t2 && 73 !== t2 && 91 !== t2 && 103 !== t2 && t2 !== E && 666 !== t2 ? R2(e2, _) : (e2.state = null, t2 === E ? R2(e2, -3) : m) : _;
       }, r.deflateSetDictionary = function(e2, t2) {
         var r2, n2, i2, s2, a2, o2, h3, u2, l2 = t2.length;
         if (!e2 || !e2.state)
@@ -13681,7 +13838,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       };
     }, {}], 48: [function(e, t, r) {
       t.exports = function(e2, t2) {
-        var r2, n, i, s, a, o, h2, u, l, f, c, d, p2, m, _, g, b, v, y, w, k, x, S, z, C;
+        var r2, n, i, s, a, o, h2, u, l, f, c, d, p2, m, _, g, b, v, y, w, k, x, S2, z, C;
         r2 = e2.state, n = e2.next_in, z = e2.input, i = n + (e2.avail_in - 5), s = e2.next_out, C = e2.output, a = s - (t2 - e2.avail_out), o = s + (e2.avail_out - 257), h2 = r2.dmax, u = r2.wsize, l = r2.whave, f = r2.wnext, c = r2.window, d = r2.hold, p2 = r2.bits, m = r2.lencode, _ = r2.distcode, g = (1 << r2.lenbits) - 1, b = (1 << r2.distbits) - 1;
         e:
           do {
@@ -13723,11 +13880,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                           e2.msg = "invalid distance too far back", r2.mode = 30;
                           break e;
                         }
-                        if (S = c, (x = 0) === f) {
+                        if (S2 = c, (x = 0) === f) {
                           if (x += u - y, y < w) {
                             for (w -= y; C[s++] = c[x++], --y; )
                               ;
-                            x = s - k, S = C;
+                            x = s - k, S2 = C;
                           }
                         } else if (f < y) {
                           if (x += u + f - y, (y -= f) < w) {
@@ -13736,17 +13893,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                             if (x = 0, f < w) {
                               for (w -= y = f; C[s++] = c[x++], --y; )
                                 ;
-                              x = s - k, S = C;
+                              x = s - k, S2 = C;
                             }
                           }
                         } else if (x += f - y, y < w) {
                           for (w -= y; C[s++] = c[x++], --y; )
                             ;
-                          x = s - k, S = C;
+                          x = s - k, S2 = C;
                         }
                         for (; 2 < w; )
-                          C[s++] = S[x++], C[s++] = S[x++], C[s++] = S[x++], w -= 3;
-                        w && (C[s++] = S[x++], 1 < w && (C[s++] = S[x++]));
+                          C[s++] = S2[x++], C[s++] = S2[x++], C[s++] = S2[x++], w -= 3;
+                        w && (C[s++] = S2[x++], 1 < w && (C[s++] = S2[x++]));
                       } else {
                         for (x = s - k; C[s++] = C[x++], C[s++] = C[x++], C[s++] = C[x++], 2 < (w -= 3); )
                           ;
@@ -13761,12 +13918,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         n -= w = p2 >> 3, d &= (1 << (p2 -= w << 3)) - 1, e2.next_in = n, e2.next_out = s, e2.avail_in = n < i ? i - n + 5 : 5 - (n - i), e2.avail_out = s < o ? o - s + 257 : 257 - (s - o), r2.hold = d, r2.bits = p2;
       };
     }, {}], 49: [function(e, t, r) {
-      var I = e("../utils/common"), O = e("./adler32"), B = e("./crc32"), R = e("./inffast"), T = e("./inftrees"), D = 1, F = 2, N = 0, U = -2, P = 1, n = 852, i = 592;
+      var I = e("../utils/common"), O = e("./adler32"), B = e("./crc32"), R2 = e("./inffast"), T = e("./inftrees"), D = 1, F2 = 2, N = 0, U = -2, P = 1, n = 852, i = 592;
       function L(e2) {
         return (e2 >>> 24 & 255) + (e2 >>> 8 & 65280) + ((65280 & e2) << 8) + ((255 & e2) << 24);
       }
       function s() {
-        this.mode = 0, this.last = false, this.wrap = 0, this.havedict = false, this.flags = 0, this.dmax = 0, this.check = 0, this.total = 0, this.head = null, this.wbits = 0, this.wsize = 0, this.whave = 0, this.wnext = 0, this.window = null, this.hold = 0, this.bits = 0, this.length = 0, this.time = 0, this.extra = 0, this.lencode = null, this.distcode = null, this.lenbits = 0, this.distbits = 0, this.ncode = 0, this.nlen = 0, this.ndist = 0, this.have = 0, this.next = null, this.lens = new I.Buf16(320), this.work = new I.Buf16(288), this.lendyn = null, this.distdyn = null, this.sane = 0, this.back = 0, this.was = 0;
+        this.mode = 0, this.last = false, this.wrap = 0, this.havedict = false, this.flags = 0, this.dmax = 0, this.check = 0, this.total = 0, this.head = null, this.wbits = 0, this.wsize = 0, this.whave = 0, this.wnext = 0, this.window = null, this.hold = 0, this.bits = 0, this.length = 0, this.offset = 0, this.extra = 0, this.lencode = null, this.distcode = null, this.lenbits = 0, this.distbits = 0, this.ncode = 0, this.nlen = 0, this.ndist = 0, this.have = 0, this.next = null, this.lens = new I.Buf16(320), this.work = new I.Buf16(288), this.lendyn = null, this.distdyn = null, this.sane = 0, this.back = 0, this.was = 0;
       }
       function a(e2) {
         var t2;
@@ -13798,7 +13955,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             e2.lens[t2++] = 8;
           for (T(D, e2.lens, 0, 288, l, 0, e2.work, { bits: 9 }), t2 = 0; t2 < 32; )
             e2.lens[t2++] = 5;
-          T(F, e2.lens, 0, 32, f, 0, e2.work, { bits: 5 }), c = false;
+          T(F2, e2.lens, 0, 32, f, 0, e2.work, { bits: 5 }), c = false;
         }
         e2.lencode = l, e2.lenbits = 9, e2.distcode = f, e2.distbits = 5;
       }
@@ -13809,7 +13966,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       r.inflateReset = o, r.inflateReset2 = h2, r.inflateResetKeep = a, r.inflateInit = function(e2) {
         return u(e2, 15);
       }, r.inflateInit2 = u, r.inflate = function(e2, t2) {
-        var r2, n2, i2, s2, a2, o2, h3, u2, l2, f2, c2, d, p2, m, _, g, b, v, y, w, k, x, S, z, C = 0, E = new I.Buf8(4), A = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
+        var r2, n2, i2, s2, a2, o2, h3, u2, l2, f2, c2, d, p2, m, _, g, b, v, y, w, k, x, S2, z, C = 0, E = new I.Buf8(4), A = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
         if (!e2 || !e2.state || !e2.output || !e2.input && 0 !== e2.avail_in)
           return U;
         12 === (r2 = e2.state).mode && (r2.mode = 13), a2 = e2.next_out, i2 = e2.output, h3 = e2.avail_out, s2 = e2.next_in, n2 = e2.input, o2 = e2.avail_in, u2 = r2.hold, l2 = r2.bits, f2 = o2, c2 = h3, x = N;
@@ -14013,7 +14170,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                 }
                 for (; r2.have < 19; )
                   r2.lens[A[r2.have++]] = 0;
-                if (r2.lencode = r2.lendyn, r2.lenbits = 7, S = { bits: r2.lenbits }, x = T(0, r2.lens, 0, 19, r2.lencode, 0, r2.work, S), r2.lenbits = S.bits, x) {
+                if (r2.lencode = r2.lendyn, r2.lenbits = 7, S2 = { bits: r2.lenbits }, x = T(0, r2.lens, 0, 19, r2.lencode, 0, r2.work, S2), r2.lenbits = S2.bits, x) {
                   e2.msg = "invalid code lengths set", r2.mode = 30;
                   break;
                 }
@@ -14068,11 +14225,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                   e2.msg = "invalid code -- missing end-of-block", r2.mode = 30;
                   break;
                 }
-                if (r2.lenbits = 9, S = { bits: r2.lenbits }, x = T(D, r2.lens, 0, r2.nlen, r2.lencode, 0, r2.work, S), r2.lenbits = S.bits, x) {
+                if (r2.lenbits = 9, S2 = { bits: r2.lenbits }, x = T(D, r2.lens, 0, r2.nlen, r2.lencode, 0, r2.work, S2), r2.lenbits = S2.bits, x) {
                   e2.msg = "invalid literal/lengths set", r2.mode = 30;
                   break;
                 }
-                if (r2.distbits = 6, r2.distcode = r2.distdyn, S = { bits: r2.distbits }, x = T(F, r2.lens, r2.nlen, r2.ndist, r2.distcode, 0, r2.work, S), r2.distbits = S.bits, x) {
+                if (r2.distbits = 6, r2.distcode = r2.distdyn, S2 = { bits: r2.distbits }, x = T(F2, r2.lens, r2.nlen, r2.ndist, r2.distcode, 0, r2.work, S2), r2.distbits = S2.bits, x) {
                   e2.msg = "invalid distances set", r2.mode = 30;
                   break;
                 }
@@ -14082,7 +14239,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                 r2.mode = 21;
               case 21:
                 if (6 <= o2 && 258 <= h3) {
-                  e2.next_out = a2, e2.avail_out = h3, e2.next_in = s2, e2.avail_in = o2, r2.hold = u2, r2.bits = l2, R(e2, c2), a2 = e2.next_out, i2 = e2.output, h3 = e2.avail_out, s2 = e2.next_in, n2 = e2.input, o2 = e2.avail_in, u2 = r2.hold, l2 = r2.bits, 12 === r2.mode && (r2.back = -1);
+                  e2.next_out = a2, e2.avail_out = h3, e2.next_in = s2, e2.avail_in = o2, r2.hold = u2, r2.bits = l2, R2(e2, c2), a2 = e2.next_out, i2 = e2.output, h3 = e2.avail_out, s2 = e2.next_in, n2 = e2.input, o2 = e2.avail_in, u2 = r2.hold, l2 = r2.bits, 12 === r2.mode && (r2.back = -1);
                   break;
                 }
                 for (r2.back = 0; g = (C = r2.lencode[u2 & (1 << r2.lenbits) - 1]) >>> 16 & 255, b = 65535 & C, !((_ = C >>> 24) <= l2); ) {
@@ -14228,9 +14385,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         return e2 && e2.state ? 0 !== (r2 = e2.state).wrap && 11 !== r2.mode ? U : 11 === r2.mode && O(1, t2, n2, 0) !== r2.check ? -3 : Z(e2, t2, n2, n2) ? (r2.mode = 31, -4) : (r2.havedict = 1, N) : U;
       }, r.inflateInfo = "pako inflate (from Nodeca project)";
     }, { "../utils/common": 41, "./adler32": 43, "./crc32": 45, "./inffast": 48, "./inftrees": 50 }], 50: [function(e, t, r) {
-      var D = e("../utils/common"), F = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0], N = [16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18, 19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 16, 72, 78], U = [1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577, 0, 0], P = [16, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 26, 27, 27, 28, 28, 29, 29, 64, 64];
+      var D = e("../utils/common"), F2 = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0], N = [16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18, 19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 16, 72, 78], U = [1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577, 0, 0], P = [16, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 26, 27, 27, 28, 28, 29, 29, 64, 64];
       t.exports = function(e2, t2, r2, n, i, s, a, o) {
-        var h2, u, l, f, c, d, p2, m, _, g = o.bits, b = 0, v = 0, y = 0, w = 0, k = 0, x = 0, S = 0, z = 0, C = 0, E = 0, A = null, I = 0, O = new D.Buf16(16), B = new D.Buf16(16), R = null, T = 0;
+        var h2, u, l, f, c, d, p2, m, _, g = o.bits, b = 0, v = 0, y = 0, w = 0, k = 0, x = 0, S2 = 0, z = 0, C = 0, E = 0, A = null, I = 0, O = new D.Buf16(16), B = new D.Buf16(16), R2 = null, T = 0;
         for (b = 0; b <= 15; b++)
           O[b] = 0;
         for (v = 0; v < n; v++)
@@ -14250,10 +14407,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           B[b + 1] = B[b] + O[b];
         for (v = 0; v < n; v++)
           0 !== t2[r2 + v] && (a[B[t2[r2 + v]]++] = v);
-        if (d = 0 === e2 ? (A = R = a, 19) : 1 === e2 ? (A = F, I -= 257, R = N, T -= 257, 256) : (A = U, R = P, -1), b = y, c = s, S = v = E = 0, l = -1, f = (C = 1 << (x = k)) - 1, 1 === e2 && 852 < C || 2 === e2 && 592 < C)
+        if (d = 0 === e2 ? (A = R2 = a, 19) : 1 === e2 ? (A = F2, I -= 257, R2 = N, T -= 257, 256) : (A = U, R2 = P, -1), b = y, c = s, S2 = v = E = 0, l = -1, f = (C = 1 << (x = k)) - 1, 1 === e2 && 852 < C || 2 === e2 && 592 < C)
           return 1;
         for (; ; ) {
-          for (p2 = b - S, _ = a[v] < d ? (m = 0, a[v]) : a[v] > d ? (m = R[T + a[v]], A[I + a[v]]) : (m = 96, 0), h2 = 1 << b - S, y = u = 1 << x; i[c + (E >> S) + (u -= h2)] = p2 << 24 | m << 16 | _ | 0, 0 !== u; )
+          for (p2 = b - S2, _ = a[v] < d ? (m = 0, a[v]) : a[v] > d ? (m = R2[T + a[v]], A[I + a[v]]) : (m = 96, 0), h2 = 1 << b - S2, y = u = 1 << x; i[c + (E >> S2) + (u -= h2)] = p2 << 24 | m << 16 | _ | 0, 0 !== u; )
             ;
           for (h2 = 1 << b - 1; E & h2; )
             h2 >>= 1;
@@ -14263,14 +14420,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             b = t2[r2 + a[v]];
           }
           if (k < b && (E & f) !== l) {
-            for (0 === S && (S = k), c += y, z = 1 << (x = b - S); x + S < w && !((z -= O[x + S]) <= 0); )
+            for (0 === S2 && (S2 = k), c += y, z = 1 << (x = b - S2); x + S2 < w && !((z -= O[x + S2]) <= 0); )
               x++, z <<= 1;
             if (C += 1 << x, 1 === e2 && 852 < C || 2 === e2 && 592 < C)
               return 1;
             i[l = E & f] = k << 24 | x << 16 | c - s | 0;
           }
         }
-        return 0 !== E && (i[c + E] = b - S << 24 | 64 << 16 | 0), o.bits = k, 0;
+        return 0 !== E && (i[c + E] = b - S2 << 24 | 64 << 16 | 0), o.bits = k, 0;
       };
     }, { "../utils/common": 41 }], 51: [function(e, t, r) {
       t.exports = { 2: "need dictionary", 1: "stream end", 0: "", "-1": "file error", "-2": "stream error", "-3": "data error", "-4": "insufficient memory", "-5": "buffer error", "-6": "incompatible version" };
@@ -14280,7 +14437,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         for (var t2 = e2.length; 0 <= --t2; )
           e2[t2] = 0;
       }
-      var s = 0, a = 29, u = 256, l = u + 1 + a, f = 30, c = 19, _ = 2 * l + 1, g = 15, d = 16, p2 = 7, m = 256, b = 16, v = 17, y = 18, w = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0], k = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13], x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7], S = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15], z = new Array(2 * (l + 2));
+      var s = 0, a = 29, u = 256, l = u + 1 + a, f = 30, c = 19, _ = 2 * l + 1, g = 15, d = 16, p2 = 7, m = 256, b = 16, v = 17, y = 18, w = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0], k = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13], x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7], S2 = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15], z = new Array(2 * (l + 2));
       n(z);
       var C = new Array(2 * f);
       n(C);
@@ -14290,11 +14447,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       n(A);
       var I = new Array(a);
       n(I);
-      var O, B, R, T = new Array(f);
+      var O, B, R2, T = new Array(f);
       function D(e2, t2, r2, n2, i2) {
         this.static_tree = e2, this.extra_bits = t2, this.extra_base = r2, this.elems = n2, this.max_length = i2, this.has_stree = e2 && e2.length;
       }
-      function F(e2, t2) {
+      function F2(e2, t2) {
         this.dyn_tree = e2, this.max_code = 0, this.stat_desc = t2;
       }
       function N(e2) {
@@ -14333,7 +14490,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           e2.bl_tree[2 * t2] = 0;
         e2.dyn_ltree[2 * m] = 1, e2.opt_len = e2.static_len = 0, e2.last_lit = e2.matches = 0;
       }
-      function M(e2) {
+      function M2(e2) {
         8 < e2.bi_valid ? U(e2, e2.bi_buf) : 0 < e2.bi_valid && (e2.pending_buf[e2.pending++] = e2.bi_buf), e2.bi_buf = 0, e2.bi_valid = 0;
       }
       function H(e2, t2, r2, n2) {
@@ -14401,7 +14558,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var q = false;
       function J(e2, t2, r2, n2) {
         P(e2, (s << 1) + (n2 ? 1 : 0), 3), function(e3, t3, r3, n3) {
-          M(e3), n3 && (U(e3, r3), U(e3, ~r3)), i.arraySet(e3.pending_buf, e3.window, t3, r3, e3.pending), e3.pending += r3;
+          M2(e3), n3 && (U(e3, r3), U(e3, ~r3)), i.arraySet(e3.pending_buf, e3.window, t3, r3, e3.pending), e3.pending += r3;
         }(e2, t2, r2, true);
       }
       r._tr_init = function(e2) {
@@ -14428,8 +14585,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             z[2 * e3 + 1] = 8, e3++, s2[8]++;
           for (Z(z, l + 1, s2), e3 = 0; e3 < f; e3++)
             C[2 * e3 + 1] = 5, C[2 * e3] = j(e3, 5);
-          O = new D(z, w, u + 1, l, g), B = new D(C, k, 0, f, g), R = new D(new Array(0), x, 0, c, p2);
-        }(), q = true), e2.l_desc = new F(e2.dyn_ltree, O), e2.d_desc = new F(e2.dyn_dtree, B), e2.bl_desc = new F(e2.bl_tree, R), e2.bi_buf = 0, e2.bi_valid = 0, W(e2);
+          O = new D(z, w, u + 1, l, g), B = new D(C, k, 0, f, g), R2 = new D(new Array(0), x, 0, c, p2);
+        }(), q = true), e2.l_desc = new F2(e2.dyn_ltree, O), e2.d_desc = new F2(e2.dyn_dtree, B), e2.bl_desc = new F2(e2.bl_tree, R2), e2.bi_buf = 0, e2.bi_valid = 0, W(e2);
       }, r._tr_stored_block = J, r._tr_flush_block = function(e2, t2, r2, n2) {
         var i2, s2, a2 = 0;
         0 < e2.level ? (2 === e2.strm.data_type && (e2.strm.data_type = function(e3) {
@@ -14445,15 +14602,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           return o;
         }(e2)), Y(e2, e2.l_desc), Y(e2, e2.d_desc), a2 = function(e3) {
           var t3;
-          for (X(e3, e3.dyn_ltree, e3.l_desc.max_code), X(e3, e3.dyn_dtree, e3.d_desc.max_code), Y(e3, e3.bl_desc), t3 = c - 1; 3 <= t3 && 0 === e3.bl_tree[2 * S[t3] + 1]; t3--)
+          for (X(e3, e3.dyn_ltree, e3.l_desc.max_code), X(e3, e3.dyn_dtree, e3.d_desc.max_code), Y(e3, e3.bl_desc), t3 = c - 1; 3 <= t3 && 0 === e3.bl_tree[2 * S2[t3] + 1]; t3--)
             ;
           return e3.opt_len += 3 * (t3 + 1) + 5 + 5 + 4, t3;
         }(e2), i2 = e2.opt_len + 3 + 7 >>> 3, (s2 = e2.static_len + 3 + 7 >>> 3) <= i2 && (i2 = s2)) : i2 = s2 = r2 + 5, r2 + 4 <= i2 && -1 !== t2 ? J(e2, t2, r2, n2) : 4 === e2.strategy || s2 === i2 ? (P(e2, 2 + (n2 ? 1 : 0), 3), K(e2, z, C)) : (P(e2, 4 + (n2 ? 1 : 0), 3), function(e3, t3, r3, n3) {
           var i3;
           for (P(e3, t3 - 257, 5), P(e3, r3 - 1, 5), P(e3, n3 - 4, 4), i3 = 0; i3 < n3; i3++)
-            P(e3, e3.bl_tree[2 * S[i3] + 1], 3);
+            P(e3, e3.bl_tree[2 * S2[i3] + 1], 3);
           V(e3, e3.dyn_ltree, t3 - 1), V(e3, e3.dyn_dtree, r3 - 1);
-        }(e2, e2.l_desc.max_code + 1, e2.d_desc.max_code + 1, a2 + 1), K(e2, e2.dyn_ltree, e2.dyn_dtree)), W(e2), n2 && M(e2);
+        }(e2, e2.l_desc.max_code + 1, e2.d_desc.max_code + 1, a2 + 1), K(e2, e2.dyn_ltree, e2.dyn_dtree)), W(e2), n2 && M2(e2);
       }, r._tr_tally = function(e2, t2, r2) {
         return e2.pending_buf[e2.d_buf + 2 * e2.last_lit] = t2 >>> 8 & 255, e2.pending_buf[e2.d_buf + 2 * e2.last_lit + 1] = 255 & t2, e2.pending_buf[e2.l_buf + e2.last_lit] = 255 & r2, e2.last_lit++, 0 === t2 ? e2.dyn_ltree[2 * r2]++ : (e2.matches++, t2--, e2.dyn_ltree[2 * (A[r2] + u + 1)]++, e2.dyn_dtree[2 * N(t2)]++), e2.last_lit === e2.lit_bufsize - 1;
       }, r._tr_align = function(e2) {
@@ -14548,7 +14705,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 })(jszip_min);
 var jszip_minExports = jszip_min.exports;
 const JSZip = /* @__PURE__ */ getDefaultExportFromCjs(jszip_minExports);
-class OSUParser {
+const _OSUParser = class _OSUParser {
   static parse(textContent) {
     const osuFile2 = {};
     const lines = textContent.split("\n").map((v) => v.trim());
@@ -14576,16 +14733,25 @@ class OSUParser {
     while (lines[i].length > 0 && lines[i].charAt(0) !== "[") {
       const line = lines[i++];
       if (line.startsWith("Video")) {
-        const firstIndex = line.indexOf('"');
-        const lastIndex = line.lastIndexOf('"');
+        let firstIndex = line.indexOf('"');
+        let lastIndex = line.lastIndexOf('"');
         if (firstIndex >= 0 && lastIndex > 0) {
-          out.Events.videoBackground = line.substring(firstIndex + 1, lastIndex);
+          out.Events.videoBackground = line.substring(firstIndex + 1, lastIndex).toLowerCase();
+        }
+        firstIndex = line.indexOf(",");
+        lastIndex = line.indexOf(",", firstIndex + 1);
+        if (firstIndex >= 0 && lastIndex > 0) {
+          try {
+            out.Events.videoOffset = parseInt(line.substring(firstIndex + 1, lastIndex).trim());
+          } catch (_) {
+            out.Events.videoOffset = 0;
+          }
         }
       } else if (line.startsWith("0,0")) {
         const firstIndex = line.indexOf('"');
         const lastIndex = line.lastIndexOf('"');
         if (firstIndex >= 0 && lastIndex > 0) {
-          out.Events.imageBackground = line.substring(firstIndex + 1, lastIndex);
+          out.Events.imageBackground = line.substring(firstIndex + 1, lastIndex).toLowerCase();
         }
       }
     }
@@ -14637,7 +14803,7 @@ class OSUParser {
     while (lines[i].length > 0 && lines[i].charAt(0) !== "[") {
       const [key, value] = lines[i++].split(":").map((v) => v.trim());
       if (key === "AudioFilename") {
-        general.AudioFilename = value;
+        general.AudioFilename = value.toLowerCase();
       } else if (key === "PreviewTime") {
         general.PreviewTime = parseInt(value);
       } else if (key === "Mode") {
@@ -14668,48 +14834,362 @@ class OSUParser {
   static parseTimingPoints(lines, index, out) {
     let i = index;
     const timingPoints = {
-      offset: 0,
-      beatGap: 200,
       timingList: []
     };
-    let lineIndex = 0;
     while (lines[i].length > 0 && lines[i].charAt(0) !== "[") {
-      if (lineIndex === 0) {
-        const [offset, beatGap] = lines[i++].split(",").map((v) => v.trim());
-        timingPoints.beatGap = parseFloat(beatGap);
-        timingPoints.offset = parseInt(offset);
-      } else {
-        const [offset, _0, _1, _2, _3, _4, _5, isKiai] = lines[i++].split(",").map((s) => {
-          return parseInt(s.trim());
-        });
-        timingPoints.timingList.push({
-          offset,
-          isKiai: isKiai === 1
-        });
-      }
-      lineIndex++;
+      const [time, beatLength, _1, _2, _3, _4, _5, isKiai] = lines[i++].split(",").map((v) => v.trim());
+      timingPoints.timingList.push({
+        time: parseInt(time),
+        beatLength: parseFloat(beatLength),
+        isKiai: isKiai === "1"
+      });
     }
     out.TimingPoints = timingPoints;
   }
+};
+_OSUParser.hitObject = "[HitObjects]";
+_OSUParser.general = "[General]";
+_OSUParser.metadata = "[Metadata]";
+_OSUParser.timingPoints = "[TimingPoints]";
+_OSUParser.events = "[Events]";
+let OSUParser = _OSUParser;
+function isAnimation(sprite) {
+  return "frameCount" in sprite && "frameDelay" in sprite && "loopType" in sprite;
 }
-__publicField(OSUParser, "hitObject", "[HitObjects]");
-__publicField(OSUParser, "general", "[General]");
-__publicField(OSUParser, "metadata", "[Metadata]");
-__publicField(OSUParser, "timingPoints", "[TimingPoints]");
-__publicField(OSUParser, "events", "[Events]");
+function isColorEvent(event) {
+  return event.type === "C";
+}
+function isValueEvent(event) {
+  return event.type === "F" || event.type === "MX" || event.type === "MY" || event.type === "S" || event.type === "R" || event.type === "F";
+}
+function isVectorEvent(event) {
+  return event.type === "M" || event.type === "V";
+}
+function isLoopEvent(event) {
+  return event.type === "L";
+}
+function isParamEvent(event) {
+  return event.type === "P";
+}
+class Vector2 {
+  constructor(x = 0, y = 0) {
+    this.x = x;
+    this.y = y;
+  }
+  isZero() {
+    return this.x === 0 && this.y === 0;
+  }
+  static newZero() {
+    return new Vector2(0, 0);
+  }
+  equals(v2) {
+    return this.x === v2.x && this.y === v2.y;
+  }
+  add(vec2) {
+    return new Vector2(vec2.x + this.x, vec2.y + this.y);
+  }
+  increment(v) {
+    this.x += v.x;
+    this.y += v.y;
+  }
+  minus(vec2) {
+    return new Vector2(this.x - vec2.x, this.y - vec2.y);
+  }
+  copy() {
+    return new Vector2(this.x, this.y);
+  }
+  // public static negative(src: Vector2): Vector2 {
+  //     return new Vector2(-src.x, -src.y)
+  // }
+  // public static multi(src: Vector2, n: number): Vector2 {
+  //     return new Vector2(src.x * n, src.y * n)
+  // }
+  // public static dotMulti(src: Vector2, vec2: Vector2): number {
+  //     return src.x * vec2.x + src.y * vec2.y
+  // }
+  // public static crossMulti(src: Vector2, vec2: Vector2): Vector2 {
+  //     return new Vector2(src.x * vec2.y, vec2.x * src.y)
+  // }
+  // public static norm(src: Vector2): number {
+  //     return Math.sqrt(src.x ** 2 + src.y ** 2)
+  // }
+  set(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+function Vector(x = 0, y) {
+  return new Vector2(x, y === void 0 ? x : y);
+}
+class Color {
+  constructor(r, g, b, a) {
+    this.red = 0;
+    this.green = 0;
+    this.blue = 0;
+    this.alpha = 0;
+    this.red = r;
+    this.blue = b;
+    this.green = g;
+    this.alpha = a;
+  }
+  static fromHex(hex, alphaInt = 255) {
+    const red = hex >> 16 & 255;
+    const green = hex >> 8 & 255;
+    const blue = hex & 255;
+    return new Color(red / 255, green / 255, blue / 255, alphaInt / 255);
+  }
+  copy() {
+    return new Color(this.red, this.green, this.blue, this.alpha);
+  }
+}
+function isUndef(v) {
+  return typeof v === "undefined";
+}
+class OSBParser {
+  static parse(content) {
+    const lines = content.split("\n").map((s) => s.trimEnd());
+    const osb = {
+      sprites: []
+    };
+    for (let i = 0; i < lines.length; ) {
+      const line = lines[i];
+      if (line.startsWith("[")) {
+        i++;
+        continue;
+      }
+      if (line.startsWith("Sprite")) {
+        i = this.parseSprite(lines, i, osb);
+      } else if (line.startsWith("Animation")) {
+        i = this.parseAnimation(lines, i, osb);
+      } else {
+        i++;
+      }
+    }
+    return osb;
+  }
+  static parseSprite(lines, lineIndex, out) {
+    let i = lineIndex;
+    const line = lines[i++];
+    const spriteInfo = [];
+    const firstQuotationIndex = line.indexOf('"');
+    const lastQuotationIndex = line.lastIndexOf('"');
+    const pre = line.substring(0, firstQuotationIndex).replaceAll(",", " ").trim();
+    const after = line.substring(lastQuotationIndex + 1).replaceAll(",", " ").trim();
+    const filePath = line.substring(firstQuotationIndex + 1, lastQuotationIndex).replaceAll("\\", "/").toLowerCase();
+    const preList = pre.split(" ").map((v) => v.trim());
+    const afterList = after.split(" ").map((v) => v.trim());
+    spriteInfo.push(...preList, filePath, ...afterList);
+    const sprite = {
+      layer: spriteInfo[1],
+      origin: spriteInfo[2],
+      filePath: spriteInfo[3],
+      x: parseInt(spriteInfo[4]),
+      y: parseInt(spriteInfo[5]),
+      events: []
+    };
+    while (!isUndef(lines[i]) && lines[i].startsWith(" ")) {
+      i = this.parseEvent(lines, i, sprite.events);
+    }
+    out.sprites.push(sprite);
+    return i;
+  }
+  static parseAnimation(lines, lineIndex, out) {
+    let i = lineIndex;
+    const line = lines[i++];
+    const animeInfo = [];
+    const firstQuotationIndex = line.indexOf('"');
+    const lastQuotationIndex = line.lastIndexOf('"');
+    const pre = line.substring(0, firstQuotationIndex).replaceAll(",", " ").trim();
+    const after = line.substring(lastQuotationIndex + 1).replaceAll(",", " ").trim();
+    const filePath = line.substring(firstQuotationIndex + 1, lastQuotationIndex).replaceAll("\\", "/").toLowerCase();
+    const preList = pre.split(" ").map((v) => v.trim());
+    const afterList = after.split(" ").map((v) => v.trim());
+    animeInfo.push(...preList, filePath, ...afterList);
+    const animation = {
+      layer: animeInfo[1],
+      origin: animeInfo[2],
+      filePath: animeInfo[3],
+      x: parseInt(animeInfo[4]),
+      y: parseInt(animeInfo[5]),
+      events: [],
+      frameCount: parseInt(animeInfo[6]),
+      frameDelay: parseInt(animeInfo[7]),
+      loopType: animeInfo[8]
+    };
+    while (!isUndef(lines[i]) && lines[i].startsWith(" ")) {
+      i = this.parseEvent(lines, i, animation.events);
+    }
+    out.sprites.push(animation);
+    return i - 1;
+  }
+  /**
+   *
+   * @param lines
+   * @param lineIndex
+   * @param events
+   * @return next line index
+   * @private
+   */
+  static parseEvent(lines, lineIndex, events) {
+    const line = lines[lineIndex];
+    const splits = line.split(",").map((s) => s.trim());
+    const eventType = splits[0];
+    const event = {
+      type: eventType,
+      startTime: 0
+    };
+    if (isLoopEvent(event)) {
+      event.startTime = parseInt(splits[1]);
+      event.loopCount = parseInt(splits[2]);
+      event.children = [];
+      events.push(event);
+      let nextLineIndex = lineIndex + 1;
+      while (!isUndef(lines[nextLineIndex]) && lines[nextLineIndex].startsWith("  ")) {
+        nextLineIndex = this.parseEvent(lines, nextLineIndex, event.children);
+      }
+      return nextLineIndex;
+    }
+    const baseEvent = event;
+    baseEvent.ease = parseInt(splits[1]);
+    baseEvent.startTime = parseInt(splits[2]);
+    baseEvent.endTime = this.toInt(splits[3]) ?? baseEvent.startTime;
+    if (isValueEvent(baseEvent)) {
+      const from = parseFloat(splits[4]), to = this.toFloat(splits[5]) ?? from;
+      baseEvent.from = from;
+      baseEvent.to = to;
+      events.push(baseEvent);
+      const duration = baseEvent.endTime - baseEvent.startTime;
+      let currentEvent = baseEvent;
+      for (let index = 6; index < splits.length; index++) {
+        const copied = this.shallowCopy(currentEvent);
+        copied.startTime += duration;
+        copied.endTime += duration;
+        copied.from = copied.to;
+        copied.to = parseFloat(splits[index]);
+        events.push(copied);
+        currentEvent = copied;
+      }
+    } else if (isVectorEvent(baseEvent)) {
+      baseEvent.from = Vector(parseFloat(splits[4]), parseFloat(splits[5]));
+      if (splits.length === 6) {
+        baseEvent.to = baseEvent.from;
+      } else {
+        baseEvent.to = Vector(parseFloat(splits[6]), parseFloat(splits[7]));
+      }
+      events.push(baseEvent);
+      const duration = baseEvent.endTime - baseEvent.startTime;
+      let currentEvent = baseEvent;
+      for (let index = 8; index < splits.length; index += 2) {
+        const copied = this.shallowCopy(currentEvent);
+        copied.startTime += duration;
+        copied.endTime += duration;
+        copied.from = copied.to;
+        copied.to = Vector(parseFloat(splits[index]), parseFloat(splits[index + 1]));
+        events.push(copied);
+        currentEvent = copied;
+      }
+    } else if (isColorEvent(baseEvent)) {
+      baseEvent.from = new Color(
+        parseInt(splits[4]) / 255,
+        parseInt(splits[5]) / 255,
+        parseInt(splits[6]) / 255,
+        1
+      );
+      if (splits.length === 7) {
+        baseEvent.to = baseEvent.from;
+      } else {
+        baseEvent.to = new Color(
+          parseInt(splits[7]) / 255,
+          parseInt(splits[8]) / 255,
+          parseInt(splits[9]) / 255,
+          1
+        );
+      }
+      events.push(baseEvent);
+      const duration = baseEvent.endTime - baseEvent.startTime;
+      let currentEvent = baseEvent;
+      for (let index = 10; index < splits.length; index += 3) {
+        const copied = this.shallowCopy(currentEvent);
+        copied.startTime += duration;
+        copied.endTime += duration;
+        copied.from = copied.to;
+        copied.to = new Color(
+          parseInt(splits[index]) / 255,
+          parseInt(splits[index + 1]) / 255,
+          parseInt(splits[index + 2]) / 255,
+          1
+        );
+        events.push(copied);
+        currentEvent = copied;
+      }
+    } else if (isParamEvent(baseEvent)) {
+      baseEvent.p = splits[4];
+      events.push(baseEvent);
+      const duration = baseEvent.endTime - baseEvent.startTime;
+      let currentEvent = baseEvent;
+      for (let index = 5; index < splits.length; index++) {
+        const copied = this.shallowCopy(currentEvent);
+        copied.startTime += duration;
+        copied.endTime += duration;
+        copied.p = splits[index];
+        events.push(copied);
+        currentEvent = copied;
+      }
+    }
+    return lineIndex + 1;
+  }
+  static toInt(s) {
+    try {
+      const maybeInt = parseInt(s);
+      return isNaN(maybeInt) ? void 0 : maybeInt;
+    } catch (e) {
+      return void 0;
+    }
+  }
+  static toFloat(s) {
+    try {
+      const maybeFloat = parseFloat(s);
+      return isNaN(maybeFloat) ? void 0 : maybeFloat;
+    } catch (e) {
+      return void 0;
+    }
+  }
+  static shallowCopy(source2) {
+    const result = {};
+    const keys = Object.getOwnPropertyNames(source2);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      result[key] = source2[key];
+    }
+    return result;
+  }
+}
 class OSZ {
   constructor(oszFile) {
-    __publicField(this, "audio", null);
-    __publicField(this, "osuFile", null);
-    __publicField(this, "osuFileList", null);
-    __publicField(this, "backgroundImage", null);
-    __publicField(this, "backgroundVideo", null);
-    __publicField(this, "videoFormat", "");
-    __publicField(this, "maniaNoteData", null);
     this.oszFile = oszFile;
+    this.osuFile = null;
+    this.osuFileList = [];
+    this.maniaNoteData = null;
+    this.oszSource = {
+      image: null,
+      video: null,
+      audio: null,
+      osb: /* @__PURE__ */ new Map()
+    };
   }
   async decompress() {
-    const zip = await JSZip.loadAsync(this.oszFile);
+    var _a;
+    const textDecoder = new TextDecoder();
+    const zip = await JSZip.loadAsync(this.oszFile, {
+      decodeFileName(a) {
+        if (Array.isArray(a)) {
+          return a.join("").toLowerCase();
+        } else {
+          return textDecoder.decode(a).toLowerCase();
+        }
+      }
+    });
+    console.log(zip);
     const filenames = Object.getOwnPropertyNames(zip.files);
     const osuFilenames = filenames.filter((filename) => filename.endsWith(".osu"));
     if (osuFilenames) {
@@ -14725,6 +15205,61 @@ class OSZ {
     if (!osuFilename)
       return;
     this.osuFile = await this.decompressOSUFile(zip, osuFilename);
+    const osbFilename = filenames.find((filename) => filename.endsWith(".osb"));
+    if (osbFilename) {
+      const osb = await this.decompressOSBFile(zip, osbFilename);
+      if (this.osuFile && this.osuFile.Events && osb) {
+        this.osuFile.Events.storyboard = osb;
+      }
+      (_a = this.osuFileList) == null ? void 0 : _a.forEach((item) => {
+        if (item.Events && osb) {
+          item.Events.storyboard = osb;
+        }
+      });
+    }
+  }
+  async decompressOSBFile(zip, osbFilename) {
+    var _a;
+    const osbFileContent = await ((_a = zip.file(osbFilename)) == null ? void 0 : _a.async("string"));
+    if (!osbFileContent)
+      return null;
+    const osbFile = OSBParser.parse(osbFileContent);
+    for (let i = 0; i < osbFile.sprites.length; i++) {
+      const sprite = osbFile.sprites[i];
+      if (isAnimation(sprite)) {
+        const path = sprite.filePath, dotIndex = path.lastIndexOf(".");
+        const name = path.substring(0, dotIndex);
+        const suffix = path.substring(dotIndex);
+        for (let i2 = 0; i2 < sprite.frameCount; i2++) {
+          const newName = `${name}${i2}${suffix}`;
+          if (this.oszSource.osb.has(newName)) {
+            continue;
+          }
+          try {
+            this.oszSource.osb.set(
+              newName,
+              await createImageBitmap(await zip.file(newName).async("blob"))
+            );
+          } catch (e) {
+            console.error("load error", newName, e);
+          }
+        }
+      } else {
+        if (this.oszSource.osb.has(sprite.filePath)) {
+          continue;
+        }
+        try {
+          this.oszSource.osb.set(
+            sprite.filePath,
+            await createImageBitmap(await zip.file(sprite.filePath).async("blob"))
+          );
+        } catch (e) {
+          console.error("load error", sprite.filePath, e);
+        }
+      }
+    }
+    console.log(this.oszSource.osb);
+    return osbFile;
   }
   async decompressOSUFile(zip, osuFilename) {
     var _a, _b, _c, _d;
@@ -14732,23 +15267,24 @@ class OSZ {
     if (!osuFileContent)
       return null;
     const osuFile2 = OSUParser.parse(osuFileContent);
-    if (!this.backgroundImage || !this.backgroundVideo || !this.videoFormat || !this.audio) {
+    if (this.hasEmptySource()) {
       if (osuFile2.General && osuFile2.General.AudioFilename) {
         const audio = await ((_b = zip.file(osuFile2.General.AudioFilename)) == null ? void 0 : _b.async("arraybuffer"));
-        if (audio)
-          this.audio = audio;
+        if (audio) {
+          this.oszSource.audio = audio;
+        }
       }
       if (osuFile2.Events && osuFile2.Events.imageBackground) {
         const background = await ((_c = zip.file(osuFile2.Events.imageBackground)) == null ? void 0 : _c.async("blob"));
-        if (background)
-          this.backgroundImage = background;
+        if (background) {
+          this.oszSource.image = background;
+        }
       }
       if (osuFile2.Events && osuFile2.Events.videoBackground) {
         const path = osuFile2.Events.videoBackground;
-        this.videoFormat = path.substring(path.lastIndexOf(".")).toLowerCase();
-        const video = await ((_d = zip.file(osuFile2.Events.videoBackground)) == null ? void 0 : _d.async("blob"));
+        const video = await ((_d = zip.file(path)) == null ? void 0 : _d.async("blob"));
         if (video) {
-          this.backgroundVideo = video;
+          this.oszSource.video = video;
         }
       }
     }
@@ -14756,6 +15292,18 @@ class OSZ {
       this.maniaNoteData = osuFile2.NoteData;
     }
     return osuFile2;
+  }
+  hasEmptySource() {
+    const { video, audio, image } = this.oszSource;
+    return video === null || audio !== null || image !== null;
+  }
+  getOSZFile() {
+    let osb = this.osuFileList.length && this.osuFileList[0].Events ? this.osuFileList[0].Events.storyboard : void 0;
+    return {
+      source: this.oszSource,
+      osu: this.osuFileList,
+      osb: osb ?? null
+    };
   }
   static async newOSZ(file) {
     const osz = new OSZ(file);
@@ -14765,71 +15313,35 @@ class OSZ {
 }
 function loadOSZ(file, preview = true) {
   OSZ.newOSZ(file).then((osz) => {
-    load(osz, preview);
+    load(osz.getOSZFile(), preview);
   });
 }
 async function load(osz, preview = true) {
   var _a;
-  const timingList = [];
-  const osuFile2 = osz.osuFile;
-  const osuTimingList = osuFile2.TimingPoints.timingList;
-  let needAddNext = false;
-  for (let i = 0; i < osuTimingList.length; i++) {
-    const item = osuTimingList[i];
-    if (item.isKiai) {
-      needAddNext = true;
-      timingList.push({
-        isKiai: true,
-        offset: item.time
-      });
-      continue;
-    }
-    if (needAddNext) {
-      needAddNext = false;
-      timingList.push({
-        isKiai: false,
-        offset: item.time
-      });
-    }
+  const osu = osz.osu[0];
+  await OSUPlayer$1.setSource(osu, osz);
+  await sleep(200);
+  if (preview) {
+    const time = (_a = osu.General) == null ? void 0 : _a.PreviewTime;
+    await OSUPlayer$1.seek(time && time >= 0 ? time : 0);
   }
-  const bullet = newBullet();
-  bullet.general.from = "osu";
-  bullet.general.previewTime = osuFile2.General.PreviewTime;
-  bullet.noteData = osuFile2.NoteData;
-  bullet.stdNotes = (_a = osuFile2.HitObjects) == null ? void 0 : _a.stdNotes;
-  const timing = {
-    beatGap: osuFile2.TimingPoints.beatGap,
-    offset: osuFile2.TimingPoints.offset,
-    timingList
-  };
-  bullet.timingPoints = timing;
-  bullet.metadata.title = osuFile2.Metadata.TitleUnicode;
-  bullet.metadata.artist = osuFile2.Metadata.ArtistUnicode;
-  bullet.metadata.source = osz.audio;
-  if (osz.backgroundImage) {
-    bullet.events.backgroundImage = osz.backgroundImage;
-  }
-  if (osz.backgroundVideo) {
-    bullet.events.backgroundVideo = osz.backgroundVideo;
-  }
-  await OSUPlayer$1.setSource(bullet);
-  preview && await OSUPlayer$1.seek(bullet.general.previewTime);
+  await sleep(200);
+  if (!preview)
+    OSUPlayer$1.stop();
+  await sleep(200);
   await OSUPlayer$1.play();
 }
 class TempOSUPlayManager {
   constructor() {
-    __publicField(this, "list", ref([]));
-    __publicField(this, "currentIndex", ref(0));
-    watch(this.list, (list) => {
-      if (list.length) {
-        AudioPlayerV2.onEnd.collect(() => {
-          this.next();
-        });
-      }
+    this.list = ref([]);
+    this.currentIndex = ref(0);
+    collect(AudioPlayerV2.onEnd, () => {
+      this.list.value.length && this.next();
     });
   }
   playAt(index, preview = true) {
     loadOSZ(this.list.value[index], preview);
+    this.currentIndex.value = index;
   }
   next() {
     let list = this.list.value, currentIndex = this.currentIndex.value;
@@ -14845,40 +15357,29 @@ class TempOSUPlayManager {
   }
 }
 const TempOSUPlayManager$1 = new TempOSUPlayManager();
-const _hoisted_1$8 = {
+const _hoisted_1$9 = {
   style: { "position": "relative" },
-  class: "fill-size mini-player-box"
+  class: "mini-player-box"
 };
-const _hoisted_2$5 = ["src"];
+const _hoisted_2$6 = ["src"];
 const _hoisted_3$2 = { class: "player-title" };
 const _hoisted_4$1 = { class: "player-artist" };
-const _hoisted_5 = { class: "text-white" };
-const _sfc_main$d = /* @__PURE__ */ defineComponent({
+const _hoisted_5 = ["onClick"];
+const _sfc_main$f = /* @__PURE__ */ defineComponent({
   __name: "MiniPlayer",
   setup(__props) {
     const img = ref(null);
-    const title = useStateFlow(OSUPlayer$1.title);
-    const artist = useStateFlow(OSUPlayer$1.artist);
-    const playState = useStateFlow(AudioPlayerV2.playState);
-    useCollect(OSUPlayer$1.onChanged, (bullet) => {
-      if (bullet.general.from === "default") {
-        image.value = url("/artwork?id=" + bullet.metadata.id);
-      }
-    });
+    const title = OSUPlayer$1.title;
+    const artist = OSUPlayer$1.artist;
+    const playState = AudioPlayerV2.playState;
     const image = shallowRef();
-    const collector = (bg) => {
+    collectLatest(OSUPlayer$1.background, (bg) => {
       if (image.value) {
         URL.revokeObjectURL(image.value);
       }
       if (bg.imageBlob) {
         image.value = URL.createObjectURL(bg.imageBlob);
       }
-    };
-    onMounted(() => {
-      OSUPlayer$1.background.collect(collector);
-    });
-    onUnmounted(() => {
-      OSUPlayer$1.background.removeCollect(collector);
     });
     const next = () => {
       TempOSUPlayManager$1.next();
@@ -14887,8 +15388,7 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
       TempOSUPlayManager$1.prev();
     };
     const stop = () => {
-      OSUPlayer$1.seek(0);
-      OSUPlayer$1.pause();
+      OSUPlayer$1.stop();
     };
     const play = () => {
       if (OSUPlayer$1.isPlaying()) {
@@ -14898,11 +15398,33 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
       }
     };
     const list = ref(false);
+    const playlist = TempOSUPlayManager$1.list;
+    function playAt(i) {
+      TempOSUPlayManager$1.playAt(i, false);
+    }
+    const listContainer = ref(null);
+    const playIndex = TempOSUPlayManager$1.currentIndex;
+    watch(listContainer, () => {
+      if (!listContainer.value) {
+        return;
+      }
+      const container = listContainer.value;
+      const children = container.children;
+      const targetIndex = Math.max(
+        TempOSUPlayManager$1.currentIndex.value - 3,
+        0
+      );
+      let scrollY = 0;
+      for (let i = 0; i < targetIndex; i++) {
+        scrollY += children[i].clientHeight;
+      }
+      container.scrollTo(0, scrollY);
+    });
     return (_ctx, _cache) => {
       const _directive_osu_button = resolveDirective("osu-button");
       return openBlock(), createBlock(Column, { class: "w-fit mini-player gap-y-2" }, {
         default: withCtx(() => [
-          createBaseVNode("div", _hoisted_1$8, [
+          createBaseVNode("div", _hoisted_1$9, [
             createBaseVNode("img", {
               ref_key: "img",
               ref: img,
@@ -14911,7 +15433,7 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
               width: "500",
               height: "240",
               style: { "position": "absolute" }
-            }, null, 8, _hoisted_2$5),
+            }, null, 8, _hoisted_2$6),
             createVNode(Column, {
               class: "fill-size",
               style: { "position": "absolute", "background-color": "#00000040" }
@@ -14985,21 +15507,27 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
           ]),
           createVNode(Transition$1, { name: "mini-list" }, {
             default: withCtx(() => [
-              list.value ? (openBlock(), createBlock(Column, {
+              list.value ? (openBlock(), createElementBlock("div", {
                 key: 0,
-                class: "rounded-md bg-[--bpm-color-3] origin-top"
-              }, {
-                default: withCtx(() => [
-                  (openBlock(), createElementBlock(Fragment, null, renderList("yes and", (item) => {
-                    return withDirectives(createBaseVNode("span", _hoisted_5, [
-                      createTextVNode("123 " + toDisplayString(item), 1)
-                    ]), [
-                      [_directive_osu_button]
-                    ]);
-                  }), 64))
-                ]),
-                _: 1
-              })) : createCommentVNode("", true)
+                class: "flex flex-col rounded-md bg-[--bpm-color-3] origin-top w-[420px] overflow-y-scroll no-scroller p-1",
+                style: { "height": "calc(100vh - var(--top-bar-height) - 16px - 160px)" },
+                ref_key: "listContainer",
+                ref: listContainer
+              }, [
+                (openBlock(true), createElementBlock(Fragment, null, renderList(unref(playlist), (item, i) => {
+                  return withDirectives((openBlock(), createElementBlock("span", {
+                    class: normalizeClass(["rounded-md text-white w-full hover:bg-[--bpm-color-4] p-2 text-sm", {
+                      "bg-[--bpm-color-11]": unref(playIndex) === i,
+                      "bg-transparent": unref(playIndex) !== i
+                    }]),
+                    onClick: ($event) => playAt(i)
+                  }, [
+                    createTextVNode(toDisplayString(item.name), 1)
+                  ], 10, _hoisted_5)), [
+                    [_directive_osu_button]
+                  ]);
+                }), 256))
+              ], 512)) : createCommentVNode("", true)
             ]),
             _: 1
           })
@@ -15009,10 +15537,21 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const MiniPlayer_vue_vue_type_style_index_0_scoped_34abdb6e_lang = "";
-const MiniPlayer = /* @__PURE__ */ _export_sfc(_sfc_main$d, [["__scopeId", "data-v-34abdb6e"]]);
-const _hoisted_1$7 = { style: { "flex-grow": "1" } };
-const _sfc_main$c = /* @__PURE__ */ defineComponent({
+const MiniPlayer_vue_vue_type_style_index_0_scoped_91d28770_lang = "";
+const MiniPlayer = /* @__PURE__ */ _export_sfc(_sfc_main$f, [["__scopeId", "data-v-91d28770"]]);
+function useCollect(flow, collector) {
+  flow.collect(collector);
+  onUnmounted(() => {
+    flow.removeCollect(collector);
+  });
+}
+function useStateFlow(stateFlow) {
+  const value = ref(stateFlow.value);
+  useCollect(stateFlow, (v) => value.value = v);
+  return value;
+}
+const _hoisted_1$8 = { style: { "flex-grow": "1" } };
+const _sfc_main$e = /* @__PURE__ */ defineComponent({
   __name: "Playlist",
   setup(__props) {
     function playAt(i) {
@@ -15030,8 +15569,9 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
         return;
       }
       const children = div.children;
+      const targetIndex = Math.max(activeIndex.value - 3, 0);
       let scrollY = 0;
-      for (let i = 0; i < Math.max(activeIndex.value - 3, 0); i++) {
+      for (let i = 0; i < targetIndex; i++) {
         scrollY += children[i].clientHeight;
       }
       div.scrollTo(0, scrollY);
@@ -15049,7 +15589,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
             class: normalizeClass(`list-item ${unref(activeIndex) === index ? "select" : ""}`)
           }, {
             default: withCtx(() => [
-              createBaseVNode("span", _hoisted_1$7, toDisplayString(item.metadata.title), 1)
+              createBaseVNode("span", _hoisted_1$8, toDisplayString(item.metadata.title), 1)
             ]),
             _: 2
           }, 1032, ["onClick", "class"]);
@@ -15058,19 +15598,19 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Playlist_vue_vue_type_style_index_0_scoped_9a0c8d37_lang = "";
-const Playlist = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-9a0c8d37"]]);
+const Playlist_vue_vue_type_style_index_0_scoped_b9b7e18b_lang = "";
+const Playlist = /* @__PURE__ */ _export_sfc(_sfc_main$e, [["__scopeId", "data-v-b9b7e18b"]]);
 const UIState = reactive({
   starSmoke: false,
   logoDrag: true,
   logoHover: true,
   beatmapBackground: true
 });
-const _hoisted_1$6 = /* @__PURE__ */ createBaseVNode("span", null, "Logo Drag", -1);
-const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode("span", { class: "flex-row" }, "Logo Hover", -1);
+const _hoisted_1$7 = /* @__PURE__ */ createBaseVNode("span", null, "Logo Drag", -1);
+const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode("span", { class: "flex-row" }, "Logo Hover", -1);
 const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode("span", { class: "flex-row" }, "Star Smoke", -1);
 const _hoisted_4 = /* @__PURE__ */ createBaseVNode("span", { class: "flex-row" }, "Use beatmap background", -1);
-const _sfc_main$b = /* @__PURE__ */ defineComponent({
+const _sfc_main$d = /* @__PURE__ */ defineComponent({
   __name: "UISettings",
   setup(__props) {
     return (_ctx, _cache) => {
@@ -15084,7 +15624,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
             "center-vertical": ""
           }, {
             default: withCtx(() => [
-              _hoisted_1$6,
+              _hoisted_1$7,
               createVNode(CheckBox, {
                 class: "ml-auto",
                 modelValue: unref(UIState).logoDrag,
@@ -15098,7 +15638,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
             "center-vertical": ""
           }, {
             default: withCtx(() => [
-              _hoisted_2$4,
+              _hoisted_2$5,
               createVNode(CheckBox, {
                 class: "ml-auto",
                 modelValue: unref(UIState).logoHover,
@@ -15141,7 +15681,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$a = /* @__PURE__ */ defineComponent({
+const _sfc_main$c = /* @__PURE__ */ defineComponent({
   __name: "VisualizerSettings",
   setup(__props) {
     return (_ctx, _cache) => {
@@ -15153,12 +15693,12 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1$5 = ["onClick"];
-const _hoisted_2$3 = {
+const _hoisted_1$6 = ["onClick"];
+const _hoisted_2$4 = {
   style: { "flex-grow": "1", "background-color": "var(--settings-content-bg)" },
   class: "fill-height"
 };
-const _sfc_main$9 = /* @__PURE__ */ defineComponent({
+const _sfc_main$b = /* @__PURE__ */ defineComponent({
   __name: "SettingsPanel",
   setup(__props) {
     const state = reactive({
@@ -15181,14 +15721,14 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
                   class: normalizeClass(`ma selector-item ${state.selectIndex === index ? "selector-item-selected" : "light-gray-click"}`),
                   style: { "border-radius": "0" },
                   onClick: ($event) => state.selectIndex = index
-                }, toDisplayString(item), 11, _hoisted_1$5);
+                }, toDisplayString(item), 11, _hoisted_1$6);
               }), 256))
             ]),
             _: 1
           }),
-          createBaseVNode("div", _hoisted_2$3, [
-            state.selectIndex === 0 ? (openBlock(), createBlock(_sfc_main$b, { key: 0 })) : createCommentVNode("", true),
-            state.selectIndex === 2 ? (openBlock(), createBlock(_sfc_main$a, { key: 1 })) : createCommentVNode("", true)
+          createBaseVNode("div", _hoisted_2$4, [
+            state.selectIndex === 0 ? (openBlock(), createBlock(_sfc_main$d, { key: 0 })) : createCommentVNode("", true),
+            state.selectIndex === 2 ? (openBlock(), createBlock(_sfc_main$c, { key: 1 })) : createCommentVNode("", true)
           ])
         ]),
         _: 1
@@ -15197,8 +15737,8 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
   }
 });
 const SettingsPanel_vue_vue_type_style_index_0_scoped_ca6acdbd_lang = "";
-const SettingsPanel = /* @__PURE__ */ _export_sfc(_sfc_main$9, [["__scopeId", "data-v-ca6acdbd"]]);
-const _sfc_main$8 = /* @__PURE__ */ defineComponent({
+const SettingsPanel = /* @__PURE__ */ _export_sfc(_sfc_main$b, [["__scopeId", "data-v-ca6acdbd"]]);
+const _sfc_main$a = /* @__PURE__ */ defineComponent({
   __name: "Toast",
   setup(__props) {
     const state = reactive({
@@ -15231,53 +15771,11 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   }
 });
 const Toast_vue_vue_type_style_index_0_scoped_6747120f_lang = "";
-const Toast = /* @__PURE__ */ _export_sfc(_sfc_main$8, [["__scopeId", "data-v-6747120f"]]);
-class ScreenManager {
-  constructor() {
-    __publicField(this, "screenMap", /* @__PURE__ */ new Map());
-    __publicField(this, "currentScreen", null);
-    __publicField(this, "currentId", createMutableStateFlow(""));
-    __publicField(this, "renderer", null);
-  }
-  init(renderer2) {
-    this.renderer = renderer2;
-    return this;
-  }
-  addScreen(id2, screenConstructor) {
-    if (id2 === "") {
-      throw Error("id cannot be empty");
-    }
-    this.screenMap.set(id2, screenConstructor);
-    return this;
-  }
-  removeScreen(id2) {
-    this.screenMap.delete(id2);
-  }
-  activeScreen(id2) {
-    if (this.currentId.value === id2) {
-      return;
-    }
-    const constructor = this.screenMap.get(id2);
-    if (constructor) {
-      if (this.currentScreen) {
-        this.renderer.removeDrawable(this.currentScreen);
-      }
-      this.currentScreen = constructor();
-      this.currentId.value = id2;
-      this.renderer.addDrawable(this.currentScreen);
-    }
-  }
-  dispose() {
-    var _a;
-    (_a = this.currentScreen) == null ? void 0 : _a.dispose();
-    this.screenMap.clear();
-  }
-}
-const ScreenManager$1 = new ScreenManager();
-const _withScopeId$1 = (n) => (pushScopeId("data-v-ed813f82"), n = n(), popScopeId(), n);
-const _hoisted_1$4 = { class: "text-white" };
-const _hoisted_2$2 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("div", { class: "top-bar-shadow" }, null, -1));
-const _sfc_main$7 = /* @__PURE__ */ defineComponent({
+const Toast = /* @__PURE__ */ _export_sfc(_sfc_main$a, [["__scopeId", "data-v-6747120f"]]);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-217b468c"), n = n(), popScopeId(), n);
+const _hoisted_1$5 = { class: "text-white" };
+const _hoisted_2$3 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("div", { class: "top-bar-shadow" }, null, -1));
+const _sfc_main$9 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   props: {
     stateText: {}
@@ -15286,7 +15784,6 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const openPlaylist = inject$1("openList");
     const openMiniPlayer = inject$1("openMiniPlayer");
-    const switchScreen = (id2) => ScreenManager$1.activeScreen(id2);
     return (_ctx, _cache) => {
       const _directive_osu_top_bar_btn = resolveDirective("osu-top-bar-btn");
       return openBlock(), createBlock(Column, { class: "fill-width" }, {
@@ -15301,58 +15798,18 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
               ])), [
                 [_directive_osu_top_bar_btn]
               ]),
-              withDirectives((openBlock(), createElementBlock("button", {
-                class: "ma top-bar-icon-btn",
-                onClick: _cache[1] || (_cache[1] = ($event) => switchScreen("main"))
-              }, [
-                createTextVNode(toDisplayString(unref(Icon).ScreenLockLandscape), 1)
-              ])), [
-                [_directive_osu_top_bar_btn]
-              ]),
-              withDirectives((openBlock(), createElementBlock("button", {
-                class: "ma top-bar-icon-btn",
-                onClick: _cache[2] || (_cache[2] = ($event) => switchScreen("second"))
-              }, [
-                createTextVNode(toDisplayString(unref(Icon).ScreenLockLandscape), 1)
-              ])), [
-                [_directive_osu_top_bar_btn]
-              ]),
-              withDirectives((openBlock(), createElementBlock("button", {
-                class: "ma top-bar-icon-btn",
-                onClick: _cache[3] || (_cache[3] = ($event) => switchScreen("mania"))
-              }, [
-                createTextVNode(toDisplayString(unref(Icon).ScreenLockLandscape), 1)
-              ])), [
-                [_directive_osu_top_bar_btn]
-              ]),
-              withDirectives((openBlock(), createElementBlock("button", {
-                class: "ma top-bar-icon-btn",
-                onClick: _cache[4] || (_cache[4] = ($event) => switchScreen("legacy"))
-              }, [
-                createTextVNode(toDisplayString(unref(Icon).ScreenLockLandscape), 1)
-              ])), [
-                [_directive_osu_top_bar_btn]
-              ]),
-              withDirectives((openBlock(), createElementBlock("button", {
-                class: "ma top-bar-icon-btn",
-                onClick: _cache[5] || (_cache[5] = ($event) => switchScreen("test"))
-              }, [
-                createTextVNode(toDisplayString(unref(Icon).ScreenLockLandscape), 1)
-              ])), [
-                [_directive_osu_top_bar_btn]
-              ]),
               createVNode(Row, {
                 style: { "flex-grow": "1" },
                 center: ""
               }, {
                 default: withCtx(() => [
-                  createBaseVNode("span", _hoisted_1$4, toDisplayString(_ctx.stateText), 1)
+                  createBaseVNode("span", _hoisted_1$5, toDisplayString(_ctx.stateText), 1)
                 ]),
                 _: 1
               }),
               withDirectives((openBlock(), createElementBlock("button", {
                 class: "ma top-bar-icon-btn",
-                onClick: _cache[6] || (_cache[6] = ($event) => unref(openMiniPlayer)())
+                onClick: _cache[1] || (_cache[1] = ($event) => unref(openMiniPlayer)())
               }, [
                 createTextVNode(toDisplayString(unref(Icon).MusicNote), 1)
               ])), [
@@ -15360,7 +15817,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
               ]),
               withDirectives((openBlock(), createElementBlock("button", {
                 class: "ma top-bar-icon-btn",
-                onClick: _cache[7] || (_cache[7] = ($event) => _ctx.$emit("beatmapListClick"))
+                onClick: _cache[2] || (_cache[2] = ($event) => _ctx.$emit("beatmapListClick"))
               }, [
                 createTextVNode(toDisplayString(unref(Icon).FolderOpen), 1)
               ])), [
@@ -15368,7 +15825,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
               ]),
               withDirectives((openBlock(), createElementBlock("button", {
                 class: "ma top-bar-icon-btn",
-                onClick: _cache[8] || (_cache[8] = ($event) => _ctx.$emit("hideUI"))
+                onClick: _cache[3] || (_cache[3] = ($event) => _ctx.$emit("hideUI"))
               }, [
                 createTextVNode(toDisplayString(unref(Icon).Fullscreen), 1)
               ])), [
@@ -15377,7 +15834,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
               unref(PLAYER) ? withDirectives((openBlock(), createElementBlock("button", {
                 key: 0,
                 class: "ma top-bar-icon-btn",
-                onClick: _cache[9] || (_cache[9] = ($event) => _ctx.$emit("bpmCalcClick"))
+                onClick: _cache[4] || (_cache[4] = ($event) => _ctx.$emit("bpmCalcClick"))
               }, [
                 createTextVNode(toDisplayString(unref(Icon).RadioButtonUnchecked), 1)
               ])), [
@@ -15386,7 +15843,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
               unref(PLAYER) ? withDirectives((openBlock(), createElementBlock("button", {
                 key: 1,
                 class: "ma top-bar-icon-btn",
-                onClick: _cache[10] || (_cache[10] = ($event) => unref(openPlaylist)())
+                onClick: _cache[5] || (_cache[5] = ($event) => unref(openPlaylist)())
               }, [
                 createTextVNode(toDisplayString(unref(Icon).List), 1)
               ])), [
@@ -15394,7 +15851,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
               ]) : createCommentVNode("", true),
               withDirectives((openBlock(), createElementBlock("button", {
                 class: "ma top-bar-icon-btn",
-                onClick: _cache[11] || (_cache[11] = ($event) => _ctx.$emit("notifyClick"))
+                onClick: _cache[6] || (_cache[6] = ($event) => _ctx.$emit("notifyClick"))
               }, [
                 createTextVNode(toDisplayString(unref(Icon).Notifications), 1)
               ])), [
@@ -15403,15 +15860,15 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
-          _hoisted_2$2
+          _hoisted_2$3
         ]),
         _: 1
       });
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_ed813f82_lang = "";
-const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$7, [["__scopeId", "data-v-ed813f82"]]);
+const TopBar_vue_vue_type_style_index_0_scoped_217b468c_lang = "";
+const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$9, [["__scopeId", "data-v-217b468c"]]);
 const bg1 = "" + new URL("menu-background-1-05e31a26.jpg", import.meta.url).href;
 const bg2 = "" + new URL("menu-background-2-9c4c914b.jpg", import.meta.url).href;
 const bg3 = "" + new URL("menu-background-3-1f77c019.jpg", import.meta.url).href;
@@ -15440,24 +15897,12 @@ const BackgroundDao$1 = new BackgroundDao();
 const MAX_CACHE_SIZE = 6;
 class BackgroundLoader {
   constructor() {
-    /**
-     * 背景图片的 ImageBitmap 队列，存储已下载的图片
-     */
-    __publicField(this, "imageQueue", []);
-    /**
-     * 记录背景资源是否可用，当下载失败，则标记为 false，在下次下载时跳过
-     */
-    __publicField(this, "imageRecord", {});
-    /**
-     * ImageBitmap 回收队列，当队列超过 MAX_CACHE_SIZE 时，回收队首的 ImageBitmap
-     */
-    __publicField(this, "recycleQueue", []);
-    __publicField(this, "backgroundNames", []);
-    __publicField(this, "isInit", false);
-    /**
-     * 随机索引序列，实现随机图片展示，且不重复
-     */
-    __publicField(this, "backgroundSequence", []);
+    this.imageQueue = [];
+    this.imageRecord = {};
+    this.recycleQueue = [];
+    this.backgroundNames = [];
+    this.isInit = false;
+    this.backgroundSequence = [];
   }
   async init() {
     const backgroundList = await BackgroundDao$1.getBackgroundList();
@@ -15571,7 +16016,7 @@ const _BeatDispatcher = class _BeatDispatcher {
     }
   }
 };
-__publicField(_BeatDispatcher, "IBeatList", []);
+_BeatDispatcher.IBeatList = [];
 let BeatDispatcher = _BeatDispatcher;
 const BeatState = {
   currentBeat: 0,
@@ -15583,50 +16028,80 @@ const BeatState = {
 };
 class BeatBooster {
   constructor() {
-    __publicField(this, "timingList", []);
-    __publicField(this, "beatCount", 0);
-    __publicField(this, "gap", 60 / 60 * 1e3);
-    __publicField(this, "offset", 0);
-    __publicField(this, "prevBeat", -1);
-    __publicField(this, "isAvailable", false);
+    this.timingList = [];
+    this.beatCount = 0;
+    this.prevBeat = -1;
+    this.isAvailable = false;
+    this.currentBeatLength = 1e3;
+    this.currentTime = 0;
+    this.isDynamicBPM = false;
+    this.beatTimingPoints = [];
     TimingManager$1.onTimingUpdate.collect((timingInfo) => {
       if (!timingInfo) {
-        this.isAvailable = false;
-        this.gap = 60 / 60 * 1e3;
-        this.offset = 0;
-        this.prevBeat = -1;
-        this.timingList = [];
+        this.setTimingPoints(null);
         return;
       }
       const bulletTimingPoints = TimingManager$1.toBulletTimingPoints(timingInfo);
-      this.isAvailable = true;
-      this.gap = bulletTimingPoints.beatGap;
-      this.offset = timingInfo.offset;
-      this.timingList = bulletTimingPoints.timingList;
-      this.prevBeat = -1;
+      this.setTimingPoints(bulletTimingPoints.timingList);
     });
-    OSUPlayer$1.onChanged.collect((bullet) => {
-      if (bullet.general.from === "default" && !bullet.available) {
-        this.isAvailable = false;
-        this.gap = 1e3;
-        this.offset = 0;
-        this.timingList = [];
-        this.prevBeat = -1;
+    collect(OSUPlayer$1.onChanged, ([osu]) => {
+      if (osu.TimingPoints && osu.TimingPoints.timingList.length) {
+        this.setTimingPoints(osu.TimingPoints.timingList);
       } else {
-        this.isAvailable = true;
-        this.gap = bullet.timingPoints.beatGap;
-        this.offset = bullet.timingPoints.offset;
-        this.timingList = bullet.timingPoints.timingList;
-        this.prevBeat = -1;
+        this.setTimingPoints(null);
       }
     });
   }
-  updateBeat(timestamp, before = linear, after = linear) {
-    if (timestamp < this.offset) {
-      return 0;
+  setTimingPoints(timingList) {
+    if (timingList === null || timingList.length === 0) {
+      this.isAvailable = false;
+      timingList = [{
+        beatLength: 1e3,
+        isKiai: false,
+        time: 0
+      }];
+    } else {
+      this.isAvailable = true;
     }
-    timestamp -= this.offset;
-    const gap = this.gap;
+    this.prevBeat = -1;
+    this.timingList = timingList;
+    this.beatTimingPoints = timingList.filter((v) => v.beatLength > 0);
+    if (this.beatTimingPoints.length === 1) {
+      this.isDynamicBPM = false;
+      this.currentTime = this.beatTimingPoints[0].time;
+      this.currentBeatLength = this.beatTimingPoints[0].beatLength;
+    } else {
+      this.isDynamicBPM = true;
+    }
+  }
+  updateBeat(timestamp, before = linear, after = linear) {
+    if (this.isDynamicBPM) {
+      const timingList = this.beatTimingPoints;
+      let timing, i = 0;
+      while (i < timingList.length) {
+        if (timestamp < timingList[i].time) {
+          if (i > 0) {
+            timing = timingList[i - 1];
+          }
+          break;
+        }
+        i++;
+      }
+      if (i === timingList.length) {
+        timing = timingList[i - 1];
+      }
+      if (!timing || i === 0 && timestamp < timing.time) {
+        return 0;
+      }
+      this.currentBeatLength = timing.beatLength;
+      this.currentTime = timing.time;
+    } else {
+      if (timestamp < this.currentTime) {
+        return 0;
+      }
+    }
+    timestamp -= this.currentTime;
+    const gap = this.currentBeatLength;
     timestamp += 60;
     const count = int(timestamp / gap);
     timestamp -= count * gap;
@@ -15637,7 +16112,7 @@ class BeatBooster {
     if (this.prevBeat != count) {
       this.prevBeat = count;
       const nextBeatTime = this.getNextBeatTime();
-      BeatDispatcher.fireNewBeat(this.isKiai(nextBeatTime), nextBeatTime, this.gap);
+      BeatDispatcher.fireNewBeat(this.isKiai(nextBeatTime), nextBeatTime, this.currentBeatLength);
     }
     if (timestamp <= 60) {
       return before(timestamp / 60);
@@ -15648,7 +16123,7 @@ class BeatBooster {
     return 0;
   }
   getNextBeatTime() {
-    return this.offset + this.gap * (this.beatCount + 1);
+    return this.currentTime + this.currentBeatLength * (this.beatCount + 1);
   }
   isKiai(currentTime) {
     currentTime += 60;
@@ -15658,7 +16133,7 @@ class BeatBooster {
     }
     let item = null;
     for (let i = 0; i < timingList.length; i++) {
-      if (currentTime <= timingList[i].offset) {
+      if (currentTime <= timingList[i].time) {
         if (i > 0) {
           item = timingList[i - 1];
         }
@@ -15674,64 +16149,8 @@ class BeatBooster {
   getCurrentBeatCount() {
     return this.beatCount;
   }
-  getGap() {
-    return this.gap;
-  }
-  getOffset() {
-    return this.offset;
-  }
 }
 const BeatBooster$1 = new BeatBooster();
-class Vector2 {
-  constructor(x = 0, y = 0) {
-    this.x = x;
-    this.y = y;
-  }
-  isZero() {
-    return this.x === 0 && this.y === 0;
-  }
-  static newZero() {
-    return new Vector2(0, 0);
-  }
-  equals(v2) {
-    return this.x === v2.x && this.y === v2.y;
-  }
-  add(vec2) {
-    return new Vector2(vec2.x + this.x, vec2.y + this.y);
-  }
-  increment(v) {
-    this.x += v.x;
-    this.y += v.y;
-  }
-  minus(vec2) {
-    return new Vector2(this.x - vec2.x, this.y - vec2.y);
-  }
-  copy() {
-    return new Vector2(this.x, this.y);
-  }
-  // public static negative(src: Vector2): Vector2 {
-  //     return new Vector2(-src.x, -src.y)
-  // }
-  // public static multi(src: Vector2, n: number): Vector2 {
-  //     return new Vector2(src.x * n, src.y * n)
-  // }
-  // public static dotMulti(src: Vector2, vec2: Vector2): number {
-  //     return src.x * vec2.x + src.y * vec2.y
-  // }
-  // public static crossMulti(src: Vector2, vec2: Vector2): Vector2 {
-  //     return new Vector2(src.x * vec2.y, vec2.x * src.y)
-  // }
-  // public static norm(src: Vector2): number {
-  //     return Math.sqrt(src.x ** 2 + src.y ** 2)
-  // }
-  set(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-}
-function Vector(x = 0, y) {
-  return new Vector2(x, y === void 0 ? x : y);
-}
 const MOUSE_LEFT_DOWN = 1;
 const MOUSE_RIGHT_DOWN = 2;
 const MOUSE_MOVE = 4;
@@ -15808,15 +16227,15 @@ const _MouseState = class _MouseState {
     return (which & MOUSE_KEY_RIGHT) != 0;
   }
 };
-__publicField(_MouseState, "state", MOUSE_NONE);
-__publicField(_MouseState, "downPosition", Vector2.newZero());
-__publicField(_MouseState, "upPosition", Vector2.newZero());
-__publicField(_MouseState, "position", Vector2.newZero());
-__publicField(_MouseState, "which", MOUSE_KEY_NONE);
-__publicField(_MouseState, "onClick", null);
-__publicField(_MouseState, "onMouseDown", null);
-__publicField(_MouseState, "onMouseMove", null);
-__publicField(_MouseState, "onMouseUp", null);
+_MouseState.state = MOUSE_NONE;
+_MouseState.downPosition = Vector2.newZero();
+_MouseState.upPosition = Vector2.newZero();
+_MouseState.position = Vector2.newZero();
+_MouseState.which = MOUSE_KEY_NONE;
+_MouseState.onClick = null;
+_MouseState.onMouseDown = null;
+_MouseState.onMouseMove = null;
+_MouseState.onMouseUp = null;
 let MouseState = _MouseState;
 const Time = {
   elapsed: 0,
@@ -15824,7 +16243,7 @@ const Time = {
 };
 const _Matrix3 = class _Matrix3 {
   constructor() {
-    __publicField(this, "value", [
+    this.value = [
       0,
       0,
       0,
@@ -15834,7 +16253,7 @@ const _Matrix3 = class _Matrix3 {
       0,
       0,
       0
-    ]);
+    ];
   }
   static newIdentify() {
     const ma = new _Matrix3();
@@ -15911,10 +16330,7 @@ const _Matrix3 = class _Matrix3 {
     this.value[8] = v;
   }
 };
-/**
- * readonly, do not modify
- */
-__publicField(_Matrix3, "identify", [
+_Matrix3.identify = [
   1,
   0,
   0,
@@ -15924,7 +16340,7 @@ __publicField(_Matrix3, "identify", [
   0,
   0,
   1
-]);
+];
 let Matrix3 = _Matrix3;
 class TransformUtils {
   static rotate(radius) {
@@ -16024,12 +16440,14 @@ class TransformUtils {
     vec2.y = y;
   }
 }
-class Coordinate {
+const _Coordinate = class _Coordinate {
   constructor() {
-    __publicField(this, "_width", 0);
-    __publicField(this, "_height", 0);
-    __publicField(this, "onWindowResize", null);
-    __publicField(this, "orthographicProjectionMatrix4", new Float32Array([
+    this._width = 0;
+    this._height = 0;
+    this._nativeWidth = 0;
+    this._nativeHeight = 0;
+    this.onWindowResize = null;
+    this.orthographicProjectionMatrix4 = new Float32Array([
       1,
       0,
       0,
@@ -16046,18 +16464,23 @@ class Coordinate {
       0,
       0,
       1
-    ]));
+    ]);
+    this.ratio = 1;
   }
   updateCoordinate(width, height) {
     var _a;
-    console.log("window resize");
-    this._width = width;
-    this._height = height;
+    console.log("window resize", width, height);
+    this._nativeWidth = width;
+    this._nativeHeight = height;
+    this.ratio = _Coordinate.MAX_WIDTH / width;
+    this._width = _Coordinate.MAX_WIDTH;
+    this._height = height * this.ratio;
+    console.log("adjust", this.ratio);
     this.orthographicProjectionMatrix4 = TransformUtils.orth(
-      -width / 2,
-      width / 2,
-      -height / 2,
-      height / 2,
+      -this._width / 2,
+      this._width / 2,
+      -this._height / 2,
+      this._height / 2,
       0,
       1
     );
@@ -16068,6 +16491,12 @@ class Coordinate {
   }
   get height() {
     return this._height;
+  }
+  get nativeWidth() {
+    return this._nativeWidth;
+  }
+  get nativeHeight() {
+    return this._nativeHeight;
   }
   get centerX() {
     return this._width / 2;
@@ -16081,11 +16510,15 @@ class Coordinate {
   glYLength(worldOrScreen) {
     return worldOrScreen * (2 / this.height);
   }
-}
+};
+_Coordinate.MAX_WIDTH = 1536;
+let Coordinate = _Coordinate;
 const Coordinate$1 = new Coordinate();
 class MatrixUtils {
   static m3Multi(mt1, mt2) {
-    const result = new Matrix3();
+    return this.m3MultiTo(mt1, mt2, new Matrix3());
+  }
+  static m3MultiTo(mt1, mt2, result) {
     result.M11 = mt1.M11 * mt2.M11 + mt1.M12 * mt2.M21 + mt1.M13 * mt2.M31;
     result.M12 = mt1.M11 * mt2.M12 + mt1.M12 * mt2.M22 + mt1.M13 * mt2.M32;
     result.M13 = mt1.M11 * mt2.M13 + mt1.M12 * mt2.M23 + mt1.M13 * mt2.M33;
@@ -16095,6 +16528,18 @@ class MatrixUtils {
     result.M31 = mt1.M31 * mt2.M11 + mt1.M32 * mt2.M21 + mt1.M33 * mt2.M31;
     result.M32 = mt1.M31 * mt2.M12 + mt1.M32 * mt2.M22 + mt1.M33 * mt2.M32;
     result.M33 = mt1.M31 * mt2.M13 + mt1.M32 * mt2.M23 + mt1.M33 * mt2.M33;
+    return result;
+  }
+  static m3MultiToArray(mt1, mt2, result) {
+    result[0] = mt1.M11 * mt2.M11 + mt1.M12 * mt2.M21 + mt1.M13 * mt2.M31;
+    result[1] = mt1.M11 * mt2.M12 + mt1.M12 * mt2.M22 + mt1.M13 * mt2.M32;
+    result[2] = mt1.M11 * mt2.M13 + mt1.M12 * mt2.M23 + mt1.M13 * mt2.M33;
+    result[3] = mt1.M21 * mt2.M11 + mt1.M22 * mt2.M21 + mt1.M23 * mt2.M31;
+    result[4] = mt1.M21 * mt2.M12 + mt1.M22 * mt2.M22 + mt1.M23 * mt2.M32;
+    result[5] = mt1.M21 * mt2.M13 + mt1.M22 * mt2.M23 + mt1.M23 * mt2.M33;
+    result[6] = mt1.M31 * mt2.M11 + mt1.M32 * mt2.M21 + mt1.M33 * mt2.M31;
+    result[7] = mt1.M31 * mt2.M12 + mt1.M32 * mt2.M22 + mt1.M33 * mt2.M32;
+    result[8] = mt1.M31 * mt2.M13 + mt1.M32 * mt2.M23 + mt1.M33 * mt2.M33;
     return result;
   }
   static m4Multi(mt1, mt2) {
@@ -16141,22 +16586,28 @@ class MatrixUtils {
 }
 class Transform {
   constructor() {
-    __publicField(this, "translate", Vector());
-    __publicField(this, "scale", Vector(1));
-    /** @todo to impl it */
-    __publicField(this, "skew", Vector());
-    /** radian */
-    __publicField(this, "rotate", 0);
-    __publicField(this, "alpha", 1);
-    __publicField(this, "transformMatrix", Matrix3.newIdentify());
+    this.translate = Vector();
+    this.scale = Vector(1);
+    this.skew = Vector();
+    this.rotate = 0;
+    this.alpha = 1;
+    this.transformMatrix = Matrix3.newIdentify();
   }
-  extractToMatrix(matrix4) {
+  extractToMatrix4(matrix4) {
     const sc = this.scale, t = this.translate, r = this.rotate;
     const scM4 = scaleM4(sc);
     const tM4 = translateM4(t);
     const rM4 = rotateM4(degreeToRadian(r));
     const m4 = MatrixUtils.m4Multi(tM4, rM4);
     MatrixUtils.m4MultiTo(m4, scM4, matrix4);
+  }
+  extractToMatrix3(matrix3) {
+    const sc = this.scale, t = this.translate, r = this.rotate;
+    const scM3 = TransformUtils.scale(sc.x, sc.y);
+    const tM3 = TransformUtils.translate(t.x, t.y);
+    const rM3 = TransformUtils.rotate(degreeToRadian(r));
+    const m3 = MatrixUtils.m3Multi(tM3, rM3);
+    MatrixUtils.m3MultiTo(m3, scM3, matrix3);
   }
   translateTo(v) {
     this.translate.set(v.x, v.y);
@@ -16264,16 +16715,47 @@ function rotateM4(radian) {
   m[5] = cos;
   return m;
 }
+const _Axis = class _Axis {
+  static getXAxis(anchor) {
+    return anchor & 7;
+  }
+  static getYAxis(anchor) {
+    return anchor & 7 << 3;
+  }
+};
+_Axis.X_LEFT = 1;
+_Axis.X_CENTER = 1 << 1;
+_Axis.X_RIGHT = 1 << 2;
+_Axis.Y_TOP = 1 << 3;
+_Axis.Y_CENTER = 1 << 4;
+_Axis.Y_BOTTOM = 1 << 5;
+let Axis = _Axis;
+const dependencyMap = {};
+function inject(id2) {
+  const dep = dependencyMap[id2];
+  if (dep === void 0) {
+    throw new Error("no dep found");
+  }
+  return dep;
+}
+function provide(id2, a) {
+  dependencyMap[id2] = a;
+}
+function unprovide(id2) {
+  if (id2 in dependencyMap) {
+    delete dependencyMap[id2];
+  }
+}
 class Transition {
   constructor(startTime = 0, endTime = 0, timeFunction = linear, toValue = 0, fromValue = 0) {
-    __publicField(this, "next", null);
-    __publicField(this, "isEnd", false);
-    __publicField(this, "isStarted", false);
     this.startTime = startTime;
     this.endTime = endTime;
     this.timeFunction = timeFunction;
     this.toValue = toValue;
     this.fromValue = fromValue;
+    this.next = null;
+    this.isEnd = false;
+    this.isStarted = false;
     if (startTime > endTime) {
       throw new Error("Illegal parameter");
     }
@@ -16298,10 +16780,10 @@ class Transition {
 }
 class TransitionGroup {
   constructor() {
-    __publicField(this, "transition", null);
-    __publicField(this, "current", null);
-    __publicField(this, "isEnd", false);
-    __publicField(this, "currentValue", 0);
+    this.transition = null;
+    this.current = null;
+    this.isEnd = false;
+    this.currentValue = 0;
   }
   add(transition) {
     if (this.transition === null) {
@@ -16341,144 +16823,26 @@ class TransitionGroup {
     this.currentValue = value;
   }
 }
-class FadeTransition {
-  constructor(drawable) {
-    __publicField(this, "fadeTransitionGroup", null);
-    __publicField(this, "fadeTimeOffset", 0);
-    __publicField(this, "isEnd", false);
-    this.drawable = drawable;
-  }
-  setStartTime(startTime) {
-    this.fadeTimeOffset = startTime;
-    this.isEnd = false;
-  }
-  fadeTo(target, duration = 0, ease2 = linear) {
-    const transition = new Transition(
-      this.fadeTimeOffset,
-      this.fadeTimeOffset + duration,
-      ease2,
-      target,
-      this.drawable.alpha
-    );
-    if (this.fadeTransitionGroup === null) {
-      this.fadeTransitionGroup = new TransitionGroup();
-    }
-    this.fadeTransitionGroup.add(transition);
-    this.fadeTimeOffset += duration;
-    return this;
-  }
-  update(timestamp) {
-    const fadeTransitionGroup = this.fadeTransitionGroup;
-    if (fadeTransitionGroup !== null) {
-      fadeTransitionGroup.update(timestamp);
-      const fadeValue = fadeTransitionGroup.currentValue;
-      this.isEnd = fadeTransitionGroup.isEnd;
-      if (fadeTransitionGroup.isEnd) {
-        this.fadeTransitionGroup = null;
-      }
-      if (fadeValue != null) {
-        this.drawable.alpha = fadeValue;
-      }
-    }
-  }
-}
-class TranslateTransition {
-  constructor(drawable) {
-    __publicField(this, "transXTransition", null);
-    __publicField(this, "transYTransition", null);
-    __publicField(this, "transOffsetTime", 0);
-    __publicField(this, "isEnd", false);
-    this.drawable = drawable;
-  }
-  setStartTime(startTime) {
-    this.transOffsetTime = startTime;
-    this.isEnd = false;
-  }
-  translateTo(target, duration = 0, ease2 = linear) {
-    const translate = this.drawable.translate;
-    const transitionX = new Transition(
-      this.transOffsetTime,
-      this.transOffsetTime + duration,
-      ease2,
-      target.x,
-      translate.x
-    );
-    if (this.transXTransition === null) {
-      this.transXTransition = new TransitionGroup();
-    }
-    this.transXTransition.add(transitionX);
-    const transitionY = new Transition(
-      this.transOffsetTime,
-      this.transOffsetTime + duration,
-      ease2,
-      target.y,
-      translate.y
-    );
-    if (this.transYTransition === null) {
-      this.transYTransition = new TransitionGroup();
-    }
-    this.transYTransition.add(transitionY);
-    this.transOffsetTime += duration;
-    return this;
-  }
-  update(timestamp) {
-    const x = this.updateX(timestamp);
-    const y = this.updateY(timestamp);
-    if (x !== null && y !== null) {
-      this.drawable.translate = new Vector2(x, y);
-    }
-  }
-  updateX(timestamp) {
-    const transXTransition = this.transXTransition;
-    if (transXTransition !== null) {
-      transXTransition.update(timestamp);
-      const transXValue = transXTransition.currentValue;
-      this.isEnd = transXTransition.isEnd;
-      if (transXTransition.isEnd) {
-        this.transXTransition = null;
-      }
-      if (transXValue != null) {
-        return transXValue;
-      }
-    }
-    return null;
-  }
-  updateY(timestamp) {
-    const transYTransition = this.transYTransition;
-    if (transYTransition !== null) {
-      transYTransition.update(timestamp);
-      const transYValue = transYTransition.currentValue;
-      this.isEnd = transYTransition.isEnd;
-      if (transYTransition.isEnd) {
-        this.transYTransition = null;
-      }
-      if (transYValue != null) {
-        return transYValue;
-      }
-    }
-    return null;
-  }
-}
 class ObjectTransition {
   constructor(obj, propertyName) {
-    __publicField(this, "transitionGroup", null);
-    __publicField(this, "timeOffset", 0);
-    __publicField(this, "isEnd", false);
     this.obj = obj;
     this.propertyName = propertyName;
+    this.transitionGroup = null;
+    this.timeOffset = 0;
+    this.isEnd = false;
     if (typeof obj[propertyName] !== "number") {
-      throw new Error("An unsupported data type");
+      throw new Error("Unsupported data type");
     }
   }
   setStartTime(startTime) {
     this.timeOffset = startTime;
     this.isEnd = false;
   }
-  transitionTo(target, duration = 0, ease2 = linear) {
+  transitionTo(target, duration = 0, ease = linear) {
     const transition = new Transition(
       this.timeOffset,
       this.timeOffset + duration,
-      ease2,
+      ease,
       target,
       this.obj[this.propertyName]
     );
@@ -16504,134 +16868,137 @@ class ObjectTransition {
     }
   }
 }
-class Axis {
-  static getXAxis(anchor) {
-    return anchor & 7;
+const M = 0, MX = 1, MY = 2, F = 3, R = 4, S = 5, SX = 6, SY = 7;
+class DrawableTransition {
+  constructor(transform) {
+    this.transform = transform;
+    this.transitionDelay = 0;
+    this.transformType = -1;
+    this.transitionX = new ObjectTransition(transform.translate, "x");
+    this.transitionY = new ObjectTransition(transform.translate, "y");
+    this.transitionScaleX = new ObjectTransition(transform.scale, "x");
+    this.transitionScaleY = new ObjectTransition(transform.scale, "y");
+    this.transitionAlpha = new ObjectTransition(transform, "alpha");
+    this.transitionRotate = new ObjectTransition(transform, "rotate");
   }
-  static getYAxis(anchor) {
-    return anchor & 7 << 3;
-  }
-}
-__publicField(Axis, "X_LEFT", 1);
-__publicField(Axis, "X_CENTER", 1 << 1);
-__publicField(Axis, "X_RIGHT", 1 << 2);
-__publicField(Axis, "Y_TOP", 1 << 3);
-__publicField(Axis, "Y_CENTER", 1 << 4);
-__publicField(Axis, "Y_BOTTOM", 1 << 5);
-const dependencyMap = {};
-function inject(id2) {
-  const dep = dependencyMap[id2];
-  if (dep === void 0) {
-    throw new Error("no dep found");
-  }
-  return dep;
-}
-function provide(id2, a) {
-  dependencyMap[id2] = a;
-}
-function unprovide(id2) {
-  if (id2 in dependencyMap) {
-    delete dependencyMap[id2];
-  }
-}
-class Vector2Transition {
-  constructor(obj, property) {
-    __publicField(this, "vecXTransition", null);
-    __publicField(this, "vecYTransition", null);
-    __publicField(this, "offsetTime", 0);
-    __publicField(this, "isEnd", false);
-    this.obj = obj;
-    this.property = property;
-  }
-  setStartTime(startTime) {
-    this.offsetTime = startTime;
-    this.isEnd = false;
-  }
-  to(target, duration = 0, ease2 = linear) {
-    const vector = this.obj[this.property];
-    const vectorX = new Transition(
-      this.offsetTime,
-      this.offsetTime + duration,
-      ease2,
-      target.x,
-      vector.x
-    );
-    if (this.vecXTransition === null) {
-      this.vecXTransition = new TransitionGroup();
-    }
-    this.vecXTransition.add(vectorX);
-    const vectorY = new Transition(
-      this.offsetTime,
-      this.offsetTime + duration,
-      ease2,
-      target.y,
-      vector.y
-    );
-    if (this.vecYTransition === null) {
-      this.vecYTransition = new TransitionGroup();
-    }
-    this.vecYTransition.add(vectorY);
-    this.offsetTime += duration;
+  /**
+   * 仅当变换类型变化时生效
+   * @param ms
+   */
+  delay(ms) {
+    this.transitionDelay = ms;
     return this;
   }
-  update(timestamp) {
-    const x = this.updateX(timestamp);
-    const y = this.updateY(timestamp);
-    if (x !== null && y !== null) {
-      this.obj[this.property] = new Vector2(x, y);
-    }
+  /**
+   * 如果想正常开始一段新动画，你必须首先调用 clear
+   */
+  get clear() {
+    this.transformType = -1;
+    return this;
   }
-  updateX(timestamp) {
-    const vecXTransition = this.vecXTransition;
-    if (vecXTransition !== null) {
-      vecXTransition.update(timestamp);
-      const vecXValue = vecXTransition.currentValue;
-      this.isEnd = vecXTransition.isEnd;
-      if (vecXTransition.isEnd) {
-        this.vecXTransition = null;
-      }
-      if (vecXValue !== null) {
-        return vecXValue;
-      }
+  moveXTo(x, duration, ease = linear) {
+    if (this.transformType !== MX) {
+      this.transitionX.setStartTime(Time.currentTime + this.transitionDelay);
+      this.transitionDelay = 0;
+      this.transformType = MX;
     }
-    return null;
+    this.transitionX.transitionTo(x, duration, ease);
+    return this;
   }
-  updateY(timestamp) {
-    const vecYTransition = this.vecYTransition;
-    if (vecYTransition !== null) {
-      vecYTransition.update(timestamp);
-      const vecYValue = vecYTransition.currentValue;
-      this.isEnd = vecYTransition.isEnd;
-      if (vecYTransition.isEnd) {
-        this.vecYTransition = null;
-      }
-      if (vecYValue !== null) {
-        return vecYValue;
-      }
+  moveYTo(y, duration, ease = linear) {
+    if (this.transformType !== MY) {
+      this.transitionY.setStartTime(Time.currentTime + this.transitionDelay);
+      this.transitionDelay = 0;
+      this.transformType = MY;
     }
-    return null;
+    this.transitionY.transitionTo(y, duration, ease);
+    return this;
+  }
+  moveTo(v, duration, ease = linear) {
+    if (this.transformType !== M) {
+      const time = Time.currentTime + this.transitionDelay;
+      this.transitionX.setStartTime(time);
+      this.transitionY.setStartTime(time);
+      this.transitionDelay = 0;
+      this.transformType = M;
+    }
+    this.transitionX.transitionTo(v.x, duration, ease);
+    this.transitionY.transitionTo(v.y, duration, ease);
+    return this;
+  }
+  fadeTo(alpha, duration, ease = linear) {
+    if (this.transformType !== F) {
+      this.transitionAlpha.setStartTime(Time.currentTime + this.transitionDelay);
+      this.transitionDelay = 0;
+      this.transformType = F;
+    }
+    this.transitionAlpha.transitionTo(alpha, duration, ease);
+    return this;
+  }
+  rotateTo(degree, duration, ease = linear) {
+    if (this.transformType !== R) {
+      this.transitionRotate.setStartTime(Time.currentTime + this.transitionDelay);
+      this.transitionDelay = 0;
+      this.transformType = R;
+    }
+    this.transitionRotate.transitionTo(degree, duration, ease);
+    return this;
+  }
+  scaleYTo(y, duration, ease = linear) {
+    if (this.transformType !== SY) {
+      this.transitionScaleY.setStartTime(Time.currentTime + this.transitionDelay);
+      this.transitionDelay = 0;
+      this.transformType = SY;
+    }
+    this.transitionScaleY.transitionTo(y, duration, ease);
+    return this;
+  }
+  scaleXTo(x, duration, ease = linear) {
+    if (this.transformType !== SX) {
+      this.transitionScaleX.setStartTime(Time.currentTime + this.transitionDelay);
+      this.transitionDelay = 0;
+      this.transformType = SX;
+    }
+    this.transitionScaleX.transitionTo(x, duration, ease);
+    return this;
+  }
+  scaleTo(scale, duration, ease = linear) {
+    if (this.transformType !== S) {
+      const time = Time.currentTime + this.transitionDelay;
+      this.transitionScaleX.setStartTime(time);
+      this.transitionScaleY.setStartTime(time);
+      this.transitionDelay = 0;
+      this.transformType = S;
+    }
+    this.transitionScaleX.transitionTo(scale.x, duration, ease);
+    this.transitionScaleY.transitionTo(scale.y, duration, ease);
+    return this;
+  }
+  update(transform) {
+  }
+  updateTransform() {
+    const time = Time.currentTime;
+    this.transitionX.update(time);
+    this.transitionY.update(time);
+    this.transitionScaleX.update(time);
+    this.transitionScaleY.update(time);
+    this.transitionAlpha.update(time);
+    this.transitionRotate.update(time);
   }
 }
 class Drawable {
   constructor(gl, config) {
-    /**
-     * 通过 Anchor 调整后的变换
-     */
-    __publicField(this, "layoutTransform", new Transform());
-    /**
-     * 记录自身的变换
-     */
-    __publicField(this, "selfTransform", new Transform());
-    /**
-     * 最终计算出来的变换
-     */
-    __publicField(this, "appliedTransform", new Transform());
-    __publicField(this, "size", new Vector2());
-    __publicField(this, "position", new Vector2());
-    __publicField(this, "anchor", Axis.X_CENTER | Axis.Y_CENTER);
-    __publicField(this, "parent", null);
-    __publicField(this, "isAvailable", false);
-    __publicField(this, "matrixArray", new Float32Array([
+    this.gl = gl;
+    this.config = config;
+    this.layoutTransform = new Transform();
+    this.selfTransform = new Transform();
+    this.appliedTransform = new Transform();
+    this.size = new Vector2();
+    this.position = new Vector2();
+    this.anchor = Axis.X_CENTER | Axis.Y_CENTER;
+    this.parent = null;
+    this.isAvailable = false;
+    this.matrixArray = new Float32Array([
       1,
       0,
       0,
@@ -16648,19 +17015,18 @@ class Drawable {
       0,
       0,
       1
-    ]));
-    __publicField(this, "scaleTransition", new Vector2Transition(this, "scale"));
-    __publicField(this, "fadeTransition", new FadeTransition(this));
-    __publicField(this, "translateTransition", new TranslateTransition(this));
-    __publicField(this, "rotateTransition", new ObjectTransition(this, "rotate"));
-    __publicField(this, "isVisible", true);
-    __publicField(this, "isHovered", false);
-    __publicField(this, "isDragged", false);
-    this.gl = gl;
-    this.config = config;
+    ]);
+    this.isVisible = true;
+    this.disposeList = [];
+    this.transition = new DrawableTransition(this.selfTransform);
+    this.isHovered = false;
+    this.isDragged = false;
     this.isAvailable = true;
     this.updateBounding();
     provide(this.constructor.name, this);
+  }
+  addDisposable(init) {
+    this.disposeList.push(init() || void 0);
   }
   get width() {
     return this.size.x;
@@ -16675,6 +17041,9 @@ class Drawable {
     this.updateBounding();
     this.onLoad();
   }
+  /**
+   * this method will be executed while constructor after execute
+   */
   onLoad() {
   }
   updateBounding() {
@@ -16686,6 +17055,30 @@ class Drawable {
       height = Coordinate$1.height;
     }
     let tx = 0, ty = 0, left = -width / 2, top = height / 2;
+    const origin = isUndef(this.config.origin) ? Axis.X_CENTER | Axis.Y_CENTER : this.config.origin;
+    const isAxis = !Array.isArray(origin);
+    let originX, originY;
+    if (isAxis) {
+      const ax = Axis.getXAxis(origin), ay = Axis.getYAxis(origin);
+      if (ax === Axis.X_LEFT) {
+        originX = -width / 2;
+      } else if (ax === Axis.X_RIGHT) {
+        originX = width / 2;
+      } else {
+        originX = 0;
+      }
+      if (ay === Axis.Y_TOP) {
+        originY = height / 2;
+      } else if (ay === Axis.Y_BOTTOM) {
+        originY = -height / 2;
+      } else {
+        originY = 0;
+      }
+    } else {
+      [originX, originY] = origin;
+    }
+    left += -originX;
+    top += -originY;
     this.anchor = isUndef(this.config.anchor) ? Axis.X_CENTER | Axis.Y_CENTER : this.config.anchor;
     const xAxis = Axis.getXAxis(this.anchor);
     const yAxis = Axis.getYAxis(this.anchor);
@@ -16710,41 +17103,8 @@ class Drawable {
     }
     tx += width / 2;
     ty -= height / 2;
-    const origin = isUndef(this.config.origin) ? Axis.X_CENTER | Axis.Y_CENTER : this.config.origin;
-    const isAxis = !Array.isArray(origin);
-    if (isAxis) {
-      const x = Axis.getXAxis(origin);
-      const y = Axis.getYAxis(origin);
-      if (x === Axis.X_LEFT) {
-        left = 0;
-        tx -= width / 2;
-      } else if (x === Axis.X_CENTER) {
-        left = -width / 2;
-      } else if (x === Axis.X_RIGHT) {
-        left = width / 2;
-        tx += width / 2;
-      }
-      if (y === Axis.Y_TOP) {
-        top = 0;
-        ty += height / 2;
-      } else if (y === Axis.Y_CENTER) {
-        top = height / 2;
-      } else if (y === Axis.Y_BOTTOM) {
-        top = -height / 2;
-        ty -= height / 2;
-      }
-    } else {
-      left = origin[0];
-      if (left < 0)
-        tx += left;
-      else
-        tx -= left;
-      top = origin[1];
-      if (top < 0)
-        ty -= top;
-      else
-        ty += top;
-    }
+    tx += originX;
+    ty += originY;
     const layoutTranslate = new Vector2(tx, ty);
     this.position.set(left, top);
     this.size.set(width, height);
@@ -16757,22 +17117,26 @@ class Drawable {
     var _a;
     (_a = this.parent) == null ? void 0 : _a.removeChild(this);
   }
-  scaleBegin(atTime = Time.currentTime) {
-    this.scaleTransition.setStartTime(atTime);
-    return this.scaleTransition;
-  }
-  fadeBegin(atTime = Time.currentTime) {
-    this.fadeTransition.setStartTime(atTime);
-    return this.fadeTransition;
-  }
-  translateBegin(atTime = Time.currentTime) {
-    this.translateTransition.setStartTime(atTime);
-    return this.translateTransition;
-  }
-  rotateBegin(atTime = Time.currentTime) {
-    this.rotateTransition.setStartTime(atTime);
-    return this.rotateTransition;
-  }
+  // public scaleBegin(atTime: number = Time.currentTime): Vector2Transition {
+  //   this.scaleTransition.setStartTime(atTime);
+  //   return this.scaleTransition;
+  // }
+  //
+  // public fadeBegin(atTime: number = Time.currentTime): FadeTransition {
+  //   this.fadeTransition.setStartTime(atTime);
+  //   return this.fadeTransition;
+  // }
+  // public translateBegin(
+  //   atTime: number = Time.currentTime
+  // ): TranslateTransition {
+  //   this.translateTransition.setStartTime(atTime);
+  //   return this.translateTransition;
+  // }
+  //
+  // public rotateBegin(atTime: number = Time.currentTime): ObjectTransition {
+  //   this.rotateTransition.setStartTime(atTime)
+  //   return this.rotateTransition
+  // }
   set scale(v) {
     this.selfTransform.scaleTo(v);
   }
@@ -16796,6 +17160,17 @@ class Drawable {
   }
   get rotate() {
     return this.selfTransform.rotate;
+  }
+  /**
+   * 返回一个平滑过渡的变换
+   * @param clear 默认为 true，如果为 true，初次调用变换方法时，将根据当前时间为基准进行平滑变换，如果想开始一个新的平滑
+   * 过渡，则应该保持默认值
+   */
+  transform(clear2 = true) {
+    if (clear2) {
+      return this.transition.clear;
+    }
+    return this.transition;
   }
   updateTransform() {
     const layoutTransform = this.layoutTransform;
@@ -16826,10 +17201,8 @@ class Drawable {
       return;
     }
     if (this.isAvailable) {
-      this.scaleTransition.update(Time.currentTime);
-      this.fadeTransition.update(Time.currentTime);
-      this.translateTransition.update(Time.currentTime);
-      this.rotateTransition.update(Time.currentTime);
+      this.transition.updateTransform();
+      this.transition.update(this.selfTransform);
     }
     if (this.isAvailable) {
       this.onUpdate();
@@ -16851,6 +17224,10 @@ class Drawable {
   dispose() {
     this.isAvailable = false;
     unprovide(this.constructor.name);
+    for (let i = 0; i < this.disposeList.length; i++) {
+      const disposable = this.disposeList[i];
+      disposable && disposable();
+    }
   }
   placeholder() {
   }
@@ -16936,9 +17313,9 @@ class Drawable {
 }
 class Queue {
   constructor() {
-    __publicField(this, "_head");
-    __publicField(this, "_end");
-    __publicField(this, "_size", 0);
+    this._head = void 0;
+    this._end = void 0;
+    this._size = 0;
   }
   push(value) {
     if (!this._head) {
@@ -16984,18 +17361,19 @@ class Queue {
 }
 class Node {
   constructor(v) {
-    __publicField(this, "value");
-    __publicField(this, "next");
+    this.next = void 0;
     this.value = v;
   }
 }
 class Box extends Drawable {
   constructor() {
     super(...arguments);
-    __publicField(this, "childrenList", []);
-    __publicField(this, "posts", new Queue());
-    __privateAdd(this, _isHovered, false);
-    __privateAdd(this, _isDragged, false);
+    __privateAdd(this, _isHovered, void 0);
+    __privateAdd(this, _isDragged, void 0);
+    this.childrenList = [];
+    this.posts = new Queue();
+    __privateSet(this, _isHovered, false);
+    __privateSet(this, _isDragged, false);
   }
   add(...children) {
     for (let i = 0; i < children.length; i++) {
@@ -17045,7 +17423,7 @@ class Box extends Drawable {
     this.posts.push(call);
   }
   load() {
-    super.onLoad();
+    super.load();
     for (let i = 0; i < this.childrenList.length; i++) {
       this.childrenList[i].load();
     }
@@ -17093,9 +17471,11 @@ class Box extends Drawable {
     if (!this.isVisible) {
       return;
     }
+    this.bind();
     for (let i = 0; i < this.childrenList.length; i++) {
       this.childrenList[i].draw();
     }
+    this.unbind();
   }
   onDraw() {
   }
@@ -17311,12 +17691,15 @@ class Shape2D {
     }
   }
 }
+const ImageFormat = {
+  PNG: 1,
+  JPEG: 2
+};
 const _Texture = class _Texture {
-  constructor(gl, image = null) {
-    __publicField(this, "rendererId");
-    __publicField(this, "imageWidth", 0);
-    __publicField(this, "imageHeight", 0);
+  constructor(gl, image = null, format = ImageFormat.PNG) {
     this.gl = gl;
+    this.imageWidth = 0;
+    this.imageHeight = 0;
     const texture = gl.createTexture();
     if (!texture) {
       throw new Error("create texture error");
@@ -17343,37 +17726,45 @@ const _Texture = class _Texture {
       gl.bindTexture(gl.TEXTURE_2D, texture);
       this.imageWidth = image.width;
       this.imageHeight = image.height;
+      const glFormat = this.getFormat(format);
       gl.texImage2D(
         gl.TEXTURE_2D,
         0,
-        gl.RGBA,
+        glFormat,
         image.width,
         image.height,
         0,
-        gl.RGBA,
+        glFormat,
         gl.UNSIGNED_BYTE,
         image
       );
       gl.bindTexture(gl.TEXTURE_2D, null);
     }
   }
-  texImage2D(image) {
+  texImage2D(image, format = ImageFormat.PNG) {
     const gl = this.gl;
     this.imageWidth = image.width;
     this.imageHeight = image.height;
+    const glFormat = this.getFormat(format);
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
-      gl.RGBA,
+      glFormat,
       image.width,
       image.height,
       0,
-      gl.RGBA,
+      glFormat,
       gl.UNSIGNED_BYTE,
       image
     );
   }
-  setTextureImage(image) {
+  getFormat(imageFormat = ImageFormat.PNG) {
+    if (imageFormat === ImageFormat.JPEG) {
+      return this.gl.RGB;
+    }
+    return this.gl.RGBA;
+  }
+  setTextureImage(image, format = ImageFormat.PNG) {
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.rendererId);
     this.texImage2D(image);
@@ -17407,8 +17798,8 @@ const _Texture = class _Texture {
     this.gl.deleteTexture(this.rendererId);
   }
 };
-__publicField(_Texture, "blankData", new Uint8Array([0, 0, 0, 0]));
-__publicField(_Texture, "NULL", Symbol());
+_Texture.blankData = new Uint8Array([0, 0, 0, 0]);
+_Texture.NULL = Symbol();
 let Texture = _Texture;
 class VertexBufferElement {
   constructor(position, type, count, normalized) {
@@ -17429,11 +17820,11 @@ class VertexBufferElement {
     return 0;
   }
 }
-class VertexBufferLayout {
+const _VertexBufferLayout = class _VertexBufferLayout {
   constructor(gl) {
-    __publicField(this, "elements", []);
-    __publicField(this, "stride", 0);
     this.gl = gl;
+    this.elements = [];
+    this.stride = 0;
   }
   pushFloat(position, count) {
     const gl = this.gl;
@@ -17453,11 +17844,11 @@ class VertexBufferLayout {
     this.elements.push(element);
     this.stride += count * VertexBufferElement.getSizeOfType(gl, gl.UNSIGNED_INT);
   }
-}
-__publicField(VertexBufferLayout, "NULL", Symbol());
+};
+_VertexBufferLayout.NULL = Symbol();
+let VertexBufferLayout = _VertexBufferLayout;
 class VertexArray {
   constructor(gl) {
-    __publicField(this, "rendererId");
     this.gl = gl;
     const va = gl.createVertexArray();
     if (!va) {
@@ -17465,9 +17856,7 @@ class VertexArray {
     }
     this.rendererId = va;
   }
-  addBuffer(vertexBuffer, layout) {
-    this.bind();
-    vertexBuffer.bind();
+  addBuffer(layout) {
     const gl = this.gl;
     const elements = layout.elements;
     let offset = 0;
@@ -17497,7 +17886,6 @@ class VertexArray {
 }
 class VertexBuffer {
   constructor(gl, data = null, usage = gl.STATIC_DRAW) {
-    __publicField(this, "rendererId");
     this.gl = gl;
     this.usage = usage;
     const buffer = gl.createBuffer();
@@ -17514,6 +17902,9 @@ class VertexBuffer {
   setBufferData(data) {
     const gl = this.gl;
     gl.bufferData(gl.ARRAY_BUFFER, data, this.usage);
+  }
+  setBufferSubData(data, byteOffset) {
+    this.gl.bufferSubData(this.gl.ARRAY_BUFFER, byteOffset, data);
   }
   bind() {
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rendererId);
@@ -17536,12 +17927,11 @@ const UNI_ALPHA = "u_alpha";
 const UNI_CIRCLE = "u_circle";
 const UNI_COLOR = "u_color";
 const UNI_BRIGHTNESS = "u_brightness";
-class Shader {
+const _Shader = class _Shader {
   constructor(gl, vertexShader2, fragmentShader2) {
-    __publicField(this, "rendererId");
-    __publicField(this, "uniformLocationCache", {});
-    __publicField(this, "attributeLocationCache", {});
     this.gl = gl;
+    this.uniformLocationCache = {};
+    this.attributeLocationCache = {};
     this.rendererId = createShader(gl, vertexShader2, fragmentShader2);
   }
   bind() {
@@ -17597,8 +17987,9 @@ class Shader {
     this.attributeLocationCache[name] = location;
     return location;
   }
-}
-__publicField(Shader, "NULL", Symbol());
+};
+_Shader.NULL = Symbol();
+let Shader = _Shader;
 function createShader(gl, vertexSrc, fragmentSrc) {
   const program = gl.createProgram();
   if (!program) {
@@ -17629,9 +18020,24 @@ function compileShader(gl, type, source) {
   }
   return shader;
 }
-let StaticTextureShader$1 = class StaticTextureShader {
+let currentShader;
+class BaseShader {
   constructor() {
-    __publicField(this, "vertex", `
+    this.vertex = "";
+    this.fragment = "";
+  }
+  bind() {
+    if (currentShader && currentShader !== this.shader) {
+      currentShader.unbind();
+    }
+    currentShader = this.shader;
+    currentShader.bind();
+  }
+}
+let StaticTextureShader$1 = class StaticTextureShader extends BaseShader {
+  constructor() {
+    super(...arguments);
+    this.vertex = `
         attribute vec2 ${ATTR_POSITION};
         attribute vec2 ${ATTR_TEXCOORD};
     
@@ -17643,8 +18049,8 @@ let StaticTextureShader$1 = class StaticTextureShader {
             gl_Position = position * ${UNI_ORTH};
             v_tex_coord = ${ATTR_TEXCOORD};
         }
-    `);
-    __publicField(this, "fragment", `
+    `;
+    this.fragment = `
         varying mediump vec2 v_tex_coord;
         uniform mediump float ${UNI_ALPHA};
         uniform sampler2D ${UNI_SAMPLER};
@@ -17654,9 +18060,9 @@ let StaticTextureShader$1 = class StaticTextureShader {
             texelColor.a = texelColor.a * ${UNI_ALPHA};
             gl_FragColor = texelColor;
         }
-    `);
-    __publicField(this, "shader", null);
-    __publicField(this, "layout", null);
+    `;
+    this.shader = null;
+    this.layout = null;
   }
   newShader(gl) {
     return new Shader(gl, this.vertex, this.fragment);
@@ -17696,6 +18102,7 @@ const legacyLogo = "" + new URL("legacy_logo-21c56fce.png", import.meta.url).hre
 const stdNoteCircle = "" + new URL("hitcircleoverlay-8d1effa1.png", import.meta.url).href;
 const bar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAAYCAYAAAAVgCMkAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAEJSURBVHgB7dx/jcJAEMXxt1WABBychXNwODgJdw4oCsABVkABEgAF4KDMwELCj1TAvu8n2UxS/p7XWdpu0YhhGCZR/mJ9x5rWBaAR5dPFaPxplLVujQ+gUd3rhWj+/yg70fxA854mgGj+eZReACw8AqDe+ZcCYOMaAHXPn2P/RABs3P8D6EXzA3ZKvfvvBcBOTgAzAbCUAfAjAJZyC3AS+3/AUgbAIACWOgGwlQFwFABLGQA8AgRMZQBsBcBSqd/8nwTATldKOUfdCIAdPgYCjF0fA8YUcIiyEAArj/cAIgRWIgQAK29nAtaDQfJkILYDQOPGDgXtY/0KQLPK2I81CGZ1fYmpAGjKBQBvQEcDylpKAAAAAElFTkSuQmCC";
 const borderBar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAAYCAYAAAAVgCMkAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAE2SURBVHgB7dxRbcNADIBhpwgCIQw2CGOwMlgZbAwaJhuTbghWBlURFMLVpzpS61zyXvv/JOsk59m+u8hJJytKKb0unxpvGoMFgCC6VlILf9DlW26FDyCojU9o8X/p8i8UPxDewwlAi3+vyygAcqk7f2n7tWeDAHhqvrin5KBxcc8udh0AEMRSA/hpFP+rAAhl1gBs9/fY+YGAWg3A3/1PAiCkVgM4uNxOAITkG0CdA/B3/aMASKEr05vAKaEEQEi+3jcCIK3aAM73icLAD5BGbQD+rf9WAKRQG8Cfy70LgBz0yN8XBoGAFGZzAJY8uDyjwEBASw2Aj4GABJoNwB4sfQ580thxIgCeny9u/0OQUZe9AEhhNvVnx/7aBHoBENraT0FHjQ8BENbq3L81gq3Fi3AqAEK5AiCXx8ljyVPnAAAAAElFTkSuQmCC";
+const square = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8A/////wn7A/2j0UkKAAAAAElFTkSuQmCC";
 const ImageResourceMap = [
   {
     name: "Logo",
@@ -17740,6 +18147,10 @@ const ImageResourceMap = [
   {
     name: "BorderBar",
     url: borderBar
+  },
+  {
+    name: "Square",
+    url: square
   }
 ];
 const Images = {};
@@ -17754,12 +18165,7 @@ async function loadImage() {
 class Logo extends Drawable {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "shader");
-    __publicField(this, "buffer");
-    __publicField(this, "texture");
-    __publicField(this, "layout");
-    __publicField(this, "vertexArray");
-    __publicField(this, "textureUnit", 0);
+    this.textureUnit = 0;
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
     const buffer = new VertexBuffer(gl);
@@ -17770,7 +18176,7 @@ class Logo extends Drawable {
     shader.bind();
     layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
     layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    vertexArray.addBuffer(buffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     buffer.unbind();
     shader.unbind();
@@ -17803,7 +18209,6 @@ class Logo extends Drawable {
       2,
       4
     );
-    console.log(vertexData);
     return new Float32Array(vertexData);
   }
   onLoad() {
@@ -17821,11 +18226,13 @@ class Logo extends Drawable {
     this.vertexArray.unbind();
     this.texture.unbind();
     this.shader.unbind();
+    this.buffer.unbind();
   }
   bind() {
     this.texture.bind(this.textureUnit);
     this.vertexArray.bind();
     this.shader.bind();
+    this.buffer.bind();
   }
   onDraw() {
     const gl = this.gl;
@@ -17833,7 +18240,7 @@ class Logo extends Drawable {
     this.shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
     this.shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
     this.shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha);
-    this.vertexArray.addBuffer(this.buffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
   dispose() {
@@ -17853,9 +18260,10 @@ class BeatDrawable extends Drawable {
     BeatDispatcher.unregister(this);
   }
 }
-class DynamicTextureShader {
+class DynamicTextureShader extends BaseShader {
   constructor() {
-    __publicField(this, "vertex", `
+    super(...arguments);
+    this.vertex = `
         attribute vec2 ${ATTR_POSITION};
         attribute vec2 ${ATTR_TEXCOORD};
         attribute float ${ATTR_ALPHA};
@@ -17870,8 +18278,8 @@ class DynamicTextureShader {
             v_tex_coord = ${ATTR_TEXCOORD};
             v_alpha = ${ATTR_ALPHA};
         }
-    `);
-    __publicField(this, "fragment", `
+    `;
+    this.fragment = `
         varying mediump float v_alpha;
         varying mediump vec2 v_tex_coord;
         uniform sampler2D ${UNI_SAMPLER};
@@ -17881,9 +18289,9 @@ class DynamicTextureShader {
             texelColor.a = texelColor.a * v_alpha;
             gl_FragColor = texelColor;
         }
-    `);
-    __publicField(this, "shader", null);
-    __publicField(this, "layout", null);
+    `;
+    this.shader = null;
+    this.layout = null;
   }
   newShader(gl) {
     return new Shader(gl, this.vertex, this.fragment);
@@ -17916,15 +18324,10 @@ const DynamicTextureShader$1 = new DynamicTextureShader();
 class Ripples extends BeatDrawable {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "vertexArray");
-    __publicField(this, "buffer");
-    __publicField(this, "texture");
-    __publicField(this, "shader");
-    __publicField(this, "layout");
-    __publicField(this, "textureUnit", 1);
-    __publicField(this, "ripples", []);
-    __publicField(this, "vertexData", new Float32Array([]));
-    __publicField(this, "vertexCount", 0);
+    this.textureUnit = 1;
+    this.ripples = [];
+    this.vertexData = new Float32Array([]);
+    this.vertexCount = 0;
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
     const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
@@ -17936,7 +18339,7 @@ class Ripples extends BeatDrawable {
     layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
     layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
     layout.pushFloat(shader.getAttributeLocation(ATTR_ALPHA), 1);
-    vertexArray.addBuffer(buffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     buffer.unbind();
     shader.unbind();
@@ -18006,7 +18409,7 @@ class Ripples extends BeatDrawable {
     if (this.vertexCount === 0)
       return;
     this.buffer.setBufferData(this.vertexData);
-    this.vertexArray.addBuffer(this.buffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
   }
   dispose() {
@@ -18019,16 +18422,13 @@ class Ripples extends BeatDrawable {
 }
 class Ripple {
   constructor(parent) {
-    __publicField(this, "maxThickWidth");
-    __publicField(this, "innerRadius");
-    __publicField(this, "currentThickWidth", 1);
-    __publicField(this, "defaultAlpha", 0.05);
-    __publicField(this, "transition", new ObjectTransition(this, "currentThickWidth"));
-    __publicField(this, "alpha", this.defaultAlpha);
-    __publicField(this, "alphaTransition", new ObjectTransition(this, "alpha"));
+    this.currentThickWidth = 1;
+    this.defaultAlpha = 0.045;
+    this.transition = new ObjectTransition(this, "currentThickWidth");
+    this.alpha = this.defaultAlpha;
+    this.alphaTransition = new ObjectTransition(this, "alpha");
     this.innerRadius = parent.width / 2;
-    this.maxThickWidth = this.innerRadius * 0.5;
-    console.log(this.maxThickWidth);
+    this.maxThickWidth = this.innerRadius * 0.6;
     this.currentThickWidth = 0;
   }
   reset() {
@@ -18037,7 +18437,7 @@ class Ripple {
   }
   start() {
     this.startTransition().transitionTo(this.maxThickWidth, 1e3, easeOut);
-    this.alphaBegin(Time.currentTime + 800).transitionTo(0, 200);
+    this.alphaBegin().transitionTo(0, 1e3, easeInQuart);
   }
   isEnd() {
     return this.transition.isEnd;
@@ -18072,7 +18472,6 @@ class Ripple {
 }
 class IndexBuffer {
   constructor(gl, data = null, usage = gl.STATIC_DRAW) {
-    __publicField(this, "rendererId");
     this.gl = gl;
     this.usage = usage;
     const buffer = gl.createBuffer();
@@ -18118,23 +18517,17 @@ const fragmentShader$4 = `
 class RoundVisualizer extends Drawable {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "vertexArray");
-    __publicField(this, "buffer");
-    __publicField(this, "shader");
-    __publicField(this, "layout");
-    __publicField(this, "indexBuffer");
-    __publicField(this, "vertexCount", 0);
-    __publicField(this, "visualizer");
-    __publicField(this, "innerRadius", 236);
-    __publicField(this, "vertexData", new Float32Array(0));
-    __publicField(this, "simpleSpectrum", new Array(200));
-    __publicField(this, "lastTime", 0);
-    __publicField(this, "updateOffsetTime", 0);
-    __publicField(this, "indexOffset", 0);
-    __publicField(this, "indexChange", 5);
-    __publicField(this, "targetSpectrum", new Array(200).fill(0));
-    // TODO: 调整频谱
-    __publicField(this, "spectrumShape", [
+    this.vertexCount = 0;
+    this.barCountPerRound = 256;
+    this.innerRadius = 236;
+    this.vertexData = new Float32Array(0);
+    this.simpleSpectrum = new Array(this.barCountPerRound);
+    this.lastTime = 0;
+    this.updateOffsetTime = 0;
+    this.indexOffset = 0;
+    this.indexChange = ~~Math.round(this.barCountPerRound / 40);
+    this.targetSpectrum = new Array(this.barCountPerRound).fill(0);
+    this.spectrumShape = [
       1.5,
       2,
       2.7,
@@ -18145,8 +18538,8 @@ class RoundVisualizer extends Drawable {
       1,
       1,
       1,
-      ...new Array(190).fill(1)
-    ]);
+      ...new Array(this.barCountPerRound - 10).fill(1)
+    ];
     if (config.innerRadius) {
       this.innerRadius = config.innerRadius;
     }
@@ -18164,8 +18557,9 @@ class RoundVisualizer extends Drawable {
       2,
       3
     ];
-    const indexArray = new Array(index.length * 200 * 5);
-    for (let i = 0, j = 0; i < 200 * 5; i++, j += 6) {
+    const c = this.barCountPerRound;
+    const indexArray = new Array(index.length * c * 5);
+    for (let i = 0, j = 0; i < c * 5; i++, j += 6) {
       const increment = i << 2;
       indexArray[j] = index[0] + increment;
       indexArray[j + 1] = index[1] + increment;
@@ -18180,7 +18574,7 @@ class RoundVisualizer extends Drawable {
     shader.bind();
     const location = shader.getAttributeLocation("a_vertexPosition");
     layout.pushFloat(location, 2);
-    vertexArray.addBuffer(buffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     buffer.unbind();
     indexBuffer.unbind();
@@ -18195,7 +18589,7 @@ class RoundVisualizer extends Drawable {
   onUpdate() {
     super.onUpdate();
     this.getSpectrum(Time.currentTime, BeatState.isKiai ? 1 : 0.5);
-    this.updateVertex(this.targetSpectrum, 200);
+    this.updateVertex(this.targetSpectrum, this.barCountPerRound);
   }
   updateVertex(spectrum, length = spectrum.length) {
     const centerX = 0, centerY = 0;
@@ -18211,7 +18605,7 @@ class RoundVisualizer extends Drawable {
     let k = 0;
     for (let j = 0; j < 5; j++) {
       for (let i = 0; i < length; i++) {
-        const degree = i / 200 * 360 + j * 360 / 5;
+        const degree = i / length * 360 + j * 360 / 5;
         const radian = degreeToRadian(degree);
         const value = innerRadius + spectrum[i] * 160;
         const fromX = centerX;
@@ -18252,8 +18646,9 @@ class RoundVisualizer extends Drawable {
     for (let i = 0; i < fftData.length; i++) {
       this.simpleSpectrum[i] = fftData[i] / 255;
     }
-    for (let i = 0; i < 200; i++) {
-      const targetIndex = (i + this.indexOffset) % 200;
+    const c = this.barCountPerRound;
+    for (let i = 0; i < c; i++) {
+      const targetIndex = (i + this.indexOffset) % c;
       const target = this.simpleSpectrum[targetIndex];
       if (target > this.targetSpectrum[i]) {
         this.targetSpectrum[i] = target * this.spectrumShape[targetIndex] * (0.5 + barScale);
@@ -18261,10 +18656,10 @@ class RoundVisualizer extends Drawable {
     }
     if (timestamp - this.updateOffsetTime >= 50) {
       this.updateOffsetTime = timestamp;
-      this.indexOffset = (this.indexOffset - this.indexChange) % 200;
+      this.indexOffset = (this.indexOffset - this.indexChange) % c;
     }
     const decayFactor = (timestamp - this.lastTime) * 24e-4;
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < c; i++) {
       this.targetSpectrum[i] -= decayFactor * (this.targetSpectrum[i] + 0.03);
       if (this.targetSpectrum[i] < 0) {
         this.targetSpectrum[i] = 0;
@@ -18275,10 +18670,14 @@ class RoundVisualizer extends Drawable {
   bind() {
     this.shader.bind();
     this.vertexArray.bind();
+    this.indexBuffer.bind();
+    this.buffer.bind();
   }
   unbind() {
     this.shader.unbind();
     this.vertexArray.unbind();
+    this.indexBuffer.unbind();
+    this.buffer.unbind();
   }
   onDraw() {
     const gl = this.gl;
@@ -18286,7 +18685,7 @@ class RoundVisualizer extends Drawable {
     this.shader.setUniformMatrix4fv("u_transform", this.matrixArray);
     this.shader.setUniformMatrix4fv("u_orth", Coordinate$1.orthographicProjectionMatrix4);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-    this.vertexArray.addBuffer(this.buffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_INT, 0);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   }
@@ -18295,27 +18694,6 @@ class RoundVisualizer extends Drawable {
     this.buffer.dispose();
     this.shader.dispose();
     this.indexBuffer.dispose();
-  }
-}
-class Color {
-  constructor(r, g, b, a) {
-    __publicField(this, "red", 0);
-    __publicField(this, "green", 0);
-    __publicField(this, "blue", 0);
-    __publicField(this, "alpha", 0);
-    this.red = r;
-    this.blue = b;
-    this.green = g;
-    this.alpha = a;
-  }
-  static fromHex(hex, alphaInt = 255) {
-    const red = hex >> 16 & 255;
-    const green = hex >> 8 & 255;
-    const blue2 = hex & 255;
-    return new Color(red / 255, green / 255, blue2 / 255, alphaInt / 255);
-  }
-  copy() {
-    return new Color(this.red, this.green, this.blue, this.alpha);
   }
 }
 const vertexShader$3 = `
@@ -18354,23 +18732,18 @@ const fragmentShader$3 = `
 class LogoTriangles extends Drawable {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "vertexArray");
-    __publicField(this, "vertexBuffer");
-    __publicField(this, "layout");
-    __publicField(this, "shader");
-    __publicField(this, "vertexCount", 0);
-    __publicField(this, "vertex");
-    __publicField(this, "particles", []);
-    __publicField(this, "startColor", Color.fromHex(16743863));
-    __publicField(this, "endColor", Color.fromHex(14572437));
-    __publicField(this, "MAX_SIZE", 300);
-    __publicField(this, "MIN_SIZE", 20);
-    __publicField(this, "light", 0);
-    __publicField(this, "lightTransition", new ObjectTransition(this, "light"));
-    __publicField(this, "velocityIncrement", 0);
-    __publicField(this, "velocityTransition", new ObjectTransition(this, "velocityIncrement"));
-    __publicField(this, "circleInfo", new Float32Array(3));
-    __publicField(this, "isInitialed", false);
+    this.vertexCount = 0;
+    this.particles = [];
+    this.startColor = Color.fromHex(16743863);
+    this.endColor = Color.fromHex(14572437);
+    this.MAX_SIZE = 300;
+    this.MIN_SIZE = 20;
+    this.light = 0;
+    this.lightTransition = new ObjectTransition(this, "light");
+    this.velocityIncrement = 0;
+    this.velocityTransition = new ObjectTransition(this, "velocityIncrement");
+    this.circleInfo = new Float32Array(3);
+    this.isInitialed = false;
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
     const vertexBuffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
@@ -18459,15 +18832,12 @@ class LogoTriangles extends Drawable {
   onTransformApplied() {
     super.onTransformApplied();
     const transform = this.appliedTransform;
-    const scaledWidth = this.width * window.devicePixelRatio * transform.scale.x;
-    const scaledHeight = this.height * window.devicePixelRatio * transform.scale.y;
+    const scaledWidth = this.width / Coordinate$1.ratio * transform.scale.x * window.devicePixelRatio;
+    const scaledHeight = this.height / Coordinate$1.ratio * transform.scale.y * window.devicePixelRatio;
     const circleMaxRadius = Math.min(scaledWidth, scaledHeight) / 2;
     const circleCenter = new Vector2(
-      (Coordinate$1.width / 2 + transform.translate.x) * window.devicePixelRatio,
-      (Coordinate$1.height / 2 + transform.translate.y) * window.devicePixelRatio
-      // transform.translate.x,
-      // transform.translate.y
-      // 0, 0
+      (Coordinate$1.nativeWidth / 2 + transform.translate.x) * window.devicePixelRatio,
+      (Coordinate$1.nativeHeight / 2 + transform.translate.y) * window.devicePixelRatio
     );
     this.circleInfo[0] = circleCenter.x;
     this.circleInfo[1] = circleCenter.y;
@@ -18485,7 +18855,7 @@ class LogoTriangles extends Drawable {
     this.shader.setUniformMatrix4fv("u_transform", this.matrixArray);
     this.shader.setUniformMatrix4fv("u_orth", Coordinate$1.orthographicProjectionMatrix4);
     this.vertexBuffer.setBufferData(this.vertex);
-    this.vertexArray.addBuffer(this.vertexBuffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
   }
   unbind() {
@@ -18502,15 +18872,15 @@ class LogoTriangles extends Drawable {
 }
 class TriangleParticle {
   constructor(parent) {
-    __publicField(this, "top", Vector2.newZero());
-    __publicField(this, "bottomLeft", Vector2.newZero());
-    __publicField(this, "bottomRight", Vector2.newZero());
-    __publicField(this, "position", Vector2.newZero());
-    __publicField(this, "size", 0);
-    __publicField(this, "color", Color.fromHex(16743863));
-    __publicField(this, "cos30", Math.sqrt(3) / 2);
-    __publicField(this, "sin30", 0.5);
     this.parent = parent;
+    this.top = Vector2.newZero();
+    this.bottomLeft = Vector2.newZero();
+    this.bottomRight = Vector2.newZero();
+    this.position = Vector2.newZero();
+    this.size = 0;
+    this.color = Color.fromHex(16743863);
+    this.cos30 = Math.sqrt(3) / 2;
+    this.sin30 = 0.5;
   }
   isFinish() {
     const centerY = this.position.y - 0.5 * this.size;
@@ -18552,15 +18922,15 @@ const onLeftSide = createMutableSharedFlow();
 const onRightSide = createMutableSharedFlow();
 class AudioChannel {
   constructor() {
-    __publicField(this, "left", new Float32Array(0));
-    __publicField(this, "right", new Float32Array(0));
-    __publicField(this, "buffer", new AudioBuffer({
+    this.left = new Float32Array(0);
+    this.right = new Float32Array(0);
+    this.buffer = new AudioBuffer({
       sampleRate: 48e3,
       length: 1
-    }));
-    __publicField(this, "leftChannelVolume", 0);
-    __publicField(this, "rightChannelVolume", 0);
-    OSUPlayer$1.onChanged.collect(() => {
+    });
+    this.leftChannelVolume = 0;
+    this.rightChannelVolume = 0;
+    collect(OSUPlayer$1.onChanged, () => {
       const audioBuffer = AudioPlayerV2.getAudioBuffer();
       this.buffer = audioBuffer;
       if (audioBuffer.numberOfChannels >= 2) {
@@ -18606,17 +18976,24 @@ function calculateAmplitude(sampleRate, channelData, time) {
   return (max - min) / 2;
 }
 const AudioChannel$1 = new AudioChannel();
-class BeatLogo extends Box {
+class BeatBox extends Box {
   constructor(gl, config) {
     super(gl, config);
-    // @ts-ignore
-    __publicField(this, "logo");
-    __publicField(this, "triangles");
+    BeatDispatcher.register(this);
+  }
+  dispose() {
+    super.dispose();
+    BeatDispatcher.unregister(this);
+  }
+}
+class BeatLogo extends BeatBox {
+  constructor(gl, config) {
+    super(gl, config);
     const logo2 = new Logo(gl, {
-      size: [520, 520]
+      size: [580, 580]
     });
     const triangles = new LogoTriangles(gl, {
-      size: [500, 500]
+      size: [552, 552]
     });
     this.logo = logo2;
     this.triangles = triangles;
@@ -18624,7 +19001,6 @@ class BeatLogo extends Box {
       triangles,
       logo2
     );
-    BeatDispatcher.register(this);
   }
   onNewBeat(isKiai, newBeatTimestamp, gap) {
     if (!BeatState.isAvailable) {
@@ -18632,7 +19008,7 @@ class BeatLogo extends Box {
     }
     const volume = AudioPlayerV2.isPlaying() ? AudioChannel$1.maxVolume() + 0.4 : 0;
     const adjust = Math.min(volume, 1);
-    this.scaleBegin().to(Vector(1 - adjust * 0.02), 60, easeOut).to(Vector(1), gap * 2, easeOutQuint);
+    this.transform().scaleTo(Vector(1 - adjust * 0.02), 60, easeOut).scaleTo(Vector(1), gap * 2, easeOutQuint);
     this.triangles.velocityBegin().transitionTo(1 + adjust + (BeatState.isKiai ? 4 : 0), 60, easeOut).transitionTo(0, gap * 2, easeOutQuint);
     if (BeatState.isKiai) {
       this.triangles.lightBegin().transitionTo(0.2, 60, easeOut).transitionTo(0, gap * 2, easeOutQuint);
@@ -18640,13 +19016,11 @@ class BeatLogo extends Box {
   }
   dispose() {
     super.dispose();
-    BeatDispatcher.unregister(this);
   }
 }
 class LogoBeatBox extends Box {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "beatLogo");
     this.beatLogo = new BeatLogo(gl, config);
     this.add(
       this.beatLogo
@@ -18654,32 +19028,31 @@ class LogoBeatBox extends Box {
   }
   onUpdate() {
     if (AudioPlayerV2.isPlaying()) {
-      if (BeatState.isAvailable) {
-        const scale = this.scale;
-        const adjust = AudioPlayerV2.isPlaying() ? AudioChannel$1.maxVolume() - 0.4 : 0;
-        const a = Interpolation.damp(
-          scale.x,
-          1 - Math.max(0, adjust) * 0.04,
-          0.94,
-          Time.elapsed
-        );
-        scale.x = a;
-        scale.y = a;
-        this.scale = scale;
-      }
+      const scale = this.scale;
+      const adjust = AudioPlayerV2.isPlaying() ? AudioChannel$1.maxVolume() - 0.4 : 0;
+      const a = Interpolation.damp(
+        scale.x,
+        1 - Math.max(0, adjust) * 0.04,
+        0.94,
+        Time.elapsed
+      );
+      scale.x = a;
+      scale.y = a;
+      this.scale = scale;
     }
   }
 }
 let LogoAmpBox$1 = class LogoAmpBox extends Box {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "visualizer");
-    __publicField(this, "logoBeatBox");
-    __publicField(this, "logoHoverable", false);
-    __publicField(this, "scope", effectScope());
-    this.visualizer = new RoundVisualizer(gl, { size: ["fill-parent", "fill-parent"] });
+    this.logoHoverable = false;
+    this.scope = effectScope();
+    this.visualizer = new RoundVisualizer(gl, {
+      size: ["fill-parent", "fill-parent"],
+      innerRadius: 266
+    });
     const ripple2 = new Ripples(gl, {
-      size: [500, 500]
+      size: [558, 558]
     });
     this.logoBeatBox = new LogoBeatBox(gl, config);
     this.add(
@@ -18695,14 +19068,14 @@ let LogoAmpBox$1 = class LogoAmpBox extends Box {
     if (!this.logoHoverable) {
       return true;
     }
-    this.scaleBegin().to(new Vector2(1.1, 1.1), 500, easeOutElastic);
+    this.transform().scaleTo(new Vector2(1.1, 1.1), 500, easeOutElastic);
     return true;
   }
   onHoverLost() {
     if (!this.logoHoverable) {
       return true;
     }
-    this.scaleBegin().to(new Vector2(1, 1), 500, easeOutElastic);
+    this.transform().scaleTo(new Vector2(1, 1), 500, easeOutElastic);
     return true;
   }
   dispose() {
@@ -18713,11 +19086,10 @@ let LogoAmpBox$1 = class LogoAmpBox extends Box {
 let LogoBounceBox$1 = class LogoBounceBox extends Box {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "logoAmpBox");
-    __publicField(this, "isDraggable", true);
-    __publicField(this, "scope", effectScope());
-    __publicField(this, "flag", false);
-    __publicField(this, "startPosition", Vector2.newZero());
+    this.isDraggable = true;
+    this.scope = effectScope();
+    this.flag = false;
+    this.startPosition = Vector2.newZero();
     this.logoAmpBox = new LogoAmpBox$1(gl, { size: config.size });
     this.add(this.logoAmpBox);
     this.scope.run(() => {
@@ -18748,7 +19120,7 @@ let LogoBounceBox$1 = class LogoBounceBox extends Box {
       return true;
     }
     this.flag = false;
-    this.translateBegin().translateTo(new Vector2(0, 0), 600, easeOutElastic);
+    this.transform().moveTo(new Vector2(0, 0), 600, easeOutElastic);
     return true;
   }
   dispose() {
@@ -18759,22 +19131,20 @@ let LogoBounceBox$1 = class LogoBounceBox extends Box {
 class BeatLogoBox extends Box {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "logoBounceBox");
-    __publicField(this, "flag", true);
+    this.flag = true;
     this.logoBounceBox = new LogoBounceBox$1(gl, { size: config.size });
     this.add(this.logoBounceBox);
   }
   onClick(which) {
     const menu = inject("Menu");
     const bg = inject("BackgroundBounce");
+    const transition = this.transform();
     if (this.flag) {
-      this.translateBegin().translateTo(new Vector2(-240, 0), 400, easeInCubic);
-      this.scaleBegin().to(new Vector2(0.5, 0.5), 400, easeInCubic);
+      transition.moveTo(new Vector2(-240, 0), 400, easeInCubic).scaleTo(new Vector2(0.5, 0.5), 400, easeInCubic);
       menu.show();
       bg.in();
     } else {
-      this.translateBegin().translateTo(new Vector2(0, 0), 400, easeOutCubic);
-      this.scaleBegin().to(new Vector2(1, 1), 400, easeOutCubic);
+      transition.moveTo(new Vector2(0, 0), 400, easeOutCubic).scaleTo(new Vector2(1, 1), 400, easeOutCubic);
       menu.hide();
       bg.out();
     }
@@ -18818,15 +19188,11 @@ const fragmentShader$2 = `
 class Flashlight extends BeatDrawable {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "vertexArray");
-    __publicField(this, "shader");
-    __publicField(this, "buffer");
-    __publicField(this, "layout");
-    __publicField(this, "leftLight", 0);
-    __publicField(this, "rightLight", 0);
-    __publicField(this, "leftTransition", new ObjectTransition(this, "leftLight"));
-    __publicField(this, "rightTransition", new ObjectTransition(this, "rightLight"));
-    __publicField(this, "color", Color.fromHex(37119));
+    this.leftLight = 0;
+    this.rightLight = 0;
+    this.leftTransition = new ObjectTransition(this, "leftLight");
+    this.rightTransition = new ObjectTransition(this, "rightLight");
+    this.color = Color.fromHex(37119);
     this.color = config.color ?? Color.fromHex(37119);
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
@@ -18837,7 +19203,7 @@ class Flashlight extends BeatDrawable {
     shader.bind();
     layout.pushFloat(shader.getAttributeLocation("a_position"), 2);
     layout.pushFloat(shader.getAttributeLocation("a_color"), 4);
-    vertexArray.addBuffer(vertexBuffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     vertexBuffer.unbind();
     shader.unbind();
@@ -18939,12 +19305,13 @@ class Flashlight extends BeatDrawable {
   bind() {
     this.vertexArray.bind();
     this.shader.bind();
+    this.buffer.bind();
   }
   onDraw() {
     const gl = this.gl;
     this.shader.setUniform2fv("u_which", new Float32Array([this.leftLight, this.rightLight]));
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-    this.vertexArray.addBuffer(this.buffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawArrays(gl.TRIANGLES, 0, 12);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   }
@@ -18977,6 +19344,7 @@ class Flashlight extends BeatDrawable {
   unbind() {
     this.vertexArray.unbind();
     this.shader.unbind();
+    this.buffer.unbind();
   }
   dispose() {
     super.dispose();
@@ -19037,7 +19405,7 @@ const textureShaderSource = {
 };
 class ShaderManager {
   constructor() {
-    __publicField(this, "gl", null);
+    this.gl = null;
   }
   init(gl) {
     this.gl = gl;
@@ -19053,11 +19421,7 @@ const ShaderManager$1 = new ShaderManager();
 class ColorDrawable extends Drawable {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "shader");
-    __publicField(this, "buffer");
-    __publicField(this, "layout");
-    __publicField(this, "vertexArray");
-    __publicField(this, "needUpdateVertex", true);
+    this.needUpdateVertex = true;
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
     const buffer = new VertexBuffer(gl);
@@ -19067,7 +19431,7 @@ class ColorDrawable extends Drawable {
     shader.bind();
     layout.pushFloat(shader.getAttributeLocation("a_position"), 2);
     layout.pushFloat(shader.getAttributeLocation("a_color"), 4);
-    vertexArray.addBuffer(buffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     buffer.unbind();
     shader.unbind();
@@ -19117,7 +19481,7 @@ class ColorDrawable extends Drawable {
     shader.setUniformMatrix4fv("u_transform", this.matrixArray);
     shader.setUniformMatrix4fv("u_orth", Coordinate$1.orthographicProjectionMatrix4);
     shader.setUniform1f("u_alpha", this.appliedTransform.alpha);
-    this.vertexArray.addBuffer(this.buffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
   dispose() {
@@ -19131,80 +19495,70 @@ class Menu extends Box {
     super(gl, {
       size: ["fill-parent", "fill-parent"]
     });
-    __publicField(this, "menuBackground");
     this.menuBackground = new ColorDrawable(gl, {
       size: ["fill-parent", 96],
       anchor: Axis.X_LEFT | Axis.Y_CENTER,
       color: Color.fromHex(3289650)
     });
-    this.add(
-      this.menuBackground
-      // timingButton
-    );
+    this.add(this.menuBackground);
     this.alpha = 0;
     this.scale = new Vector2(1, 0);
     this.isVisible = false;
   }
+  onLoad() {
+    super.onLoad();
+    console.log("menu", this.alpha);
+  }
   show() {
     this.isVisible = true;
-    this.fadeBegin(Time.currentTime + 300).fadeTo(1, 220, easeInCubic);
-    this.scaleBegin(Time.currentTime + 300).to(new Vector2(1, 1), 400, easeOutBack);
+    this.transform().delay(300).fadeTo(1, 220, easeInCubic).delay(300).scaleTo(new Vector2(1, 1), 400, easeOutBack);
   }
   hide() {
-    this.fadeBegin().fadeTo(0, 220, easeOutCubic);
-    this.scaleBegin().to(new Vector2(1, 0), 220, easeOutCubic);
+    this.transform().fadeTo(0, 220, easeOutCubic).scaleTo(new Vector2(1, 0), 220, easeOutCubic);
     setTimeout(() => {
       this.isVisible = false;
     }, 220);
   }
 }
-class StarParticle {
+class StarParticle extends DrawableTransition {
   constructor() {
-    __publicField(this, "from", Vector(0));
-    __publicField(this, "to", Vector(0));
-    __publicField(this, "alpha", 0.5);
-    __publicField(this, "translate", Vector(0));
-    __publicField(this, "size", Vector(56));
-    __publicField(this, "translateTransition", new Vector2Transition(this, "translate"));
-    __publicField(this, "alphaTransition", new ObjectTransition(this, "alpha"));
+    super(...arguments);
+    this.from = Vector(0);
+    this.to = Vector(0);
+    this.size = Vector(56);
   }
   setFromAndTo(from, to) {
     this.from = from;
     this.to = to;
-    this.translate = from;
-  }
-  translateBegin(startTime = Time.currentTime) {
-    this.translateTransition.setStartTime(startTime);
-    return this.translateTransition;
-  }
-  alphaBegin(startTime = Time.currentTime) {
-    this.alphaTransition.setStartTime(startTime);
-    return this.alphaTransition;
+    this.transform.translateTo(from);
   }
   reset() {
-    this.alpha = 0.5;
-    this.translate = this.from;
+    this.transform.alphaTo(0.5);
+    this.transform.translateTo(this.from);
   }
   isEnd() {
-    return this.alphaTransition.isEnd;
+    return this.transitionAlpha.isEnd;
   }
-  start() {
-    this.translateBegin().to(this.to, 1500, easeOutBack);
-    this.alphaBegin(Time.currentTime + 1e3).transitionTo(0, 500, easeOutQuint);
+  start(separate) {
+    if (separate) {
+      this.moveTo(this.to, 1500);
+    } else {
+      this.moveTo(this.to, 1500, easeOutBack);
+    }
+    this.delay(1e3).fadeTo(0, 500, easeOutQuint);
   }
   update() {
-    this.alphaTransition.update(Time.currentTime);
-    this.translateTransition.update(Time.currentTime);
+    this.updateTransform();
   }
   copyTo(out, offset) {
     let currentOffset = offset;
     const size2 = this.size;
-    const position = this.translate;
+    const { x, y } = this.transform.translate;
     Shape2D.quad(
-      position.x - size2.x / 2,
-      position.y + size2.y / 2,
-      position.x + size2.x / 2,
-      position.y - size2.y / 2,
+      x - size2.x / 2,
+      y + size2.y / 2,
+      x + size2.x / 2,
+      y - size2.y / 2,
       out,
       currentOffset,
       5
@@ -19218,26 +19572,27 @@ class StarParticle {
       currentOffset + 2,
       5
     );
-    Shape2D.one(this.alpha, out, currentOffset + 4, 5, 6);
+    Shape2D.one(this.transform.alpha, out, currentOffset + 4, 5, 6);
     return 5 * 6;
   }
 }
-class SmokeBooster {
+class SmokeBooster extends DrawableTransition {
+  // private degree = 90
+  // private degreeTransition = new ObjectTransition(this, 'degree')
   constructor() {
-    __publicField(this, "leftPosition", Vector(0));
-    __publicField(this, "rightPosition", Vector(0));
-    __publicField(this, "leftStars", []);
-    __publicField(this, "rightStars", []);
-    __publicField(this, "degree", 90);
-    __publicField(this, "degreeTransition", new ObjectTransition(this, "degree"));
-    __publicField(this, "type");
-    __publicField(this, "duration", 800);
-    __publicField(this, "startTime", -1);
+    super(new Transform());
+    this.leftPosition = Vector(0);
+    this.rightPosition = Vector(0);
+    this.leftStars = [];
+    this.rightStars = [];
+    this.type = void 0;
+    this.duration = 800;
+    this.startTime = -1;
     this.onWindowResize();
   }
   onWindowResize() {
     const width6 = Coordinate$1.width / 6;
-    const bottom = -Coordinate$1.height / 2 - 100;
+    const bottom = -Coordinate$1.height / 2 - 20;
     this.leftPosition.set(
       -Coordinate$1.width / 2 + width6,
       bottom
@@ -19246,10 +19601,6 @@ class SmokeBooster {
       Coordinate$1.width / 2 - width6,
       bottom
     );
-  }
-  degreeBegin(startTime = Time.currentTime) {
-    this.degreeTransition.setStartTime(startTime);
-    return this.degreeTransition;
   }
   fire(type) {
     this.type = type;
@@ -19260,20 +19611,21 @@ class SmokeBooster {
     } else if (type === 3) {
       this.fireRotateToOuter();
     }
+    console.log("Smoke Booster type", type);
   }
   fireVertically() {
-    this.degree = 90;
+    this.transform.rotateTo(90);
   }
   fireRotateToInner() {
-    this.degree = 157.5;
-    this.degreeBegin().transitionTo(22.5, this.duration);
+    this.transform.rotateTo(135);
+    this.rotateTo(45, this.duration);
   }
   fireRotateToOuter() {
-    this.degree = 22.5;
-    this.degreeBegin().transitionTo(157.5, this.duration);
+    this.transform.rotateTo(45);
+    this.rotateTo(135, this.duration);
   }
   update() {
-    this.degreeTransition.update(Time.currentTime);
+    this.updateTransform();
     const type = this.type;
     if (type) {
       for (let i = 0; i < 3; i++) {
@@ -19299,30 +19651,27 @@ class SmokeBooster {
   }
   createOrReuse(stars, position) {
     let star2;
-    const targetDistance = Interpolation.valueAt(Math.random(), -40, 20);
-    let degree = Interpolation.valueAt(Math.random(), this.degree - 10, this.degree + 10);
+    const targetDistance = Coordinate$1.height / 2;
+    let degree = this.transform.rotate;
     if (position === this.rightPosition)
       degree = 180 - degree;
-    const startPosition = Vector(
-      position.x + Interpolation.valueAt(Math.random(), -20, 20),
-      position.y
-    );
+    const startPosition = position;
     if (stars.length === 0) {
-      star2 = new StarParticle();
+      star2 = new StarParticle(new Transform());
     } else {
       star2 = stars[0];
       if (star2.isEnd()) {
         stars.shift();
       } else {
-        star2 = new StarParticle();
+        star2 = new StarParticle(new Transform());
       }
     }
     star2.setFromAndTo(startPosition, Vector(
       targetDistance * Math.cos(degreeToRadian(degree)) + position.x,
-      targetDistance * Math.sin(degreeToRadian(degree))
+      targetDistance * Math.sin(degreeToRadian(degree)) + position.y
     ));
     star2.reset();
-    star2.start();
+    star2.start(this.type !== 1);
     stars.push(star2);
   }
   copyTo(out, offset) {
@@ -19343,16 +19692,11 @@ class StarSmoke extends BeatDrawable {
     super(gl, {
       size: ["fill-parent", "fill-parent"]
     });
-    __publicField(this, "vertexArray");
-    __publicField(this, "buffer");
-    __publicField(this, "texture");
-    __publicField(this, "shader");
-    __publicField(this, "layout");
-    __publicField(this, "textureUnit", 1);
-    __publicField(this, "booster", new SmokeBooster());
-    __publicField(this, "lastKiai", false);
-    __publicField(this, "vertexData", new Float32Array([]));
-    __publicField(this, "vertexCount", 0);
+    this.textureUnit = 1;
+    this.booster = new SmokeBooster();
+    this.lastKiai = false;
+    this.vertexData = new Float32Array([]);
+    this.vertexCount = 0;
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
     const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
@@ -19364,7 +19708,7 @@ class StarSmoke extends BeatDrawable {
     layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
     layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
     layout.pushFloat(shader.getAttributeLocation(ATTR_ALPHA), 1);
-    vertexArray.addBuffer(buffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     buffer.unbind();
     shader.unbind();
@@ -19379,11 +19723,14 @@ class StarSmoke extends BeatDrawable {
       return;
     }
     if (BeatState.isKiai && !this.lastKiai) {
-      this.booster.fire(clamp(
-        Math.round(Interpolation.valueAt(Math.random(), 1, 3)),
-        1,
-        3
-      ));
+      const rand = Math.random();
+      let type = 1;
+      if (rand > 0.3333 && rand <= 0.66667) {
+        type = 2;
+      } else if (rand > 0.66667 && rand <= 1) {
+        type = 3;
+      }
+      this.booster.fire(type);
       this.lastKiai = true;
       console.log("fire", Time.currentTime);
     }
@@ -19422,7 +19769,7 @@ class StarSmoke extends BeatDrawable {
     if (this.vertexCount === 0)
       return;
     this.buffer.setBufferData(this.vertexData);
-    this.vertexArray.addBuffer(this.buffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
   }
   dispose() {
@@ -19438,15 +19785,15 @@ class MainScreen extends Box {
     super(gl, {
       size: ["fill-parent", "fill-parent"]
     });
-    __publicField(this, "leftSideCollector", (value) => {
+    this.leftSideCollector = (value) => {
       const translate = value ? new Vector2(40, 0) : Vector2.newZero();
-      this.translateBegin().translateTo(translate, 500, easeOutCubic);
-    });
-    __publicField(this, "rightSideCollector", (value) => {
+      this.transform().moveTo(translate, 500, easeOutCubic);
+    };
+    this.rightSideCollector = (value) => {
       const translate = value ? new Vector2(-40, 0) : Vector2.newZero();
-      this.translateBegin().translateTo(translate, 500, easeOutCubic);
-    });
-    __publicField(this, "scope", effectScope());
+      this.transform().moveTo(translate, 500, easeOutCubic);
+    };
+    this.scope = effectScope();
     const menu = new Menu(gl);
     const beatLogo = new BeatLogoBox(gl, { size: [520, 520] });
     const flashlight = new Flashlight(gl, { size: ["fill-parent", "fill-parent"] });
@@ -19472,17 +19819,59 @@ class MainScreen extends Box {
     this.scope.stop();
   }
 }
+class ScreenManager {
+  constructor() {
+    this.screenMap = /* @__PURE__ */ new Map();
+    this.currentScreen = null;
+    this.currentId = createMutableStateFlow("");
+    this.renderer = null;
+  }
+  init(renderer2) {
+    this.renderer = renderer2;
+    return this;
+  }
+  addScreen(id2, screenConstructor) {
+    if (id2 === "") {
+      throw Error("id cannot be empty");
+    }
+    this.screenMap.set(id2, screenConstructor);
+    return this;
+  }
+  removeScreen(id2) {
+    this.screenMap.delete(id2);
+  }
+  activeScreen(id2) {
+    if (this.currentId.value === id2) {
+      return;
+    }
+    const constructor = this.screenMap.get(id2);
+    if (constructor) {
+      if (this.currentScreen) {
+        this.renderer.removeDrawable(this.currentScreen);
+      }
+      this.currentScreen = constructor();
+      this.currentId.value = id2;
+      this.renderer.addDrawable(this.currentScreen);
+    }
+  }
+  dispose() {
+    var _a;
+    (_a = this.currentScreen) == null ? void 0 : _a.dispose();
+    this.screenMap.clear();
+  }
+}
+const ScreenManager$1 = new ScreenManager();
 class WebGLRenderer {
   constructor(gl) {
-    __publicField(this, "drawables", []);
-    __publicField(this, "disposables", []);
-    __publicField(this, "gl");
-    __publicField(this, "isViewportChanged", false);
-    __publicField(this, "isEventReady", false);
+    this.drawables = [];
+    this.disposables = [];
+    this.isViewportChanged = false;
+    this.isEventReady = false;
     this.gl = gl;
-    gl.viewport(0, 0, Coordinate$1.width * window.devicePixelRatio, Coordinate$1.height * window.devicePixelRatio);
+    gl.viewport(0, 0, Coordinate$1.nativeWidth * window.devicePixelRatio, Coordinate$1.nativeHeight * window.devicePixelRatio);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.clearColor(0, 0, 0, 0);
     MouseState.onClick = this.onClick.bind(this);
     MouseState.onMouseMove = this.onMouseMove.bind(this);
     MouseState.onMouseDown = this.onMouseDown.bind(this);
@@ -19523,10 +19912,8 @@ class WebGLRenderer {
     this.drawables.push(drawable);
     drawable.load();
     this.disposables.push(drawable);
-    console.log(this.drawables);
   }
   removeDrawable(drawable) {
-    console.log("pending to remove ", drawable);
     let index = this.drawables.indexOf(drawable);
     this.drawables.splice(index, 1);
     index = this.disposables.indexOf(drawable);
@@ -19538,12 +19925,12 @@ class WebGLRenderer {
     const gl = this.gl;
     if (this.isViewportChanged) {
       this.isViewportChanged = false;
-      gl.viewport(0, 0, Coordinate$1.width * window.devicePixelRatio, Coordinate$1.height * window.devicePixelRatio);
+      gl.viewport(0, 0, Coordinate$1.nativeWidth * window.devicePixelRatio, Coordinate$1.nativeHeight * window.devicePixelRatio);
       for (let i = 0; i < this.drawables.length; i++) {
         this.drawables[i].onWindowResize();
       }
     }
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     for (let i = 0; i < this.drawables.length; i++) {
       const drawable = this.drawables[i];
       drawable.update();
@@ -19556,26 +19943,11 @@ class WebGLRenderer {
     }
   }
 }
-class BeatBox extends Box {
-  constructor(gl, config) {
-    super(gl, config);
-    BeatDispatcher.register(this);
-  }
-  dispose() {
-    super.dispose();
-    BeatDispatcher.unregister(this);
-  }
-}
 class ImageDrawable extends Drawable {
   constructor(gl, image, textureUnit = 0, config) {
     super(gl, config);
-    __publicField(this, "shader");
-    __publicField(this, "buffer");
-    __publicField(this, "texture");
-    __publicField(this, "layout");
-    __publicField(this, "vertexArray");
-    __publicField(this, "textureUnit", 0);
-    __publicField(this, "isVertexUpdate", true);
+    this.textureUnit = 0;
+    this.isVertexUpdate = true;
     this.textureUnit = textureUnit;
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
@@ -19587,7 +19959,7 @@ class ImageDrawable extends Drawable {
     shader.bind();
     layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
     layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    vertexArray.addBuffer(buffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     buffer.unbind();
     shader.unbind();
@@ -19641,7 +20013,7 @@ class ImageDrawable extends Drawable {
     shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
     shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
     shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha);
-    this.vertexArray.addBuffer(this.buffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
   dispose() {
@@ -19654,13 +20026,22 @@ class ImageDrawable extends Drawable {
 class FadeLogo extends BeatBox {
   constructor(gl, config) {
     super(gl, { size: ["fill-parent", "fill-parent"] });
-    __publicField(this, "logo");
     this.logo = new ImageDrawable(gl, Images.Logo, 1, config);
     this.logo.alpha = 0.3;
     this.add(this.logo);
   }
   onNewBeat(isKiai, newBeatTimestamp, gap) {
-    this.logo.fadeBegin().fadeTo(0.5, 60, easeOut).fadeTo(0.3, gap * 2, easeOutQuint);
+    this.logo.transform().fadeTo(0.3, 60, easeOut).fadeTo(0.1, gap * 2, easeOutQuint);
+  }
+  bind() {
+    super.bind();
+    const gl = this.gl;
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
+  }
+  unbind() {
+    super.unbind();
+    const gl = this.gl;
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   }
 }
 class SongPlayScreen extends Box {
@@ -19676,21 +20057,29 @@ class SongPlayScreen extends Box {
       anchor: Axis.X_RIGHT | Axis.Y_BOTTOM,
       offset: [250 - 66, -250 + 24]
     });
-    logo2.scale = new Vector2(0.4, 0.4);
-    logo2.translate = new Vector2(0, -128);
-    logo2.translateBegin().translateTo(new Vector2(0, 0), 400, easeOutBack);
+    logo2.scale = Vector(0);
     this.add(
       fadeLogo,
       logo2
     );
   }
+  onLoad() {
+    super.onLoad();
+    this.lastChild.transform().scaleTo(Vector(0.4), 250, easeOutQuint);
+  }
 }
-class Score {
+const Judge = reactive({
+  perfect: 0,
+  good: 0,
+  bad: 0,
+  miss: 0
+});
+function resetJudge() {
+  Judge.perfect = 0;
+  Judge.good = 0;
+  Judge.bad = 0;
+  Judge.miss = 0;
 }
-__publicField(Score, "perfect", ref(0));
-__publicField(Score, "good", ref(0));
-__publicField(Score, "bad", ref(0));
-__publicField(Score, "miss", ref(0));
 const vertexShader$1 = `
     attribute vec2 a_position;
     attribute vec4 a_color;
@@ -19719,49 +20108,22 @@ const fragmentShader$1 = `
         gl_FragColor = v_color;
     }
 `;
-const blue = Color.fromHex(6737151);
 class ManiaPanel extends Drawable {
   constructor(gl, offsetLeft = 800, trackWidth = 120, trackGap = 12, noteData) {
     super(gl, {
       size: [trackWidth * 4 + trackGap * 5 + 20, "fill-parent"]
     });
-    __publicField(this, "trackCount", 4);
-    __publicField(this, "tracks", []);
-    __publicField(this, "keys", ["KeyS", "KeyD", "KeyJ", "KeyK"]);
-    __publicField(this, "keyState", [false, false, false, false]);
-    __publicField(this, "judgementLinePosition", 80);
-    // from top to bottom, percent
-    __publicField(this, "vertexArray");
-    __publicField(this, "vertexBuffer");
-    __publicField(this, "shader");
-    __publicField(this, "layout");
-    __publicField(this, "songProgress", new SongProgress());
-    __publicField(this, "onKeyDown", (e) => {
-      const index = this.keys.indexOf(e.code);
-      if (index < 0 || index >= this.tracks.length)
-        return;
-      if (!this.keyState[index]) {
-        this.keyState[index] = true;
-        this.tracks[index].hit();
-      }
-    });
-    __publicField(this, "vertexData", new Float32Array());
-    __publicField(this, "vertexArrayData", []);
-    __publicField(this, "vertexCount", 0);
     this.offsetLeft = offsetLeft;
     this.trackWidth = trackWidth;
     this.trackGap = trackGap;
     this.noteData = noteData;
-    window.addEventListener("keydown", this.onKeyDown, {
-      passive: true
-    });
-    window.addEventListener("keyup", (e) => {
-      const index = this.keys.indexOf(e.code);
-      if (index < 0 || index >= this.tracks.length)
-        return;
-      this.tracks[index].hitUp();
-      this.keyState[index] = false;
-    });
+    this.trackCount = 4;
+    this.tracks = [];
+    this.judgementLinePosition = 80;
+    this.songProgress = new SongProgress();
+    this.vertexData = new Float32Array();
+    this.vertexArrayData = [];
+    this.vertexCount = 0;
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
     const vertexBuffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
@@ -19771,7 +20133,7 @@ class ManiaPanel extends Drawable {
     shader.bind();
     layout.pushFloat(shader.getAttributeLocation("a_position"), 2);
     layout.pushFloat(shader.getAttributeLocation("a_color"), 4);
-    vertexArray.addBuffer(vertexBuffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     vertexBuffer.unbind();
     shader.unbind();
@@ -19783,13 +20145,13 @@ class ManiaPanel extends Drawable {
   onLoad() {
     super.onLoad();
     this.offsetLeft -= Coordinate$1.width / 2;
-    let currentOffsetLeft = this.offsetLeft;
-    const colors = new Array(4).fill(blue);
+    let currentOffsetLeft = this.position.x;
+    const colors = new Array(4).fill(Color.fromHex(16777215));
     for (let i = 0; i < this.trackCount; i++) {
       const track2 = new ManiaTrack(
         this.noteData[i],
         this.judgementLinePosition,
-        450,
+        660,
         currentOffsetLeft,
         this.trackWidth,
         colors[i],
@@ -19828,27 +20190,29 @@ class ManiaPanel extends Drawable {
     const gl = this.gl;
     this.shader.setUniformMatrix4fv("u_orth", Coordinate$1.orthographicProjectionMatrix4);
     this.vertexBuffer.setBufferData(this.vertexData);
-    this.vertexArray.addBuffer(this.vertexBuffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
   }
-  dispose() {
-    super.dispose();
-    window.removeEventListener("keydown", this.onKeyDown);
-  }
 }
-class ManiaTrack {
+const JudgeRange = {
+  perfect: 30,
+  good: 40,
+  bad: 60,
+  miss: 80
+};
+const _ManiaTrack = class _ManiaTrack {
   constructor(noteDataList, judgementLinePosition, movementDuration, offsetLeft, trackWidth, mainColor, panel) {
-    __publicField(this, "noteList", []);
-    __publicField(this, "isFinish", false);
-    // @ts-ignore
-    __publicField(this, "alpha", 0);
-    __publicField(this, "fadeTransition", new ObjectTransition(this, "alpha"));
     this.judgementLinePosition = judgementLinePosition;
     this.movementDuration = movementDuration;
     this.offsetLeft = offsetLeft;
     this.trackWidth = trackWidth;
     this.mainColor = mainColor;
     this.panel = panel;
+    this.noteList = [];
+    this.isFinish = false;
+    this.alpha = 0;
+    this.fadeTransition = new ObjectTransition(this, "alpha");
+    this.pressState = _ManiaTrack.PRESS_STATE_UP;
     for (let i = 0; i < noteDataList.length; i++) {
       const note = new Note(
         panel,
@@ -19858,18 +20222,7 @@ class ManiaTrack {
         this.movementDuration,
         this.judgementLinePosition,
         void 0,
-        noteDataList[i],
-        (isHold, isHoldEnd) => {
-          if (isHold) {
-            if (isHoldEnd) {
-              this.fadeBegin().transitionTo(0, 200, ease);
-            } else {
-              this.fadeBegin().transitionTo(0.3, 60, easeOut);
-            }
-          } else {
-            this.fadeBegin().transitionTo(0.3, 60, easeOut).transitionTo(0, 200, ease);
-          }
-        }
+        noteDataList[i]
       );
       this.noteList.push(note);
     }
@@ -19884,6 +20237,79 @@ class ManiaTrack {
     }
     this.fadeTransition.update(Time.currentTime);
     this.updateNoteQueue();
+    this.judgeNote(true);
+  }
+  judgeNote(auto = false) {
+    const current = AudioPlayerV2.currentTime();
+    const endTime = current + this.movementDuration;
+    const noteList = this.noteList;
+    for (let i = 0; i < noteList.length; i++) {
+      const note = noteList[i];
+      const data = note.noteData;
+      if (note.judgeResult !== Note.JUDGE_NONE && note.judgeState === Note.STATE_JUDGED) {
+        continue;
+      }
+      if (note.startTime > endTime) {
+        break;
+      }
+      const time = data.startTime;
+      const diffTime = Math.abs(time - current);
+      if (note.judgeResult === Note.JUDGE_NONE && note.judgeState === Note.STATE_NO_JUDGE) {
+        if (diffTime <= JudgeRange.perfect) {
+          auto && this.effectTap(note, current);
+          Judge.perfect++;
+          note.judgeResult = Note.JUDGE_PERFECT;
+        } else if (diffTime <= JudgeRange.good && !auto) {
+          Judge.good++;
+          note.judgeResult = Note.JUDGE_GOOD;
+        } else if (diffTime <= JudgeRange.bad && !auto) {
+          Judge.bad++;
+          note.judgeResult = Note.JUDGE_BAD;
+        } else if (time - current < -JudgeRange.miss) {
+          Judge.miss++;
+          note.judgeResult = Note.JUDGE_MISS;
+          note.judgeState = Note.STATE_JUDGED;
+          continue;
+        }
+      } else {
+        auto && this.effectTap(note, current);
+      }
+      break;
+    }
+  }
+  effectTap(note, currentTime) {
+    const data = note.noteData;
+    const isHold = data.endTime > 0;
+    if (note.judgeState === Note.STATE_JUDGED) {
+      return;
+    }
+    if (isHold) {
+      if (currentTime >= data.endTime) {
+        this.pressUp();
+        note.judgeState = Note.STATE_JUDGED;
+      } else {
+        this.pressDown();
+        note.judgeState = Note.STATE_JUDGING;
+      }
+    } else {
+      this.tap();
+      note.judgeState = Note.STATE_JUDGED;
+    }
+  }
+  pressDown() {
+    if (this.pressState === _ManiaTrack.PRESS_STATE_DOWN) {
+      return;
+    }
+    this.pressState = _ManiaTrack.PRESS_STATE_DOWN;
+    this.fadeBegin().transitionTo(0.3, 60, easeOut);
+  }
+  pressUp() {
+    this.pressState = _ManiaTrack.PRESS_STATE_UP;
+    this.fadeBegin().transitionTo(0, 500, easeOutQuint);
+  }
+  tap() {
+    this.pressState = _ManiaTrack.PRESS_STATE_TAP;
+    this.fadeBegin().transitionTo(0.3, 60, easeOut).transitionTo(0, 500, easeOutQuint);
   }
   updateNoteQueue() {
     const noteList = this.noteList;
@@ -19891,23 +20317,11 @@ class ManiaTrack {
       noteList[i].update();
     }
   }
-  hit() {
-    const noteList = this.noteList;
-    this.alpha = 0.3;
-    for (let i = 0; i < noteList.length; i++) {
-      if (noteList[i].hit()) {
-        return;
-      }
-    }
-  }
-  hitUp() {
-    this.alpha = 0;
-  }
   copyTo(out, offset) {
     const noteList = this.noteList;
     const currentTime = AudioPlayerV2.currentTime();
     const endTime = currentTime + this.movementDuration;
-    const { red, green, blue: blue2 } = this.mainColor;
+    const { red, green, blue } = this.mainColor;
     Shape2D.quad(
       this.offsetLeft,
       Coordinate$1.height / 2,
@@ -19956,16 +20370,16 @@ class ManiaTrack {
       0,
       red,
       green,
-      blue2,
-      0,
+      blue,
+      this.alpha,
       0,
       0,
       0,
       0,
       red,
       green,
-      blue2,
-      0,
+      blue,
+      this.alpha,
       out,
       currentOffset + 2,
       6
@@ -19980,23 +20394,23 @@ class ManiaTrack {
       currentOffset,
       6
     );
-    const stageAlpha = 0;
+    const stageAlpha = this.alpha / 0.3;
     Shape2D.color(
       red,
       green,
-      blue2,
+      blue,
       stageAlpha,
       red,
       green,
-      blue2,
+      blue,
       stageAlpha,
       red,
       green,
-      blue2,
+      blue,
       stageAlpha,
       red,
       green,
-      blue2,
+      blue,
       stageAlpha,
       out,
       currentOffset + 2,
@@ -20004,17 +20418,15 @@ class ManiaTrack {
     );
     currentOffset += 36;
     for (let i = 0; i < noteList.length; i++) {
+      const note = noteList[i];
       const data = noteList[i].noteData;
       if (data.startTime > endTime) {
+        break;
+      }
+      if (note.isJudged()) {
         continue;
       }
-      if (data.endTime > 0 && data.endTime < currentTime) {
-        continue;
-      }
-      if (data.startTime < currentTime && data.endTime === 0) {
-        continue;
-      }
-      currentOffset += noteList[i].copyTo(out, currentOffset, 6);
+      currentOffset += note.copyTo(out, currentOffset, 6);
     }
     Shape2D.quad(
       this.offsetLeft,
@@ -20049,21 +20461,24 @@ class ManiaTrack {
     currentOffset += 36;
     return currentOffset;
   }
-}
+};
+_ManiaTrack.PRESS_STATE_DOWN = 0;
+_ManiaTrack.PRESS_STATE_UP = 1;
+_ManiaTrack.PRESS_STATE_TAP = 2;
+let ManiaTrack = _ManiaTrack;
 const _Note = class _Note {
-  constructor(panel, noteWidth, noteHeight, offsetLeft, movementDuration, judgementLinePosition, color = Color.fromHex(6737151), noteData, onNoteReceive) {
-    __publicField(this, "judgeResult", _Note.JUDGE_NONE);
-    __publicField(this, "position", Vector2.newZero());
-    __publicField(this, "topLeft", Vector2.newZero());
-    __publicField(this, "bottomRight", Vector2.newZero());
-    __publicField(this, "lastTrigger", [false, false]);
-    __publicField(this, "color", Color.fromHex(65535));
+  constructor(panel, noteWidth, noteHeight, offsetLeft, movementDuration, judgementLinePosition, color = Color.fromHex(6737151), noteData) {
     this.panel = panel;
     this.noteHeight = noteHeight;
     this.movementDuration = movementDuration;
     this.judgementLinePosition = judgementLinePosition;
     this.noteData = noteData;
-    this.onNoteReceive = onNoteReceive;
+    this.judgeResult = _Note.JUDGE_NONE;
+    this.judgeState = _Note.STATE_NO_JUDGE;
+    this.position = Vector2.newZero();
+    this.topLeft = Vector2.newZero();
+    this.bottomRight = Vector2.newZero();
+    this.color = Color.fromHex(65535);
     this.color = color;
     this.position.x = offsetLeft;
     this.position.y = panel.height / 2;
@@ -20074,117 +20489,52 @@ const _Note = class _Note {
     bottomRight.x = this.position.x + noteWidth;
     bottomRight.y = this.position.y - noteHeight;
   }
+  isHold() {
+    return this.noteData.endTime > this.noteData.startTime;
+  }
+  isJudged() {
+    return this.judgeState === _Note.STATE_JUDGED;
+  }
   update() {
     const currentTime = AudioPlayerV2.currentTime();
     const endTime = currentTime + this.movementDuration;
     if (this.startTime > endTime) {
       return;
     }
-    this.autoHit();
     this.updateVertex();
-    if (this.judgeResult >= 0) {
-      return;
-    }
-    const diffTime = this.startTime - currentTime;
-    if (diffTime <= -120 && this.judgeResult === _Note.JUDGE_NONE) {
-      this.judgeResult = _Note.JUDGE_MISS;
-      Score.miss.value++;
-    }
   }
   updateVertex() {
     const currentTime = AudioPlayerV2.currentTime();
-    const noteArea = this.panel.height * (this.judgementLinePosition / 100);
-    const endTime = currentTime + this.movementDuration;
+    const top = this.panel.height / 2;
+    const moveLength = this.panel.height * (this.judgementLinePosition / 100);
+    const bottom = top - moveLength;
+    const duration = this.movementDuration;
+    const endTime = currentTime + duration;
     const noteStartTime = this.noteData.startTime;
     const noteEndTime = this.noteData.endTime;
-    const startPercent = (noteStartTime - currentTime) / (endTime - currentTime);
-    const endPercent = (noteEndTime - currentTime) / (endTime - currentTime);
     const noteHeight = this.noteHeight;
-    const panelTop = this.panel.height / 2;
-    let topY = panelTop, bottomY = -this.panel.height / 2;
-    if (noteEndTime > 0) {
-      if (noteEndTime > endTime) {
-        topY = panelTop;
-      } else if (endPercent < 0) {
-        topY = panelTop - noteArea;
+    let topY = 0, bottomY = 0;
+    if (this.isHold()) {
+      const holdStartPosition = (noteStartTime - currentTime) / duration;
+      const holdEndPosition = (noteEndTime - currentTime) / duration;
+      if (noteEndTime >= endTime) {
+        topY = top;
       } else {
-        topY = panelTop - (1 - endPercent) * noteArea;
+        topY = top - (1 - holdEndPosition) * moveLength - noteHeight;
       }
-      if (startPercent < 0) {
-        bottomY = panelTop - noteArea;
+      if (noteStartTime <= currentTime) {
+        bottomY = bottom;
       } else {
-        bottomY = panelTop - (1 - startPercent) * noteArea;
+        bottomY = top - (1 - holdStartPosition) * moveLength;
       }
     } else {
-      topY = panelTop - (1 - startPercent) * noteArea - noteHeight;
-      bottomY = panelTop - (1 - startPercent) * noteArea;
+      const noteStartPosition = (noteStartTime - currentTime) / duration;
+      topY = top - (1 - noteStartPosition) * moveLength - noteHeight;
+      bottomY = topY + noteHeight;
     }
     this.position.y = bottomY;
     this.topLeft.y = topY;
     this.bottomRight.y = this.position.y;
-  }
-  // @ts-ignore
-  triggerNoteReceive(isHold, isHoldEnd, check = true) {
-    if (check && this.lastTrigger[0] === isHold && this.lastTrigger[1] === isHoldEnd) {
-      return;
-    }
-    this.lastTrigger[0] = isHold;
-    this.lastTrigger[1] = isHoldEnd;
-    this.onNoteReceive(isHold, isHoldEnd);
-  }
-  hit() {
-    if (this.judgeResult !== _Note.JUDGE_NONE) {
-      return false;
-    }
-    const currentTime = AudioPlayerV2.currentTime();
-    const endTime = currentTime + this.movementDuration;
-    const data = this.noteData;
-    if (data.startTime > endTime) {
-      return false;
-    }
-    if (data.endTime > 0 && data.endTime < currentTime) {
-      return false;
-    }
-    const diffTime = this.startTime - currentTime;
-    const absDiffTime = Math.abs(diffTime);
-    if (absDiffTime <= 60) {
-      this.judgeResult = _Note.JUDGE_PERFECT;
-      Score.perfect.value++;
-    } else if (absDiffTime <= 80) {
-      this.judgeResult = _Note.JUDGE_GOOD;
-      Score.good.value++;
-    } else if (absDiffTime <= 100) {
-      this.judgeResult = _Note.JUDGE_BAD;
-      Score.bad.value++;
-    } else if (diffTime >= 120) {
-      this.judgeResult = _Note.JUDGE_MISS;
-      Score.miss.value++;
-    } else {
-      return false;
-    }
-    return true;
-  }
-  autoHit() {
-    if (this.judgeResult !== _Note.JUDGE_NONE) {
-      return false;
-    }
-    const currentTime = AudioPlayerV2.currentTime();
-    const endTime = currentTime + this.movementDuration;
-    const data = this.noteData;
-    if (data.startTime > endTime) {
-      return false;
-    }
-    if (data.endTime > 0 && data.endTime < currentTime) {
-      return false;
-    }
-    const diffTime = this.startTime - currentTime;
-    const absDiffTime = Math.abs(diffTime);
-    if (absDiffTime <= 60 || diffTime < 0) {
-      this.judgeResult = _Note.JUDGE_PERFECT;
-      Score.perfect.value++;
-      this.onNoteReceive(false, true);
-      playSound(Sound.SoftHitwhistle);
-    }
   }
   get startTime() {
     return this.noteData.startTime;
@@ -20201,18 +20551,21 @@ const _Note = class _Note {
     return 36;
   }
 };
-__publicField(_Note, "JUDGE_NONE", -1);
-__publicField(_Note, "JUDGE_MISS", 0);
-__publicField(_Note, "JUDGE_BAD", 1);
-__publicField(_Note, "JUDGE_GOOD", 2);
-__publicField(_Note, "JUDGE_PERFECT", 3);
-__publicField(_Note, "VERTEX_COUNT", 6);
+_Note.JUDGE_NONE = -1;
+_Note.JUDGE_MISS = 0;
+_Note.JUDGE_BAD = 1;
+_Note.JUDGE_GOOD = 2;
+_Note.JUDGE_PERFECT = 3;
+_Note.STATE_NO_JUDGE = 0;
+_Note.STATE_JUDGING = 1;
+_Note.STATE_JUDGED = 2;
+_Note.VERTEX_COUNT = 6;
 let Note = _Note;
 class SongProgress {
   constructor() {
-    __publicField(this, "topLeft", Vector2.newZero());
-    __publicField(this, "bottomRight", Vector2.newZero());
-    __publicField(this, "color", Color.fromHex(6737151));
+    this.topLeft = Vector2.newZero();
+    this.bottomRight = Vector2.newZero();
+    this.color = Color.fromHex(6737151);
   }
   update() {
     const percent = AudioPlayerV2.currentTime() / AudioPlayerV2.duration();
@@ -21962,9 +22315,10 @@ class ManiaScreen extends Box {
     super(gl, {
       size: ["fill-parent", "fill-parent"]
     });
-    const trackWidth = new Array(4).fill(10);
-    const offsetLeft = 100;
-    const trackGap = 80;
+    resetJudge();
+    const trackWidth = new Array(4).fill(80);
+    const offsetLeft = 750;
+    const trackGap = 10;
     let data;
     if (OSUPlayer$1.maniaNoteData.value !== null) {
       data = OSUPlayer$1.maniaNoteData.value;
@@ -21972,6 +22326,7 @@ class ManiaScreen extends Box {
       data = osuFile.NoteData;
       Toaster.show("Mania Note is Empty, use default");
     }
+    console.log("mania key count", data);
     const mania = new ManiaPanel(
       gl,
       offsetLeft,
@@ -21992,23 +22347,18 @@ class ManiaScreen extends Box {
 class MovableBackground extends Drawable {
   constructor(gl, textureUnit) {
     super(gl, { size: ["fill-parent", "fill-parent"] });
-    __publicField(this, "vertexArray");
-    __publicField(this, "shader");
-    __publicField(this, "buffer");
-    __publicField(this, "layout");
-    __publicField(this, "texture");
-    __publicField(this, "imageDrawInfo", {
+    this.textureUnit = textureUnit;
+    this.imageDrawInfo = {
       drawHeight: 0,
       drawWidth: 0,
       needToChange: false,
       offsetLeft: 0,
       offsetTop: 0
-    });
-    __publicField(this, "image", null);
-    __publicField(this, "needUpdateTexture", false);
-    __publicField(this, "vertex", new Float32Array(4 * 6));
-    __publicField(this, "onFinish", null);
-    this.textureUnit = textureUnit;
+    };
+    this.image = null;
+    this.needUpdateTexture = false;
+    this.vertex = new Float32Array(4 * 6);
+    this.onFinish = null;
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
     const buffer = new VertexBuffer(gl);
@@ -22019,7 +22369,7 @@ class MovableBackground extends Drawable {
     shader.bind();
     layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
     layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    vertexArray.addBuffer(buffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     buffer.unbind();
     shader.unbind();
@@ -22032,7 +22382,7 @@ class MovableBackground extends Drawable {
   onUpdate() {
     var _a;
     super.onUpdate();
-    if (this.fadeTransition.isEnd) {
+    if (this.transition.transitionAlpha.isEnd) {
       (_a = this.onFinish) == null ? void 0 : _a.call(this);
       this.onFinish = null;
     }
@@ -22111,7 +22461,7 @@ class MovableBackground extends Drawable {
     );
   }
   fadeOut(onFinish) {
-    this.fadeBegin().fadeTo(0, 220);
+    this.transform().fadeTo(0, 220);
     this.onFinish = onFinish;
   }
   onWindowResize() {
@@ -22143,7 +22493,7 @@ class MovableBackground extends Drawable {
     shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
     shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha);
     shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
-    this.vertexArray.addBuffer(this.buffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
   dispose() {
@@ -22157,9 +22507,9 @@ class MovableBackground extends Drawable {
 class Background extends Box {
   constructor(gl, initImage) {
     super(gl, { size: ["fill-parent", "fill-parent"] });
-    __publicField(this, "textureUnits", [2, 3]);
-    __publicField(this, "textureUnitIndex", 0);
-    __publicField(this, "isFading", false);
+    this.textureUnits = [2, 3];
+    this.textureUnitIndex = 0;
+    this.isFading = false;
     const current = new MovableBackground(gl, this.nextTextureUnit());
     const next = new MovableBackground(gl, this.nextTextureUnit());
     this.add(next, current);
@@ -22214,19 +22564,15 @@ class BackgroundBounce extends Box {
     super(gl, {
       size: ["fill-parent", "fill-parent"]
     });
-    __publicField(this, "background");
     this.add(this.background = new Background(gl, backgroundImage));
   }
   in() {
-    const startTime = Time.currentTime + 300;
-    this.scaleBegin(startTime).to(new Vector2(0.98, 0.98), 500, easeOutQuint);
-    this.translateBegin(startTime).translateTo(new Vector2(0, -40), 500, easeOutQuint);
-    this.fadeBegin(startTime).fadeTo(0.7, 500, easeOutQuint);
+    const transition = this.transform();
+    transition.delay(300).scaleTo(new Vector2(0.98, 0.98), 500, easeOutQuint).delay(300).moveTo(new Vector2(0, -40), 500, easeOutQuint).delay(300).fadeTo(0.7, 500, easeOutQuint);
   }
   out() {
-    this.scaleBegin().to(new Vector2(1, 1), 500, easeOutQuint);
-    this.translateBegin().translateTo(Vector2.newZero(), 500, easeOutQuint);
-    this.fadeBegin().fadeTo(1, 500, easeOutQuint);
+    const transition = this.transform();
+    transition.scaleTo(new Vector2(1, 1), 500, easeOutQuint).moveTo(Vector2.newZero(), 500, easeOutQuint).fadeTo(1, 500, easeOutQuint);
   }
   updateBackground2(image) {
     this.background.updateBackground2(image);
@@ -22241,14 +22587,9 @@ class VideoBackground extends Drawable {
     super(gl, {
       size: ["fill-parent", "fill-parent"]
     });
-    __publicField(this, "shader");
-    __publicField(this, "buffer");
-    __publicField(this, "texture");
-    __publicField(this, "layout");
-    __publicField(this, "vertexArray");
-    __publicField(this, "textureUnit", 4);
-    __publicField(this, "isVertexUpdate", true);
     this.video = video;
+    this.textureUnit = 4;
+    this.isVertexUpdate = true;
     this.textureUnit = 0;
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
@@ -22260,7 +22601,7 @@ class VideoBackground extends Drawable {
     shader.bind();
     layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
     layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    vertexArray.addBuffer(buffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     buffer.unbind();
     shader.unbind();
@@ -22329,7 +22670,7 @@ class VideoBackground extends Drawable {
     this.shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
     this.shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
     this.shader.setUniform1f(UNI_ALPHA, this.alpha);
-    this.vertexArray.addBuffer(this.buffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
   dispose() {
@@ -22346,37 +22687,56 @@ class BackgroundScreen extends Box {
     super(gl, {
       size: ["fill-parent", "fill-parent"]
     });
-    __publicField(this, "background");
-    __publicField(this, "videoBackground");
-    __publicField(this, "leftSideCollector", (value) => {
+    this.leftSideCollector = (value) => {
       const translate = value ? new Vector2(40, 0) : Vector2.newZero();
-      this.translateBegin().translateTo(translate, 500, easeOutCubic);
-    });
-    __publicField(this, "rightSideCollector", (value) => {
+      this.transform().moveTo(translate, 500, easeOutCubic);
+    };
+    this.rightSideCollector = (value) => {
       const translate = value ? new Vector2(-40, 0) : Vector2.newZero();
-      this.translateBegin().translateTo(translate, 500, easeOutCubic);
-    });
-    __publicField(this, "collector", (bg) => {
+      this.transform().moveTo(translate, 500, easeOutCubic);
+    };
+    this.collector = (bg) => {
       this.setupVideoBackground(bg);
       this.setupImageBackground(bg);
-    });
+    };
     this.background = new BackgroundBounce(gl, OSUPlayer$1.background.value.image);
     this.videoBackground = new VideoBackground(gl, null);
-    OSUPlayer$1.background.collect(this.collector);
+    this.addDisposable(() => {
+      return collectLatest(OSUPlayer$1.background, this.collector);
+    });
     this.add(
       this.background,
       this.videoBackground
     );
     ScreenManager$1.currentId.collect((screenId) => {
+      this.isVisible = screenId !== "story";
       const bg = OSUPlayer$1.background.value;
-      console.log(bg);
-      this.videoBackground.isVisible = !!bg.video && (screenId !== "main" && screenId !== "legacy");
+      this.videoBackground.isVisible = !!bg.video && (screenId !== "main" && screenId !== "legacy" && UIState.beatmapBackground);
       if (screenId !== "main") {
         this.background.out();
       }
     });
     onLeftSide.collect(this.leftSideCollector);
     onRightSide.collect(this.rightSideCollector);
+    this.addDisposable(() => {
+      const scope2 = effectScope();
+      scope2.run(() => {
+        watch(() => UIState.beatmapBackground, (value) => {
+          if (!value) {
+            this.videoBackground.isVisible = false;
+            this.background.updateBackground2(BackgroundLoader$1.getBackground());
+          } else {
+            const bg = OSUPlayer$1.background.value;
+            if (bg.video && !["main", "legacy"].includes(ScreenManager$1.currentId.value)) {
+              this.videoBackground.isVisible = true;
+              this.videoBackground.setVideo(bg.video);
+            }
+            this.background.updateBackground2(bg.image ?? BackgroundLoader$1.getBackground());
+          }
+        });
+      });
+      return scope2.stop;
+    });
   }
   setupVideoBackground(bg) {
     if (bg.video) {
@@ -22395,14 +22755,14 @@ class BackgroundScreen extends Box {
   }
   dispose() {
     super.dispose();
-    OSUPlayer$1.background.removeCollect(this.collector);
     onLeftSide.removeCollect(this.leftSideCollector);
     onRightSide.removeCollect(this.rightSideCollector);
   }
 }
-class RoundClipColoredShader {
+class RoundClipColoredShader extends BaseShader {
   constructor() {
-    __publicField(this, "vertex", `
+    super(...arguments);
+    this.vertex = `
         attribute vec2 ${ATTR_POSITION};
         attribute vec4 ${ATTR_COLOR};
         
@@ -22415,8 +22775,8 @@ class RoundClipColoredShader {
             gl_Position = position * ${UNI_ORTH};
             v_color = ${ATTR_COLOR};
         }
-    `);
-    __publicField(this, "fragment", `
+    `;
+    this.fragment = `
         varying mediump vec4 v_color;
         uniform mediump vec3 ${UNI_CIRCLE};
         void main() {
@@ -22427,9 +22787,9 @@ class RoundClipColoredShader {
                 discard;
             }
         }
-    `);
-    __publicField(this, "shader", null);
-    __publicField(this, "layout", null);
+    `;
+    this.shader = null;
+    this.layout = null;
   }
   newShader(gl) {
     return new Shader(gl, this.vertex, this.fragment);
@@ -22461,18 +22821,14 @@ const RoundClipColoredShader$1 = new RoundClipColoredShader();
 class CircleBackground extends Drawable {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "shader");
-    __publicField(this, "buffer");
-    __publicField(this, "layout");
-    __publicField(this, "vertexArray");
-    __publicField(this, "radius", 50);
-    __publicField(this, "thickWidth", 10);
-    __publicField(this, "radiusTransition", new ObjectTransition(this, "radius"));
-    __publicField(this, "thickWidthTransition", new ObjectTransition(this, "thickWidth"));
-    __publicField(this, "vertex", new Float32Array([]));
-    __publicField(this, "uniCircle", new Float32Array([0, 0, 0]));
-    __publicField(this, "white", Color.fromHex(16777215));
-    __publicField(this, "gray", Color.fromHex(8421504, 128));
+    this.radius = 240;
+    this.thickWidth = 0;
+    this.radiusTransition = new ObjectTransition(this, "radius");
+    this.thickWidthTransition = new ObjectTransition(this, "thickWidth");
+    this.vertex = new Float32Array([]);
+    this.uniCircle = new Float32Array([0, 0, 0]);
+    this.white = Color.fromHex(16777215);
+    this.gray = Color.fromHex(8421504, 128);
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
     const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
@@ -22482,7 +22838,7 @@ class CircleBackground extends Drawable {
     shader.bind();
     layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
     layout.pushFloat(shader.getAttributeLocation(ATTR_COLOR), 4);
-    vertexArray.addBuffer(buffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     buffer.unbind();
     shader.unbind();
@@ -22491,10 +22847,11 @@ class CircleBackground extends Drawable {
     this.layout = layout;
     this.shader = shader;
     setTimeout(() => {
-      this.radiusBegin().transitionTo(200 * window.devicePixelRatio, 1e3);
-      this.thickWidthBegin().transitionTo(400, 1e3);
-      this.rotateBegin().transitionTo(-90, 1e3);
-    }, 1e3);
+      const ease = easeIn;
+      this.radiusBegin().transitionTo(260 * window.devicePixelRatio, 1e3, ease);
+      this.thickWidthBegin().transitionTo(520, 1e3, ease);
+      this.transform().rotateTo(-90, 1e3, ease);
+    });
   }
   radiusBegin(atTime = Time.currentTime) {
     this.radiusTransition.setStartTime(atTime);
@@ -22554,7 +22911,7 @@ class CircleBackground extends Drawable {
     shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
     shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
     shader.setUniform3fv(UNI_CIRCLE, this.uniCircle);
-    this.vertexArray.addBuffer(this.buffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawArrays(gl.TRIANGLES, 0, 12);
   }
   dispose() {
@@ -22565,7 +22922,7 @@ class CircleBackground extends Drawable {
 }
 class ColorTextureShader {
   constructor() {
-    __publicField(this, "vertex", `
+    this.vertex = `
         attribute vec2 ${ATTR_POSITION};
         attribute vec2 ${ATTR_TEXCOORD};
     
@@ -22577,8 +22934,8 @@ class ColorTextureShader {
             gl_Position = position * ${UNI_ORTH};
             v_tex_coord = ${ATTR_TEXCOORD};
         }
-    `);
-    __publicField(this, "fragment", `
+    `;
+    this.fragment = `
         varying mediump vec2 v_tex_coord;
         uniform mediump float ${UNI_ALPHA};
         uniform sampler2D ${UNI_SAMPLER};
@@ -22592,9 +22949,9 @@ class ColorTextureShader {
             }
             gl_FragColor = texelColor;
         }
-    `);
-    __publicField(this, "shader", null);
-    __publicField(this, "layout", null);
+    `;
+    this.shader = null;
+    this.layout = null;
   }
   newShader(gl) {
     return new Shader(gl, this.vertex, this.fragment);
@@ -22626,13 +22983,8 @@ const ColorTextureShader$1 = new ColorTextureShader();
 class ColoredImageDrawable extends Drawable {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "shader");
-    __publicField(this, "buffer");
-    __publicField(this, "texture");
-    __publicField(this, "layout");
-    __publicField(this, "vertexArray");
-    __publicField(this, "textureUnit", 0);
-    __publicField(this, "isVertexUpdate", true);
+    this.textureUnit = 0;
+    this.isVertexUpdate = true;
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
     const buffer = new VertexBuffer(gl);
@@ -22649,7 +23001,7 @@ class ColoredImageDrawable extends Drawable {
     ]));
     layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
     layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    vertexArray.addBuffer(buffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     buffer.unbind();
     shader.unbind();
@@ -22703,7 +23055,7 @@ class ColoredImageDrawable extends Drawable {
     shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
     shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
     shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha);
-    this.vertexArray.addBuffer(this.buffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
   dispose() {
@@ -22718,54 +23070,65 @@ class TestScreen extends Box {
     super(gl, {
       size: ["fill-parent", "fill-parent"]
     });
-    __publicField(this, "red");
-    __publicField(this, "green");
-    __publicField(this, "yellow");
-    __publicField(this, "blue");
+    const size2 = [470, 470];
     this.red = new ColoredImageDrawable(gl, {
-      size: [50, 50],
+      size: size2,
       origin: Axis.X_RIGHT | Axis.Y_CENTER,
-      // offset: [-200, 0],
       image: Images.WhiteRound,
       color: Color.fromHex(16711680)
     });
-    this.red.scale = Vector(2.2);
+    this.red.rotate = 180;
+    this.red.scale = Vector();
     this.yellow = new ColoredImageDrawable(gl, {
-      size: [480, 480],
+      size: size2,
       origin: Axis.X_LEFT | Axis.Y_CENTER,
-      offset: [200, 0],
       image: Images.WhiteRound,
       color: Color.fromHex(16776960)
     });
-    this.yellow.scale = Vector(0.2);
+    this.yellow.rotate = 180;
+    this.yellow.scale = Vector();
     this.green = new ColoredImageDrawable(gl, {
-      size: [480, 480],
+      size: size2,
       origin: Axis.X_CENTER | Axis.Y_TOP,
-      offset: [0, -200],
       image: Images.WhiteRound,
       color: Color.fromHex(65280)
     });
-    this.green.scale = Vector(0.2);
-    this.blue = new ColoredImageDrawable(gl, {
-      size: [480, 480],
+    this.green.rotate = 180;
+    this.green.scale = Vector();
+    this.pink = new ColoredImageDrawable(gl, {
+      size: size2,
       origin: Axis.X_CENTER | Axis.Y_BOTTOM,
-      offset: [0, 200],
       image: Images.WhiteRound,
-      color: Color.fromHex(255)
+      color: Color.fromHex(16743863)
     });
-    this.blue.scale = Vector(0.2);
+    this.pink.rotate = 180;
+    this.pink.scale = Vector();
     this.add(
       new CircleBackground(gl, {
         size: ["fill-parent", "fill-parent"]
       }),
-      this.red
-      /*this.green, this.yellow, this.blue*/
+      this.red,
+      this.green,
+      this.yellow,
+      this.pink
     );
+    setTimeout(() => {
+      const time = Time.currentTime;
+      const targetScale = Vector(1);
+      const targetDegree = 0;
+      const ease = easeIn;
+      const rounds = [this.red, this.green, this.yellow, this.pink];
+      const duration = 1e3;
+      rounds.forEach((item, i) => {
+        item.transform().delay(time + i * 50).rotateTo(targetDegree, duration - i * 50, ease);
+        item.transform().delay(time + i * 50).scaleTo(targetScale, duration - i * 50, ease);
+      });
+    }, 0);
   }
 }
 class StaticTextureShader2 {
   constructor() {
-    __publicField(this, "vertex", `
+    this.vertex = `
         attribute vec2 ${ATTR_POSITION};
         attribute vec2 ${ATTR_TEXCOORD};
     
@@ -22777,8 +23140,8 @@ class StaticTextureShader2 {
             gl_Position = position * ${UNI_ORTH};
             v_tex_coord = ${ATTR_TEXCOORD};
         }
-    `);
-    __publicField(this, "fragment", `
+    `;
+    this.fragment = `
         varying mediump vec2 v_tex_coord;
         uniform mediump float ${UNI_ALPHA};
         uniform sampler2D ${UNI_SAMPLER};
@@ -22790,9 +23153,9 @@ class StaticTextureShader2 {
             texelColor.a = texelColor.a * ${UNI_ALPHA};
             gl_FragColor = texelColor;
         }
-    `);
-    __publicField(this, "shader", null);
-    __publicField(this, "layout", null);
+    `;
+    this.shader = null;
+    this.layout = null;
   }
   newShader(gl) {
     return new Shader(gl, this.vertex, this.fragment);
@@ -22824,14 +23187,9 @@ const BrightnessTextureShader = new StaticTextureShader2();
 class LegacyLogo extends Drawable {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "shader");
-    __publicField(this, "buffer");
-    __publicField(this, "texture");
-    __publicField(this, "layout");
-    __publicField(this, "vertexArray");
-    __publicField(this, "textureUnit", 0);
-    __publicField(this, "brightness", 0);
-    __publicField(this, "brightnessTransition", new ObjectTransition(this, "brightness"));
+    this.textureUnit = 0;
+    this.brightness = 0;
+    this.brightnessTransition = new ObjectTransition(this, "brightness");
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
     const buffer = new VertexBuffer(gl);
@@ -22843,7 +23201,7 @@ class LegacyLogo extends Drawable {
     shader.bind();
     layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
     layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    vertexArray.addBuffer(buffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     buffer.unbind();
     shader.unbind();
@@ -22895,6 +23253,7 @@ class LegacyLogo extends Drawable {
     this.buffer.unbind();
   }
   unbind() {
+    this.buffer.unbind();
     this.vertexArray.unbind();
     this.texture.unbind();
     this.shader.unbind();
@@ -22905,6 +23264,7 @@ class LegacyLogo extends Drawable {
   }
   bind() {
     this.texture.bind(this.textureUnit);
+    this.buffer.bind();
     this.vertexArray.bind();
     this.shader.bind();
   }
@@ -22915,7 +23275,7 @@ class LegacyLogo extends Drawable {
     this.shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
     this.shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha);
     this.shader.setUniform1f(UNI_BRIGHTNESS, this.brightness);
-    this.vertexArray.addBuffer(this.buffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
   dispose() {
@@ -22966,25 +23326,16 @@ const fragmentShader = `
 class LegacyRoundVisualizer extends Drawable {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "vertexArray");
-    __publicField(this, "buffer");
-    __publicField(this, "shader");
-    __publicField(this, "layout");
-    __publicField(this, "indexBuffer");
-    __publicField(this, "borderBarTexture");
-    __publicField(this, "barTexture");
-    __publicField(this, "vertexCount", 0);
-    __publicField(this, "visualizer");
-    __publicField(this, "innerRadius", 236);
-    __publicField(this, "vertexData", new Float32Array(0));
-    __publicField(this, "simpleSpectrum", new Array(200));
-    __publicField(this, "lastTime", 0);
-    __publicField(this, "updateOffsetTime", 0);
-    __publicField(this, "indexOffset", 0);
-    __publicField(this, "indexChange", 5);
-    __publicField(this, "targetSpectrum", new Array(200).fill(0));
-    // TODO: 调整频谱
-    __publicField(this, "spectrumShape", [
+    this.vertexCount = 0;
+    this.innerRadius = 236;
+    this.vertexData = new Float32Array(0);
+    this.simpleSpectrum = new Array(200);
+    this.lastTime = 0;
+    this.updateOffsetTime = 0;
+    this.indexOffset = 0;
+    this.indexChange = 5;
+    this.targetSpectrum = new Array(200).fill(0);
+    this.spectrumShape = [
       1.5,
       2,
       2.7,
@@ -22996,7 +23347,7 @@ class LegacyRoundVisualizer extends Drawable {
       1,
       1,
       ...new Array(190).fill(1)
-    ]);
+    ];
     if (config.innerRadius) {
       this.innerRadius = config.innerRadius;
     }
@@ -23035,7 +23386,7 @@ class LegacyRoundVisualizer extends Drawable {
     layout.pushFloat(shader.getAttributeLocation("a_vertexPosition"), 2);
     layout.pushFloat(shader.getAttributeLocation("a_tex_coord"), 2);
     layout.pushUInt(shader.getAttributeLocation("a_sampler_flag"), 1);
-    vertexArray.addBuffer(buffer, layout);
+    vertexArray.addBuffer(layout);
     vertexArray.unbind();
     buffer.unbind();
     indexBuffer.unbind();
@@ -23196,7 +23547,7 @@ class LegacyRoundVisualizer extends Drawable {
     this.shader.setUniformMatrix4fv("u_transform", this.matrixArray);
     this.shader.setUniformMatrix4fv("u_orth", Coordinate$1.orthographicProjectionMatrix4);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-    this.vertexArray.addBuffer(this.buffer, this.layout);
+    this.vertexArray.addBuffer(this.layout);
     gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_INT, 0);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   }
@@ -23213,15 +23564,11 @@ const logoSize = 610;
 class LegacyBeatLogo extends Box {
   constructor(gl, config) {
     super(gl, config);
-    // @ts-ignore
-    __publicField(this, "logo");
     const logo2 = new LegacyLogo(gl, {
       size: [logoSize, logoSize]
     });
     this.logo = logo2;
-    this.add(
-      logo2
-    );
+    this.add(logo2);
     BeatDispatcher.register(this);
   }
   onNewBeat(isKiai, newBeatTimestamp, gap) {
@@ -23230,7 +23577,7 @@ class LegacyBeatLogo extends Box {
     }
     const volume = AudioPlayerV2.isPlaying() ? AudioChannel$1.maxVolume() + 0.4 : 0;
     const adjust = Math.min(volume + 0.4, 1);
-    this.logo.scaleBegin().to(Vector(1 - adjust * 0.02), 60, easeOut).to(Vector(1), gap * 2, easeOutQuint);
+    this.logo.transform().scaleTo(Vector(1 - adjust * 0.02), 60, easeOut).scaleTo(Vector(1), gap * 2, easeOutQuint);
     if (BeatState.isKiai) {
       this.logo.brightnessBegin().transitionTo(0.05).transitionTo(0, 60, easeOut).transitionTo(0.05, gap * 2, easeOutQuint);
     } else {
@@ -23245,13 +23592,11 @@ class LegacyBeatLogo extends Box {
 class LegacyFadeBeatLogo extends Box {
   constructor(gl, config) {
     super(gl, config);
-    // @ts-ignore
-    __publicField(this, "logo");
     const logo2 = new LegacyLogo(gl, {
       size: [logoSize, logoSize]
     });
     this.logo = logo2;
-    this.logo.alpha = 0.1;
+    this.logo.alpha = 0.08;
     this.add(logo2);
     BeatDispatcher.register(this);
   }
@@ -23261,7 +23606,7 @@ class LegacyFadeBeatLogo extends Box {
     }
     const volume = AudioPlayerV2.isPlaying() ? AudioChannel$1.maxVolume() + 0.4 : 0;
     const adjust = Math.min(volume, 1);
-    this.logo.scaleBegin().to(Vector(1 + adjust * 0.02), 60, easeOut).to(Vector(1), gap * 2, easeOutQuint);
+    this.logo.transform().scaleTo(Vector(1 + adjust * 0.02), 60, easeOut).scaleTo(Vector(1), gap * 2, easeOutQuint);
   }
   dispose() {
     super.dispose();
@@ -23271,64 +23616,42 @@ class LegacyFadeBeatLogo extends Box {
 class LegacyLogoBeatBox extends Box {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "beatLogo");
     this.beatLogo = new LegacyBeatLogo(gl, config);
     this.add(this.beatLogo);
   }
   onUpdate() {
     if (AudioPlayerV2.isPlaying()) {
-      if (BeatState.isAvailable) {
-        const scale = this.scale;
-        const adjust = AudioPlayerV2.isPlaying() ? AudioChannel$1.maxVolume() - 0.4 : 0;
-        const a = Interpolation.damp(
-          scale.x,
-          1 - Math.max(0, adjust) * 0.04,
-          0.94,
-          Time.elapsed
-        );
-        scale.x = a;
-        scale.y = a;
-        this.scale = scale;
-      }
+      const scale = this.scale;
+      const adjust = AudioPlayerV2.isPlaying() ? AudioChannel$1.maxVolume() - 0.4 : 0;
+      const a = Interpolation.damp(scale.x, 1 - Math.max(0, adjust) * 0.04, 0.94, Time.elapsed);
+      scale.x = a;
+      scale.y = a;
+      this.scale = scale;
     }
   }
 }
 class LegacyFadeLogoBeatBox extends Box {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "beatLogo");
     this.beatLogo = new LegacyFadeBeatLogo(gl, config);
     this.add(this.beatLogo);
   }
   onUpdate() {
     if (AudioPlayerV2.isPlaying()) {
-      if (BeatState.isAvailable) {
-        const scale = this.scale;
-        const adjust = AudioPlayerV2.isPlaying() ? AudioChannel$1.maxVolume() - 0.4 : 0;
-        const a = Interpolation.damp(
-          2 - scale.x,
-          1 - Math.max(0, adjust) * 0.04,
-          0.94,
-          Time.elapsed
-        );
-        scale.x = 2 - a;
-        scale.y = 2 - a;
-        this.scale = scale;
-      } else {
-        const a = 1 + AudioChannel$1.maxVolume() * 0.08;
-        this.scale = new Vector2(a, a);
-      }
+      const scale = this.scale;
+      const adjust = AudioPlayerV2.isPlaying() ? AudioChannel$1.maxVolume() - 0.4 : 0;
+      const a = Interpolation.damp(2 - scale.x, 1 - Math.max(0, adjust) * 0.04, 0.94, Time.elapsed);
+      scale.x = (2 - a) * 0.99;
+      scale.y = (2 - a) * 0.99;
+      this.scale = scale;
     }
   }
 }
 class LogoAmpBox2 extends BeatBox {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "visualizer");
-    __publicField(this, "logoBeatBox");
-    __publicField(this, "fadeLogoBeatBox");
-    __publicField(this, "logoHoverable", false);
-    __publicField(this, "scope", effectScope());
+    this.logoHoverable = false;
+    this.scope = effectScope();
     this.visualizer = new LegacyRoundVisualizer(gl, {
       size: ["fill-parent", "fill-parent"],
       innerRadius: logoSize * 0.92 / 2
@@ -23338,12 +23661,7 @@ class LogoAmpBox2 extends BeatBox {
     });
     this.logoBeatBox = new LegacyLogoBeatBox(gl, config);
     this.fadeLogoBeatBox = new LegacyFadeLogoBeatBox(gl, config);
-    this.add(
-      this.visualizer,
-      ripple2,
-      this.logoBeatBox,
-      this.fadeLogoBeatBox
-    );
+    this.add(this.visualizer, ripple2, this.logoBeatBox, this.fadeLogoBeatBox);
     this.scope.run(() => {
       watch(() => UIState.logoHover, (val) => this.logoHoverable = val, { immediate: true });
     });
@@ -23355,14 +23673,14 @@ class LogoAmpBox2 extends BeatBox {
     if (!this.logoHoverable) {
       return true;
     }
-    this.scaleBegin().to(Vector(1.1), 500, easeOutElastic);
+    this.transform().scaleTo(Vector(1.1), 500, easeOutElastic);
     return true;
   }
   onHoverLost() {
     if (!this.logoHoverable) {
       return true;
     }
-    this.scaleBegin().to(Vector(1), 500, easeOutElastic);
+    this.transform().scaleTo(Vector(1), 500, easeOutElastic);
     return true;
   }
   dispose() {
@@ -23373,11 +23691,10 @@ class LogoAmpBox2 extends BeatBox {
 class LogoBounceBox2 extends Box {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "logoAmpBox");
-    __publicField(this, "isDraggable", true);
-    __publicField(this, "scope", effectScope());
-    __publicField(this, "flag", false);
-    __publicField(this, "startPosition", Vector2.newZero());
+    this.isDraggable = true;
+    this.scope = effectScope();
+    this.flag = false;
+    this.startPosition = Vector2.newZero();
     this.logoAmpBox = new LogoAmpBox2(gl, { size: config.size });
     this.add(this.logoAmpBox);
     this.scope.run(() => {
@@ -23396,10 +23713,7 @@ class LogoBounceBox2 extends Box {
       this.startPosition.x = MouseState.position.x;
       this.startPosition.y = MouseState.position.y;
     }
-    this.translate = new Vector2(
-      (position.x - this.startPosition.x) * 0.05,
-      (position.y - this.startPosition.y) * 0.05
-    );
+    this.translate = new Vector2((position.x - this.startPosition.x) * 0.05, (position.y - this.startPosition.y) * 0.05);
     return true;
   }
   onDragLost(which) {
@@ -23407,7 +23721,7 @@ class LogoBounceBox2 extends Box {
       return true;
     }
     this.flag = false;
-    this.translateBegin().translateTo(new Vector2(0, 0), 600, easeOutElastic);
+    this.transform().moveTo(new Vector2(0, 0), 600, easeOutElastic);
     return true;
   }
   dispose() {
@@ -23418,7 +23732,6 @@ class LogoBounceBox2 extends Box {
 class LegacyBeatLogoBox extends Box {
   constructor(gl, config) {
     super(gl, config);
-    __publicField(this, "logoBounceBox");
     this.logoBounceBox = new LogoBounceBox2(gl, { size: config.size });
     this.add(this.logoBounceBox);
   }
@@ -23443,26 +23756,1186 @@ class LegacyScreen extends Box {
     );
   }
 }
-const _hoisted_1$3 = {
+class StoryTextureManager {
+  constructor() {
+    this.textureMap = /* @__PURE__ */ new Map();
+    this.currentBondedTexture = null;
+  }
+  addIf(gl, name, imageBitmap, format) {
+    if (this.textureMap.has(name)) {
+      return;
+    }
+    const texture = new Texture(gl);
+    texture.setTextureImage(imageBitmap, format);
+    this.textureMap.set(name, texture);
+  }
+  tryBind(name, slot = 0) {
+    try {
+      const texture = this.textureMap.get(name);
+      if (this.currentBondedTexture === texture) {
+        return;
+      }
+      if (this.currentBondedTexture) {
+        this.currentBondedTexture.unbind();
+      }
+      texture.bind(slot);
+      this.currentBondedTexture = texture;
+    } catch (e) {
+      console.error("texture bind error", name);
+      throw new Error();
+    }
+  }
+  dispose() {
+    if (this.currentBondedTexture) {
+      this.currentBondedTexture.unbind();
+    }
+    this.currentBondedTexture = null;
+    this.textureMap.forEach((v) => v.dispose());
+    this.textureMap.clear();
+  }
+}
+const StoryTextureManager$1 = new StoryTextureManager();
+class ColoredTextureShader extends BaseShader {
+  constructor() {
+    super(...arguments);
+    this.vertex = `
+    attribute vec2 a_position;
+    attribute vec2 a_texcoord;
+    
+    varying vec2 v_texcoord;
+    
+    uniform mat4 u_orth;
+    uniform mat4 u_transform;
+    
+    void main() {
+        vec4 position = vec4(a_position, 0.0, 1.0) * u_transform;
+        gl_Position = position * u_orth;
+        v_texcoord = a_texcoord;
+    }
+  `;
+    this.fragment = `
+    varying highp vec2 v_texcoord;
+    
+    uniform sampler2D u_sampler;
+    uniform mediump vec4 u_color;
+    
+    void main() {
+        mediump vec4 tex_color = texture2D(u_sampler, v_texcoord);
+        mediump vec4 out_color = vec4(tex_color.rgba * u_color.rgba);
+        gl_FragColor = out_color;
+    }
+  `;
+    this.shader = null;
+    this.layout = null;
+    this.vertexArray = null;
+  }
+  getVertexArray() {
+    return this.vertexArray;
+  }
+  getLayout() {
+    return this.layout;
+  }
+  getShader(gl) {
+    if (this.shader === null) {
+      this.shader = new Shader(gl, this.vertex, this.fragment);
+      this.layout = new VertexBufferLayout(gl);
+      this.vertexArray = new VertexArray(gl);
+      this.vertexArray.bind();
+      this.shader.bind();
+      this.layout.pushFloat(this.shader.getAttributeLocation("a_position"), 2);
+      this.layout.pushFloat(this.shader.getAttributeLocation("a_texcoord"), 2);
+      this.vertexArray.addBuffer(this.layout);
+      this.shader.unbind();
+      this.vertexArray.unbind();
+    }
+    return this.shader;
+  }
+  newShader(gl) {
+    return new Shader(gl, this.vertex, this.fragment);
+  }
+  createUniform() {
+    return { orth: void 0, color: void 0, sampler: void 0, transform: void 0 };
+  }
+  setUniform(uniform) {
+    const shader = this.shader;
+    if (!shader) {
+      return;
+    }
+    if (uniform.orth)
+      shader.setUniformMatrix4fv("u_orth", uniform.orth);
+    if (uniform.transform)
+      shader.setUniformMatrix4fv("u_transform", uniform.transform);
+    if (uniform.sampler)
+      shader.setUniform1i("u_sampler", uniform.sampler);
+    if (uniform.color)
+      shader.setUniform4fv("u_color", uniform.color);
+  }
+  dispose() {
+    var _a;
+    (_a = this.shader) == null ? void 0 : _a.dispose();
+    this.shader = null;
+  }
+}
+const ColoredTextureShader$1 = new ColoredTextureShader();
+class TransitionQueue {
+  constructor() {
+    this.first = null;
+    this.last = null;
+    this._startTime = Number.MAX_VALUE;
+    this._endTime = Number.MIN_VALUE;
+    this._startValue = 0;
+    this._endValue = 0;
+    this.current = null;
+  }
+  add(transition) {
+    if (this.first === null) {
+      this.first = transition;
+      this.last = transition;
+    } else {
+      this.last.next = transition;
+      this.last = transition;
+    }
+    const { startTime, endTime, fromValue, toValue } = transition;
+    if (startTime < this._startTime) {
+      this._startTime = startTime;
+      this._startValue = fromValue;
+    }
+    if (endTime > this._endTime) {
+      this._endTime = endTime;
+      this._endValue = toValue;
+    }
+    if (this._endTime < this._startTime) {
+      this._endTime = this._startTime;
+    }
+  }
+  update(timestamp) {
+    if (this.first === null) {
+      return null;
+    }
+    let current = this.current ?? this.first;
+    if (timestamp < current.startTime && current !== this.first) {
+      current = this.first;
+    }
+    while (timestamp >= current.startTime && current.next !== null && timestamp >= current.next.startTime) {
+      current = current.next;
+    }
+    this.current = current;
+    return current.update(timestamp);
+  }
+  // public update(timestamp: number): Nullable<number> {
+  //   const list = this.list
+  //   if (list.length === 0) {
+  //     return null
+  //   }
+  //   let current: Transition = this.current ?? list[0]
+  //   // 当时间回溯时，确保能够找到之前的过渡
+  //   if (timestamp < current.startTime && current !== list[0]) {
+  //     current = list[0]
+  //   }
+  //   // 根据当前的时间，寻找合适的过渡
+  //   while (timestamp >= current.startTime && current.next !== null && timestamp >= current.next.startTime) {
+  //     current = current.next
+  //   }
+  //   if (timestamp >= current.startTime && timestamp <= current.endTime) {
+  //     return current.update(timestamp)
+  //   }
+  //   for (let i = 1; i < list.length; i++) {
+  //     const transition = list[i]
+  //     if (timestamp >= transition.startTime && timestamp <= transition.endTime) {
+  //       current = transition
+  //       break
+  //     }
+  //   }
+  //   this.current = current
+  //
+  //   return current.update(timestamp)
+  // }
+  get startTime() {
+    return this._startTime;
+  }
+  get endTime() {
+    return this._endTime;
+  }
+  get startValue() {
+    if (!this.first) {
+      throw new Error("no transition");
+    }
+    return this._startValue;
+  }
+  get endValue() {
+    if (!this.last) {
+      throw new Error("no transition");
+    }
+    return this._endValue;
+  }
+}
+const easeFunction = [
+  linear,
+  easeOut,
+  easeIn,
+  easeInQuad,
+  easeOutQuad,
+  easeInOutQuad,
+  easeInCubic,
+  easeOutCubic,
+  easeInOutCubic,
+  easeInQuart,
+  easeOutQuart,
+  easeInOutQuart,
+  easeInQuint,
+  easeOutQuint,
+  easeInOutQuint,
+  easeInSine,
+  easeOutSine,
+  easeInOutSine,
+  easeInExpo,
+  easeOutExpo,
+  easeInOutExpo,
+  easeInCirc,
+  easeOutCirc,
+  easeInOutCirc,
+  easeInElastic,
+  easeOutElastic,
+  easeInOutElastic,
+  linear,
+  linear,
+  easeInBack,
+  easeOutBack,
+  easeInOutBack,
+  easeInBounce,
+  easeOutBounce,
+  easeInOutBounce
+];
+class TransitionEvent {
+  constructor(sprite) {
+    this.sprite = sprite;
+    this.eventCount = 0;
+    this.transitionSortCompare = (a, b) => {
+      if (a.startTime !== b.startTime)
+        return a.startTime - b.startTime;
+      else
+        return a.endTime - b.endTime;
+    };
+  }
+  commit() {
+  }
+}
+class StoryMoveEvent extends TransitionEvent {
+  constructor(sprite) {
+    super(sprite);
+    this.transitionXQueue = new TransitionQueue();
+    this.transitionYQueue = new TransitionQueue();
+    this.transitionXList = [];
+    this.transitionYList = [];
+    this.eventCount = 0;
+  }
+  addEvent(event) {
+    if (isValueEvent(event)) {
+      if (event.type === "MX") {
+        const { startTime, endTime, ease, from, to } = event;
+        const transitionX = new Transition(
+          startTime,
+          endTime,
+          easeFunction[ease],
+          to,
+          from
+        );
+        this.transitionXList.push(transitionX);
+      }
+      if (event.type === "MY") {
+        const { startTime, endTime, ease, from, to } = event;
+        const transitionY = new Transition(
+          startTime,
+          endTime,
+          easeFunction[ease],
+          to,
+          from
+        );
+        this.transitionYList.push(transitionY);
+      }
+      this.eventCount++;
+    } else if (isVectorEvent(event)) {
+      const { startTime, endTime, ease, from, to } = event;
+      const transitionX = new Transition(
+        startTime,
+        endTime,
+        easeFunction[ease],
+        to.x,
+        from.x
+      );
+      const transitionY = new Transition(
+        startTime,
+        endTime,
+        easeFunction[ease],
+        to.y,
+        from.y
+      );
+      this.transitionXList.push(transitionX);
+      this.transitionYList.push(transitionY);
+      this.eventCount++;
+    }
+  }
+  commit() {
+    this.transitionXList.sort(this.transitionSortCompare);
+    this.transitionYList.sort(this.transitionSortCompare);
+    for (const transitionX of this.transitionXList) {
+      this.transitionXQueue.add(transitionX);
+    }
+    for (const transitionY of this.transitionYList) {
+      this.transitionYQueue.add(transitionY);
+    }
+  }
+  update(timestamp) {
+    if (this.eventCount === 0) {
+      return;
+    }
+    const x = this.transitionXQueue.update(timestamp);
+    const y = this.transitionYQueue.update(timestamp);
+    const transform = this.sprite.transform;
+    if (x !== null) {
+      transform.translate.x = x;
+    }
+    if (y !== null) {
+      transform.translate.y = y;
+    }
+  }
+  hasEvent() {
+    return this.eventCount > 0;
+  }
+  startTime() {
+    let startTime = Number.MAX_SAFE_INTEGER;
+    if (this.transitionXQueue.first !== null) {
+      startTime = Math.min(startTime, this.transitionXQueue.startTime);
+    }
+    if (this.transitionYQueue.first !== null) {
+      startTime = Math.min(startTime, this.transitionYQueue.startTime);
+    }
+    return startTime;
+  }
+  endTime() {
+    let endTime = -1;
+    if (this.transitionXQueue.first !== null) {
+      endTime = Math.max(endTime, this.transitionXQueue.endTime);
+    }
+    if (this.transitionYQueue.first !== null) {
+      endTime = Math.max(endTime, this.transitionYQueue.endTime);
+    }
+    return endTime;
+  }
+  startValue() {
+    return Vector(
+      this.transitionXQueue.startValue,
+      this.transitionYQueue.startValue
+    );
+  }
+  endValue() {
+    return Vector(
+      this.transitionXQueue.endValue,
+      this.transitionYQueue.endValue
+    );
+  }
+}
+class StoryFadeEvent extends TransitionEvent {
+  constructor(sprite) {
+    super(sprite);
+    this.transitionQueue = new TransitionQueue();
+    this.eventCount = 0;
+    this.transitionList = [];
+  }
+  addEvent(event) {
+    const { startTime, endTime, ease, from, to } = event;
+    const transition = new Transition(
+      startTime,
+      endTime,
+      easeFunction[ease],
+      to,
+      from
+    );
+    this.transitionList.push(transition);
+    this.eventCount++;
+  }
+  commit() {
+    const list = this.transitionList;
+    list.sort(this.transitionSortCompare);
+    for (let i = 0; i < list.length; i++) {
+      this.transitionQueue.add(list[i]);
+    }
+  }
+  update(timestamp) {
+    if (this.eventCount === 0) {
+      return;
+    }
+    const value = this.transitionQueue.update(timestamp);
+    if (value !== null) {
+      this.sprite.transform.alphaTo(value);
+    }
+  }
+  hasEvent() {
+    return this.eventCount > 0;
+  }
+  startTime() {
+    return this.transitionQueue.startTime;
+  }
+  endTime() {
+    return this.transitionQueue.endTime;
+  }
+  startValue() {
+    return this.transitionQueue.startValue;
+  }
+  endValue() {
+    return this.transitionQueue.endValue;
+  }
+}
+class StoryRotateEvent extends TransitionEvent {
+  constructor(sprite) {
+    super(sprite);
+    this.transitionQueue = new TransitionQueue();
+    this.transitionList = [];
+    this.eventCount = 0;
+  }
+  addEvent(event) {
+    const { startTime, endTime, ease, from, to } = event;
+    const transition = new Transition(
+      startTime,
+      endTime,
+      easeFunction[ease],
+      to,
+      from
+    );
+    this.transitionList.push(transition);
+    this.eventCount++;
+  }
+  commit() {
+    this.transitionList.sort(this.transitionSortCompare);
+    for (const transition of this.transitionList) {
+      this.transitionQueue.add(transition);
+    }
+  }
+  update(timestamp) {
+    if (this.eventCount === 0) {
+      return;
+    }
+    const value = this.transitionQueue.update(timestamp);
+    if (value !== null) {
+      this.sprite.transform.rotateTo(radianToDegree(-value));
+    }
+  }
+  hasEvent() {
+    return this.eventCount > 0;
+  }
+  startTime() {
+    return this.transitionQueue.startTime;
+  }
+  endTime() {
+    return this.transitionQueue.endTime;
+  }
+  startValue() {
+    return this.transitionQueue.startValue;
+  }
+  endValue() {
+    return this.transitionQueue.endValue;
+  }
+}
+class StoryScaleEvent extends TransitionEvent {
+  constructor(sprite) {
+    super(sprite);
+    this.transitionXQueue = new TransitionQueue();
+    this.transitionYQueue = new TransitionQueue();
+    this.transitionXList = [];
+    this.transitionYList = [];
+    this.eventCount = 0;
+  }
+  addEvent(event) {
+    if (isValueEvent(event)) {
+      const { startTime, endTime, ease, from, to } = event;
+      const transitionX = new Transition(
+        startTime,
+        endTime,
+        easeFunction[ease],
+        to,
+        from
+      );
+      const transitionY = new Transition(
+        startTime,
+        endTime,
+        easeFunction[ease],
+        to,
+        from
+      );
+      this.transitionXList.push(transitionX);
+      this.transitionYList.push(transitionY);
+      this.eventCount++;
+    } else if (isVectorEvent(event)) {
+      const { startTime, endTime, ease, from, to } = event;
+      const transitionX = new Transition(
+        startTime,
+        endTime,
+        easeFunction[ease],
+        to.x,
+        from.x
+      );
+      const transitionY = new Transition(
+        startTime,
+        endTime,
+        easeFunction[ease],
+        to.y,
+        from.y
+      );
+      this.transitionXList.push(transitionX);
+      this.transitionYList.push(transitionY);
+      this.eventCount++;
+    }
+  }
+  commit() {
+    this.transitionXList.sort(this.transitionSortCompare);
+    this.transitionYList.sort(this.transitionSortCompare);
+    for (const transitionX of this.transitionXList) {
+      this.transitionXQueue.add(transitionX);
+    }
+    for (const transitionY of this.transitionYList) {
+      this.transitionYQueue.add(transitionY);
+    }
+  }
+  update(timestamp) {
+    if (this.eventCount === 0) {
+      return;
+    }
+    const x = this.transitionXQueue.update(timestamp);
+    const y = this.transitionYQueue.update(timestamp);
+    const transform = this.sprite.transform;
+    if (x !== null) {
+      transform.scale.x = x;
+    }
+    if (y !== null) {
+      transform.scale.y = y;
+    }
+  }
+  hasEvent() {
+    return this.eventCount > 0;
+  }
+  startTime() {
+    return Math.min(this.transitionXQueue.startTime, this.transitionYQueue.startTime);
+  }
+  endTime() {
+    return Math.max(this.transitionXQueue.endTime, this.transitionYQueue.endTime);
+  }
+  startValue() {
+    return Vector(
+      this.transitionXQueue.startValue,
+      this.transitionYQueue.startValue
+    );
+  }
+  endValue() {
+    return Vector(
+      this.transitionXQueue.endValue,
+      this.transitionYQueue.endValue
+    );
+  }
+}
+class StoryColorEvent extends TransitionEvent {
+  constructor(sprite) {
+    super(sprite);
+    this.transitionRQueue = new TransitionQueue();
+    this.transitionGQueue = new TransitionQueue();
+    this.transitionBQueue = new TransitionQueue();
+    this.transitionRList = [];
+    this.transitionGList = [];
+    this.transitionBList = [];
+    this.eventCount = 0;
+  }
+  addEvent(event) {
+    const { startTime, endTime, ease, from, to } = event;
+    const redTransition = new Transition(
+      startTime,
+      endTime,
+      easeFunction[ease],
+      to.red,
+      from.red
+    );
+    const greenTransition = new Transition(
+      startTime,
+      endTime,
+      easeFunction[ease],
+      to.green,
+      from.green
+    );
+    const blueTransition = new Transition(
+      startTime,
+      endTime,
+      easeFunction[ease],
+      to.blue,
+      from.blue
+    );
+    this.transitionRList.push(redTransition);
+    this.transitionGList.push(greenTransition);
+    this.transitionBList.push(blueTransition);
+    this.eventCount++;
+  }
+  commit() {
+    this.transitionRList.sort(this.transitionSortCompare);
+    this.transitionGList.sort(this.transitionSortCompare);
+    this.transitionBList.sort(this.transitionSortCompare);
+    for (const transitionR of this.transitionRList) {
+      this.transitionRQueue.add(transitionR);
+    }
+    for (const transitionG of this.transitionGList) {
+      this.transitionGQueue.add(transitionG);
+    }
+    for (const transitionB of this.transitionBList) {
+      this.transitionBQueue.add(transitionB);
+    }
+  }
+  update(timestamp) {
+    if (this.eventCount === 0) {
+      return;
+    }
+    const r = this.transitionRQueue.update(timestamp);
+    const g = this.transitionGQueue.update(timestamp);
+    const b = this.transitionBQueue.update(timestamp);
+    const color = this.sprite.color;
+    if (r !== null) {
+      color.red = r;
+    }
+    if (g !== null) {
+      color.green = g;
+    }
+    if (b !== null) {
+      color.blue = b;
+    }
+  }
+  hasEvent() {
+    return this.eventCount > 0;
+  }
+  startTime() {
+    return Math.min(this.transitionRQueue.startTime, this.transitionGQueue.startTime, this.transitionBQueue.startTime);
+  }
+  endTime() {
+    return Math.max(this.transitionRQueue.endTime, this.transitionGQueue.endTime, this.transitionBQueue.endTime);
+  }
+  startValue() {
+    return new Color(
+      this.transitionRQueue.startValue,
+      this.transitionGQueue.startValue,
+      this.transitionBQueue.startValue,
+      1
+    );
+  }
+  endValue() {
+    return new Color(
+      this.transitionRQueue.endValue,
+      this.transitionGQueue.endValue,
+      this.transitionBQueue.endValue,
+      1
+    );
+  }
+}
+class StoryParamEvent extends TransitionEvent {
+  constructor(sprite, paramType) {
+    super(sprite);
+    this.paramType = paramType;
+    this.paramList = [];
+    this._startTime = -1;
+    this._endTime = -1;
+    this.currentIndex = -1;
+    if (paramType === "A") {
+      this.updateSprite = (value) => {
+        sprite.additiveBlend = value;
+      };
+    } else if (paramType === "V") {
+      this.updateSprite = (value) => {
+        sprite.verticalFlip = value;
+      };
+    } else {
+      this.updateSprite = (value) => {
+        sprite.horizontalFlip = value;
+      };
+    }
+  }
+  addEvent(event) {
+    if (event.p === this.paramType) {
+      this.paramList.push(event);
+      this.eventCount++;
+    }
+  }
+  commit() {
+    this.paramList.sort((a, b) => a.startTime - b.startTime);
+  }
+  hasEvent() {
+    return this.eventCount > 0;
+  }
+  endTime() {
+    if (this._endTime < 0) {
+      const list = this.paramList;
+      let max = -1;
+      for (let i = 0; i < list.length; i++) {
+        max = Math.max(list[i].endTime, max);
+      }
+      this._endTime = max;
+    }
+    return this._endTime;
+  }
+  startTime() {
+    if (this._startTime < 0) {
+      const list = this.paramList;
+      let min = Number.MAX_SAFE_INTEGER;
+      for (let i = 0; i < list.length; i++) {
+        min = Math.min(list[i].startTime, min);
+      }
+      this._startTime = min;
+    }
+    return this._startTime;
+  }
+  update(timestamp) {
+    const list = this.paramList;
+    if (list.length === 0 || this.eventCount === 0) {
+      return;
+    }
+    let currentIndex = this.currentIndex;
+    if (currentIndex < 0 || timestamp < list[currentIndex].startTime) {
+      currentIndex = 0;
+    }
+    while (timestamp >= list[currentIndex].startTime && currentIndex < list.length - 1 && timestamp >= list[currentIndex + 1].startTime) {
+      currentIndex++;
+    }
+    this.currentIndex = currentIndex;
+    const event = list[currentIndex];
+    if (event.startTime === event.endTime) {
+      this.updateSprite(true);
+    } else if (timestamp >= event.startTime && timestamp <= event.endTime) {
+      this.updateSprite(true);
+    } else {
+      this.updateSprite(false);
+    }
+  }
+  startValue() {
+  }
+  endValue() {
+  }
+}
+class StoryEventGroup {
+  constructor(sprite, events) {
+    this._startTime = Number.MAX_VALUE;
+    this._endTime = Number.MIN_VALUE;
+    this.move = new StoryMoveEvent(sprite);
+    this.fade = new StoryFadeEvent(sprite);
+    this.rotate = new StoryRotateEvent(sprite);
+    this.scale = new StoryScaleEvent(sprite);
+    this.color = new StoryColorEvent(sprite);
+    this.vFlip = new StoryParamEvent(sprite, "V");
+    this.hFlip = new StoryParamEvent(sprite, "H");
+    this.additive = new StoryParamEvent(sprite, "A");
+    this.storyEventList = [
+      this.move,
+      this.scale,
+      this.fade,
+      this.rotate,
+      this.color,
+      this.vFlip,
+      this.hFlip,
+      this.additive
+    ];
+    for (const event of events) {
+      this.addEvent(event);
+    }
+    const loopEvents = events.filter((v) => isLoopEvent(v));
+    const maxOf = (e) => e.endTime;
+    for (let i = 0; i < loopEvents.length; i++) {
+      const loopEvent = loopEvents[i], duration = ArrayUtils.maxOf(loopEvent.children, maxOf), loopStartTime = loopEvent.startTime;
+      for (let j = 0; j < loopEvent.loopCount; j++) {
+        const baseTime = loopStartTime + duration * j;
+        for (const event of loopEvent.children) {
+          const copied = shallowCopy(event);
+          copied.startTime += baseTime;
+          copied.endTime += baseTime;
+          this.addEvent(copied);
+        }
+      }
+    }
+    for (const storyEvent of this.storyEventList) {
+      storyEvent.commit();
+    }
+    const startTime = ArrayUtils.minOf(this.storyEventList, (e) => e.startTime());
+    const endTime = ArrayUtils.maxOf(this.storyEventList, (e) => e.endTime());
+    if (sprite.path.includes("sb/m.png")) {
+      console.log(sprite.path, "story group", this);
+    }
+    this._startTime = startTime;
+    this._endTime = endTime;
+  }
+  addEvent(event) {
+    if (event.type === "S" || event.type === "V") {
+      this.scale.addEvent(event);
+    } else if (event.type === "M" || event.type === "MX" || event.type === "MY") {
+      this.move.addEvent(event);
+    } else if (event.type === "F") {
+      this.fade.addEvent(event);
+    } else if (event.type === "R") {
+      this.rotate.addEvent(event);
+    } else if (event.type === "C") {
+      this.color.addEvent(event);
+    } else if (event.type === "P") {
+      const e = event;
+      if (e.p === "V") {
+        this.vFlip.addEvent(e);
+      } else if (e.p === "H") {
+        this.hFlip.addEvent(e);
+      } else if (e.p === "A") {
+        this.additive.addEvent(e);
+      }
+    }
+  }
+  update(timestamp) {
+    const list = this.storyEventList, length = list.length;
+    for (let i = 0; i < length; i++) {
+      list[i].update(timestamp);
+    }
+  }
+  startTime() {
+    return this._startTime;
+  }
+  endTime() {
+    return this._endTime;
+  }
+}
+const originMap = {
+  TopLeft: Axis.Y_TOP | Axis.X_LEFT,
+  TopCentre: Axis.Y_TOP | Axis.X_CENTER,
+  TopRight: Axis.Y_TOP | Axis.X_RIGHT,
+  CentreLeft: Axis.Y_CENTER | Axis.X_LEFT,
+  Centre: Axis.Y_CENTER | Axis.X_CENTER,
+  CentreRight: Axis.Y_CENTER | Axis.X_RIGHT,
+  BottomLeft: Axis.Y_BOTTOM | Axis.X_LEFT,
+  BottomCentre: Axis.Y_BOTTOM | Axis.X_CENTER,
+  BottomRight: Axis.Y_BOTTOM | Axis.X_RIGHT,
+  "": Axis.Y_TOP | Axis.X_LEFT
+};
+class Sprite {
+  constructor(gl, sprite, source) {
+    this.gl = gl;
+    this.layer = "";
+    this.path = "";
+    this.x = 0;
+    this.y = 0;
+    this.origin = "";
+    this.color = Color.fromHex(16777215);
+    this.size = Vector();
+    this.topLeft = Vector();
+    this.bottomRight = Vector();
+    this.transform = new Transform();
+    this.transformMatrix4 = new Float32Array([
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]);
+    this.buffer = [];
+    this.verticalFlip = false;
+    this.horizontalFlip = false;
+    this.additiveBlend = false;
+    this.originPosition = Vector();
+    this.needUpdateVertex = true;
+    this.colorArray = new Float32Array(4);
+    this.layer = sprite.layer;
+    this.origin = sprite.origin;
+    this.x = sprite.x;
+    this.y = sprite.y;
+    this.path = sprite.filePath;
+    this.vertexBuffer = new VertexBuffer(gl);
+    this.eventsGroup = new StoryEventGroup(this, sprite.events);
+    this.showTime = this.eventsGroup.startTime();
+    this.hideTime = this.eventsGroup.endTime();
+    this.loadTexture(sprite, source);
+    this.setupBound();
+  }
+  loadTexture(sprite, source) {
+    const format = sprite.filePath.endsWith(".jpg") || sprite.filePath.endsWith(".jpeg") ? ImageFormat.JPEG : ImageFormat.PNG;
+    const image = source.get(sprite.filePath);
+    if (isUndef(image)) {
+      throw new Error("sprite texture cannot be undefined or null " + sprite.filePath);
+    }
+    this.size.set(image.width, image.height);
+    StoryTextureManager$1.addIf(this.gl, sprite.filePath, image, format);
+  }
+  shouldVisible() {
+    const current = AudioPlayerV2.currentTime();
+    return current >= this.showTime && current < this.hideTime;
+  }
+  setupBound() {
+    this.adjustOrigin();
+    this.transform.translateTo(Vector(this.x, this.y));
+  }
+  adjustOrigin() {
+    const origin = originMap[this.origin], hFlip = this.horizontalFlip, vFlip = this.verticalFlip;
+    let x, y, xAxis = Axis.getXAxis(origin), yAxis = Axis.getYAxis(origin);
+    if (hFlip) {
+      if (xAxis === Axis.X_LEFT) {
+        xAxis = Axis.X_RIGHT;
+      } else if (xAxis === Axis.X_RIGHT) {
+        xAxis = Axis.X_LEFT;
+      }
+    }
+    if (vFlip) {
+      if (yAxis === Axis.Y_TOP) {
+        yAxis = Axis.Y_BOTTOM;
+      } else if (yAxis === Axis.Y_BOTTOM) {
+        yAxis = Axis.Y_TOP;
+      }
+    }
+    if (xAxis === Axis.X_LEFT) {
+      x = 0;
+    } else if (xAxis === Axis.X_CENTER) {
+      x = -this.size.x / 2;
+    } else {
+      x = -this.size.x;
+    }
+    if (yAxis === Axis.Y_TOP) {
+      y = 0;
+    } else if (yAxis === Axis.Y_CENTER) {
+      y = -this.size.y / 2;
+    } else {
+      y = -this.size.y;
+    }
+    this.originPosition.set(x, y);
+  }
+  onResize() {
+    this.setupBound();
+    this.needUpdateVertex = true;
+  }
+  update() {
+    const current = AudioPlayerV2.currentTime();
+    this.eventsGroup.update(current);
+    this.applyTransform();
+  }
+  applyTransform() {
+    const transform = this.transform, topLeft = this.topLeft, bottomRight = this.bottomRight, scaleY = this.verticalFlip ? -1 : 1, scaleX = this.horizontalFlip ? -1 : 1;
+    this.adjustOrigin();
+    transform.scale.x *= scaleX;
+    transform.scale.y *= scaleY;
+    transform.extractToMatrix4(this.transformMatrix4);
+    topLeft.set(this.originPosition.x, this.originPosition.y);
+    bottomRight.set(this.originPosition.x + this.size.x, this.originPosition.y + this.size.y);
+    this.color.alpha = transform.alpha;
+  }
+  draw(vertexArray) {
+    if (!this.shouldVisible()) {
+      return;
+    }
+    const shader = ColoredTextureShader$1.getShader(this.gl), gl = this.gl;
+    this.vertexBuffer.bind();
+    if (this.needUpdateVertex) {
+      Shape2D.quadVector2(this.topLeft, this.bottomRight, this.buffer, 0, 4);
+      Shape2D.quad(0, 0, 1, 1, this.buffer, 2, 4);
+      this.vertexBuffer.setBufferData(new Float32Array(this.buffer));
+      this.needUpdateVertex = false;
+    }
+    shader.setUniformMatrix4fv("u_transform", this.transformMatrix4);
+    const array = this.colorArray, color = this.color;
+    array[0] = color.red;
+    array[1] = color.green;
+    array[2] = color.blue;
+    array[3] = color.alpha;
+    shader.setUniform4fv("u_color", array);
+    vertexArray.addBuffer(ColoredTextureShader$1.getLayout());
+    StoryTextureManager$1.tryBind(this.path);
+    if (this.additiveBlend) {
+      gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
+      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+    } else {
+      gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
+      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+    this.vertexBuffer.unbind();
+  }
+  dispose() {
+    this.vertexBuffer.dispose();
+  }
+}
+class Animation extends Sprite {
+  loadTexture(sprite, source) {
+    this.frameDelay = sprite.frameDelay;
+    this.frameCount = sprite.frameCount;
+    this.loopType = sprite.loopType;
+    this.loopForever = sprite.loopType === "LoopForever";
+    this.frames = [];
+    const path = sprite.filePath, dotIndex = path.lastIndexOf(".");
+    const name = path.substring(0, dotIndex);
+    const suffix = path.substring(dotIndex);
+    for (let i = 0; i < this.frameCount; i++) {
+      const newName = `${name}${i}${suffix}`;
+      const image = source.get(newName);
+      if (isUndef(image)) {
+        console.error("no image found");
+        throw new Error("sprite texture cannot be undefined or null " + newName);
+      }
+      const format = newName.endsWith(".jpg") || newName.endsWith(".jpeg") ? ImageFormat.JPEG : ImageFormat.PNG;
+      this.frames.push(newName);
+      this.size.set(image.width, image.height);
+      StoryTextureManager$1.addIf(this.gl, newName, image, format);
+    }
+  }
+  getFrameIndex() {
+    const showTime = this.showTime, current = AudioPlayerV2.currentTime();
+    const time = current - showTime;
+    if (time < 0) {
+      return -1;
+    }
+    const frameNum = Math.floor(time / this.frameDelay);
+    this.loopedCount = Math.floor(frameNum / this.frameCount);
+    if (!this.loopForever && this.loopedCount > 1) {
+      return -1;
+    }
+    return frameNum % this.frameCount;
+  }
+  draw(vertexArray) {
+    if (!this.shouldVisible()) {
+      return;
+    }
+    const frameIndex = this.getFrameIndex();
+    if (frameIndex < 0) {
+      return;
+    }
+    const shader = ColoredTextureShader$1.getShader(this.gl), gl = this.gl;
+    this.vertexBuffer.bind();
+    if (this.needUpdateVertex) {
+      Shape2D.quadVector2(this.topLeft, this.bottomRight, this.buffer, 0, 4);
+      Shape2D.quad(0, 0, 1, 1, this.buffer, 2, 4);
+      this.vertexBuffer.setBufferData(new Float32Array(this.buffer));
+      this.needUpdateVertex = false;
+    }
+    shader.setUniformMatrix4fv("u_transform", this.transformMatrix4);
+    const array = this.colorArray, color = this.color;
+    array[0] = color.red;
+    array[1] = color.green;
+    array[2] = color.blue;
+    array[3] = color.alpha;
+    shader.setUniform4fv("u_color", array);
+    vertexArray.addBuffer(ColoredTextureShader$1.getLayout());
+    StoryTextureManager$1.tryBind(this.frames[frameIndex]);
+    if (this.additiveBlend) {
+      gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
+      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+    } else {
+      gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
+      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+    this.vertexBuffer.unbind();
+  }
+}
+class StoryScreen extends Drawable {
+  constructor(gl) {
+    var _a;
+    super(gl, {
+      size: ["fill-parent", "fill-parent"]
+    });
+    this.spriteList = [];
+    this.orth = new Float32Array(16);
+    const osb = (_a = OSUPlayer$1.currentOSUFile.value.Events) == null ? void 0 : _a.storyboard;
+    const osbSource = OSUPlayer$1.currentOSZFile.value.source.osb;
+    if (osb) {
+      console.log(osb);
+      for (let i = 0; i < osb.sprites.length; i++) {
+        try {
+          const sprite = osb.sprites[i];
+          if (isAnimation(sprite)) {
+            this.spriteList.push(new Animation(gl, sprite, osbSource));
+          } else {
+            this.spriteList.push(new Sprite(gl, sprite, osbSource));
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    }
+    this.vertexArray = new VertexArray(gl);
+    this.vertexArray.bind();
+    const shader = ColoredTextureShader$1.getShader(gl);
+    shader.bind();
+    shader.setUniform1i("u_sampler", 0);
+    shader.unbind();
+    this.vertexArray.unbind();
+    const scale = 480 / Coordinate$1.height;
+    const scaledWidth = Coordinate$1.width * scale;
+    const s = scaledWidth - 640 < 0 ? 0 : scaledWidth - 640;
+    this.orth = TransformUtils.orth(
+      -s / 2,
+      640 + s / 2,
+      480,
+      0,
+      0,
+      1
+    );
+  }
+  onWindowResize() {
+    super.onWindowResize();
+    const scale = 480 / Coordinate$1.height;
+    const scaledWidth = 640 / scale;
+    const s = Coordinate$1.width - scaledWidth;
+    this.orth = TransformUtils.orth(
+      -s / 2,
+      scaledWidth + s / 2,
+      480,
+      0,
+      0,
+      1
+    );
+    for (let i = 0; i < this.spriteList.length; i++) {
+      this.spriteList[i].onResize();
+    }
+  }
+  onUpdate() {
+    super.onUpdate();
+    for (let i = 0; i < this.spriteList.length; i++) {
+      this.spriteList[i].update();
+    }
+  }
+  bind() {
+    ColoredTextureShader$1.bind();
+    this.vertexArray.bind();
+  }
+  onDraw() {
+    ColoredTextureShader$1.getShader(this.gl).setUniformMatrix4fv("u_orth", this.orth);
+    const sprites = this.spriteList;
+    for (let i = 0; i < sprites.length; i++) {
+      sprites[i].draw(this.vertexArray);
+    }
+  }
+  unbind() {
+    this.vertexArray.unbind();
+  }
+  dispose() {
+    super.dispose();
+    StoryTextureManager$1.dispose();
+    ColoredTextureShader$1.dispose();
+    this.spriteList.forEach((v) => v.dispose());
+    this.vertexArray.dispose();
+  }
+}
+const _hoisted_1$4 = {
   class: "fill-size",
   style: { "pointer-events": "none" }
 };
-const _sfc_main$6 = /* @__PURE__ */ defineComponent({
+const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   __name: "Visualizer2",
   setup(__props) {
     const canvas = ref(null);
     let renderer2;
     const player = AudioPlayerV2;
-    OSUPlayer$1.onChanged.collect(() => {
-      const audioBuffer = player.getAudioBuffer();
-      audioBuffer.sampleRate;
-      if (audioBuffer.numberOfChannels < 2) {
-        audioBuffer.getChannelData(0);
-      } else {
-        audioBuffer.getChannelData(0);
-        audioBuffer.getChannelData(1);
-      }
-    });
     const mouseListener = {
       mousedown(e) {
         const x = e.x - window.innerWidth / 2;
@@ -23537,6 +25010,9 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
       ScreenManager$1.addScreen("legacy", () => {
         return new LegacyScreen(webgl);
       });
+      ScreenManager$1.addScreen("story", () => {
+        return new StoryScreen(webgl);
+      });
       ScreenManager$1.activeScreen("main");
       draw();
     });
@@ -23575,8 +25051,18 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
         );
       }
     }
+    useKeyboard("up", (e) => {
+      if (e.code === "KeyF") {
+        canvasFullscreen();
+      }
+    });
+    function canvasFullscreen() {
+      if (canvas.value) {
+        canvas.value.requestFullscreen();
+      }
+    }
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$3, [
+      return openBlock(), createElementBlock("div", _hoisted_1$4, [
         createBaseVNode("canvas", {
           style: { "width": "100vw", "height": "100vh" },
           ref_key: "canvas",
@@ -23616,7 +25102,7 @@ function useContext2D(canvas, drawCallback) {
   });
   return drawFun;
 }
-const _sfc_main$5 = /* @__PURE__ */ defineComponent({
+const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   __name: "VolumeAdjuster",
   setup(__props) {
     const canvas = ref(null);
@@ -23702,10 +25188,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1$2 = { style: { "color": "#ffffff80" } };
-const _hoisted_2$1 = { class: "text-white text-[16px]" };
+const _hoisted_1$3 = { style: { "color": "#ffffff80" } };
+const _hoisted_2$2 = { class: "text-white text-[16px]" };
 const _hoisted_3 = { style: { "color": "#ffffff80", "font-size": "14px" } };
-const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+const _sfc_main$6 = /* @__PURE__ */ defineComponent({
   __name: "OSUBeatmapList",
   emits: ["close"],
   setup(__props) {
@@ -23725,8 +25211,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       });
     }
     const play = (file, index) => {
-      loadOSZ(file);
-      TempOSUPlayManager$1.currentIndex.value = index;
+      TempOSUPlayManager$1.playAt(index, true);
     };
     return (_ctx, _cache) => {
       return openBlock(), createBlock(Column, { class: "osu-beatmap-list-box" }, {
@@ -23757,13 +25242,13 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   gap: 32
                 }, {
                   default: withCtx(() => [
-                    createBaseVNode("span", _hoisted_1$2, toDisplayString(index + 1), 1),
+                    createBaseVNode("span", _hoisted_1$3, toDisplayString(index + 1), 1),
                     createVNode(Column, {
                       class: "fill-width",
                       gap: 8
                     }, {
                       default: withCtx(() => [
-                        createBaseVNode("span", _hoisted_2$1, toDisplayString(item.name), 1),
+                        createBaseVNode("span", _hoisted_2$2, toDisplayString(item.name), 1),
                         createBaseVNode("span", _hoisted_3, toDisplayString((item.size / 1024 / 1024).toFixed(2)) + " MB", 1)
                       ]),
                       _: 2
@@ -23781,10 +25266,10 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const OSUBeatmapList_vue_vue_type_style_index_0_scoped_e5cce5c5_lang = "";
-const OSUBeatmapList = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-e5cce5c5"]]);
-const _hoisted_1$1 = { class: "bg-[--item-icon-bg-color] h-full aspect-square text-[--item-progress-color] ma" };
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+const OSUBeatmapList_vue_vue_type_style_index_0_scoped_a5cfedbf_lang = "";
+const OSUBeatmapList = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["__scopeId", "data-v-a5cfedbf"]]);
+const _hoisted_1$2 = { class: "bg-[--item-icon-bg-color] h-full aspect-square text-[--item-progress-color] ma" };
+const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   __name: "NotifyItem",
   props: {
     text: {},
@@ -23796,7 +25281,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         default: withCtx(() => [
           createVNode(Row, { class: "absolute w-full h-full" }, {
             default: withCtx(() => [
-              createBaseVNode("button", _hoisted_1$1, toDisplayString(unref(Icon).RadioButtonUnchecked), 1),
+              createBaseVNode("button", _hoisted_1$2, toDisplayString(unref(Icon).RadioButtonUnchecked), 1),
               createVNode(Row, {
                 center: "",
                 class: "text-white px-4 text-sm"
@@ -23820,9 +25305,9 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   }
 });
 const _withScopeId = (n) => (pushScopeId("data-v-dfa4ad2e"), n = n(), popScopeId(), n);
-const _hoisted_1 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("span", { class: "font-bold text-[12px] text-white" }, "NOTIFICATION", -1));
-const _hoisted_2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("span", { class: "font-bold text-[12px] text-white" }, "RUNNING TASK", -1));
-const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+const _hoisted_1$1 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("span", { class: "font-bold text-[12px] text-white" }, "NOTIFICATION", -1));
+const _hoisted_2$1 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("span", { class: "font-bold text-[12px] text-white" }, "RUNNING TASK", -1));
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "NotificationPanel",
   setup(__props) {
     const messages = OsuNotification.messages;
@@ -23835,7 +25320,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(Row, { class: "w-full" }, {
                 default: withCtx(() => [
-                  _hoisted_1,
+                  _hoisted_1$1,
                   createBaseVNode("button", {
                     class: "text-[12px] text-white ml-auto",
                     onClick: _cache[0] || (_cache[0] = ($event) => unref(OsuNotification).clear(unref(OsuNotification).messages))
@@ -23850,7 +25335,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               }, {
                 default: withCtx(() => [
                   (openBlock(true), createElementBlock(Fragment, null, renderList(unref(messages), (item) => {
-                    return openBlock(), createBlock(_sfc_main$3, {
+                    return openBlock(), createBlock(_sfc_main$5, {
                       key: item.id,
                       text: item.text.value,
                       type: "text"
@@ -23866,7 +25351,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(Row, { class: "w-full" }, {
                 default: withCtx(() => [
-                  _hoisted_2,
+                  _hoisted_2$1,
                   createBaseVNode("button", {
                     onClick: _cache[1] || (_cache[1] = ($event) => unref(OsuNotification).clear(unref(OsuNotification).runningTasks)),
                     class: "text-[12px] text-white ml-auto"
@@ -23881,7 +25366,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               }, {
                 default: withCtx(() => [
                   (openBlock(true), createElementBlock(Fragment, null, renderList(unref(tasks), (item) => {
-                    return openBlock(), createBlock(_sfc_main$3, {
+                    return openBlock(), createBlock(_sfc_main$5, {
                       text: item.text.value,
                       type: "progress",
                       progress: item.progress.value,
@@ -23901,8 +25386,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   }
 });
 const NotificationPanel_vue_vue_type_style_index_0_scoped_dfa4ad2e_lang = "";
-const Notification = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-dfa4ad2e"]]);
-const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+const Notification = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-dfa4ad2e"]]);
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "FloatNotification",
   setup(__props) {
     const queue2 = OsuNotification.tempQueue;
@@ -23916,7 +25401,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           }, {
             default: withCtx(() => [
               (openBlock(true), createElementBlock(Fragment, null, renderList(unref(queue2), (item) => {
-                return openBlock(), createBlock(_sfc_main$3, {
+                return openBlock(), createBlock(_sfc_main$5, {
                   text: item.text.value,
                   progress: item.progress.value,
                   key: item.id
@@ -23932,7 +25417,85 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   }
 });
 const FloatNotification_vue_vue_type_style_index_0_scoped_b10ae20c_lang = "";
-const FloatNotification = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-b10ae20c"]]);
+const FloatNotification = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-b10ae20c"]]);
+const _hoisted_1 = { class: "flex items-center gap-x-2" };
+const _hoisted_2 = ["onClick"];
+const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+  __name: "ScreenSelector",
+  emits: ["close"],
+  setup(__props) {
+    const screenId = useStateFlow(ScreenManager$1.currentId);
+    const screenSource = [
+      {
+        name: "Lazer! Home",
+        id: "main"
+      },
+      {
+        name: "Background Preview",
+        id: "second"
+      },
+      {
+        name: "Mania4K Preview",
+        id: "mania"
+      },
+      {
+        name: "Test",
+        id: "test"
+      },
+      {
+        name: "Stable! Home",
+        id: "legacy"
+      },
+      {
+        name: "Storyboard",
+        id: "story"
+      }
+    ];
+    function changeScreen(id2) {
+      ScreenManager$1.activeScreen(id2);
+    }
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", {
+        class: "screen-box h-full absolute left-0 flex items-center",
+        onMouseleave: _cache[1] || (_cache[1] = ($event) => _ctx.$emit("close"))
+      }, [
+        createBaseVNode("div", {
+          class: "w-60 p-1 bg-[--bpm-color-3] rounded-r-md",
+          onMouseleave: _cache[0] || (_cache[0] = ($event) => _ctx.$emit("close"))
+        }, [
+          (openBlock(), createElementBlock(Fragment, null, renderList(screenSource, (item) => {
+            return createBaseVNode("div", _hoisted_1, [
+              createBaseVNode("div", {
+                class: "w-4 rounded-full bg-[--bpm-color-11] aspect-square",
+                style: normalizeStyle({
+                  backgroundColor: item.id === unref(screenId) ? "var(--bpm-color-11)" : "transparent"
+                })
+              }, null, 4),
+              createBaseVNode("span", {
+                class: "rounded-md w-full px-4 py-2 text-white hover:bg-[--bpm-color-6] cursor-pointer",
+                onClick: ($event) => changeScreen(item.id)
+              }, toDisplayString(item.name), 9, _hoisted_2)
+            ]);
+          }), 64))
+        ], 32)
+      ], 32);
+    };
+  }
+});
+const ScreenSelector_vue_vue_type_style_index_0_scoped_0bb9235c_lang = "";
+const ScreenSelector = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-0bb9235c"]]);
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+  __name: "SideButton",
+  emits: ["sideClick"],
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", {
+        class: "absolute h-full w-1 bg-white opacity-0 hover:opacity-20 left-0 transition",
+        onMouseenter: _cache[0] || (_cache[0] = ($event) => _ctx.$emit("sideClick"))
+      }, null, 32);
+    };
+  }
+});
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
@@ -23943,9 +25506,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       showUI: false,
       miniPlayer: false,
       beatmapList: false,
-      notify: false
+      notify: false,
+      screenSelector: false
     });
+    const screenId = ref("main");
     useCollect(ScreenManager$1.currentId, (id2) => {
+      screenId.value = id2;
       if (id2 === "main") {
         ui.showUI = false;
       }
@@ -23981,6 +25547,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       if (evt.code === "Escape") {
         ui.showUI = false;
       }
+      if (evt.code === "KeyP") {
+        OSUPlayer$1.stop();
+        Toaster.show("停止");
+      }
+      if (evt.code === "KeyM") {
+        ui.miniPlayer = !ui.miniPlayer;
+      }
       if (ui.bpmCalculator) {
         return;
       }
@@ -23997,7 +25570,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     onEnterMenu.collect((value) => {
       ui.showUI = value;
     });
-    const hasSomeUIShow = computed(() => ui.list || ui.settings || ui.miniPlayer || ui.beatmapList || ui.notify);
+    const hasSomeUIShow = computed(() => ui.list || ui.settings || ui.miniPlayer || ui.beatmapList || ui.notify || ui.screenSelector);
     function hideUI() {
       ui.showUI = false;
       Toaster.show(`按“O“显示`);
@@ -24010,15 +25583,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       ui.notify = false;
     }
     const stateText = ref("");
-    const collector = () => PLAYER;
-    watch(() => ui.bpmCalculator, (value) => {
-      if (value)
-        AudioPlayerV2.onEnd.removeCollect(collector);
-      else
-        AudioPlayerV2.onEnd.collect(collector);
+    collect(AudioPlayerV2.onEnd, () => {
+      const isBpmCalculatorOpen = ui.bpmCalculator;
+      if (isBpmCalculatorOpen) {
+        return;
+      }
     });
-    AudioPlayerV2.onEnd.collect(collector);
-    AudioPlayerV2.playState.collect((stateCode) => {
+    collectLatest(AudioPlayerV2.playState, (stateCode) => {
       stateText.value = {
         [PlayerState.STATE_DOWNLOADING]: "正在下载",
         [PlayerState.STATE_DECODING]: "正在解码",
@@ -24064,6 +25635,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       if (files.length > 1) {
         return;
       }
+      notifyMessage("开始加载拖动的 osz 文件");
       loadOSZ(files.item(0));
     }
     return (_ctx, _cache) => {
@@ -24074,7 +25646,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         onDragleave: handleDrop,
         onDragover: handleDrop
       }, [
-        createVNode(_sfc_main$6, { class: "absolute" }),
+        createVNode(_sfc_main$8, { class: "absolute" }),
         createVNode(Transition$1, { name: "top-bar" }, {
           default: withCtx(() => [
             withDirectives(createVNode(TopBar, {
@@ -24101,7 +25673,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }),
-        createVNode(_sfc_main$5, { class: "absolute right-0 bottom-0" }),
+        createVNode(_sfc_main$7, { class: "absolute right-0 bottom-0" }),
         createVNode(Transition$1, { name: "list" }, {
           default: withCtx(() => [
             ui.list ? (openBlock(), createBlock(Playlist, {
@@ -24120,11 +25692,23 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }),
+        createVNode(_sfc_main$1, {
+          onSideClick: _cache[6] || (_cache[6] = ($event) => ui.screenSelector = true)
+        }),
+        createVNode(Transition$1, { name: "settings" }, {
+          default: withCtx(() => [
+            ui.screenSelector ? (openBlock(), createBlock(ScreenSelector, {
+              key: 0,
+              onClose: _cache[7] || (_cache[7] = ($event) => ui.screenSelector = false)
+            })) : createCommentVNode("", true)
+          ]),
+          _: 1
+        }),
         createVNode(Transition$1, { name: "player" }, {
           default: withCtx(() => [
             ui.miniPlayer ? (openBlock(), createBlock(MiniPlayer, {
               key: 0,
-              style: { "position": "absolute", "top": "48px", "right": "80px" }
+              style: { "position": "absolute", "top": "var(--top-bar-height)", "right": "80px" }
             })) : createCommentVNode("", true)
           ]),
           _: 1
@@ -24141,14 +25725,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         ui.bpmCalculator ? (openBlock(), createBlock(BpmCalculator, {
           key: 0,
           class: "absolute",
-          onClose: _cache[6] || (_cache[6] = ($event) => ui.bpmCalculator = false)
+          onClose: _cache[8] || (_cache[8] = ($event) => ui.bpmCalculator = false)
         })) : createCommentVNode("", true),
         createVNode(Transition$1, { name: "popup" }, {
           default: withCtx(() => [
             ui.beatmapList ? (openBlock(), createBlock(OSUBeatmapList, {
               key: 0,
               class: "absolute",
-              onClose: _cache[7] || (_cache[7] = ($event) => ui.beatmapList = false)
+              onClose: _cache[9] || (_cache[9] = ($event) => ui.beatmapList = false)
             })) : createCommentVNode("", true)
           ]),
           _: 1
@@ -24166,8 +25750,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const App_vue_vue_type_style_index_0_scoped_bcd15a8f_lang = "";
-const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-bcd15a8f"]]);
+const App_vue_vue_type_style_index_0_scoped_c607ba8b_lang = "";
+const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-c607ba8b"]]);
 const app = createApp(App);
 const buttonHoverSound = () => playSound(Sound.ButtonHover);
 const buttonSelectSound = () => playSound(Sound.ButtonSelect);

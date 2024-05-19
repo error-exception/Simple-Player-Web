@@ -1,6 +1,6 @@
 import AudioPlayerV2 from "./AudioPlayer";
 import { int } from "../Utils";
-import {Bullet, BulletTimingPointsItem, Music, newBullet, TimingInfo} from "../type"
+import {Bullet, Music, newBullet, TimingInfo} from "../type"
 import { createMutableSharedFlow, createMutableStateFlow } from "../util/flow"
 import { Interpolation } from "../webgl/util/Interpolation";
 import { PlayMode } from "./PlayMode"
@@ -33,13 +33,7 @@ class PlayManager {
             const id = timing.id
             const music = this.findMusic(id)
             if (!music) return
-            music.timingPoints = {
-                offset: timing.offset,
-                beatGap: 60 / timing.bpm * 1000,
-                timingList: timing.timingList.map<BulletTimingPointsItem>(v => {
-                    return { time: v.timestamp, isKiai: v.isKiai }
-                })
-            }
+            music.timingPoints = TimingManager.toBulletTimingPoints(timing)
         })
     }
 
@@ -79,10 +73,16 @@ class PlayManager {
         return this._musicList.value.find(v => v.metadata.id === id)
     }
 
+    /**
+     * @deprecated
+     * @param index
+     */
     public async playAt(index: number) {
+        throw new Error()
         const music = this._musicList.value[index];
         // console.log(this._musicList)
         music.metadata.source = await MusicDao.downloadMusic(music.metadata.id)
+        //@ts-ignore
         await OSUPlayer.setSource(music)
         await OSUPlayer.play()
         this.currentIndex.value = index
@@ -134,14 +134,18 @@ class PlayManager {
         bullet.metadata.title = music.title
         bullet.metadata.artist = music.artist
         bullet.available = info.id >= 0
-
-        bullet.timingPoints.beatGap = 60 / info.bpm * 1000
-        bullet.timingPoints.offset = info.offset
-        bullet.timingPoints.timingList = info.timingList.map<BulletTimingPointsItem>(v => {
-            return { time: v.timestamp, isKiai: v.isKiai }
-        })
+        bullet.timingPoints = TimingManager.toBulletTimingPoints(info)
+        // bullet.timingPoints.beatGap = 60 / info.bpm * 1000
+        // bullet.timingPoints.offset = info.offset
+        // bullet.timingPoints.timingList = info.timingList.map<BulletTimingPointsItem>(v => {
+        //     return { time: v.timestamp, isKiai: v.isKiai }
+        // })
         return bullet
     }
 }
 
+/**
+ * cannot use this class
+ * @deprecated
+ */
 export default new PlayManager()

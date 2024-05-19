@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import {beatmapDirectoryId} from '../ts/global/GlobalState';
-import {loadOSZ} from '../ts/osu/OSZ';
 import Column from './common/Column.vue';
 import Row from './common/Row.vue';
 import TempOSUPlayManager from "../ts/player/TempOSUPlayManager";
-import {PLAYER} from "../ts/build";
 import {Icon} from "../ts/icon/Icon";
 
 defineEmits<{

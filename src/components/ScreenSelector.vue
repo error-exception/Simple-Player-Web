@@ -11,10 +11,10 @@ const screenSource = [
     name: "Background Preview",
     id: "second"
   },
-  {
-    name: "Mania4K Preview",
-    id: "mania"
-  },
+  // {
+  //   name: "Mania4K Preview",
+  //   id: "mania"
+  // },
   {
     name: "Test",
     id: "test"

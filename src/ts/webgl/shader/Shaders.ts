@@ -27,4 +27,7 @@ export class Shaders implements Disposable {
       v.dispose()
     })
   }
+
+  dispose(): void {
+  }
 }

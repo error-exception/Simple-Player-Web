@@ -1,7 +1,6 @@
 import {Vector2} from "../core/Vector2";
 import {Shader} from "../core/Shader";
 import {Texture} from "../core/Texture";
-import type {VertexBuffer} from "../core/VertexBuffer";
 
 let webgl: WebGL2RenderingContext | null = null
 let gl = webgl!
@@ -177,16 +176,6 @@ export function UnbindAll() {
   currentShader && currentShader.unbind()
   currentTexture && currentTexture.unbind()
 }
-
-function drawTask(buffer: VertexBuffer, shader: Shader, texture?: Texture) {
-  if (currentBuffer === buffer && currentShader === shader && texture === currentTexture) {
-    // add to buffer
-  } else {
-    // draw it
-  }
-}
-
-function submitDraw() {}
 
 /**
  * 1. shader bufferLayout vertexArray 合并

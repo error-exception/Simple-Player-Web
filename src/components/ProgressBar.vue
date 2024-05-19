@@ -6,9 +6,8 @@
 
 <script setup lang="ts">
 
-import { computed, onMounted, reactive, ref } from "vue";
+import {computed, onMounted, reactive, ref} from "vue";
 import OSUPlayer from "../ts/player/OSUPlayer";
-import { useStateFlow } from "../ts/util/use";
 
 const state = reactive({
   width: 0

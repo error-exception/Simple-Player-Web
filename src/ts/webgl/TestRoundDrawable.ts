@@ -32,7 +32,7 @@ export class TestRoundDrawable extends Drawable {
 
         layout.pushFloat(shader.getAttributeLocation('a_position'), 2)
         layout.pushFloat(shader.getAttributeLocation('a_color'), 4)
-        vertexArray.addBuffer(buffer, layout)
+        vertexArray.addBuffer(layout)
 
         vertexArray.unbind()
         buffer.unbind()
@@ -81,7 +81,7 @@ export class TestRoundDrawable extends Drawable {
         }
         this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
         this.shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
-        this.vertexArray.addBuffer(this.buffer, this.layout)
+        this.vertexArray.addBuffer(this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
     }
 

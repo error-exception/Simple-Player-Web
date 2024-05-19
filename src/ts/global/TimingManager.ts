@@ -59,12 +59,16 @@ class TimingManager {
     }
 
     public toBulletTimingPoints(timingInfo: TimingInfo): BulletTimingPoints {
+        const beatLength = 60 / timingInfo.bpm * 1000
+        const timingList: BulletTimingPointsItem[] = timingInfo.timingList.map(value => {
+            return {
+                isKiai: value.isKiai,
+                time: value.timestamp,
+                beatLength: beatLength
+            }
+        })
         return {
-            beatGap: 60 / timingInfo.bpm * 1000,
-            offset: timingInfo.offset,
-            timingList: timingInfo.timingList.map<BulletTimingPointsItem>(v => {
-                return { time: v.timestamp, isKiai: v.isKiai }
-            })
+            timingList
         }
     }
 

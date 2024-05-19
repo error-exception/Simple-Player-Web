@@ -1,21 +1,18 @@
 
 <script setup lang="ts">
-import {onMounted, onUnmounted, ref, shallowRef, watch} from "vue";
+import {ref, shallowRef, watch} from "vue";
 import {Icon} from "../ts/icon/Icon";
 import AudioPlayer from "../ts/player/AudioPlayer";
 import OSUPlayer, {OSUBackground} from "../ts/player/OSUPlayer";
 import PlayManager from "../ts/player/PlayManager";
-import {useCollect, useStateFlow} from "../ts/util/use";
 import Column from "./common/Column.vue";
 import ProgressBar from "./ProgressBar.vue";
 import Row from "./common/Row.vue";
-import {url} from "../ts/Utils";
 import {PLAYER} from "../ts/build";
 import TempOSUPlayManager from "../ts/player/TempOSUPlayManager";
 import {PlayerState} from "../ts/player/PlayerState";
-import {collect, collectLatest} from "../ts/util/eventRef";
+import {collectLatest} from "../ts/util/eventRef";
 import {Nullable} from "../ts/type";
-import {Toaster} from "../ts/global/Toaster";
 
 const img = ref<HTMLImageElement | null>(null)
 

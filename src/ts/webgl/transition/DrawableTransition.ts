@@ -22,7 +22,7 @@ export class DrawableTransition {
   protected transitionY: ObjectTransition
   protected transitionScaleX: ObjectTransition
   protected transitionScaleY: ObjectTransition
-  protected transitionAlpha: ObjectTransition
+  transitionAlpha: ObjectTransition
   protected transitionRotate: ObjectTransition
 
   private transitionDelay = 0
