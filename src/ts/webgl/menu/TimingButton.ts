@@ -1,6 +1,6 @@
 import {Box} from "../box/Box";
 import {ColorDrawable} from "../drawable/ColorDrawable";
-import {Axis} from "../layout/Axis";
+import {Axis} from "../drawable/Axis";
 import {Color} from "../base/Color";
 import {easeOutElastic} from "../../util/Easing";
 import {Vector} from "../core/Vector2";

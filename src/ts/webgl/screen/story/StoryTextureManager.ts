@@ -6,12 +6,12 @@ class StoryTextureManager implements Disposable {
 
   private textureMap = new Map<string, Texture>()
 
-  public addIf(gl: WebGL2RenderingContext, name: string, imageBitmap: ImageBitmap) {
+  public addIf(gl: WebGL2RenderingContext, name: string, imageBitmap: ImageBitmap, format: number) {
     if (this.textureMap.has(name)) {
       return
     }
     const texture = new Texture(gl)
-    texture.setTextureImage(imageBitmap)
+    texture.setTextureImage(imageBitmap, format)
     this.textureMap.set(name, texture)
   }
 

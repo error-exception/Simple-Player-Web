@@ -72,7 +72,7 @@ export class Flashlight extends BeatDrawable<FlashlightConfig> {
 
         layout.pushFloat(shader.getAttributeLocation("a_position"), 2)
         layout.pushFloat(shader.getAttributeLocation("a_color"), 4)
-        vertexArray.addBuffer(vertexBuffer, layout)
+        vertexArray.addBuffer(layout)
 
         vertexArray.unbind()
         vertexBuffer.unbind()
@@ -123,6 +123,7 @@ export class Flashlight extends BeatDrawable<FlashlightConfig> {
     public bind(): void {
         this.vertexArray.bind()
         this.shader.bind()
+        this.buffer.bind()
     }
 
     public onDraw(): void {
@@ -130,7 +131,7 @@ export class Flashlight extends BeatDrawable<FlashlightConfig> {
         this.shader.setUniform2fv("u_which", new Float32Array([this.leftLight, this.rightLight]))
 
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-        this.vertexArray.addBuffer(this.buffer, this.layout)
+        this.vertexArray.addBuffer(this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, 12)
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     }
@@ -175,6 +176,7 @@ export class Flashlight extends BeatDrawable<FlashlightConfig> {
     public unbind(): void {
         this.vertexArray.unbind()
         this.shader.unbind()
+        this.buffer.unbind()
     }
 
     public dispose() {

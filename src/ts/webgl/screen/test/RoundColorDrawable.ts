@@ -33,7 +33,7 @@ export class RoundColorDrawable extends Drawable<ColorDrawableConfig> {
 
     layout.pushFloat(shader.getAttributeLocation('a_position'), 2)
     layout.pushFloat(shader.getAttributeLocation('a_color'), 4)
-    vertexArray.addBuffer(buffer, layout)
+    vertexArray.addBuffer(layout)
 
     vertexArray.unbind()
     buffer.unbind()
@@ -107,7 +107,7 @@ export class RoundColorDrawable extends Drawable<ColorDrawableConfig> {
     shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
     shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
     shader.setUniform3fv(UNI_CIRCLE, this.uniCircle)
-    this.vertexArray.addBuffer(this.buffer, this.layout)
+    this.vertexArray.addBuffer(this.layout)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 

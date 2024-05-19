@@ -29,9 +29,7 @@ class LegacyBeatLogo extends Box implements IBeat {
       size: [logoSize, logoSize]
     })
     this.logo = logo
-    this.add(
-      logo
-    )
+    this.add(logo)
     BeatDispatcher.register(this)
 
   }
@@ -42,9 +40,9 @@ class LegacyBeatLogo extends Box implements IBeat {
     }
     const volume = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() + 0.4 : 0
     const adjust = Math.min(volume + 0.4, 1)
-    this.logo.scaleBegin()
-      .to(Vector(1 - adjust * 0.02), 60, easeOut)
-      .to(Vector(1), gap * 2, easeOutQuint)
+    this.logo.transform()
+      .scaleTo(Vector(1 - adjust * 0.02), 60, easeOut)
+      .scaleTo(Vector(1), gap * 2, easeOutQuint)
     if (BeatState.isKiai) {
       this.logo.brightnessBegin()
         .transitionTo(.05)
@@ -62,6 +60,7 @@ class LegacyBeatLogo extends Box implements IBeat {
   }
 
 }
+
 class LegacyFadeBeatLogo extends Box implements IBeat {
 
   // @ts-ignore
@@ -74,7 +73,7 @@ class LegacyFadeBeatLogo extends Box implements IBeat {
       size: [logoSize, logoSize]
     })
     this.logo = logo
-    this.logo.alpha = .1
+    this.logo.alpha = .08
     this.add(logo)
     BeatDispatcher.register(this)
   }
@@ -86,9 +85,9 @@ class LegacyFadeBeatLogo extends Box implements IBeat {
     const volume = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() + 0.4 : 0
     const adjust = Math.min(volume, 1)
 
-    this.logo.scaleBegin()
-      .to(Vector(1 + adjust * 0.02), 60, easeOut)
-      .to(Vector(1), gap * 2, easeOutQuint)
+    this.logo.transform()
+      .scaleTo(Vector(1 + adjust * 0.02), 60, easeOut)
+      .scaleTo(Vector(1), gap * 2, easeOutQuint)
   }
 
   public dispose() {
@@ -111,21 +110,17 @@ class LegacyLogoBeatBox extends Box {
 
   protected onUpdate() {
     if (AudioPlayerV2.isPlaying()) {
-        const scale = this.scale
-        const adjust = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() - 0.4 : 0
-        const a = Interpolation.damp(
-          scale.x,
-          1 - Math.max(0, adjust) * 0.04,
-          0.94,
-          Time.elapsed
-        )
-        scale.x = a
-        scale.y = a
-        this.scale = scale
+      const scale = this.scale
+      const adjust = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() - 0.4 : 0
+      const a = Interpolation.damp(scale.x, 1 - Math.max(0, adjust) * 0.04, 0.94, Time.elapsed)
+      scale.x = a
+      scale.y = a
+      this.scale = scale
     }
   }
 
 }
+
 class LegacyFadeLogoBeatBox extends Box {
 
   private readonly beatLogo: LegacyFadeBeatLogo
@@ -139,18 +134,14 @@ class LegacyFadeLogoBeatBox extends Box {
 
   protected onUpdate() {
     if (AudioPlayerV2.isPlaying()) {
-        const scale = this.scale
-        const adjust = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() - 0.4 : 0
-        const a = Interpolation.damp(
-          2 - scale.x,
-          1 - Math.max(0, adjust) * 0.04,
-          0.94,
-          Time.elapsed
-        )
-        // console.log(scale.x, a)
-        scale.x = 2 - a
-        scale.y = 2 - a
-        this.scale = scale
+      const scale = this.scale
+      const adjust = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() - 0.4 : 0
+      const a = Interpolation.damp(2 - scale.x, 1 - Math.max(0, adjust) * 0.04, 0.94, Time.elapsed)
+      // console.log(scale.x, a)
+      scale.x = (2 - a) * 0.99
+      scale.y = (2 - a) * 0.99
+
+      this.scale = scale
     }
   }
 
@@ -168,20 +159,14 @@ class LogoAmpBox extends BeatBox {
     super(gl, config);
 
     this.visualizer = new LegacyRoundVisualizer(gl, {
-      size: ['fill-parent', 'fill-parent'],
-      innerRadius: logoSize * 0.92 / 2
+      size: ['fill-parent', 'fill-parent'], innerRadius: logoSize * 0.92 / 2
     })
     const ripple = new Ripples(gl, {
       size: [600, 600]
     })
     this.logoBeatBox = new LegacyLogoBeatBox(gl, config)
     this.fadeLogoBeatBox = new LegacyFadeLogoBeatBox(gl, config)
-    this.add(
-      this.visualizer,
-      ripple,
-      this.logoBeatBox,
-      this.fadeLogoBeatBox
-    )
+    this.add(this.visualizer, ripple, this.logoBeatBox, this.fadeLogoBeatBox)
     this.scope.run(() => {
       watch(() => UIState.logoHover, val => this.logoHoverable = val, {immediate: true})
     })
@@ -195,8 +180,8 @@ class LogoAmpBox extends BeatBox {
     if (!this.logoHoverable) {
       return true
     }
-    this.scaleBegin()
-      .to(Vector(1.1), 500, easeOutElastic)
+    this.transform()
+      .scaleTo(Vector(1.1), 500, easeOutElastic)
     return true
   }
 
@@ -204,8 +189,8 @@ class LogoAmpBox extends BeatBox {
     if (!this.logoHoverable) {
       return true
     }
-    this.scaleBegin()
-      .to(Vector(1), 500, easeOutElastic)
+    this.transform()
+      .scaleTo(Vector(1), 500, easeOutElastic)
     return true
   }
 
@@ -220,21 +205,21 @@ export class LogoBounceBox extends Box {
   private readonly logoAmpBox: LogoAmpBox
   private isDraggable = true
   private scope = effectScope()
+  private flag = false
+  private startPosition = Vector2.newZero()
 
   constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
     super(gl, config);
 
-    this.logoAmpBox = new LogoAmpBox(gl, { size: config.size })
+    this.logoAmpBox = new LogoAmpBox(gl, {size: config.size})
     this.add(this.logoAmpBox)
     this.scope.run(() => {
       watch(() => UIState.logoDrag, value => {
         this.isDraggable = value
-      }, { immediate: true })
+      }, {immediate: true})
     })
   }
 
-  private flag = false
-  private startPosition = Vector2.newZero()
   public onDrag(which: number): boolean {
     if (!this.isDraggable) {
       return true
@@ -245,10 +230,7 @@ export class LogoBounceBox extends Box {
       this.startPosition.x = MouseState.position.x
       this.startPosition.y = MouseState.position.y
     }
-    this.translate = new Vector2(
-      (position.x - this.startPosition.x) * 0.05,
-      (position.y - this.startPosition.y) * 0.05
-    )
+    this.translate = new Vector2((position.x - this.startPosition.x) * 0.05, (position.y - this.startPosition.y) * 0.05)
     // console.log(this._translate)
     return true
   }
@@ -258,8 +240,8 @@ export class LogoBounceBox extends Box {
       return true
     }
     this.flag = false
-    this.translateBegin()
-      .translateTo(new Vector2(0, 0), 600, easeOutElastic)
+    this.transform()
+      .moveTo(new Vector2(0, 0), 600, easeOutElastic)
     return true
   }
 
@@ -276,7 +258,7 @@ export class LegacyBeatLogoBox extends Box {
   constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
     super(gl, config);
 
-    this.logoBounceBox = new LogoBounceBox(gl, { size: config.size })
+    this.logoBounceBox = new LogoBounceBox(gl, {size: config.size})
     this.add(this.logoBounceBox)
   }
 

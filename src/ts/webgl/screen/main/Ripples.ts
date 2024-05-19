@@ -10,7 +10,7 @@ import {BeatDrawable} from "../../drawable/BeatDrawable";
 import {ObjectTransition} from "../../transition/Transition";
 import {Time} from "../../../global/Time";
 import {int} from "../../../Utils";
-import {easeOut} from "../../../util/Easing";
+import {easeInQuart, easeInQuint, easeOut, easeOutQuint} from "../../../util/Easing";
 import BeatBooster from "../../../global/BeatBooster";
 import {
     ATTR_ALPHA,
@@ -51,7 +51,7 @@ export class Ripples extends BeatDrawable {
         layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2)
         layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2)
         layout.pushFloat(shader.getAttributeLocation(ATTR_ALPHA), 1)
-        vertexArray.addBuffer(buffer, layout)
+        vertexArray.addBuffer(layout)
 
         vertexArray.unbind()
         buffer.unbind()
@@ -132,7 +132,7 @@ export class Ripples extends BeatDrawable {
         if (this.vertexCount === 0) return
 
         this.buffer.setBufferData(this.vertexData)
-        this.vertexArray.addBuffer(this.buffer, this.layout)
+        this.vertexArray.addBuffer(this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
     }
 
@@ -151,7 +151,7 @@ class Ripple {
     private readonly maxThickWidth: number
     private readonly innerRadius: number
     private currentThickWidth: number = 1
-    private readonly defaultAlpha = 0.05
+    private readonly defaultAlpha = 0.045
     private transition: ObjectTransition = new ObjectTransition(this, 'currentThickWidth')
     private alpha = this.defaultAlpha
     private alphaTransition: ObjectTransition = new ObjectTransition(this, 'alpha')
@@ -160,7 +160,7 @@ class Ripple {
       parent: Ripples
     ) {
         this.innerRadius = parent.width / 2
-        this.maxThickWidth = this.innerRadius * 0.5
+        this.maxThickWidth = this.innerRadius * 0.6
         this.currentThickWidth = 0
     }
 
@@ -172,8 +172,8 @@ class Ripple {
     public start() {
         this.startTransition()
           .transitionTo(this.maxThickWidth, 1000, easeOut)
-        this.alphaBegin(Time.currentTime + 800)
-          .transitionTo(0, 200)
+        this.alphaBegin()
+          .transitionTo(0, 1000, easeInQuart)
     }
 
     public isEnd() {

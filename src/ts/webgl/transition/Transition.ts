@@ -281,7 +281,7 @@ export class ObjectTransition {
 
     public constructor(public obj: Record<string, any>, private propertyName: string) {
         if (typeof obj[propertyName] !== "number") {
-            throw new Error("An unsupported data type")
+            throw new Error("Unsupported data type")
         }
     }
 
@@ -307,7 +307,6 @@ export class ObjectTransition {
     }
 
     public update(timestamp: number) {
-
         const transitionGroup = this.transitionGroup
         if (transitionGroup !== null) {
             transitionGroup.update(timestamp)

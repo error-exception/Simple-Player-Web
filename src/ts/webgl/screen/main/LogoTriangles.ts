@@ -198,7 +198,7 @@ export class LogoTriangles extends Drawable {
         this.shader.setUniformMatrix4fv("u_orth", Coordinate.orthographicProjectionMatrix4)
         this.vertexBuffer.setBufferData(this.vertex)
 
-        this.vertexArray.addBuffer(this.vertexBuffer, this.layout)
+        this.vertexArray.addBuffer(this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
 
     }

@@ -5,7 +5,6 @@ import {Color} from "../../base/Color";
 import {ColorDrawable} from "../../drawable/ColorDrawable";
 import {ManiaPanel, NoteData, osuFile} from "./ManiaPanel";
 import {resetJudge} from "../../../Judge";
-import {maniaCombo, maniaTotalCombo} from "../../../global/ManiaState";
 
 export class ManiaScreen extends Box {
 
@@ -15,8 +14,6 @@ export class ManiaScreen extends Box {
         })
 
         resetJudge()
-        maniaCombo.value = 0
-        maniaTotalCombo.value = 0
 
         const trackWidth: number[] = new Array(4).fill(80)
         const offsetLeft = 750
@@ -27,9 +24,6 @@ export class ManiaScreen extends Box {
         } else {
             data = osuFile.NoteData!
             Toaster.show("Mania Note is Empty, use default")
-        }
-        for (let i = 0; i < data.length; i++) {
-            maniaTotalCombo.value += data[i].length
         }
         console.log("mania key count", data)
         const mania = new ManiaPanel(

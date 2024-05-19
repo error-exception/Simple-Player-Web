@@ -1,6 +1,11 @@
 import {Disposable} from "./Disposable";
 import {Bindable} from "./Bindable";
 
+export const ImageFormat = {
+    PNG: 1,
+    JPEG: 2
+}
+
 export class Texture implements Disposable, Bindable {
     private static blankData = new Uint8Array([0, 0, 0, 0]);
     private readonly rendererId: WebGLTexture;
@@ -11,7 +16,8 @@ export class Texture implements Disposable, Bindable {
 
     constructor(
         private gl: WebGL2RenderingContext,
-        image: HTMLImageElement | HTMLVideoElement | null = null
+        image: HTMLImageElement | HTMLVideoElement | null = null,
+        format: number = ImageFormat.PNG
     ) {
         const texture = gl.createTexture();
         if (!texture) {
@@ -41,14 +47,15 @@ export class Texture implements Disposable, Bindable {
             gl.bindTexture(gl.TEXTURE_2D, texture);
             this.imageWidth = image.width;
             this.imageHeight = image.height;
+            const glFormat = this.getFormat(format)
             gl.texImage2D(
                 gl.TEXTURE_2D,
                 0,
-                gl.RGBA,
+                glFormat,
                 image.width,
                 image.height,
                 0,
-                gl.RGBA,
+                glFormat,
                 gl.UNSIGNED_BYTE,
                 image
             );
@@ -56,24 +63,32 @@ export class Texture implements Disposable, Bindable {
         }
     }
 
-    public texImage2D(image: ImageBitmap) {
+    public texImage2D(image: ImageBitmap, format: number = ImageFormat.PNG) {
         const gl = this.gl;
         this.imageWidth = image.width;
         this.imageHeight = image.height;
+        const glFormat = this.getFormat(format)
         gl.texImage2D(
             gl.TEXTURE_2D,
             0,
-            gl.RGBA,
+            glFormat,
             image.width,
             image.height,
             0,
-            gl.RGBA,
+            glFormat,
             gl.UNSIGNED_BYTE,
             image
         );
     }
 
-    public setTextureImage(image: ImageBitmap) {
+    private getFormat(imageFormat: number = ImageFormat.PNG) {
+        if (imageFormat === ImageFormat.JPEG) {
+            return this.gl.RGB
+        }
+        return this.gl.RGBA
+    }
+
+    public setTextureImage(image: ImageBitmap, format: number = ImageFormat.PNG) {
         const gl = this.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.rendererId);
         this.texImage2D(image)

@@ -1,19 +1,17 @@
 import {IMouseEvent, MouseState} from "../../global/MouseState";
-import {Time} from "../../global/Time";
 import {Box} from "../box/Box";
 import Coordinate from "../base/Coordinate";
 import {Transform} from "../base/Transform";
-import {FadeTransition, ObjectTransition, TranslateTransition,} from "../transition/Transition";
 import {Bindable} from "../core/Bindable";
 import {Disposable} from "../core/Disposable";
 import {isUndef} from "../core/Utils";
 import {Vector2} from "../core/Vector2";
-import {Axis} from "../layout/Axis";
+import {Axis} from "./Axis";
 import {provide, unprovide} from "../util/DependencyInject";
-import {Vector2Transition} from "../transition/Vector2Transition";
 import {Texture} from "../core/Texture";
 import {Shader} from "../core/Shader";
 import {VertexBufferLayout} from "../core/VertexBufferLayout";
+import {DrawableTransition} from "../transition/DrawableTransition";
 
 export interface BaseDrawableConfig {
   size: [number | "fill-parent", number | "fill-parent"];
@@ -25,25 +23,6 @@ export interface BaseDrawableConfig {
   shader?: Shader | symbol
   layout?: VertexBufferLayout
 }
-
-/**
- *
- * Translate Based
- *
- * TopLeft
- * TopCenter
- * TopRight
- * CenterLeft
- * Center
- * CenterRight
- * BottomLeft
- * BottomCenter
- * BottomRight
- *
- * AnchorTo(ParentRect)
- *
- * Rect { Left, Top, Right, Bottom }
- */
 
 export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig> implements Bindable, Disposable, IMouseEvent {
   /**
@@ -70,11 +49,11 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
     1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
   ]);
 
-  protected scaleTransition: Vector2Transition = new Vector2Transition(this, 'scale');
-  protected fadeTransition: FadeTransition = new FadeTransition(this);
-  protected translateTransition: TranslateTransition =
-    new TranslateTransition(this);
-  protected rotateTransition: ObjectTransition = new ObjectTransition(this, 'rotate')
+  // protected scaleTransition: Vector2Transition = new Vector2Transition(this, 'scale');
+  // protected fadeTransition: FadeTransition = new FadeTransition(this);
+  // protected translateTransition: TranslateTransition =
+  //   new TranslateTransition(this);
+  // protected rotateTransition: ObjectTransition = new ObjectTransition(this, 'rotate')
 
   public isVisible = true;
 
@@ -107,9 +86,13 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
 
   public load() {
     this.updateBounding();
+    // this.transition = new DrawableTransition(this.selfTransform)
     this.onLoad();
   }
 
+  /**
+   * this method will be executed while constructor after execute
+   */
   public onLoad() {}
 
   public updateBounding() {
@@ -209,27 +192,27 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
     this.parent?.removeChild(this);
   }
 
-  public scaleBegin(atTime: number = Time.currentTime): Vector2Transition {
-    this.scaleTransition.setStartTime(atTime);
-    return this.scaleTransition;
-  }
+  // public scaleBegin(atTime: number = Time.currentTime): Vector2Transition {
+  //   this.scaleTransition.setStartTime(atTime);
+  //   return this.scaleTransition;
+  // }
+  //
+  // public fadeBegin(atTime: number = Time.currentTime): FadeTransition {
+  //   this.fadeTransition.setStartTime(atTime);
+  //   return this.fadeTransition;
+  // }
 
-  public fadeBegin(atTime: number = Time.currentTime): FadeTransition {
-    this.fadeTransition.setStartTime(atTime);
-    return this.fadeTransition;
-  }
-
-  public translateBegin(
-    atTime: number = Time.currentTime
-  ): TranslateTransition {
-    this.translateTransition.setStartTime(atTime);
-    return this.translateTransition;
-  }
-
-  public rotateBegin(atTime: number = Time.currentTime): ObjectTransition {
-    this.rotateTransition.setStartTime(atTime)
-    return this.rotateTransition
-  }
+  // public translateBegin(
+  //   atTime: number = Time.currentTime
+  // ): TranslateTransition {
+  //   this.translateTransition.setStartTime(atTime);
+  //   return this.translateTransition;
+  // }
+  //
+  // public rotateBegin(atTime: number = Time.currentTime): ObjectTransition {
+  //   this.rotateTransition.setStartTime(atTime)
+  //   return this.rotateTransition
+  // }
 
   public set scale(v: Vector2) {
     this.selfTransform.scaleTo(v);
@@ -261,6 +244,20 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
 
   public get rotate() {
     return this.selfTransform.rotate
+  }
+
+  protected transition = new DrawableTransition(this.selfTransform)
+
+  /**
+   * 返回一个平滑过渡的变换
+   * @param clear 默认为 true，如果为 true，初次调用变换方法时，将根据当前时间为基准进行平滑变换，如果想开始一个新的平滑
+   * 过渡，则应该保持默认值
+   */
+  public transform(clear: boolean = true): DrawableTransition {
+    if (clear) {
+      return this.transition.clear
+    }
+    return this.transition
   }
 
   protected updateTransform() {
@@ -301,10 +298,12 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
       return;
     }
     if (this.isAvailable) {
-      this.scaleTransition.update(Time.currentTime);
-      this.fadeTransition.update(Time.currentTime);
-      this.translateTransition.update(Time.currentTime);
-      this.rotateTransition.update(Time.currentTime);
+      // this.scaleTransition.update(Time.currentTime);
+      // this.fadeTransition.update(Time.currentTime);
+      // this.translateTransition.update(Time.currentTime);
+      // this.rotateTransition.update(Time.currentTime);
+      this.transition.updateTransform()
+      this.transition.update(this.selfTransform)
     }
     if (this.isAvailable) {
       this.onUpdate();

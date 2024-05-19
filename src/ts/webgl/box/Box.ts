@@ -66,7 +66,7 @@ export class Box extends Drawable {
     }
 
     public load(): void {
-        super.onLoad()
+        super.load()
         for (let i = 0; i < this.childrenList.length; i++) {
             this.childrenList[i].load()
         }

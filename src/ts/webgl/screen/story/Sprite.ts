@@ -13,7 +13,8 @@ import {Disposable} from "../../core/Disposable";
 import AudioPlayer from "../../../player/AudioPlayer";
 import {isUndef} from "../../core/Utils";
 import {StoryEventGroup} from "./event/StoryEventGroup";
-import {Axis} from "../../layout/Axis";
+import {Axis} from "../../drawable/Axis";
+import {ImageFormat} from "../../core/Texture";
 
 const originMap: Record<StoryOrigin, number> = {
   TopLeft: Axis.Y_TOP | Axis.X_LEFT,
@@ -81,12 +82,17 @@ export class Sprite implements Disposable {
   }
 
   protected loadTexture(sprite: OSBSprite, source: OSBSource) {
+
+    const format =
+      (sprite.filePath.endsWith(".jpg") || sprite.filePath.endsWith(".jpeg"))
+        ? ImageFormat.JPEG
+        : ImageFormat.PNG
     const image = source.get(sprite.filePath)
     if (isUndef(image)) {
       throw new Error("sprite texture cannot be undefined or null " + sprite.filePath)
     }
     this.size.set(image.width, image.height)
-    StoryTextureManager.addIf(this.gl, sprite.filePath, image)
+    StoryTextureManager.addIf(this.gl, sprite.filePath, image, format)
   }
 
   protected shouldVisible() {
@@ -190,7 +196,7 @@ export class Sprite implements Disposable {
     array[2] = color.blue
     array[3] = color.alpha
     shader.setUniform4fv("u_color", array)
-    vertexArray.addBuffer(this.vertexBuffer, ColoredTextureShader.getLayout())
+    vertexArray.addBuffer(ColoredTextureShader.getLayout())
     StoryTextureManager.tryBind(this.path)
     if (this.additiveBlend) {
       // gl.blendFunc(gl.ONE, gl.ONE)

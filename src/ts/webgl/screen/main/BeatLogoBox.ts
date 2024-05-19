@@ -30,10 +30,10 @@ class BeatLogo extends BeatBox {
         super(gl, config);
 
         const logo = new Logo(gl, {
-            size: [520, 520]
+            size: [580, 580]
         })
         const triangles = new LogoTriangles(gl, {
-            size: [500, 500]
+            size: [552, 552]
         })
         this.logo = logo
         this.triangles = triangles
@@ -49,9 +49,8 @@ class BeatLogo extends BeatBox {
         }
         const volume = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() + 0.4 : 0
         const adjust = Math.min(volume, 1)
-        this.scaleBegin()
-            .to(Vector(1 - adjust * 0.02), 60, easeOut)
-            .to(Vector(1), gap * 2, easeOutQuint)
+        this.transform().scaleTo(Vector(1 - adjust * 0.02), 60, easeOut)
+          .scaleTo(Vector(1), gap * 2, easeOutQuint)
 
         this.triangles.velocityBegin()
             .transitionTo(1 + adjust + (BeatState.isKiai ? 4 : 0), 60, easeOut)
@@ -113,9 +112,12 @@ class LogoAmpBox extends Box {
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
 
-        this.visualizer = new RoundVisualizer(gl, { size: ['fill-parent', 'fill-parent'] })
+        this.visualizer = new RoundVisualizer(gl, {
+            size: ['fill-parent', 'fill-parent'],
+            innerRadius: 266
+        })
         const ripple = new Ripples(gl, {
-            size: [500, 500]
+            size: [558, 558]
         })
         this.logoBeatBox = new LogoBeatBox(gl, config)
 
@@ -133,8 +135,7 @@ class LogoAmpBox extends Box {
         if (!this.logoHoverable) {
             return true
         }
-        this.scaleBegin()
-            .to(new Vector2(1.1, 1.1), 500, easeOutElastic)
+        this.transform().scaleTo(new Vector2(1.1, 1.1), 500, easeOutElastic)
         return true
     }
 
@@ -142,8 +143,7 @@ class LogoAmpBox extends Box {
         if (!this.logoHoverable) {
             return true
         }
-        this.scaleBegin()
-            .to(new Vector2(1, 1), 500, easeOutElastic)
+        this.transform().scaleTo(new Vector2(1, 1), 500, easeOutElastic)
         return true
     }
 
@@ -196,8 +196,7 @@ export class LogoBounceBox extends Box {
             return true
         }
         this.flag = false
-        this.translateBegin()
-            .translateTo(new Vector2(0, 0), 600, easeOutElastic)
+        this.transform().moveTo(new Vector2(0, 0), 600, easeOutElastic)
         return true
     }
 
@@ -223,18 +222,15 @@ export class BeatLogoBox extends Box {
         const menu = inject<Menu>('Menu')
         const bg = inject<BackgroundBounce>('BackgroundBounce')
 
+        const transition = this.transform()
         if (this.flag) {
-            this.translateBegin()
-                .translateTo(new Vector2(-240, 0), 400, easeInCubic)
-            this.scaleBegin()
-                .to(new Vector2(0.5, 0.5), 400, easeInCubic)
+            transition.moveTo(new Vector2(-240, 0), 400, easeInCubic)
+              .scaleTo(new Vector2(0.5, 0.5), 400, easeInCubic)
             menu.show()
             bg.in()
         } else {
-            this.translateBegin()
-                .translateTo(new Vector2(0, 0), 400, easeOutCubic)
-            this.scaleBegin()
-                .to(new Vector2(1, 1), 400, easeOutCubic)
+            transition.moveTo(new Vector2(0, 0), 400, easeOutCubic)
+              .scaleTo(new Vector2(1, 1), 400, easeOutCubic)
             menu.hide()
             bg.out()
         }

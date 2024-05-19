@@ -36,7 +36,7 @@ export class ColorDrawable extends Drawable<ColorDrawableConfig> {
 
         layout.pushFloat(shader.getAttributeLocation('a_position'), 2)
         layout.pushFloat(shader.getAttributeLocation('a_color'), 4)
-        vertexArray.addBuffer(buffer, layout)
+        vertexArray.addBuffer(layout)
 
         vertexArray.unbind()
         buffer.unbind()
@@ -91,7 +91,7 @@ export class ColorDrawable extends Drawable<ColorDrawableConfig> {
         shader.setUniformMatrix4fv('u_transform', this.matrixArray)
         shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
         shader.setUniform1f('u_alpha', this.appliedTransform.alpha)
-        this.vertexArray.addBuffer(this.buffer, this.layout)
+        this.vertexArray.addBuffer(this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, 6)
     }
 

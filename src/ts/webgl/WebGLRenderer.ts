@@ -16,6 +16,7 @@ export class WebGLRenderer implements Disposable {
         gl.viewport(0, 0, Coordinate.nativeWidth * window.devicePixelRatio, Coordinate.nativeHeight * window.devicePixelRatio)
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.clearColor(0, 0, 0, 0);
         MouseState.onClick = this.onClick.bind(this)
         MouseState.onMouseMove = this.onMouseMove.bind(this)
         MouseState.onMouseDown = this.onMouseDown.bind(this)
@@ -78,7 +79,7 @@ export class WebGLRenderer implements Disposable {
                 this.drawables[i].onWindowResize()
             }
         }
-        gl.clear(gl.COLOR_BUFFER_BIT)
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
         for (let i = 0; i < this.drawables.length; i++) {
             const drawable = this.drawables[i];
             drawable.update()

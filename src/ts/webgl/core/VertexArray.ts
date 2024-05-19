@@ -1,6 +1,5 @@
 import {Bindable} from "./Bindable";
 import {Disposable} from "./Disposable";
-import {VertexBuffer} from "./VertexBuffer";
 import {VertexBufferElement, VertexBufferLayout} from "./VertexBufferLayout";
 
 export class VertexArray implements Bindable, Disposable {
@@ -17,9 +16,9 @@ export class VertexArray implements Bindable, Disposable {
         this.rendererId = va
     }
 
-    public addBuffer(vertexBuffer: VertexBuffer, layout: VertexBufferLayout) {
-        this.bind()
-        vertexBuffer.bind()
+    public addBuffer(/*vertexBuffer: VertexBuffer,*/ layout: VertexBufferLayout) {
+        // this.bind()
+        // vertexBuffer.bind()
         const gl = this.gl
         const elements = layout.elements
         let offset = 0

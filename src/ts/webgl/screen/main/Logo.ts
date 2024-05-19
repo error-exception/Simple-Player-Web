@@ -45,7 +45,7 @@ export class Logo extends Drawable {
 
         layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2)
         layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2)
-        vertexArray.addBuffer(buffer, layout)
+        vertexArray.addBuffer(layout)
 
         vertexArray.unbind()
         buffer.unbind()
@@ -95,12 +95,14 @@ export class Logo extends Drawable {
         this.vertexArray.unbind()
         this.texture.unbind()
         this.shader.unbind()
+        this.buffer.unbind()
     }
 
     public bind() {
         this.texture.bind(this.textureUnit)
         this.vertexArray.bind()
         this.shader.bind()
+        this.buffer.bind()
     }
 
     public onDraw() {
@@ -110,7 +112,7 @@ export class Logo extends Drawable {
         this.shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
         this.shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
         this.shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha)
-        this.vertexArray.addBuffer(this.buffer, this.layout)
+        this.vertexArray.addBuffer(this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, 6)
     }
 

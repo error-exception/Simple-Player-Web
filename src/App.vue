@@ -7,7 +7,6 @@
     @dragover="handleDrop"
   >
     <Visualizer2 class="absolute"/>
-    <ManiaOverlay v-if="screenId === 'mania'"/>
     <Transition name="top-bar">
       <TopBar
         style="position: absolute; top: 0"
@@ -94,7 +93,6 @@ import Notification from "./components/notification/NotificationPanel.vue";
 import {notifyMessage} from "./ts/notify/OsuNotification";
 import FloatNotification from "./components/notification/FloatNotification.vue";
 import {playSound, Sound} from "./ts/player/SoundEffect";
-import ManiaOverlay from "./components/game/ManiaOverlay.vue";
 import {collect, collectLatest} from "./ts/util/eventRef";
 import ScreenSelector from "./components/ScreenSelector.vue";
 import SideButton from "./components/SideButton.vue";

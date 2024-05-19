@@ -14,7 +14,6 @@ import {Vector2} from "../../core/Vector2"
 import {VertexArray} from "../../core/VertexArray"
 import {VertexBuffer} from "../../core/VertexBuffer"
 import {VertexBufferLayout} from "../../core/VertexBufferLayout"
-import {maniaCombo} from "../../../global/ManiaState";
 
 const vertexShader = `
     attribute vec2 a_position;
@@ -83,7 +82,7 @@ export class ManiaPanel extends Drawable {
 
     layout.pushFloat(shader.getAttributeLocation("a_position"), 2)
     layout.pushFloat(shader.getAttributeLocation("a_color"), 4)
-    vertexArray.addBuffer(vertexBuffer, layout)
+    vertexArray.addBuffer(layout)
 
     vertexArray.unbind()
     vertexBuffer.unbind()
@@ -153,7 +152,7 @@ export class ManiaPanel extends Drawable {
     const gl = this.gl
     this.shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
     this.vertexBuffer.setBufferData(this.vertexData)
-    this.vertexArray.addBuffer(this.vertexBuffer, this.layout)
+    this.vertexArray.addBuffer(this.layout)
     gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
   }
 
@@ -236,20 +235,16 @@ class ManiaTrack {
           auto && this.effectTap(note, current)
           Judge.perfect++
           note.judgeResult = Note.JUDGE_PERFECT
-          maniaCombo.value++
         } else if (diffTime <= JudgeRange.good && !auto) {
           Judge.good++
           note.judgeResult = Note.JUDGE_GOOD
-          maniaCombo.value++
         } else if (diffTime <= JudgeRange.bad && !auto) {
           Judge.bad++
           note.judgeResult = Note.JUDGE_BAD
-          maniaCombo.value++
         } else if (time - current < -JudgeRange.miss) {
           Judge.miss++
           note.judgeResult = Note.JUDGE_MISS
           note.judgeState = Note.STATE_JUDGED
-          maniaCombo.value = 0
           continue
         }
       } else {

@@ -115,7 +115,7 @@ export class LegacyRoundVisualizer extends Drawable<LegacyRoundVisualizerConfig>
     layout.pushFloat(shader.getAttributeLocation('a_vertexPosition'), 2)
     layout.pushFloat(shader.getAttributeLocation('a_tex_coord'), 2)
     layout.pushUInt(shader.getAttributeLocation('a_sampler_flag'), 1)
-    vertexArray.addBuffer(buffer, layout)
+    vertexArray.addBuffer(layout)
 
     vertexArray.unbind()
     buffer.unbind()
@@ -336,7 +336,7 @@ export class LegacyRoundVisualizer extends Drawable<LegacyRoundVisualizerConfig>
     this.shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
 
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-    this.vertexArray.addBuffer(this.buffer, this.layout)
+    this.vertexArray.addBuffer(this.layout)
     gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_INT, 0)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   }

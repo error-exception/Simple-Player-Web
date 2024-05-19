@@ -46,7 +46,7 @@ export class VideoBackground extends Drawable {
 
         layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
         layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-        vertexArray.addBuffer(buffer, layout);
+        vertexArray.addBuffer(layout);
 
         vertexArray.unbind();
         buffer.unbind();
@@ -117,7 +117,7 @@ export class VideoBackground extends Drawable {
         this.shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
         this.shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4);
         this.shader.setUniform1f(UNI_ALPHA, this.alpha);
-        this.vertexArray.addBuffer(this.buffer, this.layout);
+        this.vertexArray.addBuffer(this.layout);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
 

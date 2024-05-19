@@ -42,6 +42,7 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
     private readonly layout: VertexBufferLayout
     private readonly indexBuffer: IndexBuffer
     private vertexCount = 0
+    private readonly barCountPerRound = 256
 
     private readonly visualizer: VisualizerV2
 
@@ -63,8 +64,9 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
         const index: number[] = [
             0, 1, 2, 1, 2, 3
         ]
-        const indexArray: number[] = new Array(index.length * 200 * 5)
-        for (let i = 0, j = 0; i < 200 * 5; i++, j += 6) {
+        const c = this.barCountPerRound
+        const indexArray: number[] = new Array(index.length * c * 5)
+        for (let i = 0, j = 0; i < c * 5; i++, j += 6) {
             const increment = i << 2
             indexArray[j] = index[0] + increment
             indexArray[j + 1] = index[1] + increment
@@ -81,7 +83,7 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
 
         const location = shader.getAttributeLocation('a_vertexPosition')
         layout.pushFloat(location, 2)
-        vertexArray.addBuffer(buffer, layout)
+        vertexArray.addBuffer(layout)
 
         vertexArray.unbind()
         buffer.unbind()
@@ -102,7 +104,7 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
     protected onUpdate() {
         super.onUpdate();
         this.getSpectrum(Time.currentTime, BeatState.isKiai ? 1 : 0.5)
-        this.updateVertex(this.targetSpectrum, 200)
+        this.updateVertex(this.targetSpectrum, this.barCountPerRound)
     }
 
     private updateVertex(spectrum: number[], length: number = spectrum.length) {
@@ -128,7 +130,7 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
         for (let j = 0; j < 5; j++) {
             for (let i = 0; i < length; i++) {
 
-                const degree = i / 200 * 360 + j * 360 / 5
+                const degree = i / length * 360 + j * 360 / 5
 
                 const radian = degreeToRadian(degree)
                 const value = innerRadius + spectrum[i] * (160)
@@ -173,21 +175,21 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
         array[offset + 1] = point.y// * 1 / (Coordinate.height / 2)
     }
 
-    private simpleSpectrum: number[] = new Array<number>(200)
+    private simpleSpectrum: number[] = new Array<number>(this.barCountPerRound)
 
     private lastTime = 0
     private updateOffsetTime = 0
 
     private indexOffset = 0
-    private indexChange = 5
+    private indexChange = ~~Math.round(this.barCountPerRound / 40)
 
-    private targetSpectrum: number[] = new Array<number>(200).fill(0)
+    private targetSpectrum: number[] = new Array<number>(this.barCountPerRound).fill(0)
 
     // TODO: 调整频谱
     private spectrumShape: number[] = [
         1.5, 2, 2.7, 2.1, 1.4,
         1.1, 1, 1, 1, 1,
-        ...(new Array<number>(190).fill(1))
+        ...(new Array<number>(this.barCountPerRound - 10).fill(1))
     ]
 
     private getSpectrum(timestamp: number, barScale: number) {
@@ -199,8 +201,9 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
         for (let i = 0; i < fftData.length; i++) {
             this.simpleSpectrum[i] = fftData[i] / 255.0
         }
-        for (let i = 0; i < 200; i++) {
-            const targetIndex = (i + this.indexOffset) % 200
+        const c = this.barCountPerRound
+        for (let i = 0; i < c; i++) {
+            const targetIndex = (i + this.indexOffset) % c
             const target = this.simpleSpectrum[targetIndex]
             if (target > this.targetSpectrum[i]) {
                 this.targetSpectrum[i] = target * this.spectrumShape[targetIndex] * (0.5 + barScale)
@@ -208,10 +211,10 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
         }
         if (timestamp - this.updateOffsetTime >= 50) {
             this.updateOffsetTime = timestamp
-            this.indexOffset = (this.indexOffset - this.indexChange) % 200
+            this.indexOffset = (this.indexOffset - this.indexChange) % c
         }
         const decayFactor = (timestamp - this.lastTime) * 0.0024
-        for (let i = 0; i < 200; i++) {
+        for (let i = 0; i < c; i++) {
             this.targetSpectrum[i] -= decayFactor * (this.targetSpectrum[i] + 0.03)
             if (this.targetSpectrum[i] < 0) {
                 this.targetSpectrum[i] = 0
@@ -223,11 +226,15 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
     public bind() {
         this.shader.bind()
         this.vertexArray.bind()
+        this.indexBuffer.bind()
+        this.buffer.bind()
     }
 
     public unbind() {
         this.shader.unbind()
         this.vertexArray.unbind()
+        this.indexBuffer.unbind()
+        this.buffer.unbind()
     }
 
     public onDraw() {
@@ -238,7 +245,7 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
         this.shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
 
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-        this.vertexArray.addBuffer(this.buffer, this.layout)
+        this.vertexArray.addBuffer(this.layout)
         gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_INT, 0)
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     }

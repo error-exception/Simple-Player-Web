@@ -1,6 +1,6 @@
 import { Box } from "./box/Box";
 import { TestRoundDrawable } from "./TestRoundDrawable";
-import { Axis } from "./layout/Axis";
+import { Axis } from "./drawable/Axis";
 
 export class TestScreen extends Box {
 

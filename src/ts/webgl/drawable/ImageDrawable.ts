@@ -39,7 +39,7 @@ export class ImageDrawable extends Drawable {
 
         layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2)
         layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2)
-        vertexArray.addBuffer(buffer, layout)
+        vertexArray.addBuffer(layout)
 
         vertexArray.unbind()
         buffer.unbind()
@@ -98,7 +98,7 @@ export class ImageDrawable extends Drawable {
         shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
         shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
         shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha)
-        this.vertexArray.addBuffer(this.buffer, this.layout)
+        this.vertexArray.addBuffer(this.layout)
         gl.drawArrays(gl.TRIANGLES, 0, 6)
     }
 

@@ -7,7 +7,6 @@ import videoPlayer from "./VideoPlayer";
 import {ref, shallowRef} from "vue";
 import {OSZFile} from "../osu/OSZ";
 import {eventRef} from "../util/eventRef";
-import * as os from "os";
 
 export interface OSUBackground {
   image?: ImageBitmap

@@ -1,9 +1,9 @@
 import {LogoBounceBox} from "../main/BeatLogoBox";
 import {Box} from "../../box/Box";
-import {Vector2} from "../../core/Vector2";
-import {Axis} from "../../layout/Axis";
+import {Vector} from "../../core/Vector2";
+import {Axis} from "../../drawable/Axis";
 import {FadeLogo} from "./FadeLogo";
-import {easeOutBack} from "../../../util/Easing";
+import {easeOutQuint} from "../../../util/Easing";
 
 export class SongPlayScreen extends Box {
 
@@ -19,14 +19,19 @@ export class SongPlayScreen extends Box {
             anchor: Axis.X_RIGHT | Axis.Y_BOTTOM,
             offset: [ 250 - 66, -250 + 24]
         })
-        logo.scale = new Vector2(0.4, 0.4)
-        logo.translate = new Vector2(0, -128)
-        logo.translateBegin()
-            .translateTo(new Vector2(0, 0), 400, easeOutBack)
+        logo.scale = Vector(0)
+        // logo.translate = new Vector2(0, -128)
+
         this.add(
             fadeLogo,
             logo
         )
 
+    }
+
+    onLoad() {
+        super.onLoad();
+        this.lastChild.transform()
+          .scaleTo(Vector(0.4), 250, easeOutQuint)
     }
 }

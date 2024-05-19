@@ -100,7 +100,7 @@ export class MovableBackground extends Drawable {
 
         layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2)
         layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2)
-        vertexArray.addBuffer(buffer, layout)
+        vertexArray.addBuffer(layout)
 
         vertexArray.unbind()
         buffer.unbind()
@@ -115,7 +115,7 @@ export class MovableBackground extends Drawable {
 
     protected onUpdate() {
         super.onUpdate();
-        if (this.fadeTransition.isEnd) {
+        if (this.transition.transitionAlpha.isEnd) {
             this.onFinish?.()
             this.onFinish = null
         }
@@ -203,8 +203,9 @@ export class MovableBackground extends Drawable {
     private onFinish: (() => void) | null = null
 
     public fadeOut(onFinish: () => void) {
-        this.fadeBegin()
-            .fadeTo(0, 220)
+        this.transform().fadeTo(0, 220)
+        // this.fadeBegin()
+        //     .fadeTo(0, 220)
         this.onFinish = onFinish
     }
 
@@ -242,7 +243,7 @@ export class MovableBackground extends Drawable {
         shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
         shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha)
         shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
-        this.vertexArray.addBuffer(this.buffer, this.layout)
+        this.vertexArray.addBuffer(this.layout)
 
         gl.drawArrays(gl.TRIANGLES, 0, 6)
     }
@@ -339,20 +340,18 @@ export class BackgroundBounce extends Box {
 
     public in() {
         const startTime = Time.currentTime + 300
-        this.scaleBegin(startTime)
-            .to(new Vector2(0.98, 0.98), 500, easeOutQuint)
-        this.translateBegin(startTime)
-            .translateTo(new Vector2(0, -40), 500, easeOutQuint)
-        this.fadeBegin(startTime)
-          .fadeTo(0.7, 500, easeOutQuint)
+        const transition = this.transform()
+        transition.delay(300).scaleTo(new Vector2(0.98, 0.98), 500, easeOutQuint)
+          .delay(300).moveTo(new Vector2(0, -40), 500, easeOutQuint)
+          .delay(300).fadeTo(0.7, 500, easeOutQuint)
+        // this.fadeBegin(startTime)
+        //   .fadeTo(0.7, 500, easeOutQuint)
     }
 
     public out() {
-        this.scaleBegin()
-            .to(new Vector2(1, 1), 500, easeOutQuint)
-        this.translateBegin()
-            .translateTo(Vector2.newZero(), 500, easeOutQuint)
-        this.fadeBegin()
+        const transition = this.transform()
+        transition.scaleTo(new Vector2(1, 1), 500, easeOutQuint)
+          .moveTo(Vector2.newZero(), 500, easeOutQuint)
           .fadeTo(1, 500, easeOutQuint)
     }
 

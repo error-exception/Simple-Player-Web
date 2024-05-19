@@ -51,7 +51,7 @@ export class LegacyLogo extends Drawable {
 
     layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2)
     layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2)
-    vertexArray.addBuffer(buffer, layout)
+    vertexArray.addBuffer(layout)
 
     vertexArray.unbind()
     buffer.unbind()
@@ -104,6 +104,7 @@ export class LegacyLogo extends Drawable {
   }
 
   public unbind() {
+    this.buffer.unbind()
     this.vertexArray.unbind()
     this.texture.unbind()
     this.shader.unbind()
@@ -116,6 +117,7 @@ export class LegacyLogo extends Drawable {
 
   public bind() {
     this.texture.bind(this.textureUnit)
+    this.buffer.bind()
     this.vertexArray.bind()
     this.shader.bind()
   }
@@ -128,7 +130,7 @@ export class LegacyLogo extends Drawable {
     this.shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
     this.shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha)
     this.shader.setUniform1f(UNI_BRIGHTNESS, this.brightness)
-    this.vertexArray.addBuffer(this.buffer, this.layout)
+    this.vertexArray.addBuffer(this.layout)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 

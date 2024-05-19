@@ -19,9 +19,21 @@ export class FadeLogo extends BeatBox {
     }
 
     public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number): void {
-        this.logo.fadeBegin()
-            .fadeTo(0.5, 60, easeOut)
-            .fadeTo(0.3, gap * 2, easeOutQuint)
+        this.logo.transform()
+            .fadeTo(0.3, 60, easeOut)
+            .fadeTo(0.1, gap * 2, easeOutQuint)
+    }
+
+    bind() {
+        super.bind();
+        const gl = this.gl
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
+    }
+
+    unbind() {
+        super.unbind();
+        const gl = this.gl
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     }
 
 }

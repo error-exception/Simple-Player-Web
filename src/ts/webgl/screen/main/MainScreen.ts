@@ -13,14 +13,16 @@ export class MainScreen extends Box {
 
     private leftSideCollector = (value: boolean) => {
         const translate = value ? new Vector2(40, 0) : Vector2.newZero()
-        this.translateBegin()
-            .translateTo(translate, 500, easeOutCubic)
+        this.transform().moveTo(translate, 500, easeOutCubic)
+        // this.translateBegin()
+        //     .translateTo(translate, 500, easeOutCubic)
     }
 
     private rightSideCollector = (value: boolean) => {
         const translate = value ? new Vector2(-40, 0) : Vector2.newZero()
-        this.translateBegin()
-            .translateTo(translate, 500, easeOutCubic)
+        this.transform().moveTo(translate, 500, easeOutCubic)
+        // this.translateBegin()
+        //     .translateTo(translate, 500, easeOutCubic)
     }
 
     private scope = effectScope()

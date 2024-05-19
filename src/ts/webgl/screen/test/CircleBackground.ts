@@ -40,7 +40,7 @@ export class CircleBackground extends Drawable {
 
     layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2)
     layout.pushFloat(shader.getAttributeLocation(ATTR_COLOR), 4)
-    vertexArray.addBuffer(buffer, layout)
+    vertexArray.addBuffer(layout)
 
     vertexArray.unbind()
     buffer.unbind()
@@ -57,8 +57,8 @@ export class CircleBackground extends Drawable {
         .transitionTo(260 * window.devicePixelRatio, 1000, ease)
       this.thickWidthBegin()
         .transitionTo(520, 1000, ease)
-      this.rotateBegin()
-        .transitionTo(-90, 1000, ease)
+      this.transform()
+        .rotateTo(-90, 1000, ease)
     })
 
 
@@ -125,7 +125,7 @@ export class CircleBackground extends Drawable {
     shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
     shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
     shader.setUniform3fv(UNI_CIRCLE, this.uniCircle)
-    this.vertexArray.addBuffer(this.buffer, this.layout)
+    this.vertexArray.addBuffer(this.layout)
     gl.drawArrays(gl.TRIANGLES, 0, 12)
   }
 

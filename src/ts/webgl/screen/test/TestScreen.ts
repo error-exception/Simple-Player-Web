@@ -1,7 +1,7 @@
 import {Box} from "../../box/Box";
 import {CircleBackground} from "./CircleBackground";
 import {Color} from "../../base/Color";
-import {Axis} from "../../layout/Axis";
+import {Axis} from "../../drawable/Axis";
 import {ColoredImageDrawable} from "./ColoredImageDrawable";
 import {Vector} from "../../core/Vector2";
 import {Images} from "../../util/ImageResource";
@@ -67,12 +67,14 @@ export class TestScreen extends Box {
       const rounds = [this.red, this.green, this.yellow, this.pink]
       const duration = 1000
       rounds.forEach((item, i) => {
-        item.rotateBegin(time + (i * 50))
-          .transitionTo(targetDegree, duration - (i * 50), ease)
-        item.scaleBegin(time + (i * 50))
-          .to(targetScale, duration - (i * 50), ease)
+        item.transform()
+          .delay(time + (i * 50))
+          .rotateTo(targetDegree, duration - (i * 50), ease)
+        item.transform()
+          .delay(time + (i * 50))
+          .scaleTo(targetScale, duration - (i * 50), ease)
       })
-    })
+    }, 0)
   }
 
 }
