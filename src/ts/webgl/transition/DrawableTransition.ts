@@ -8,7 +8,6 @@ const M = 0, MX = 1, MY = 2, F = 3, R = 4, S = 5, SX = 6, SY = 7;
 
 /**
  * 变换过渡类，每一种变换相互独立，
- * TODO: 直接使用外部变换，而不是内部维护一个，在再复制到外部，因为会导致外部直接设置的变换被该类覆盖
  */
 export class DrawableTransition {
 
@@ -19,13 +18,12 @@ export class DrawableTransition {
   // public alpha: number = 1
   // public rotate: number = 0
 
-  // TODO: make protected
-  public transitionX: ObjectTransition
-  public transitionY: ObjectTransition
-  public transitionScaleX: ObjectTransition
-  public transitionScaleY: ObjectTransition
-  public transitionAlpha: ObjectTransition
-  public transitionRotate: ObjectTransition
+  protected transitionX: ObjectTransition
+  protected transitionY: ObjectTransition
+  protected transitionScaleX: ObjectTransition
+  protected transitionScaleY: ObjectTransition
+  protected transitionAlpha: ObjectTransition
+  protected transitionRotate: ObjectTransition
 
   private transitionDelay = 0
   private transformType = -1
