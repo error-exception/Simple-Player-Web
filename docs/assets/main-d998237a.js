@@ -25434,10 +25434,10 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         name: "Background Preview",
         id: "second"
       },
-      {
-        name: "Mania4K Preview",
-        id: "mania"
-      },
+      // {
+      //   name: "Mania4K Preview",
+      //   id: "mania"
+      // },
       {
         name: "Test",
         id: "test"
@@ -25482,8 +25482,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ScreenSelector_vue_vue_type_style_index_0_scoped_0bb9235c_lang = "";
-const ScreenSelector = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-0bb9235c"]]);
+const ScreenSelector_vue_vue_type_style_index_0_scoped_5f6b2e66_lang = "";
+const ScreenSelector = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-5f6b2e66"]]);
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "SideButton",
   emits: ["sideClick"],
