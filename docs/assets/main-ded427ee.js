@@ -7547,13 +7547,6 @@ function scope(target, scope2) {
 function isString$1(v) {
   return typeof v === "string";
 }
-function sleep(m) {
-  return new Promise((resolve2) => {
-    setTimeout(() => {
-      resolve2();
-    }, m);
-  });
-}
 function shallowCopy(source) {
   const result = {};
   const keys = Object.getOwnPropertyNames(source);
@@ -8665,13 +8658,6 @@ function createMutableStateFlow(a) {
 function createMutableSharedFlow() {
   return new MutableSharedFlow();
 }
-const _Toaster = class _Toaster {
-  static show(message) {
-    this.toast.emit(message);
-  }
-};
-_Toaster.toast = createMutableSharedFlow();
-let Toaster = _Toaster;
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -10803,6 +10789,7 @@ class VideoPlayer extends AbstractPlayer {
     this.isAvailable = false;
     this.baseOffset = 0;
     this.isStop = false;
+    this.previousObjectUrl = null;
   }
   currentTime() {
     return this.isAvailable ? int(this.video.currentTime * 1e3) : 0;
@@ -10851,7 +10838,11 @@ class VideoPlayer extends AbstractPlayer {
     if (isString$1(src)) {
       video.src = src;
     } else if (src instanceof Blob) {
-      video.src = URL.createObjectURL(src);
+      if (this.previousObjectUrl) {
+        URL.revokeObjectURL(this.previousObjectUrl);
+      }
+      this.previousObjectUrl = URL.createObjectURL(src);
+      video.src = this.previousObjectUrl;
     } else {
       return;
     }
@@ -10886,11 +10877,6 @@ const _OSUPlayer = class _OSUPlayer {
     this.currentOSUFile = shallowRef(_OSUPlayer.EMPTY_OSU);
     this.currentOSZFile = shallowRef(_OSUPlayer.EMPTY_OSZ);
     this.isVideoAvailable = false;
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) {
-        VideoPlayer$1.seek(AudioPlayerV2.currentTime());
-      }
-    });
   }
   async setSource(osu, src) {
     this.isVideoAvailable = false;
@@ -10905,6 +10891,7 @@ const _OSUPlayer = class _OSUPlayer {
     this.artist.value = (Metadata == null ? void 0 : Metadata.ArtistUnicode) ?? "None";
     this.duration.value = AudioPlayerV2.duration();
     const background = {};
+    this.isVideoAvailable = false;
     if (video) {
       try {
         VideoPlayer$1.baseOffset = (Events == null ? void 0 : Events.videoOffset) ?? 0;
@@ -11206,7 +11193,14 @@ const _sfc_main$j = /* @__PURE__ */ defineComponent({
 });
 const ValueAdjust_vue_vue_type_style_index_0_scoped_cc3e4111_lang = "";
 const ValueAdjust = /* @__PURE__ */ _export_sfc(_sfc_main$j, [["__scopeId", "data-v-cc3e4111"]]);
-const _withScopeId$2 = (n) => (pushScopeId("data-v-98e9724f"), n = n(), popScopeId(), n);
+const _Toaster = class _Toaster {
+  static show(message) {
+    this.toast.emit(message);
+  }
+};
+_Toaster.toast = createMutableSharedFlow();
+let Toaster = _Toaster;
+const _withScopeId$2 = (n) => (pushScopeId("data-v-ac71abb2"), n = n(), popScopeId(), n);
 const _hoisted_1$b = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("button", { class: "text-white fill-height" }, "Timing", -1));
 const _hoisted_2$8 = {
   class: "h-full flex flex-col justify-evenly px-1",
@@ -11262,6 +11256,7 @@ const _sfc_main$i = /* @__PURE__ */ defineComponent({
     let DRAW_COUNT = 12;
     let peeks = [];
     onMounted(() => {
+      Toaster.show("Under developing......");
       if (wave.value) {
         const ctx = wave.value.getContext("2d");
         if (ctx) {
@@ -11645,23 +11640,6 @@ const _sfc_main$i = /* @__PURE__ */ defineComponent({
     const playbackRate = ref([0.25, 0.5, 0.75, 1]);
     const loadState = ref("正在初始化......");
     async function applyTiming() {
-      const bpm = Math.floor(bpmInfo.bpm);
-      const timingInfo = {
-        bpm,
-        id: currentMusic.metadata.id,
-        version: "1.0",
-        offset: bpmInfo.offset,
-        timingList: []
-      };
-      const timingList = timing.list;
-      for (const timingListElement of timingList) {
-        timingInfo.timingList.push({
-          isKiai: timingListElement.isKiai,
-          timestamp: timingListElement.timestamp
-        });
-      }
-      TimingManager$1.addTimingInfoToCache(timingInfo);
-      Toaster.show("保存成功");
     }
     function playOrStart() {
       if (player.isPlaying()) {
@@ -12002,8 +11980,8 @@ const _sfc_main$i = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const BpmCalculator_vue_vue_type_style_index_0_scoped_98e9724f_lang = "";
-const BpmCalculator = /* @__PURE__ */ _export_sfc(_sfc_main$i, [["__scopeId", "data-v-98e9724f"]]);
+const BpmCalculator_vue_vue_type_style_index_0_scoped_ac71abb2_lang = "";
+const BpmCalculator = /* @__PURE__ */ _export_sfc(_sfc_main$i, [["__scopeId", "data-v-ac71abb2"]]);
 const _sfc_main$h = {};
 const _hoisted_1$a = { class: "flex flex-row develop-box rounded-tl-[8px] py-2 px-4 text-white bg-[#00000080] pointer-events-none" };
 const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode("span", null, "开发中版本", -1);
@@ -15320,15 +15298,12 @@ async function load(osz, preview = true) {
   var _a;
   const osu = osz.osu[0];
   await OSUPlayer$1.setSource(osu, osz);
-  await sleep(200);
   if (preview) {
     const time = (_a = osu.General) == null ? void 0 : _a.PreviewTime;
     await OSUPlayer$1.seek(time && time >= 0 ? time : 0);
-  }
-  await sleep(200);
-  if (!preview)
+  } else {
     OSUPlayer$1.stop();
-  await sleep(200);
+  }
   await OSUPlayer$1.play();
 }
 class TempOSUPlayManager {
@@ -15537,8 +15512,8 @@ const _sfc_main$f = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const MiniPlayer_vue_vue_type_style_index_0_scoped_91d28770_lang = "";
-const MiniPlayer = /* @__PURE__ */ _export_sfc(_sfc_main$f, [["__scopeId", "data-v-91d28770"]]);
+const MiniPlayer_vue_vue_type_style_index_0_scoped_fa4dc804_lang = "";
+const MiniPlayer = /* @__PURE__ */ _export_sfc(_sfc_main$f, [["__scopeId", "data-v-fa4dc804"]]);
 function useCollect(flow, collector) {
   flow.collect(collector);
   onUnmounted(() => {
@@ -15772,7 +15747,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
 });
 const Toast_vue_vue_type_style_index_0_scoped_6747120f_lang = "";
 const Toast = /* @__PURE__ */ _export_sfc(_sfc_main$a, [["__scopeId", "data-v-6747120f"]]);
-const _withScopeId$1 = (n) => (pushScopeId("data-v-217b468c"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-57de2047"), n = n(), popScopeId(), n);
 const _hoisted_1$5 = { class: "text-white" };
 const _hoisted_2$3 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("div", { class: "top-bar-shadow" }, null, -1));
 const _sfc_main$9 = /* @__PURE__ */ defineComponent({
@@ -15831,7 +15806,7 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
               ])), [
                 [_directive_osu_top_bar_btn]
               ]),
-              unref(PLAYER) ? withDirectives((openBlock(), createElementBlock("button", {
+              unref(PLAYER) || true ? withDirectives((openBlock(), createElementBlock("button", {
                 key: 0,
                 class: "ma top-bar-icon-btn",
                 onClick: _cache[4] || (_cache[4] = ($event) => _ctx.$emit("bpmCalcClick"))
@@ -15867,8 +15842,8 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_217b468c_lang = "";
-const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$9, [["__scopeId", "data-v-217b468c"]]);
+const TopBar_vue_vue_type_style_index_0_scoped_57de2047_lang = "";
+const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$9, [["__scopeId", "data-v-57de2047"]]);
 const bg1 = "" + new URL("menu-background-1-05e31a26.jpg", import.meta.url).href;
 const bg2 = "" + new URL("menu-background-2-9c4c914b.jpg", import.meta.url).href;
 const bg3 = "" + new URL("menu-background-3-1f77c019.jpg", import.meta.url).href;
@@ -15956,17 +15931,6 @@ class BackgroundLoader {
     this.recycleImageIfNeed();
     return image;
   }
-  // private async downloadImage(name: string) {
-  //     const response = await fetch(url("/background?name=" + name));
-  //     if (int(response.status / 100) != 2) {
-  //         this.availableMap[name] = false;
-  //         return;
-  //     }
-  //     const blob = await response.blob();
-  //     const imageBitmap = await createImageBitmap(blob);
-  //     this.cache.put(name, imageBitmap);
-  //     this.availableMap[name] = true;
-  // }
   recycleImageIfNeed() {
     if (this.recycleQueue.length >= MAX_CACHE_SIZE) {
       const image = this.recycleQueue.shift();
@@ -22590,6 +22554,7 @@ class VideoBackground extends Drawable {
     this.video = video;
     this.textureUnit = 4;
     this.isVertexUpdate = true;
+    this.videoSize = Vector();
     this.textureUnit = 0;
     const vertexArray = new VertexArray(gl);
     vertexArray.bind();
@@ -22613,6 +22578,8 @@ class VideoBackground extends Drawable {
   }
   setVideo(video) {
     this.video = video;
+    this.videoSize.set(video.videoWidth, video.videoHeight);
+    this.isVertexUpdate = true;
   }
   createVertexArray() {
     const width = this.width;
@@ -22620,6 +22587,19 @@ class VideoBackground extends Drawable {
     const { x, y } = this.position;
     const topLeft = new Vector2(x, y);
     const bottomRight = new Vector2(x + width, y - height);
+    const videoSize = this.videoSize;
+    if (!videoSize.isZero()) {
+      const targetWidth = height * videoSize.x / videoSize.y;
+      topLeft.set(
+        -targetWidth / 2,
+        y
+      );
+      bottomRight.set(
+        topLeft.x + targetWidth,
+        topLeft.y - height
+      );
+    }
+    console.log(topLeft, bottomRight);
     const vertexData = [];
     Shape2D.quadVector2(
       topLeft,
@@ -22679,7 +22659,6 @@ class VideoBackground extends Drawable {
     this.vertexArray.dispose();
     this.shader.dispose();
     this.buffer.dispose();
-    console.log("background dispose");
   }
 }
 class BackgroundScreen extends Box {
@@ -22748,6 +22727,9 @@ class BackgroundScreen extends Box {
   }
   setupImageBackground(bg) {
     this.background.updateBackground2(bg.image && UIState.beatmapBackground ? bg.image : BackgroundLoader$1.getBackground());
+  }
+  get isVideoVisible() {
+    return this.videoBackground.isVisible;
   }
   onUpdate() {
     super.onUpdate();
@@ -24966,6 +24948,16 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
       }
     };
     onMounted(async () => {
+      let backgroundScreen = null;
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+          if (backgroundScreen == null ? void 0 : backgroundScreen.isVideoVisible) {
+            OSUPlayer$1.seek(AudioPlayerV2.currentTime());
+          } else {
+            VideoPlayer$1.seek(AudioPlayerV2.currentTime());
+          }
+        }
+      });
       window.addEventListener("mousedown", mouseListener.mousedown);
       window.addEventListener("mouseup", mouseListener.mouseup);
       window.addEventListener("mousemove", mouseListener.mousemove);
@@ -24993,7 +24985,8 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
       window.onresize = () => {
         resizeCanvas();
       };
-      renderer2.addDrawable(new BackgroundScreen(webgl));
+      backgroundScreen = new BackgroundScreen(webgl);
+      renderer2.addDrawable(backgroundScreen);
       ScreenManager$1.init(renderer2);
       ScreenManager$1.addScreen("main", () => {
         return new MainScreen(webgl);
