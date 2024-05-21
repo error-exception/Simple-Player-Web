@@ -82,56 +82,8 @@ class BackgroundLoader {
         this.recycleImageIfNeed()
         return image
 
-
-
-        // const randomIndex = Math.max(
-        //     int(Math.random() * this.backgroundNames.length) - 1,
-        //     0
-        // );
-        // const cache = this.cache;
-        // const name = this.backgroundNames[randomIndex];
-        // const bitmap = cache.get(name);
-        // if (bitmap) {
-        //     return bitmap;
-        // }
-
-        // const availableMap = this.availableMap;
-        // let needDownload = true;
-        // const list = this.backgroundNames;
-        // for (
-        //     let i = 0, j = (randomIndex + 1) % list.length;
-        //     i < list.length;
-        //     i++, j = (j + 1) % list.length
-        // ) {
-        //     const bgName = list[j];
-        //     const available = availableMap[bgName];
-        //     if (isUndef(available) && needDownload) {
-        //         // 从未下载过
-        //         this.downloadImage(bgName);
-        //         needDownload = false;
-        //     } else if (available && cache.has(bgName)) {
-        //         // 从缓存中寻找可用
-        //         return cache.get(bgName)!!;
-        //     } else if (available && !cache.has(bgName) && needDownload) {
-        //         // 下载过，但被回收了，重新下载
-        //         this.downloadImage(bgName);
-        //         needDownload = false;
-        //     }
-        // }
-        // throw new Error("no background available");
     }
 
-    // private async downloadImage(name: string) {
-    //     const response = await fetch(url("/background?name=" + name));
-    //     if (int(response.status / 100) != 2) {
-    //         this.availableMap[name] = false;
-    //         return;
-    //     }
-    //     const blob = await response.blob();
-    //     const imageBitmap = await createImageBitmap(blob);
-    //     this.cache.put(name, imageBitmap);
-    //     this.availableMap[name] = true;
-    // }
 
     private recycleImageIfNeed() {
         if (this.recycleQueue.length >= MAX_CACHE_SIZE) {

@@ -32,6 +32,8 @@ import {LegacyScreen} from "../ts/webgl/screen/legacy/LegacyScreen";
 import AudioChannel from "../ts/player/AudioChannel";
 import {StoryScreen} from "../ts/webgl/screen/story/StoryScreen";
 import {useKeyboard} from "../ts/Utils";
+import VideoPlayer from "../ts/player/VideoPlayer";
+import type {Nullable} from "../ts/type";
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 let renderer: WebGLRenderer
@@ -70,6 +72,17 @@ const mouseListener = {
 }
 
 onMounted(async () => {
+  let backgroundScreen: Nullable<BackgroundScreen> = null
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      // 让视频和音频尽量保持同步
+      if (backgroundScreen?.isVideoVisible) {
+        OSUPlayer.seek(AudioPlayerV2.currentTime())
+      } else {
+        VideoPlayer.seek(AudioPlayerV2.currentTime())
+      }
+    }
+  })
   window.addEventListener("mousedown", mouseListener.mousedown)
   window.addEventListener("mouseup", mouseListener.mouseup)
   window.addEventListener("mousemove", mouseListener.mousemove)
@@ -96,7 +109,8 @@ onMounted(async () => {
   window.onresize = () => {
     resizeCanvas()
   }
-  renderer.addDrawable(new BackgroundScreen(webgl))
+  backgroundScreen = new BackgroundScreen(webgl)
+  renderer.addDrawable(backgroundScreen)
   ScreenManager.init(renderer)
   ScreenManager.addScreen("main", () => {
     return new MainScreen(webgl)

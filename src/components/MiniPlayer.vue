@@ -193,8 +193,10 @@ img {
 }
 .mini-list-leave-from, .mini-enter-to {
   transform: scaleY(1);
+  opacity: 1;
 }
 .mini-list-leave-to, .mini-list-enter-from {
   transform: scaleY(0);
+  opacity: 0;
 }
 </style>

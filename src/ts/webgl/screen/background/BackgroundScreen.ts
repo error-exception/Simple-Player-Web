@@ -91,6 +91,10 @@ export class BackgroundScreen extends Box {
     })
   }
 
+  public get isVideoVisible() {
+    return this.videoBackground.isVisible
+  }
+
   protected onUpdate() {
     super.onUpdate();
     this.background.background.translate = MouseState.position.copy()

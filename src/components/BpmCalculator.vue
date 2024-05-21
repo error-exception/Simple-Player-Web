@@ -7,16 +7,15 @@ import {calcRMS, currentMilliseconds, int, useKeyboard} from "../ts/Utils";
 import CheckBox from "./common/CheckBox.vue";
 import AudioPlayer from "../ts/player/AudioPlayer";
 import {TestBeater} from "../ts/TestBeater";
-import {Toaster} from "../ts/global/Toaster";
 import {ArrayUtils} from "../ts/util/ArrayUtils";
 import TimingManager from "../ts/global/TimingManager";
 import PlayManager from "../ts/player/PlayManager";
-import {TimingInfo, TimingItem} from "../ts/type";
+import {TimingItem} from "../ts/type";
 import {PlayerState} from "../ts/player/PlayerState";
-import {PLAYER} from "../ts/build";
 import {useAnimationFrame} from "../ts/use/useAnimationFrame";
 import ValueAdjust from "./timing/ValueAdjust.vue";
 import {collectLatest} from "../ts/util/eventRef";
+import {Toaster} from "../ts/global/Toaster";
 
 /**
  * this component should update to fit dynamic bpm and new kiai alg
@@ -45,6 +44,7 @@ let DRAW_COUNT = 12
 let peeks: number[] = []
 
 onMounted(() => {
+  Toaster.show("Under developing......")
   if (wave.value) {
     const ctx = wave.value.getContext("2d")
     if (ctx) {
@@ -482,30 +482,30 @@ const playbackRate = ref([0.25, 0.5, 0.75, 1.0])
 const loadState = ref("正在初始化......")
 
 async function applyTiming() {
-  const bpm = Math.floor(bpmInfo.bpm)
-  
-  const timingInfo: TimingInfo = {
-    bpm,
-    id: currentMusic.metadata.id,
-    version: "1.0",
-    offset: bpmInfo.offset,
-    timingList: []
-  }
-  
-  const timingList = timing.list
-  for (const timingListElement of timingList) {
-    timingInfo.timingList.push({
-      isKiai: timingListElement.isKiai,
-      timestamp: timingListElement.timestamp
-    })
-  }
-  TimingManager.addTimingInfoToCache(timingInfo)
-  
-  let isSuccess = true
-  if (PLAYER) {
-    isSuccess = await TimingManager.updateTiming(timingInfo)
-  }
-  Toaster.show(isSuccess ? '保存成功' : '保存失败')
+  // const bpm = Math.floor(bpmInfo.bpm)
+  //
+  // const timingInfo: TimingInfo = {
+  //   bpm,
+  //   id: currentMusic.metadata.id,
+  //   version: "1.0",
+  //   offset: bpmInfo.offset,
+  //   timingList: []
+  // }
+  //
+  // const timingList = timing.list
+  // for (const timingListElement of timingList) {
+  //   timingInfo.timingList.push({
+  //     isKiai: timingListElement.isKiai,
+  //     timestamp: timingListElement.timestamp
+  //   })
+  // }
+  // TimingManager.addTimingInfoToCache(timingInfo)
+  //
+  // let isSuccess = true
+  // if (PLAYER) {
+  //   isSuccess = await TimingManager.updateTiming(timingInfo)
+  // }
+  // Toaster.show(isSuccess ? '保存成功' : '保存失败')
   
 }
 

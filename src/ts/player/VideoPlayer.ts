@@ -1,5 +1,6 @@
 import {AbstractPlayer, MediaDataSource} from "./AbstractPlayer";
 import {currentMilliseconds, int, isString} from "../Utils";
+import type {Nullable} from "../type";
 
 class VideoPlayer extends AbstractPlayer {
 
@@ -62,13 +63,18 @@ class VideoPlayer extends AbstractPlayer {
 
   }
 
+  private previousObjectUrl: Nullable<string> = null
   public async setSource(src: MediaDataSource) {
     this.isAvailable = false
     const video = this.video
     if (isString(src)) {
       video.src = src
     } else if (src instanceof Blob) {
-      video.src = URL.createObjectURL(src)
+      if (this.previousObjectUrl) {
+        URL.revokeObjectURL(this.previousObjectUrl)
+      }
+      this.previousObjectUrl = URL.createObjectURL(src)
+      video.src = this.previousObjectUrl
     } else {
       return
     }

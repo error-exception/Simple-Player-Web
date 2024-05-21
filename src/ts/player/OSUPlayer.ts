@@ -3,7 +3,6 @@ import {createMutableStateFlow} from "../util/flow";
 import {NoteData} from "../webgl/screen/mania/ManiaPanel";
 import AudioPlayerV2 from "./AudioPlayer";
 import VideoPlayer from "./VideoPlayer";
-import videoPlayer from "./VideoPlayer";
 import {ref, shallowRef} from "vue";
 import {OSZFile} from "../osu/OSZ";
 import {eventRef} from "../util/eventRef";
@@ -34,12 +33,7 @@ class OSUPlayer {
   private isVideoAvailable = false
 
   constructor() {
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
-        // 让视频和音频尽量保持同步
-        videoPlayer.seek(AudioPlayerV2.currentTime())
-      }
-    })
+
   }
 
   public async setSource(osu: OSUFile, src: OSZFile) {
@@ -55,6 +49,7 @@ class OSUPlayer {
     this.artist.value = Metadata?.ArtistUnicode ?? "None"
     this.duration.value = AudioPlayerV2.duration()
     const background: OSUBackground = {}
+    this.isVideoAvailable = false
     if (video) {
       try {
         VideoPlayer.baseOffset = Events?.videoOffset ?? 0

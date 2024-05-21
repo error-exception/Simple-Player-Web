@@ -57,7 +57,7 @@ const openMiniPlayer = inject<Function>("openMiniPlayer")!!
       </button>
       <button
         v-osu-top-bar-btn
-        v-if="PLAYER"
+        v-if="PLAYER || true"
         class="ma top-bar-icon-btn"
         @click="$emit('bpmCalcClick')"
       >

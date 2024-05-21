@@ -175,7 +175,7 @@ export class LogoTriangles extends Drawable {
         const circleMaxRadius = Math.min(scaledWidth, scaledHeight) / 2
         const circleCenter = new Vector2(
             (Coordinate.nativeWidth / 2 + transform.translate.x) * window.devicePixelRatio,
-            (Coordinate.nativeHeight / 2 + transform.translate.y)* window.devicePixelRatio
+            (Coordinate.nativeHeight / 2 + transform.translate.y) * window.devicePixelRatio
         )
         this.circleInfo[0] = circleCenter.x
         this.circleInfo[1] = circleCenter.y

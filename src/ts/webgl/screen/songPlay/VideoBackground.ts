@@ -3,7 +3,7 @@ import {Drawable} from "../../drawable/Drawable";
 import {Shape2D} from "../../util/Shape2D";
 import {Shader} from "../../core/Shader";
 import {Texture} from "../../core/Texture";
-import {Vector2} from "../../core/Vector2";
+import {Vector, Vector2} from "../../core/Vector2";
 import {VertexArray} from '../../core/VertexArray';
 import {VertexBuffer} from "../../core/VertexBuffer";
 import {VertexBufferLayout} from "../../core/VertexBufferLayout";
@@ -59,8 +59,11 @@ export class VideoBackground extends Drawable {
         this.texture = texture;
     }
 
+    private videoSize = Vector()
     public setVideo(video: HTMLVideoElement) {
         this.video = video
+        this.videoSize.set(video.videoWidth, video.videoHeight)
+        this.isVertexUpdate = true
     }
 
     public createVertexArray() {
@@ -69,6 +72,19 @@ export class VideoBackground extends Drawable {
         const { x, y } = this.position;
         const topLeft = new Vector2(x, y)
         const bottomRight = new Vector2(x + width, y - height)
+        const videoSize = this.videoSize
+        if (!videoSize.isZero()) {
+            const targetWidth = (height * videoSize.x) / videoSize.y
+            topLeft.set(
+              -targetWidth / 2,
+              y
+            )
+            bottomRight.set(
+              topLeft.x + targetWidth,
+              topLeft.y - height
+            )
+        }
+        console.log(topLeft, bottomRight)
         const vertexData: number[] = []
         Shape2D.quadVector2(
             topLeft, bottomRight,
@@ -127,6 +143,5 @@ export class VideoBackground extends Drawable {
         this.vertexArray.dispose();
         this.shader.dispose()
         this.buffer.dispose();
-        console.log('background dispose')
     }
 }

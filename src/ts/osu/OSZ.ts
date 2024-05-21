@@ -5,7 +5,6 @@ import {NoteData} from "../webgl/screen/mania/ManiaPanel";
 import OSUPlayer from "../player/OSUPlayer";
 import {Nullable} from "../type";
 import {OSBParser} from "./OSBParser";
-import {sleep} from "../Utils";
 
 export class OSZ {
 
@@ -177,14 +176,12 @@ export function loadOSZ(file: File, preview = true) {
 async function load(osz: OSZFile, preview = true) {
   const osu = osz.osu[0]
   await OSUPlayer.setSource(osu, osz)
-  await sleep(200)
   if (preview) {
     const time = osu.General?.PreviewTime
     await OSUPlayer.seek(time && time >= 0 ? time : 0)
+  } else {
+    OSUPlayer.stop()
   }
-  await sleep(200)
-  if (!preview) OSUPlayer.stop()
-  await sleep(200)
   await OSUPlayer.play()
 }
 
