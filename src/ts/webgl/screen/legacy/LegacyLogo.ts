@@ -43,7 +43,6 @@ export class LegacyLogo extends Drawable {
     const buffer = new VertexBuffer(gl)
     const shader = BrightnessTextureShader.newShader(gl)
     const layout = new VertexBufferLayout(gl)
-    console.log(Images.LegacyLogo)
     const texture = new Texture(gl, Images.LegacyLogo)
 
     buffer.bind()

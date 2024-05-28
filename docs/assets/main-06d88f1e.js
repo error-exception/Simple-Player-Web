@@ -6401,7 +6401,7 @@ function normalizeContainer(container) {
 }
 const style = "";
 const materialIcons = "";
-const _sfc_main$n = /* @__PURE__ */ defineComponent({
+const _sfc_main$o = /* @__PURE__ */ defineComponent({
   __name: "Row",
   props: {
     center: { type: Boolean },
@@ -6451,8 +6451,8 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const Row = /* @__PURE__ */ _export_sfc(_sfc_main$n, [["__scopeId", "data-v-98094a68"]]);
-const _sfc_main$m = /* @__PURE__ */ defineComponent({
+const Row = /* @__PURE__ */ _export_sfc(_sfc_main$o, [["__scopeId", "data-v-98094a68"]]);
+const _sfc_main$n = /* @__PURE__ */ defineComponent({
   __name: "Column",
   props: {
     center: { type: Boolean },
@@ -6495,7 +6495,7 @@ const _sfc_main$m = /* @__PURE__ */ defineComponent({
   }
 });
 const Column_vue_vue_type_style_index_0_scoped_5a6a4ea8_lang = "";
-const Column = /* @__PURE__ */ _export_sfc(_sfc_main$m, [["__scopeId", "data-v-5a6a4ea8"]]);
+const Column = /* @__PURE__ */ _export_sfc(_sfc_main$n, [["__scopeId", "data-v-5a6a4ea8"]]);
 var Icon = /* @__PURE__ */ ((Icon2) => {
   Icon2["ThreeDRotation"] = "";
   Icon2["AcUnit"] = "";
@@ -7963,7 +7963,7 @@ function playSound(buffer) {
     source.disconnect();
   };
 }
-const _sfc_main$l = /* @__PURE__ */ defineComponent({
+const _sfc_main$m = /* @__PURE__ */ defineComponent({
   __name: "CheckBox",
   props: mergeModels({
     color: { default: "#33cb98" }
@@ -7998,7 +7998,7 @@ const _sfc_main$l = /* @__PURE__ */ defineComponent({
   }
 });
 const CheckBox_vue_vue_type_style_index_0_scoped_baa6d9c1_lang = "";
-const CheckBox = /* @__PURE__ */ _export_sfc(_sfc_main$l, [["__scopeId", "data-v-baa6d9c1"]]);
+const CheckBox = /* @__PURE__ */ _export_sfc(_sfc_main$m, [["__scopeId", "data-v-baa6d9c1"]]);
 class TimePlayer {
   constructor() {
     this.previousTime = 0;
@@ -10838,6 +10838,7 @@ class VideoPlayer extends AbstractPlayer {
     if (isString$1(src)) {
       video.src = src;
     } else if (src instanceof Blob) {
+      video.src = "";
       if (this.previousObjectUrl) {
         URL.revokeObjectURL(this.previousObjectUrl);
       }
@@ -10891,7 +10892,6 @@ const _OSUPlayer = class _OSUPlayer {
     this.artist.value = (Metadata == null ? void 0 : Metadata.ArtistUnicode) ?? "None";
     this.duration.value = AudioPlayerV2.duration();
     const background = {};
-    this.isVideoAvailable = false;
     if (video) {
       try {
         VideoPlayer$1.baseOffset = (Events == null ? void 0 : Events.videoOffset) ?? 0;
@@ -11082,21 +11082,29 @@ function useAnimationFrame(key, callback) {
 const _hoisted_1$d = { class: "relative" };
 const _hoisted_2$a = ["value"];
 const _hoisted_3$5 = ["onClick"];
-const _sfc_main$k = /* @__PURE__ */ defineComponent({
+const _sfc_main$l = /* @__PURE__ */ defineComponent({
   __name: "ExpandMenu",
-  props: {
-    modelValue: {},
-    items: {}
-  },
+  props: mergeModels({
+    items: {},
+    align: { default: "left" }
+  }, {
+    "modelValue": { default: "" }
+  }),
   emits: ["update:modelValue"],
-  setup(__props, { emit: emits }) {
+  setup(__props) {
     const props = __props;
-    const selectedIndex = ref(0);
+    const value = useModel(__props, "modelValue");
+    const selectedIndex = computed({
+      get() {
+        return props.items.indexOf(value.value);
+      },
+      set(v) {
+        value.value = props.items[v];
+      }
+    });
     const hidden = ref(true);
-    watch(selectedIndex, (value) => {
-      emits("update:modelValue", props.items[value]);
-    }, { immediate: true });
     const select = (index) => {
+      console.log("fasfasf");
       selectedIndex.value = index;
       hidden.value = true;
     };
@@ -11105,10 +11113,14 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
         createBaseVNode("input", {
           onFocus: _cache[0] || (_cache[0] = ($event) => hidden.value = false),
           autofocus: "",
-          class: "expand-select text-center",
+          class: normalizeClass(["expand-select", {
+            "text-center": _ctx.align === "center",
+            "text-left": _ctx.align === "left",
+            "text-right": _ctx.align === "right"
+          }]),
           readonly: "",
-          value: _ctx.items[selectedIndex.value]
-        }, null, 40, _hoisted_2$a),
+          value: value.value
+        }, null, 42, _hoisted_2$a),
         createBaseVNode("div", {
           class: "expand-item-list",
           style: normalizeStyle({
@@ -11118,7 +11130,9 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
           (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.items, (item, index) => {
             return openBlock(), createElementBlock("div", {
               onClick: ($event) => select(index),
-              class: normalizeClass({ "expand-item-selected": index === selectedIndex.value })
+              class: normalizeClass({
+                "expand-item-selected": index === selectedIndex.value
+              })
             }, toDisplayString(item), 11, _hoisted_3$5);
           }), 256))
         ], 4)
@@ -11126,11 +11140,11 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ExpandMenu_vue_vue_type_style_index_0_scoped_e33839d5_lang = "";
-const ExpandMenu = /* @__PURE__ */ _export_sfc(_sfc_main$k, [["__scopeId", "data-v-e33839d5"]]);
+const ExpandMenu_vue_vue_type_style_index_0_scoped_b503c886_lang = "";
+const ExpandMenu = /* @__PURE__ */ _export_sfc(_sfc_main$l, [["__scopeId", "data-v-b503c886"]]);
 const _hoisted_1$c = { class: "w-full text-center text-white text-sm" };
 const _hoisted_2$9 = ["value"];
-const _sfc_main$j = /* @__PURE__ */ defineComponent({
+const _sfc_main$k = /* @__PURE__ */ defineComponent({
   __name: "ValueAdjust",
   props: mergeModels({
     label: {}
@@ -11192,7 +11206,7 @@ const _sfc_main$j = /* @__PURE__ */ defineComponent({
   }
 });
 const ValueAdjust_vue_vue_type_style_index_0_scoped_cc3e4111_lang = "";
-const ValueAdjust = /* @__PURE__ */ _export_sfc(_sfc_main$j, [["__scopeId", "data-v-cc3e4111"]]);
+const ValueAdjust = /* @__PURE__ */ _export_sfc(_sfc_main$k, [["__scopeId", "data-v-cc3e4111"]]);
 const _Toaster = class _Toaster {
   static show(message) {
     this.toast.emit(message);
@@ -11236,7 +11250,7 @@ const _hoisted_13 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createB
 ], -1));
 const _hoisted_14 = ["onClick"];
 const WINDOW = 12;
-const _sfc_main$i = /* @__PURE__ */ defineComponent({
+const _sfc_main$j = /* @__PURE__ */ defineComponent({
   __name: "BpmCalculator",
   emits: ["close"],
   setup(__props, { emit: emit2 }) {
@@ -11981,8 +11995,8 @@ const _sfc_main$i = /* @__PURE__ */ defineComponent({
   }
 });
 const BpmCalculator_vue_vue_type_style_index_0_scoped_ac71abb2_lang = "";
-const BpmCalculator = /* @__PURE__ */ _export_sfc(_sfc_main$i, [["__scopeId", "data-v-ac71abb2"]]);
-const _sfc_main$h = {};
+const BpmCalculator = /* @__PURE__ */ _export_sfc(_sfc_main$j, [["__scopeId", "data-v-ac71abb2"]]);
+const _sfc_main$i = {};
 const _hoisted_1$a = { class: "flex flex-row develop-box rounded-tl-[8px] py-2 px-4 text-white bg-[#00000080] pointer-events-none" };
 const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode("span", null, "开发中版本", -1);
 const _hoisted_3$3 = [
@@ -11991,8 +12005,8 @@ const _hoisted_3$3 = [
 function _sfc_render(_ctx, _cache) {
   return openBlock(), createElementBlock("div", _hoisted_1$a, _hoisted_3$3);
 }
-const DevelopTip = /* @__PURE__ */ _export_sfc(_sfc_main$h, [["render", _sfc_render]]);
-const _sfc_main$g = /* @__PURE__ */ defineComponent({
+const DevelopTip = /* @__PURE__ */ _export_sfc(_sfc_main$i, [["render", _sfc_render]]);
+const _sfc_main$h = /* @__PURE__ */ defineComponent({
   __name: "ProgressBar",
   setup(__props) {
     const state = reactive({
@@ -12029,7 +12043,7 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
   }
 });
 const ProgressBar_vue_vue_type_style_index_0_scoped_2949efd0_lang = "";
-const ProgressBar = /* @__PURE__ */ _export_sfc(_sfc_main$g, [["__scopeId", "data-v-2949efd0"]]);
+const ProgressBar = /* @__PURE__ */ _export_sfc(_sfc_main$h, [["__scopeId", "data-v-2949efd0"]]);
 var commonjsGlobal = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
@@ -14895,6 +14909,15 @@ class Vector2 {
     this.x = x;
     this.y = y;
   }
+  setFrom(from) {
+    this.x = from.x;
+    this.y = from.y;
+  }
+  distance(other) {
+    return Math.sqrt(
+      (this.x - other.x) * (this.x - other.x) + (this.y - other.y) * (this.y - other.y)
+    );
+  }
 }
 function Vector(x = 0, y) {
   return new Vector2(x, y === void 0 ? x : y);
@@ -15167,7 +15190,6 @@ class OSZ {
         }
       }
     });
-    console.log(zip);
     const filenames = Object.getOwnPropertyNames(zip.files);
     const osuFilenames = filenames.filter((filename) => filename.endsWith(".osu"));
     if (osuFilenames) {
@@ -15236,7 +15258,6 @@ class OSZ {
         }
       }
     }
-    console.log(this.oszSource.osb);
     return osbFile;
   }
   async decompressOSUFile(zip, osuFilename) {
@@ -15292,7 +15313,7 @@ class OSZ {
 function loadOSZ(file, preview = true) {
   OSZ.newOSZ(file).then((osz) => {
     load(osz.getOSZFile(), preview);
-  });
+  }).catch(console.log);
 }
 async function load(osz, preview = true) {
   var _a;
@@ -15340,7 +15361,7 @@ const _hoisted_2$6 = ["src"];
 const _hoisted_3$2 = { class: "player-title" };
 const _hoisted_4$1 = { class: "player-artist" };
 const _hoisted_5 = ["onClick"];
-const _sfc_main$f = /* @__PURE__ */ defineComponent({
+const _sfc_main$g = /* @__PURE__ */ defineComponent({
   __name: "MiniPlayer",
   setup(__props) {
     const img = ref(null);
@@ -15513,7 +15534,7 @@ const _sfc_main$f = /* @__PURE__ */ defineComponent({
   }
 });
 const MiniPlayer_vue_vue_type_style_index_0_scoped_fa4dc804_lang = "";
-const MiniPlayer = /* @__PURE__ */ _export_sfc(_sfc_main$f, [["__scopeId", "data-v-fa4dc804"]]);
+const MiniPlayer = /* @__PURE__ */ _export_sfc(_sfc_main$g, [["__scopeId", "data-v-fa4dc804"]]);
 function useCollect(flow, collector) {
   flow.collect(collector);
   onUnmounted(() => {
@@ -15526,7 +15547,7 @@ function useStateFlow(stateFlow) {
   return value;
 }
 const _hoisted_1$8 = { style: { "flex-grow": "1" } };
-const _sfc_main$e = /* @__PURE__ */ defineComponent({
+const _sfc_main$f = /* @__PURE__ */ defineComponent({
   __name: "Playlist",
   setup(__props) {
     function playAt(i) {
@@ -15574,21 +15595,291 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
   }
 });
 const Playlist_vue_vue_type_style_index_0_scoped_b9b7e18b_lang = "";
-const Playlist = /* @__PURE__ */ _export_sfc(_sfc_main$e, [["__scopeId", "data-v-b9b7e18b"]]);
+const Playlist = /* @__PURE__ */ _export_sfc(_sfc_main$f, [["__scopeId", "data-v-b9b7e18b"]]);
 const UIState = reactive({
   starSmoke: false,
   logoDrag: true,
   logoHover: true,
   beatmapBackground: true
 });
+const bg1 = "" + new URL("menu-background-1-05e31a26.jpg", import.meta.url).href;
+const bg2 = "" + new URL("menu-background-2-9c4c914b.jpg", import.meta.url).href;
+const bg3 = "" + new URL("menu-background-3-1f77c019.jpg", import.meta.url).href;
+const bg4 = "" + new URL("menu-background-4-7a8f47a6.jpg", import.meta.url).href;
+const bg5 = "" + new URL("menu-background-5-a087a7e0.jpg", import.meta.url).href;
+const bg6 = "" + new URL("menu-background-6-6a466c0e.jpg", import.meta.url).href;
+const bg7 = "" + new URL("menu-background-7-60ba0f5f.jpg", import.meta.url).href;
+class BackgroundDao {
+  async downloadBackground(name) {
+    let response;
+    {
+      response = await fetch(name);
+    }
+    if (int(response.status / 100) !== 2) {
+      return null;
+    }
+    return await response.blob();
+  }
+  async getBackgroundList() {
+    {
+      return [bg1, bg2, bg3, bg4, bg5, bg6, bg7];
+    }
+  }
+}
+const BackgroundDao$1 = new BackgroundDao();
+const MAX_CACHE_SIZE$1 = 6;
+class BackgroundLoader {
+  constructor() {
+    this.imageQueue = [];
+    this.imageRecord = {};
+    this.recycleQueue = [];
+    this.backgroundNames = [];
+    this.isInit = false;
+    this.backgroundSequence = [];
+  }
+  async init() {
+    const backgroundList = await BackgroundDao$1.getBackgroundList();
+    if (!backgroundList) {
+      throw new Error("No background");
+    }
+    for (let i = 0; i < backgroundList.length; i++) {
+      this.imageRecord[backgroundList[i]] = true;
+    }
+    this.backgroundNames = backgroundList;
+    const downloadCount = Math.min(backgroundList.length, MAX_CACHE_SIZE$1);
+    const randomSequence = this.randomSequence(backgroundList.length);
+    this.backgroundSequence = randomSequence;
+    for (let i = 0; i < downloadCount; i++) {
+      const idx = randomSequence.shift();
+      const name = backgroundList[idx];
+      const blob = await BackgroundDao$1.downloadBackground(name);
+      if (!blob) {
+        this.imageRecord[name] = false;
+        continue;
+      }
+      this.imageQueue.push(await createImageBitmap(blob));
+    }
+    this.isInit = true;
+  }
+  getBackground() {
+    let randomSequence = this.backgroundSequence;
+    if (randomSequence.length) {
+      randomSequence = this.randomSequence(this.backgroundNames.length);
+      this.backgroundSequence = randomSequence;
+    }
+    const image = this.imageQueue.shift();
+    let index = randomSequence.shift();
+    let name = this.backgroundNames[index];
+    while (!this.imageRecord[name]) {
+      index = randomSequence.shift();
+      name = this.backgroundNames[index];
+    }
+    BackgroundDao$1.downloadBackground(name).then((blob) => {
+      if (blob) {
+        return createImageBitmap(blob);
+      } else {
+        this.imageRecord[name] = false;
+      }
+    }).then((image2) => {
+      if (image2) {
+        this.imageQueue.push(image2);
+      }
+    });
+    this.recycleQueue.push(image);
+    this.recycleImageIfNeed();
+    return image;
+  }
+  recycleImageIfNeed() {
+    if (this.recycleQueue.length >= MAX_CACHE_SIZE$1) {
+      const image = this.recycleQueue.shift();
+      image == null ? void 0 : image.close();
+    }
+  }
+  randomSequence(count) {
+    const result = [];
+    const mark = new Array(count).fill(true);
+    for (let k = 0; k < mark.length; k++) {
+      const rand = clamp(
+        int(Interpolation.valueAt(Math.random(), 0, 9)),
+        0,
+        count - 1
+      );
+      if (mark[rand]) {
+        result.push(rand);
+        mark[rand] = false;
+      } else {
+        for (let i = rand, j = 0; j < mark.length; i = (i + 1) % count, j++) {
+          if (mark[i]) {
+            result.push(i);
+            mark[i] = false;
+            break;
+          }
+        }
+      }
+    }
+    return result;
+  }
+}
+const BackgroundLoader$1 = new BackgroundLoader();
+const MAX_CACHE_SIZE = 6;
+class LocalBackgroundLoader {
+  constructor() {
+    this.backgroundFiles = [];
+    this.recycleQueue = [];
+    this.isInit = false;
+    this.currentBackgroundFile = null;
+    this.currentBackgroundImage = null;
+    this.formats = ["jpg", "jpeg", "png"];
+  }
+  async init() {
+    if (this.isInit) {
+      return true;
+    }
+    try {
+      const handle = await window.showDirectoryPicker();
+      for await (const entry of handle.values()) {
+        if (entry.kind === "file" && this.isAccept(entry.name)) {
+          const file = await entry.getFile();
+          this.backgroundFiles.push(file);
+        }
+      }
+      if (this.backgroundFiles.length === 0) {
+        return false;
+      }
+      const index = ~~Interpolation.valueAt(Math.random(), 0, this.backgroundFiles.length - 1);
+      this.currentBackgroundFile = this.backgroundFiles[index];
+      this.currentBackgroundImage = await createImageBitmap(this.backgroundFiles[index]);
+      this.isInit = true;
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+  getBackground() {
+    let index = ~~Interpolation.valueAt(Math.random(), 0, this.backgroundFiles.length - 1);
+    if (this.currentBackgroundFile === this.backgroundFiles[index]) {
+      index = (index + 1) % this.backgroundFiles.length;
+    }
+    const image = this.currentBackgroundImage;
+    this.recycleQueue.push(image);
+    this.recycleImageIfNeed();
+    createImageBitmap(this.backgroundFiles[index]).then((image2) => {
+      this.currentBackgroundImage = image2;
+    });
+    return image;
+  }
+  isAccept(name) {
+    const dotIndex = name.indexOf(".");
+    if (dotIndex < 0) {
+      return false;
+    }
+    const extension = name.substring(dotIndex + 1).toLowerCase();
+    return this.formats.includes(extension);
+  }
+  recycleImageIfNeed() {
+    if (this.recycleQueue.length > MAX_CACHE_SIZE) {
+      const image = this.recycleQueue.shift();
+      image == null ? void 0 : image.close();
+    }
+  }
+}
+const LocalBackgroundLoader$1 = new LocalBackgroundLoader();
+class BackgroundManager {
+  constructor() {
+    this.Default = 0;
+    this.Beatmap = 1;
+    this.Custom = 2;
+    this.currentLoader = ref(-1);
+    this.customBackgroundChange = ref(0);
+  }
+  async changeLoader(loader) {
+    const currentLoader = this.currentLoader.value;
+    let success = true;
+    if (currentLoader === loader) {
+      return success;
+    }
+    if (loader === this.Default) {
+      await BackgroundLoader$1.init();
+      success = true;
+    } else if (loader === this.Custom) {
+      success = await LocalBackgroundLoader$1.init();
+    }
+    if (!success) {
+      return false;
+    }
+    this.currentLoader.value = loader;
+    return success;
+  }
+  getBackground() {
+    const loader = this.currentLoader.value;
+    if (loader === this.Default) {
+      return BackgroundLoader$1.getBackground();
+    } else if (loader === this.Custom) {
+      return LocalBackgroundLoader$1.getBackground();
+    } else {
+      throw new Error("No loader found");
+    }
+  }
+  changeCustomBackground() {
+    const loader = this.currentLoader.value;
+    if (loader === this.Custom) {
+      this.customBackgroundChange.value = (this.customBackgroundChange.value + 1) % 5;
+    }
+  }
+}
+const BackgroundManager$1 = new BackgroundManager();
+const _sfc_main$e = /* @__PURE__ */ defineComponent({
+  __name: "OSUButton",
+  props: {
+    fill: { type: Boolean, default: false }
+  },
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("button", {
+        class: normalizeClass(["osu-button", {
+          "w-full": _ctx.fill
+        }])
+      }, [
+        renderSlot(_ctx.$slots, "default", {}, void 0, true)
+      ], 2);
+    };
+  }
+});
+const OSUButton_vue_vue_type_style_index_0_scoped_1bc8e835_lang = "";
+const OSUButton = /* @__PURE__ */ _export_sfc(_sfc_main$e, [["__scopeId", "data-v-1bc8e835"]]);
 const _hoisted_1$7 = /* @__PURE__ */ createBaseVNode("span", null, "Logo Drag", -1);
 const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode("span", { class: "flex-row" }, "Logo Hover", -1);
 const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode("span", { class: "flex-row" }, "Star Smoke", -1);
-const _hoisted_4 = /* @__PURE__ */ createBaseVNode("span", { class: "flex-row" }, "Use beatmap background", -1);
+const _hoisted_4 = /* @__PURE__ */ createBaseVNode("span", null, "Background", -1);
 const _sfc_main$d = /* @__PURE__ */ defineComponent({
   __name: "UISettings",
   setup(__props) {
+    const backgroundType = [
+      "default",
+      "beatmap",
+      "custom"
+    ];
+    const item = ref(
+      backgroundType[BackgroundManager$1.currentLoader.value] ?? "beatmap"
+    );
+    watch(item, (value, oldValue) => {
+      if (value === "default") {
+        BackgroundManager$1.changeLoader(BackgroundManager$1.Default);
+      } else if (value === "beatmap") {
+        BackgroundManager$1.changeLoader(BackgroundManager$1.Beatmap);
+      } else if (value === "custom") {
+        BackgroundManager$1.changeLoader(BackgroundManager$1.Custom).then((v) => {
+          if (!v) {
+            item.value = oldValue;
+          }
+        });
+      }
+    });
+    function refreshCustomBackground() {
+      BackgroundManager$1.changeCustomBackground();
+    }
     return (_ctx, _cache) => {
+      const _directive_osu_button = resolveDirective("osu-button");
       return openBlock(), createBlock(Column, {
         class: "w-full h-full text-white p-4",
         gap: 16
@@ -15636,17 +15927,38 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
-          createVNode(Row, {
+          createVNode(Column, {
             class: "w-full",
-            "center-vertical": ""
+            "center-vertical": "",
+            gap: 8
           }, {
             default: withCtx(() => [
               _hoisted_4,
-              createVNode(CheckBox, {
-                class: "ml-auto",
-                modelValue: unref(UIState).beatmapBackground,
-                "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => unref(UIState).beatmapBackground = $event)
+              createVNode(ExpandMenu, {
+                items: backgroundType,
+                modelValue: item.value,
+                "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => item.value = $event),
+                class: "w-full"
               }, null, 8, ["modelValue"])
+            ]),
+            _: 1
+          }),
+          createVNode(Row, {
+            class: "w-full",
+            center: ""
+          }, {
+            default: withCtx(() => [
+              withDirectives((openBlock(), createBlock(OSUButton, {
+                fill: "",
+                onClick: _cache[4] || (_cache[4] = ($event) => refreshCustomBackground())
+              }, {
+                default: withCtx(() => [
+                  createTextVNode(" Change Custom Background ")
+                ]),
+                _: 1
+              })), [
+                [_directive_osu_button]
+              ])
             ]),
             _: 1
           })
@@ -15844,125 +16156,6 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
 });
 const TopBar_vue_vue_type_style_index_0_scoped_57de2047_lang = "";
 const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$9, [["__scopeId", "data-v-57de2047"]]);
-const bg1 = "" + new URL("menu-background-1-05e31a26.jpg", import.meta.url).href;
-const bg2 = "" + new URL("menu-background-2-9c4c914b.jpg", import.meta.url).href;
-const bg3 = "" + new URL("menu-background-3-1f77c019.jpg", import.meta.url).href;
-const bg4 = "" + new URL("menu-background-4-7a8f47a6.jpg", import.meta.url).href;
-const bg5 = "" + new URL("menu-background-5-a087a7e0.jpg", import.meta.url).href;
-const bg6 = "" + new URL("menu-background-6-6a466c0e.jpg", import.meta.url).href;
-const bg7 = "" + new URL("menu-background-7-60ba0f5f.jpg", import.meta.url).href;
-class BackgroundDao {
-  async downloadBackground(name) {
-    let response;
-    {
-      response = await fetch(name);
-    }
-    if (int(response.status / 100) !== 2) {
-      return null;
-    }
-    return await response.blob();
-  }
-  async getBackgroundList() {
-    {
-      return [bg1, bg2, bg3, bg4, bg5, bg6, bg7];
-    }
-  }
-}
-const BackgroundDao$1 = new BackgroundDao();
-const MAX_CACHE_SIZE = 6;
-class BackgroundLoader {
-  constructor() {
-    this.imageQueue = [];
-    this.imageRecord = {};
-    this.recycleQueue = [];
-    this.backgroundNames = [];
-    this.isInit = false;
-    this.backgroundSequence = [];
-  }
-  async init() {
-    const backgroundList = await BackgroundDao$1.getBackgroundList();
-    if (!backgroundList) {
-      throw new Error("No background");
-    }
-    for (let i = 0; i < backgroundList.length; i++) {
-      this.imageRecord[backgroundList[i]] = true;
-    }
-    this.backgroundNames = backgroundList;
-    const downloadCount = Math.min(backgroundList.length, MAX_CACHE_SIZE);
-    const randomSequence = this.randomSequence(backgroundList.length);
-    this.backgroundSequence = randomSequence;
-    for (let i = 0; i < downloadCount; i++) {
-      const idx = randomSequence.shift();
-      const name = backgroundList[idx];
-      const blob = await BackgroundDao$1.downloadBackground(name);
-      if (!blob) {
-        this.imageRecord[name] = false;
-        continue;
-      }
-      this.imageQueue.push(await createImageBitmap(blob));
-    }
-    this.isInit = true;
-  }
-  getBackground() {
-    let randomSequence = this.backgroundSequence;
-    if (randomSequence.length) {
-      randomSequence = this.randomSequence(this.backgroundNames.length);
-      this.backgroundSequence = randomSequence;
-    }
-    const image = this.imageQueue.shift();
-    let index = randomSequence.shift();
-    let name = this.backgroundNames[index];
-    while (!this.imageRecord[name]) {
-      index = randomSequence.shift();
-      name = this.backgroundNames[index];
-    }
-    BackgroundDao$1.downloadBackground(name).then((blob) => {
-      if (blob) {
-        return createImageBitmap(blob);
-      } else {
-        this.imageRecord[name] = false;
-      }
-    }).then((image2) => {
-      if (image2) {
-        this.imageQueue.push(image2);
-      }
-    });
-    this.recycleQueue.push(image);
-    this.recycleImageIfNeed();
-    return image;
-  }
-  recycleImageIfNeed() {
-    if (this.recycleQueue.length >= MAX_CACHE_SIZE) {
-      const image = this.recycleQueue.shift();
-      image == null ? void 0 : image.close();
-    }
-  }
-  randomSequence(count) {
-    const result = [];
-    const mark = new Array(count).fill(true);
-    for (let k = 0; k < mark.length; k++) {
-      const rand = clamp(
-        int(Interpolation.valueAt(Math.random(), 0, 9)),
-        0,
-        count - 1
-      );
-      if (mark[rand]) {
-        result.push(rand);
-        mark[rand] = false;
-      } else {
-        for (let i = rand, j = 0; j < mark.length; i = (i + 1) % count, j++) {
-          if (mark[i]) {
-            result.push(i);
-            mark[i] = false;
-            break;
-          }
-        }
-      }
-    }
-    return result;
-  }
-}
-const BackgroundLoader$1 = new BackgroundLoader();
 const _BeatDispatcher = class _BeatDispatcher {
   static register(beat) {
     this.IBeatList.push(beat);
@@ -17765,6 +17958,109 @@ const _Texture = class _Texture {
 _Texture.blankData = new Uint8Array([0, 0, 0, 0]);
 _Texture.NULL = Symbol();
 let Texture = _Texture;
+class VertexBuffer {
+  constructor(gl, data = null, usage = gl.STATIC_DRAW) {
+    this.gl = gl;
+    this.usage = usage;
+    const buffer = gl.createBuffer();
+    if (!buffer) {
+      throw new Error("create vertex buffer error");
+    }
+    this.rendererId = buffer;
+    if (data !== null) {
+      this.bind();
+      gl.bufferData(gl.ARRAY_BUFFER, data, usage);
+      this.unbind();
+    }
+  }
+  setBufferData(data) {
+    const gl = this.gl;
+    gl.bufferData(gl.ARRAY_BUFFER, data, this.usage);
+  }
+  setBufferSubData(data, byteOffset) {
+    this.gl.bufferSubData(this.gl.ARRAY_BUFFER, byteOffset, data);
+  }
+  bind() {
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rendererId);
+  }
+  unbind() {
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+  }
+  dispose() {
+    this.gl.deleteBuffer(this.rendererId);
+  }
+}
+const logo = "" + new URL("logo-76d27be1.png", import.meta.url).href;
+const cursor = "" + new URL("cursor-40b79df2.png", import.meta.url).href;
+const backIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAABsElEQVRYw+2XMW7CQBBFAdEgDAWUUCJOkMStTwFXwJzABYgoBZzAnMIdSIhjADcAyQ1ISQfdSxF7hbC9XjvyRpGYdv7+2Zn5O7tbKj3tHxhlTBw89vgA+OzxcDAp/568w4ITSXZiQSc/eQuXG2l2w6WVh37ABVW7MMhGXmX5sMstNhY9DAx6WNhsH7JbUlWlr7G6W+hjY8TiDOyg7T+2oqa2+7VYcmVKXYquM+Uq8GuFLO6K42MqZWze5bFMAw8FdKcuQDrsxLqhDNjmLHbfzSSLrsjiTDsZ5oram5llbYpeuMmJhsKb5DqYEyHq+OIyF+VJVA4zZhJFhWWax7krHAP3SEIPSEKMAoYjlbgahgk2pfQATgKiKYoc7SFO4Nqk0n/ykpjDJnELeIFrnEr/Kmn0OEB5UdchcFlS+i/epEqyAtwh6gqPWF9CH2MP2H543KIBwvY0stBHAjRCqfxBgMJLpNpkM2+TVWUqDSGTqfpBk4SQHbQso2KSZ1SoD7uPXMNOeVy/5xzXGi6cwq9MDZd+4c8WDQ8vDU/Hwh+/Gp7vGj4gWr5QGj6BWr6xT9Ng32riAijeSkHUAAAAAElFTkSuQmCC";
+const approachCircle = "" + new URL("approachcircle-0459bffe.png", import.meta.url).href;
+const star = "data:image/png;base64,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";
+const whiteRound = "" + new URL("white_round-9623cbb6.png", import.meta.url).href;
+const ripple = "" + new URL("ripple_new-d127df79.png", import.meta.url).href;
+const legacyLogo = "" + new URL("legacy_logo-21c56fce.png", import.meta.url).href;
+const stdNoteCircle = "" + new URL("hitcircleoverlay-8d1effa1.png", import.meta.url).href;
+const bar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAAYCAYAAAAVgCMkAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAEJSURBVHgB7dx/jcJAEMXxt1WABBychXNwODgJdw4oCsABVkABEgAF4KDMwELCj1TAvu8n2UxS/p7XWdpu0YhhGCZR/mJ9x5rWBaAR5dPFaPxplLVujQ+gUd3rhWj+/yg70fxA854mgGj+eZReACw8AqDe+ZcCYOMaAHXPn2P/RABs3P8D6EXzA3ZKvfvvBcBOTgAzAbCUAfAjAJZyC3AS+3/AUgbAIACWOgGwlQFwFABLGQA8AgRMZQBsBcBSqd/8nwTATldKOUfdCIAdPgYCjF0fA8YUcIiyEAArj/cAIgRWIgQAK29nAtaDQfJkILYDQOPGDgXtY/0KQLPK2I81CGZ1fYmpAGjKBQBvQEcDylpKAAAAAElFTkSuQmCC";
+const borderBar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAAYCAYAAAAVgCMkAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAE2SURBVHgB7dxRbcNADIBhpwgCIQw2CGOwMlgZbAwaJhuTbghWBlURFMLVpzpS61zyXvv/JOsk59m+u8hJJytKKb0unxpvGoMFgCC6VlILf9DlW26FDyCojU9o8X/p8i8UPxDewwlAi3+vyygAcqk7f2n7tWeDAHhqvrin5KBxcc8udh0AEMRSA/hpFP+rAAhl1gBs9/fY+YGAWg3A3/1PAiCkVgM4uNxOAITkG0CdA/B3/aMASKEr05vAKaEEQEi+3jcCIK3aAM73icLAD5BGbQD+rf9WAKRQG8Cfy70LgBz0yN8XBoGAFGZzAJY8uDyjwEBASw2Aj4GABJoNwB4sfQ580thxIgCeny9u/0OQUZe9AEhhNvVnx/7aBHoBENraT0FHjQ8BENbq3L81gq3Fi3AqAEK5AiCXx8ljyVPnAAAAAElFTkSuQmCC";
+const square = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8A/////wn7A/2j0UkKAAAAAElFTkSuQmCC";
+const ImageResourceMap = [
+  {
+    name: "Logo",
+    url: logo
+  },
+  {
+    name: "Ripple",
+    url: ripple
+  },
+  {
+    name: "LegacyLogo",
+    url: legacyLogo
+  },
+  {
+    name: "Cursor",
+    url: cursor
+  },
+  {
+    name: "ApproachCircle",
+    url: approachCircle
+  },
+  {
+    name: "StdNoteCircle",
+    url: stdNoteCircle
+  },
+  {
+    name: "BackIcon",
+    url: backIcon
+  },
+  {
+    name: "WhiteRound",
+    url: whiteRound
+  },
+  {
+    name: "Star",
+    url: star
+  },
+  {
+    name: "Bar",
+    url: bar
+  },
+  {
+    name: "BorderBar",
+    url: borderBar
+  },
+  {
+    name: "Square",
+    url: square
+  }
+];
+const Images = {};
+async function loadImage() {
+  for (const imageSrc of ImageResourceMap) {
+    const image = new Image();
+    image.src = imageSrc.url;
+    await image.decode();
+    Images[imageSrc.name] = image;
+  }
+}
 class VertexBufferElement {
   constructor(position, type, count, normalized) {
     this.position = position;
@@ -17848,36 +18144,41 @@ class VertexArray {
     this.gl.deleteVertexArray(this.rendererId);
   }
 }
-class VertexBuffer {
-  constructor(gl, data = null, usage = gl.STATIC_DRAW) {
-    this.gl = gl;
-    this.usage = usage;
-    const buffer = gl.createBuffer();
-    if (!buffer) {
-      throw new Error("create vertex buffer error");
+class ShaderWrapper {
+  constructor(gl, shader, shaderAttributes) {
+    this.shader = shader;
+    this.shaderAttributes = shaderAttributes;
+    this.stride = 0;
+    shader.bind();
+    this.layout = new VertexBufferLayout(gl);
+    this.vertexArray = new VertexArray(gl);
+    for (let i = 0; i < shaderAttributes.length; i++) {
+      const attr = shaderAttributes[i];
+      const position = shader.getAttributeLocation(attr.name);
+      if (attr.type == gl.FLOAT) {
+        this.layout.pushFloat(position, attr.count);
+      } else if (attr.type === gl.UNSIGNED_BYTE) {
+        this.layout.pushUByte(position, attr.count);
+      } else if (attr.type === gl.UNSIGNED_INT) {
+        this.layout.pushUInt(position, attr.count);
+      }
+      this.stride += attr.count;
     }
-    this.rendererId = buffer;
-    if (data !== null) {
-      this.bind();
-      gl.bufferData(gl.ARRAY_BUFFER, data, usage);
-      this.unbind();
-    }
-  }
-  setBufferData(data) {
-    const gl = this.gl;
-    gl.bufferData(gl.ARRAY_BUFFER, data, this.usage);
-  }
-  setBufferSubData(data, byteOffset) {
-    this.gl.bufferSubData(this.gl.ARRAY_BUFFER, byteOffset, data);
+    this.vertexArray.bind();
+    this.vertexArray.addBuffer(this.layout);
+    this.vertexArray.unbind();
+    shader.unbind();
   }
   bind() {
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rendererId);
+    this.shader.bind();
+    this.vertexArray.bind();
   }
   unbind() {
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+    this.shader.unbind();
+    this.vertexArray.unbind();
   }
-  dispose() {
-    this.gl.deleteBuffer(this.rendererId);
+  use() {
+    this.vertexArray.addBuffer(this.layout);
   }
 }
 const ATTR_POSITION = "a_position";
@@ -17891,6 +18192,139 @@ const UNI_ALPHA = "u_alpha";
 const UNI_CIRCLE = "u_circle";
 const UNI_COLOR = "u_color";
 const UNI_BRIGHTNESS = "u_brightness";
+const _ShaderSource = class _ShaderSource {
+};
+_ShaderSource.Default = {
+  vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      attribute vec2 ${ATTR_TEXCOORD};
+      
+      varying vec2 v_texcoord;
+      
+      uniform mat4 ${UNI_ORTH};
+      uniform mat4 ${UNI_TRANSFORM};
+      
+      void main() {
+          vec4 position = vec4(a_position, 0.0, 1.0) * ${UNI_TRANSFORM};
+          gl_Position = position * ${UNI_ORTH};
+          v_texcoord = ${ATTR_TEXCOORD};
+      }
+    `,
+  fragment: `
+      varying highp vec2 v_texcoord;
+    
+      uniform sampler2D ${UNI_SAMPLER};
+      uniform mediump vec4 ${UNI_COLOR};
+    
+      void main() {
+          mediump vec4 tex_color = texture2D(${UNI_SAMPLER}, v_texcoord);
+          mediump vec4 out_color = vec4(tex_color.rgba * ${UNI_COLOR}.rgba);
+          gl_FragColor = out_color;
+      }
+    `
+};
+_ShaderSource.RoundClip = {
+  vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      attribute vec4 ${ATTR_COLOR};
+      
+      varying mediump vec4 v_color;
+      
+      uniform mat4 ${UNI_ORTH};
+      uniform mat4 ${UNI_TRANSFORM};
+      void main() {
+          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
+          gl_Position = position * ${UNI_ORTH};
+          v_color = ${ATTR_COLOR};
+      }
+    `,
+  fragment: `
+      varying mediump vec4 v_color;
+      uniform mediump vec3 ${UNI_CIRCLE};
+      uniform mediump float u_light;
+      void main() {
+          lowp float dist = distance(${UNI_CIRCLE}.xy, gl_FragCoord.xy);
+          if (dist < ${UNI_CIRCLE}.z) {
+              mediump vec4 color = vec4(0.0);
+              color.rgb = min(v_color.rgb + u_light, 1.0);
+              color.a = v_color.a;
+              gl_FragColor = color;
+          } else {
+              discard;
+          }
+      }
+    `
+};
+_ShaderSource.Simple = {
+  vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      attribute vec4 ${ATTR_COLOR};
+      varying mediump vec4 v_color;
+      uniform mat4 ${UNI_ORTH};
+      uniform mat4 ${UNI_TRANSFORM};
+      void main() {
+          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
+          gl_Position = position * ${UNI_ORTH};
+          v_color = ${ATTR_COLOR};
+      }
+    `,
+  fragment: `
+      varying mediump vec4 v_color;
+      uniform mediump float ${UNI_ALPHA};
+      void main() {
+          mediump vec4 color = vec4(v_color);
+          color.a = color.a * ${UNI_ALPHA};
+          gl_FragColor = color;
+      }
+    `
+};
+_ShaderSource.White = {
+  vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      uniform mat4 ${UNI_ORTH};
+      uniform mat4 ${UNI_TRANSFORM};
+      void main() {
+          vec4 coord = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
+          gl_Position = coord * ${UNI_ORTH};
+      }
+    `,
+  fragment: `
+      uniform lowp float ${UNI_ALPHA};
+      void main() {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, ${UNI_ALPHA});
+      }
+    `
+};
+_ShaderSource.AlphaTexture = {
+  vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      attribute vec2 ${ATTR_TEXCOORD};
+      attribute float ${ATTR_ALPHA};
+  
+      varying mediump vec2 v_tex_coord;
+      varying mediump float v_alpha;
+      uniform mat4 ${UNI_ORTH};
+      uniform mat4 ${UNI_TRANSFORM};
+      void main() {
+          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
+          gl_Position = position * ${UNI_ORTH};
+          v_tex_coord = ${ATTR_TEXCOORD};
+          v_alpha = ${ATTR_ALPHA};
+      }
+    `,
+  fragment: `
+      varying mediump float v_alpha;
+      varying mediump vec2 v_tex_coord;
+      uniform sampler2D ${UNI_SAMPLER};
+  
+      void main() {
+          mediump vec4 texelColor = texture2D(${UNI_SAMPLER}, v_tex_coord);
+          texelColor.a = texelColor.a * v_alpha;
+          gl_FragColor = texelColor;
+      }
+    `
+};
+let ShaderSource = _ShaderSource;
 const _Shader = class _Shader {
   constructor(gl, vertexShader2, fragmentShader2) {
     this.gl = gl;
@@ -17984,171 +18418,129 @@ function compileShader(gl, type, source) {
   }
   return shader;
 }
-let currentShader;
-class BaseShader {
-  constructor() {
-    this.vertex = "";
-    this.fragment = "";
+class DefaultShaderWrapper extends ShaderWrapper {
+  constructor(gl) {
+    const shader = new Shader(gl, ShaderSource.Default.vertex, ShaderSource.Default.fragment);
+    super(gl, shader, [
+      { name: ATTR_POSITION, count: 2, type: gl.FLOAT },
+      { name: ATTR_TEXCOORD, count: 2, type: gl.FLOAT }
+    ]);
+    this.colorArray = new Float32Array(4);
   }
-  bind() {
-    if (currentShader && currentShader !== this.shader) {
-      currentShader.unbind();
-    }
-    currentShader = this.shader;
-    currentShader.bind();
+  set orth(mat4) {
+    this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
+  }
+  set transform(mat4) {
+    this.shader.setUniformMatrix4fv(UNI_TRANSFORM, mat4);
+  }
+  set color(color) {
+    const arr = this.colorArray;
+    arr[0] = color.red;
+    arr[1] = color.green;
+    arr[2] = color.blue;
+    arr[3] = color.alpha;
+    this.shader.setUniform4fv(UNI_COLOR, arr);
+  }
+  set sampler2D(sampler) {
+    this.shader.setUniform1i(UNI_SAMPLER, sampler);
   }
 }
-let StaticTextureShader$1 = class StaticTextureShader extends BaseShader {
-  constructor() {
-    super(...arguments);
-    this.vertex = `
-        attribute vec2 ${ATTR_POSITION};
-        attribute vec2 ${ATTR_TEXCOORD};
-    
-        varying mediump vec2 v_tex_coord;
-        uniform mat4 ${UNI_ORTH};
-        uniform mat4 ${UNI_TRANSFORM};
-        void main() {
-            vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
-            gl_Position = position * ${UNI_ORTH};
-            v_tex_coord = ${ATTR_TEXCOORD};
-        }
-    `;
-    this.fragment = `
-        varying mediump vec2 v_tex_coord;
-        uniform mediump float ${UNI_ALPHA};
-        uniform sampler2D ${UNI_SAMPLER};
-    
-        void main() {
-            mediump vec4 texelColor = texture2D(${UNI_SAMPLER}, v_tex_coord);
-            texelColor.a = texelColor.a * ${UNI_ALPHA};
-            gl_FragColor = texelColor;
-        }
-    `;
-    this.shader = null;
-    this.layout = null;
+class SimpleShaderWrapper extends ShaderWrapper {
+  constructor(gl) {
+    const shader = new Shader(gl, ShaderSource.Simple.vertex, ShaderSource.Simple.fragment);
+    super(gl, shader, [
+      { name: ATTR_POSITION, count: 2, type: gl.FLOAT },
+      { name: ATTR_COLOR, count: 4, type: gl.FLOAT }
+    ]);
   }
-  newShader(gl) {
-    return new Shader(gl, this.vertex, this.fragment);
+  set orth(mat4) {
+    this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
   }
-  getShader(gl) {
-    if (this.shader === null) {
-      const shader = new Shader(gl, this.vertex, this.fragment);
-      const layout = new VertexBufferLayout(gl);
-      shader.bind();
-      layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-      layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-      shader.unbind();
-      this.shader = shader;
-      this.layout = layout;
-    }
-    return this.shader;
+  set transform(mat4) {
+    this.shader.setUniformMatrix4fv(UNI_TRANSFORM, mat4);
   }
-  getLayout() {
-    return this.layout;
+  set alpha(a) {
+    this.shader.setUniform1f(UNI_ALPHA, a);
   }
-  dispose() {
-    var _a;
-    (_a = this.shader) == null ? void 0 : _a.dispose();
-    this.shader = null;
-    this.layout = null;
+}
+class RoundClipShaderWrapper extends ShaderWrapper {
+  constructor(gl) {
+    const shader = new Shader(gl, ShaderSource.RoundClip.vertex, ShaderSource.RoundClip.fragment);
+    super(gl, shader, [
+      { name: ATTR_POSITION, count: 2, type: gl.FLOAT },
+      { name: ATTR_COLOR, count: 4, type: gl.FLOAT }
+    ]);
   }
-};
-const StaticTextureShader$2 = new StaticTextureShader$1();
-const logo = "" + new URL("logo-76d27be1.png", import.meta.url).href;
-const cursor = "" + new URL("cursor-40b79df2.png", import.meta.url).href;
-const backIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAABsElEQVRYw+2XMW7CQBBFAdEgDAWUUCJOkMStTwFXwJzABYgoBZzAnMIdSIhjADcAyQ1ISQfdSxF7hbC9XjvyRpGYdv7+2Zn5O7tbKj3tHxhlTBw89vgA+OzxcDAp/568w4ITSXZiQSc/eQuXG2l2w6WVh37ABVW7MMhGXmX5sMstNhY9DAx6WNhsH7JbUlWlr7G6W+hjY8TiDOyg7T+2oqa2+7VYcmVKXYquM+Uq8GuFLO6K42MqZWze5bFMAw8FdKcuQDrsxLqhDNjmLHbfzSSLrsjiTDsZ5oram5llbYpeuMmJhsKb5DqYEyHq+OIyF+VJVA4zZhJFhWWax7krHAP3SEIPSEKMAoYjlbgahgk2pfQATgKiKYoc7SFO4Nqk0n/ykpjDJnELeIFrnEr/Kmn0OEB5UdchcFlS+i/epEqyAtwh6gqPWF9CH2MP2H543KIBwvY0stBHAjRCqfxBgMJLpNpkM2+TVWUqDSGTqfpBk4SQHbQso2KSZ1SoD7uPXMNOeVy/5xzXGi6cwq9MDZd+4c8WDQ8vDU/Hwh+/Gp7vGj4gWr5QGj6BWr6xT9Ng32riAijeSkHUAAAAAElFTkSuQmCC";
-const approachCircle = "" + new URL("approachcircle-0459bffe.png", import.meta.url).href;
-const star = "data:image/png;base64,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";
-const whiteRound = "" + new URL("white_round-9623cbb6.png", import.meta.url).href;
-const ripple = "" + new URL("ripple_new-d127df79.png", import.meta.url).href;
-const legacyLogo = "" + new URL("legacy_logo-21c56fce.png", import.meta.url).href;
-const stdNoteCircle = "" + new URL("hitcircleoverlay-8d1effa1.png", import.meta.url).href;
-const bar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAAYCAYAAAAVgCMkAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAEJSURBVHgB7dx/jcJAEMXxt1WABBychXNwODgJdw4oCsABVkABEgAF4KDMwELCj1TAvu8n2UxS/p7XWdpu0YhhGCZR/mJ9x5rWBaAR5dPFaPxplLVujQ+gUd3rhWj+/yg70fxA854mgGj+eZReACw8AqDe+ZcCYOMaAHXPn2P/RABs3P8D6EXzA3ZKvfvvBcBOTgAzAbCUAfAjAJZyC3AS+3/AUgbAIACWOgGwlQFwFABLGQA8AgRMZQBsBcBSqd/8nwTATldKOUfdCIAdPgYCjF0fA8YUcIiyEAArj/cAIgRWIgQAK29nAtaDQfJkILYDQOPGDgXtY/0KQLPK2I81CGZ1fYmpAGjKBQBvQEcDylpKAAAAAElFTkSuQmCC";
-const borderBar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAAYCAYAAAAVgCMkAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAE2SURBVHgB7dxRbcNADIBhpwgCIQw2CGOwMlgZbAwaJhuTbghWBlURFMLVpzpS61zyXvv/JOsk59m+u8hJJytKKb0unxpvGoMFgCC6VlILf9DlW26FDyCojU9o8X/p8i8UPxDewwlAi3+vyygAcqk7f2n7tWeDAHhqvrin5KBxcc8udh0AEMRSA/hpFP+rAAhl1gBs9/fY+YGAWg3A3/1PAiCkVgM4uNxOAITkG0CdA/B3/aMASKEr05vAKaEEQEi+3jcCIK3aAM73icLAD5BGbQD+rf9WAKRQG8Cfy70LgBz0yN8XBoGAFGZzAJY8uDyjwEBASw2Aj4GABJoNwB4sfQ580thxIgCeny9u/0OQUZe9AEhhNvVnx/7aBHoBENraT0FHjQ8BENbq3L81gq3Fi3AqAEK5AiCXx8ljyVPnAAAAAElFTkSuQmCC";
-const square = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8A/////wn7A/2j0UkKAAAAAElFTkSuQmCC";
-const ImageResourceMap = [
-  {
-    name: "Logo",
-    url: logo
-  },
-  {
-    name: "Ripple",
-    url: ripple
-  },
-  {
-    name: "LegacyLogo",
-    url: legacyLogo
-  },
-  {
-    name: "Cursor",
-    url: cursor
-  },
-  {
-    name: "ApproachCircle",
-    url: approachCircle
-  },
-  {
-    name: "StdNoteCircle",
-    url: stdNoteCircle
-  },
-  {
-    name: "BackIcon",
-    url: backIcon
-  },
-  {
-    name: "WhiteRound",
-    url: whiteRound
-  },
-  {
-    name: "Star",
-    url: star
-  },
-  {
-    name: "Bar",
-    url: bar
-  },
-  {
-    name: "BorderBar",
-    url: borderBar
-  },
-  {
-    name: "Square",
-    url: square
+  set orth(mat4) {
+    this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
   }
-];
-const Images = {};
-async function loadImage() {
-  for (const imageSrc of ImageResourceMap) {
-    const image = new Image();
-    image.src = imageSrc.url;
-    await image.decode();
-    Images[imageSrc.name] = image;
+  set transform(mat4) {
+    this.shader.setUniformMatrix4fv(UNI_TRANSFORM, mat4);
+  }
+  set light(light) {
+    this.shader.setUniform1f("u_light", light);
+  }
+  /**
+   *
+   * @param circle 数据分布 [x, y, radius]
+   */
+  set circle(circle) {
+    this.shader.setUniform3fv(UNI_CIRCLE, circle);
+  }
+}
+class WhiteShaderWrapper extends ShaderWrapper {
+  constructor(gl) {
+    const shader = new Shader(gl, ShaderSource.White.vertex, ShaderSource.White.fragment);
+    super(gl, shader, [
+      { name: ATTR_POSITION, count: 2, type: gl.FLOAT }
+    ]);
+  }
+  set orth(mat4) {
+    this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
+  }
+  set transform(mat4) {
+    this.shader.setUniformMatrix4fv(UNI_TRANSFORM, mat4);
+  }
+  set alpha(a) {
+    this.shader.setUniform1f(UNI_ALPHA, a);
+  }
+}
+class AlphaTextureShaderWrapper extends ShaderWrapper {
+  constructor(gl) {
+    const shader = new Shader(gl, ShaderSource.AlphaTexture.vertex, ShaderSource.AlphaTexture.fragment);
+    super(gl, shader, [
+      { name: ATTR_POSITION, count: 2, type: gl.FLOAT },
+      { name: ATTR_TEXCOORD, count: 2, type: gl.FLOAT },
+      { name: ATTR_ALPHA, count: 1, type: gl.FLOAT }
+    ]);
+  }
+  set orth(mat4) {
+    this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
+  }
+  set transform(mat4) {
+    this.shader.setUniformMatrix4fv(UNI_TRANSFORM, mat4);
+  }
+  set sampler2D(sampler) {
+    this.shader.setUniform1i(UNI_SAMPLER, sampler);
+  }
+}
+class Shaders {
+  static init(gl) {
+    this.Default = new DefaultShaderWrapper(gl);
+    this.RoundClip = new RoundClipShaderWrapper(gl);
+    this.Simple = new SimpleShaderWrapper(gl);
+    this.White = new WhiteShaderWrapper(gl);
+    this.AlphaTexture = new AlphaTextureShaderWrapper(gl);
   }
 }
 class Logo extends Drawable {
   constructor(gl, config) {
     super(gl, config);
     this.textureUnit = 0;
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const buffer = new VertexBuffer(gl);
-    const shader = StaticTextureShader$2.getShader(gl);
-    const layout = new VertexBufferLayout(gl);
-    const texture = new Texture(gl, Images.Logo);
-    buffer.bind();
-    shader.bind();
-    layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-    layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    buffer.unbind();
-    shader.unbind();
-    this.vertexArray = vertexArray;
-    this.buffer = buffer;
-    this.layout = layout;
-    this.shader = shader;
-    this.texture = texture;
+    this.white = Color.fromHex(16777215);
+    this.buffer = new VertexBuffer(gl);
+    this.shader = Shaders.Default;
+    this.texture = new Texture(gl, Images.Logo);
   }
   createVertexArray() {
     const width = this.width;
@@ -18187,30 +18579,27 @@ class Logo extends Drawable {
     this.buffer.unbind();
   }
   unbind() {
-    this.vertexArray.unbind();
     this.texture.unbind();
     this.shader.unbind();
     this.buffer.unbind();
   }
   bind() {
     this.texture.bind(this.textureUnit);
-    this.vertexArray.bind();
     this.shader.bind();
     this.buffer.bind();
   }
   onDraw() {
     const gl = this.gl;
-    this.shader.setUniform1i(UNI_SAMPLER, this.textureUnit);
-    this.shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
-    this.shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
-    this.shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha);
-    this.vertexArray.addBuffer(this.layout);
+    this.shader.sampler2D = this.textureUnit;
+    this.shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    this.shader.transform = this.matrixArray;
+    this.white.alpha = this.appliedTransform.alpha;
+    this.shader.color = this.white;
+    this.shader.use();
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
   dispose() {
     this.texture.dispose();
-    this.vertexArray.dispose();
-    StaticTextureShader$2.dispose();
     this.buffer.dispose();
   }
 }
@@ -18224,67 +18613,6 @@ class BeatDrawable extends Drawable {
     BeatDispatcher.unregister(this);
   }
 }
-class DynamicTextureShader extends BaseShader {
-  constructor() {
-    super(...arguments);
-    this.vertex = `
-        attribute vec2 ${ATTR_POSITION};
-        attribute vec2 ${ATTR_TEXCOORD};
-        attribute float ${ATTR_ALPHA};
-    
-        varying mediump vec2 v_tex_coord;
-        varying mediump float v_alpha;
-        uniform mat4 ${UNI_ORTH};
-        uniform mat4 ${UNI_TRANSFORM};
-        void main() {
-            vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
-            gl_Position = position * ${UNI_ORTH};
-            v_tex_coord = ${ATTR_TEXCOORD};
-            v_alpha = ${ATTR_ALPHA};
-        }
-    `;
-    this.fragment = `
-        varying mediump float v_alpha;
-        varying mediump vec2 v_tex_coord;
-        uniform sampler2D ${UNI_SAMPLER};
-    
-        void main() {
-            mediump vec4 texelColor = texture2D(${UNI_SAMPLER}, v_tex_coord);
-            texelColor.a = texelColor.a * v_alpha;
-            gl_FragColor = texelColor;
-        }
-    `;
-    this.shader = null;
-    this.layout = null;
-  }
-  newShader(gl) {
-    return new Shader(gl, this.vertex, this.fragment);
-  }
-  getShader(gl) {
-    if (this.shader === null) {
-      const shader = new Shader(gl, this.vertex, this.fragment);
-      const layout = new VertexBufferLayout(gl);
-      shader.bind();
-      layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-      layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-      layout.pushFloat(shader.getAttributeLocation(ATTR_ALPHA), 1);
-      shader.unbind();
-      this.shader = shader;
-      this.layout = layout;
-    }
-    return this.shader;
-  }
-  getLayout() {
-    return this.layout;
-  }
-  dispose() {
-    var _a;
-    (_a = this.shader) == null ? void 0 : _a.dispose();
-    this.shader = null;
-    this.layout = null;
-  }
-}
-const DynamicTextureShader$1 = new DynamicTextureShader();
 class Ripples extends BeatDrawable {
   constructor(gl, config) {
     super(gl, config);
@@ -18292,26 +18620,9 @@ class Ripples extends BeatDrawable {
     this.ripples = [];
     this.vertexData = new Float32Array([]);
     this.vertexCount = 0;
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
-    const layout = new VertexBufferLayout(gl);
-    const shader = DynamicTextureShader$1.newShader(gl);
-    const texture = new Texture(gl, Images.Ripple);
-    buffer.bind();
-    shader.bind();
-    layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-    layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    layout.pushFloat(shader.getAttributeLocation(ATTR_ALPHA), 1);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    buffer.unbind();
-    shader.unbind();
-    this.vertexArray = vertexArray;
-    this.buffer = buffer;
-    this.texture = texture;
-    this.layout = layout;
-    this.shader = shader;
+    this.buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
+    this.texture = new Texture(gl, Images.Ripple);
+    this.shader = Shaders.AlphaTexture;
   }
   onNewBeat(isKiai, newBeatTimestamp, gap) {
     if (!BeatBooster$1.isAvailable) {
@@ -18337,7 +18648,6 @@ class Ripples extends BeatDrawable {
     ripple2.start();
   }
   bind() {
-    this.vertexArray.bind();
     this.buffer.bind();
     this.texture.bind(this.textureUnit);
     this.shader.bind();
@@ -18359,7 +18669,6 @@ class Ripples extends BeatDrawable {
     this.vertexCount = int(data.length / 5);
   }
   unbind() {
-    this.vertexArray.unbind();
     this.buffer.unbind();
     this.texture.unbind();
     this.shader.unbind();
@@ -18367,20 +18676,18 @@ class Ripples extends BeatDrawable {
   onDraw() {
     const gl = this.gl;
     const shader = this.shader;
-    shader.setUniform1i(UNI_SAMPLER, this.textureUnit);
-    shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
-    shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
+    shader.sampler2D = this.textureUnit;
+    shader.transform = this.matrixArray;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
     if (this.vertexCount === 0)
       return;
     this.buffer.setBufferData(this.vertexData);
-    this.vertexArray.addBuffer(this.layout);
+    shader.use();
     gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
   }
   dispose() {
     super.dispose();
     this.texture.dispose();
-    this.vertexArray.dispose();
-    this.shader.dispose();
     this.buffer.dispose();
   }
 }
@@ -18463,21 +18770,6 @@ class IndexBuffer {
     this.gl.deleteBuffer(this.rendererId);
   }
 }
-const vertexShader$4 = `
-    attribute vec2 a_vertexPosition;
-    uniform mat4 u_orth;
-    uniform mat4 u_transform;
-    void main() {
-        vec4 coord = vec4(a_vertexPosition, 0.0, 1.0) * u_transform;
-        gl_Position = coord * u_orth;
-    }
-`;
-const fragmentShader$4 = `
-    uniform lowp float u_alpha;
-    void main() {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, u_alpha);
-    }
-`;
 class RoundVisualizer extends Drawable {
   constructor(gl, config) {
     super(gl, config);
@@ -18507,11 +18799,7 @@ class RoundVisualizer extends Drawable {
     if (config.innerRadius) {
       this.innerRadius = config.innerRadius;
     }
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const shader = new Shader(gl, vertexShader$4, fragmentShader$4);
     const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
-    const layout = new VertexBufferLayout(gl);
     const indexBuffer = new IndexBuffer(gl);
     const index = [
       0,
@@ -18534,19 +18822,9 @@ class RoundVisualizer extends Drawable {
     }
     indexBuffer.bind();
     indexBuffer.setIndexBuffer(new Uint32Array(indexArray));
-    buffer.bind();
-    shader.bind();
-    const location = shader.getAttributeLocation("a_vertexPosition");
-    layout.pushFloat(location, 2);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    buffer.unbind();
     indexBuffer.unbind();
-    shader.unbind();
-    this.vertexArray = vertexArray;
     this.buffer = buffer;
-    this.shader = shader;
-    this.layout = layout;
+    this.shader = Shaders.White;
     this.indexBuffer = indexBuffer;
     this.visualizer = AudioPlayerV2.getVisualizer();
   }
@@ -18633,66 +18911,29 @@ class RoundVisualizer extends Drawable {
   }
   bind() {
     this.shader.bind();
-    this.vertexArray.bind();
     this.indexBuffer.bind();
     this.buffer.bind();
   }
   unbind() {
     this.shader.unbind();
-    this.vertexArray.unbind();
     this.indexBuffer.unbind();
     this.buffer.unbind();
   }
   onDraw() {
     const gl = this.gl;
-    this.shader.setUniform1f("u_alpha", BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14);
-    this.shader.setUniformMatrix4fv("u_transform", this.matrixArray);
-    this.shader.setUniformMatrix4fv("u_orth", Coordinate$1.orthographicProjectionMatrix4);
+    this.shader.alpha = BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14;
+    this.shader.transform = this.matrixArray;
+    this.shader.orth = Coordinate$1.orthographicProjectionMatrix4;
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-    this.vertexArray.addBuffer(this.layout);
+    this.shader.use();
     gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_INT, 0);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   }
   dispose() {
-    this.vertexArray.dispose();
     this.buffer.dispose();
-    this.shader.dispose();
     this.indexBuffer.dispose();
   }
 }
-const vertexShader$3 = `
-    attribute vec2 a_position;
-    attribute vec4 a_color;
-    
-    varying mediump vec4 v_color;
-    
-    uniform mat4 u_orth;
-    uniform mat4 u_transform;
-    void main() {
-        vec4 position = vec4(a_position, 0.0, 1.0) * u_transform;
-        gl_Position = position * u_orth;
-        v_color = a_color;
-    }
-`;
-const fragmentShader$3 = `
-    varying mediump vec4 v_color;
-    uniform mediump vec3 u_circle;
-    uniform mediump float u_light;
-    void main() {
-//        gl_FragColor = v_color;
-        lowp float dist = distance(u_circle.xy, gl_FragCoord.xy);
-        if (dist < u_circle.z) {
-            mediump vec4 color = vec4(0.0);
-            color.rgb = min(v_color.rgb + u_light, 1.0);
-            color.a = v_color.a;
-            gl_FragColor = color;
-//            gl_FragColor = v_color;
-        } else {
-//            gl_FragColor = vec4(0.0, 1.0, 0.0, 0.5);
-            discard;
-        }
-    }
-`;
 class LogoTriangles extends Drawable {
   constructor(gl, config) {
     super(gl, config);
@@ -18708,28 +18949,14 @@ class LogoTriangles extends Drawable {
     this.velocityTransition = new ObjectTransition(this, "velocityIncrement");
     this.circleInfo = new Float32Array(3);
     this.isInitialed = false;
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const vertexBuffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
-    const layout = new VertexBufferLayout(gl);
-    const shader = new Shader(gl, vertexShader$3, fragmentShader$3);
-    vertexBuffer.bind();
-    shader.bind();
-    layout.pushFloat(shader.getAttributeLocation("a_position"), 2);
-    layout.pushFloat(shader.getAttributeLocation("a_color"), 4);
     this.vertexCount = 3 * 42;
     this.vertex = new Float32Array(this.vertexCount * 6);
     for (let i = 0; i < this.vertexCount / 3 - 2; i++) {
       const triangle = new TriangleParticle(this);
       this.particles.push(triangle);
     }
-    vertexArray.unbind();
-    vertexBuffer.unbind();
-    shader.unbind();
-    this.shader = shader;
-    this.vertexBuffer = vertexBuffer;
-    this.vertexArray = vertexArray;
-    this.layout = layout;
+    this.shader = Shaders.RoundClip;
+    this.vertexBuffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
   }
   lightBegin(atTime = Time.currentTime) {
     this.lightTransition.setStartTime(atTime);
@@ -18808,29 +19035,26 @@ class LogoTriangles extends Drawable {
     this.circleInfo[2] = circleMaxRadius;
   }
   bind() {
-    this.vertexArray.bind();
     this.vertexBuffer.bind();
     this.shader.bind();
   }
   onDraw() {
     const gl = this.gl;
-    this.shader.setUniform1f("u_light", this.light);
-    this.shader.setUniform3fv("u_circle", this.circleInfo);
-    this.shader.setUniformMatrix4fv("u_transform", this.matrixArray);
-    this.shader.setUniformMatrix4fv("u_orth", Coordinate$1.orthographicProjectionMatrix4);
+    const shader = this.shader;
+    shader.light = this.light;
+    shader.circle = this.circleInfo;
+    shader.transform = this.matrixArray;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
     this.vertexBuffer.setBufferData(this.vertex);
-    this.vertexArray.addBuffer(this.layout);
+    shader.use();
     gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
   }
   unbind() {
-    this.vertexArray.unbind();
     this.vertexBuffer.unbind();
     this.shader.unbind();
   }
   dispose() {
     super.dispose();
-    this.shader.dispose();
-    this.vertexArray.dispose();
     this.vertexBuffer.dispose();
   }
 }
@@ -19661,26 +19885,9 @@ class StarSmoke extends BeatDrawable {
     this.lastKiai = false;
     this.vertexData = new Float32Array([]);
     this.vertexCount = 0;
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
-    const layout = new VertexBufferLayout(gl);
-    const shader = DynamicTextureShader$1.newShader(gl);
-    const texture = new Texture(gl, Images.Star);
-    buffer.bind();
-    shader.bind();
-    layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-    layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    layout.pushFloat(shader.getAttributeLocation(ATTR_ALPHA), 1);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    buffer.unbind();
-    shader.unbind();
-    this.vertexArray = vertexArray;
-    this.buffer = buffer;
-    this.texture = texture;
-    this.layout = layout;
-    this.shader = shader;
+    this.buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
+    this.texture = new Texture(gl, Images.Star);
+    this.shader = Shaders.AlphaTexture;
   }
   onNewBeat(isKiai, newBeatTimestamp, gap) {
     if (!BeatBooster$1.isAvailable) {
@@ -19701,7 +19908,6 @@ class StarSmoke extends BeatDrawable {
     this.lastKiai = BeatState.isKiai;
   }
   bind() {
-    this.vertexArray.bind();
     this.buffer.bind();
     this.texture.bind(this.textureUnit);
     this.shader.bind();
@@ -19715,7 +19921,6 @@ class StarSmoke extends BeatDrawable {
     this.vertexCount = int(data.length / 5);
   }
   unbind() {
-    this.vertexArray.unbind();
     this.buffer.unbind();
     this.texture.unbind();
     this.shader.unbind();
@@ -19727,20 +19932,18 @@ class StarSmoke extends BeatDrawable {
   onDraw() {
     const gl = this.gl;
     const shader = this.shader;
-    shader.setUniform1i(UNI_SAMPLER, this.textureUnit);
-    shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
-    shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
+    shader.sampler2D = this.textureUnit;
+    shader.transform = this.matrixArray;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
     if (this.vertexCount === 0)
       return;
     this.buffer.setBufferData(this.vertexData);
-    this.vertexArray.addBuffer(this.layout);
+    shader.use();
     gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
   }
   dispose() {
     super.dispose();
     this.texture.dispose();
-    this.vertexArray.dispose();
-    this.shader.dispose();
     this.buffer.dispose();
   }
 }
@@ -19912,26 +20115,11 @@ class ImageDrawable extends Drawable {
     super(gl, config);
     this.textureUnit = 0;
     this.isVertexUpdate = true;
+    this.white = Color.fromHex(16777215);
     this.textureUnit = textureUnit;
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const buffer = new VertexBuffer(gl);
-    const shader = StaticTextureShader$2.getShader(gl);
-    const layout = new VertexBufferLayout(gl);
-    const texture = new Texture(gl, image);
-    buffer.bind();
-    shader.bind();
-    layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-    layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    buffer.unbind();
-    shader.unbind();
-    this.vertexArray = vertexArray;
-    this.buffer = buffer;
-    this.layout = layout;
-    this.shader = shader;
-    this.texture = texture;
+    this.buffer = new VertexBuffer(gl);
+    this.shader = Shaders.Default;
+    this.texture = new Texture(gl, image);
   }
   createVertexArray() {
     const width = this.width;
@@ -19955,14 +20143,12 @@ class ImageDrawable extends Drawable {
     this.isVertexUpdate = true;
   }
   unbind() {
-    this.vertexArray.unbind();
     this.buffer.unbind();
     this.texture.unbind();
     this.shader.unbind();
   }
   bind() {
     this.texture.bind(this.textureUnit);
-    this.vertexArray.bind();
     this.buffer.bind();
     this.shader.bind();
   }
@@ -19973,17 +20159,16 @@ class ImageDrawable extends Drawable {
       this.isVertexUpdate = false;
     }
     const shader = this.shader;
-    shader.setUniform1i(UNI_SAMPLER, this.textureUnit);
-    shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
-    shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
-    shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha);
-    this.vertexArray.addBuffer(this.layout);
+    shader.sampler2D = this.textureUnit;
+    shader.transform = this.matrixArray;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    this.white.alpha = this.appliedTransform.alpha;
+    shader.color = this.white;
+    shader.use();
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
   dispose() {
     this.texture.dispose();
-    this.vertexArray.dispose();
-    StaticTextureShader$2.dispose();
     this.buffer.dispose();
   }
 }
@@ -22323,25 +22508,10 @@ class MovableBackground extends Drawable {
     this.needUpdateTexture = false;
     this.vertex = new Float32Array(4 * 6);
     this.onFinish = null;
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const buffer = new VertexBuffer(gl);
-    const layout = new VertexBufferLayout(gl);
-    const shader = StaticTextureShader$2.newShader(gl);
-    const texture = new Texture(gl, null);
-    buffer.bind();
-    shader.bind();
-    layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-    layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    buffer.unbind();
-    shader.unbind();
-    this.vertexArray = vertexArray;
-    this.buffer = buffer;
-    this.layout = layout;
-    this.texture = texture;
-    this.shader = shader;
+    this.white = new Float32Array([1, 1, 1, 1]);
+    this.buffer = new VertexBuffer(gl);
+    this.texture = new Texture(gl, null);
+    this.shader = Shaders.Default;
   }
   onUpdate() {
     var _a;
@@ -22405,20 +22575,16 @@ class MovableBackground extends Drawable {
     const imageScale = TransformUtils.scale(1 / this.texture.imageWidth, 1 / this.texture.imageHeight);
     TransformUtils.applyOrigin(imageTopLeft, imageScale);
     TransformUtils.applyOrigin(imageBottomRight, imageScale);
-    Shape2D.quad(
-      topLeft.x,
-      topLeft.y,
-      bottomRight.x,
-      bottomRight.y,
+    Shape2D.quadVector2(
+      topLeft,
+      bottomRight,
       this.vertex,
       0,
       4
     );
-    Shape2D.quad(
-      imageTopLeft.x,
-      imageTopLeft.y,
-      imageBottomRight.x,
-      imageBottomRight.y,
+    Shape2D.quadVector2(
+      imageTopLeft,
+      imageBottomRight,
       this.vertex,
       2,
       4
@@ -22434,14 +22600,12 @@ class MovableBackground extends Drawable {
     this.updateVertex();
   }
   unbind() {
-    this.vertexArray.unbind();
     this.texture.unbind();
     this.buffer.unbind();
     this.shader.unbind();
   }
   bind() {
     this.texture.bind(this.textureUnit);
-    this.vertexArray.bind();
     this.buffer.bind();
     this.shader.bind();
   }
@@ -22452,19 +22616,18 @@ class MovableBackground extends Drawable {
     }
     this.buffer.setBufferData(this.vertex);
     const gl = this.gl;
-    const shader = this.shader;
+    const shader = this.shader.shader;
     shader.setUniform1i(UNI_SAMPLER, this.textureUnit);
     shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
-    shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha);
+    this.white[3] = this.appliedTransform.alpha;
+    shader.setUniform4fv(UNI_COLOR, this.white);
     shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
-    this.vertexArray.addBuffer(this.layout);
+    this.shader.use();
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
   dispose() {
     super.dispose();
     this.texture.dispose();
-    this.vertexArray.dispose();
-    this.shader.dispose();
     this.buffer.dispose();
   }
 }
@@ -22555,26 +22718,11 @@ class VideoBackground extends Drawable {
     this.textureUnit = 4;
     this.isVertexUpdate = true;
     this.videoSize = Vector();
+    this.white = new Float32Array([1, 1, 1, 1]);
     this.textureUnit = 0;
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const buffer = new VertexBuffer(gl);
-    const shader = StaticTextureShader$2.newShader(gl);
-    const layout = new VertexBufferLayout(gl);
-    const texture = new Texture(gl, video);
-    buffer.bind();
-    shader.bind();
-    layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-    layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    buffer.unbind();
-    shader.unbind();
-    this.vertexArray = vertexArray;
-    this.buffer = buffer;
-    this.layout = layout;
-    this.shader = shader;
-    this.texture = texture;
+    this.buffer = new VertexBuffer(gl);
+    this.shader = Shaders.Default;
+    this.texture = new Texture(gl, video);
   }
   setVideo(video) {
     this.video = video;
@@ -22599,7 +22747,6 @@ class VideoBackground extends Drawable {
         topLeft.y - height
       );
     }
-    console.log(topLeft, bottomRight);
     const vertexData = [];
     Shape2D.quadVector2(
       topLeft,
@@ -22629,14 +22776,12 @@ class VideoBackground extends Drawable {
     }
   }
   unbind() {
-    this.vertexArray.unbind();
     this.buffer.unbind();
     this.texture.unbind();
     this.shader.unbind();
   }
   bind() {
     this.texture.bind(this.textureUnit);
-    this.vertexArray.bind();
     this.buffer.bind();
     this.shader.bind();
   }
@@ -22646,18 +22791,18 @@ class VideoBackground extends Drawable {
       this.buffer.setBufferData(this.createVertexArray());
       this.isVertexUpdate = false;
     }
-    this.shader.setUniform1i(UNI_SAMPLER, this.textureUnit);
-    this.shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
-    this.shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
-    this.shader.setUniform1f(UNI_ALPHA, this.alpha);
-    this.vertexArray.addBuffer(this.layout);
+    const shader = this.shader.shader;
+    shader.setUniform1i(UNI_SAMPLER, this.textureUnit);
+    shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
+    shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
+    this.white[3] = this.alpha;
+    shader.setUniform4fv(UNI_COLOR, this.white);
+    this.shader.use();
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
   dispose() {
     super.dispose();
     this.texture.dispose();
-    this.vertexArray.dispose();
-    this.shader.dispose();
     this.buffer.dispose();
   }
 }
@@ -22700,11 +22845,11 @@ class BackgroundScreen extends Box {
     this.addDisposable(() => {
       const scope2 = effectScope();
       scope2.run(() => {
-        watch(() => UIState.beatmapBackground, (value) => {
-          if (!value) {
+        watch(BackgroundManager$1.currentLoader, (value) => {
+          if (value === BackgroundManager$1.Default || value === BackgroundManager$1.Custom) {
             this.videoBackground.isVisible = false;
-            this.background.updateBackground2(BackgroundLoader$1.getBackground());
-          } else {
+            this.background.updateBackground2(BackgroundManager$1.getBackground());
+          } else if (value === BackgroundManager$1.Beatmap) {
             const bg = OSUPlayer$1.background.value;
             if (bg.video && !["main", "legacy"].includes(ScreenManager$1.currentId.value)) {
               this.videoBackground.isVisible = true;
@@ -22712,6 +22857,9 @@ class BackgroundScreen extends Box {
             }
             this.background.updateBackground2(bg.image ?? BackgroundLoader$1.getBackground());
           }
+          watch(BackgroundManager$1.customBackgroundChange, () => {
+            this.background.updateBackground2(BackgroundManager$1.getBackground());
+          });
         });
       });
       return scope2.stop;
@@ -22726,7 +22874,11 @@ class BackgroundScreen extends Box {
     }
   }
   setupImageBackground(bg) {
-    this.background.updateBackground2(bg.image && UIState.beatmapBackground ? bg.image : BackgroundLoader$1.getBackground());
+    if (bg.image && BackgroundManager$1.currentLoader.value === BackgroundManager$1.Beatmap) {
+      this.background.updateBackground2(bg.image);
+    } else {
+      this.background.updateBackground2(BackgroundManager$1.getBackground());
+    }
   }
   get isVideoVisible() {
     return this.videoBackground.isVisible;
@@ -22741,65 +22893,6 @@ class BackgroundScreen extends Box {
     onRightSide.removeCollect(this.rightSideCollector);
   }
 }
-class RoundClipColoredShader extends BaseShader {
-  constructor() {
-    super(...arguments);
-    this.vertex = `
-        attribute vec2 ${ATTR_POSITION};
-        attribute vec4 ${ATTR_COLOR};
-        
-        varying mediump vec4 v_color;
-        
-        uniform mat4 ${UNI_ORTH};
-        uniform mat4 ${UNI_TRANSFORM};
-        void main() {
-            vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
-            gl_Position = position * ${UNI_ORTH};
-            v_color = ${ATTR_COLOR};
-        }
-    `;
-    this.fragment = `
-        varying mediump vec4 v_color;
-        uniform mediump vec3 ${UNI_CIRCLE};
-        void main() {
-            lowp float dist = distance(${UNI_CIRCLE}.xy, gl_FragCoord.xy);
-            if (dist < ${UNI_CIRCLE}.z) {
-                gl_FragColor = v_color;
-            } else {
-                discard;
-            }
-        }
-    `;
-    this.shader = null;
-    this.layout = null;
-  }
-  newShader(gl) {
-    return new Shader(gl, this.vertex, this.fragment);
-  }
-  getShader(gl) {
-    if (this.shader === null) {
-      const shader = new Shader(gl, this.vertex, this.fragment);
-      const layout = new VertexBufferLayout(gl);
-      shader.bind();
-      layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-      layout.pushFloat(shader.getAttributeLocation(ATTR_COLOR), 4);
-      shader.unbind();
-      this.shader = shader;
-      this.layout = layout;
-    }
-    return this.shader;
-  }
-  getLayout() {
-    return this.layout;
-  }
-  dispose() {
-    var _a;
-    (_a = this.shader) == null ? void 0 : _a.dispose();
-    this.shader = null;
-    this.layout = null;
-  }
-}
-const RoundClipColoredShader$1 = new RoundClipColoredShader();
 class CircleBackground extends Drawable {
   constructor(gl, config) {
     super(gl, config);
@@ -22811,23 +22904,8 @@ class CircleBackground extends Drawable {
     this.uniCircle = new Float32Array([0, 0, 0]);
     this.white = Color.fromHex(16777215);
     this.gray = Color.fromHex(8421504, 128);
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
-    const shader = RoundClipColoredShader$1.newShader(gl);
-    const layout = new VertexBufferLayout(gl);
-    buffer.bind();
-    shader.bind();
-    layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-    layout.pushFloat(shader.getAttributeLocation(ATTR_COLOR), 4);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    buffer.unbind();
-    shader.unbind();
-    this.vertexArray = vertexArray;
-    this.buffer = buffer;
-    this.layout = layout;
-    this.shader = shader;
+    this.buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
+    this.shader = Shaders.RoundClip;
     setTimeout(() => {
       const ease = easeIn;
       this.radiusBegin().transitionTo(260 * window.devicePixelRatio, 1e3, ease);
@@ -22877,12 +22955,10 @@ class CircleBackground extends Drawable {
     this.uniCircle[2] = this.radius;
   }
   unbind() {
-    this.vertexArray.unbind();
     this.buffer.unbind();
     this.shader.unbind();
   }
   bind() {
-    this.vertexArray.bind();
     this.buffer.bind();
     this.shader.bind();
   }
@@ -22890,106 +22966,28 @@ class CircleBackground extends Drawable {
     const gl = this.gl;
     this.buffer.setBufferData(this.vertex);
     const shader = this.shader;
-    shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
-    shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
-    shader.setUniform3fv(UNI_CIRCLE, this.uniCircle);
-    this.vertexArray.addBuffer(this.layout);
+    shader.transform = this.matrixArray;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    shader.circle = this.uniCircle;
+    shader.use();
     gl.drawArrays(gl.TRIANGLES, 0, 12);
   }
   dispose() {
-    this.vertexArray.dispose();
-    this.shader.dispose();
     this.buffer.dispose();
   }
 }
-class ColorTextureShader {
-  constructor() {
-    this.vertex = `
-        attribute vec2 ${ATTR_POSITION};
-        attribute vec2 ${ATTR_TEXCOORD};
-    
-        varying mediump vec2 v_tex_coord;
-        uniform mat4 ${UNI_ORTH};
-        uniform mat4 ${UNI_TRANSFORM};
-        void main() {
-            vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
-            gl_Position = position * ${UNI_ORTH};
-            v_tex_coord = ${ATTR_TEXCOORD};
-        }
-    `;
-    this.fragment = `
-        varying mediump vec2 v_tex_coord;
-        uniform mediump float ${UNI_ALPHA};
-        uniform sampler2D ${UNI_SAMPLER};
-        uniform mediump vec4 ${UNI_COLOR};
-    
-        void main() {
-            mediump vec4 texelColor = texture2D(${UNI_SAMPLER}, v_tex_coord);
-            texelColor.a = texelColor.a * ${UNI_ALPHA};
-            if (texelColor.a >= 0.001) {
-                texelColor.rgb = ${UNI_COLOR}.rgb;
-            }
-            gl_FragColor = texelColor;
-        }
-    `;
-    this.shader = null;
-    this.layout = null;
-  }
-  newShader(gl) {
-    return new Shader(gl, this.vertex, this.fragment);
-  }
-  getShader(gl) {
-    if (this.shader === null) {
-      const shader = new Shader(gl, this.vertex, this.fragment);
-      const layout = new VertexBufferLayout(gl);
-      shader.bind();
-      layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-      layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-      shader.unbind();
-      this.shader = shader;
-      this.layout = layout;
-    }
-    return this.shader;
-  }
-  getLayout() {
-    return this.layout;
-  }
-  dispose() {
-    var _a;
-    (_a = this.shader) == null ? void 0 : _a.dispose();
-    this.shader = null;
-    this.layout = null;
-  }
-}
-const ColorTextureShader$1 = new ColorTextureShader();
 class ColoredImageDrawable extends Drawable {
   constructor(gl, config) {
     super(gl, config);
     this.textureUnit = 0;
     this.isVertexUpdate = true;
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
     const buffer = new VertexBuffer(gl);
-    const shader = ColorTextureShader$1.newShader(gl);
-    const layout = new VertexBufferLayout(gl);
+    const shader = Shaders.Default;
     const texture = new Texture(gl, config.image);
-    buffer.bind();
     shader.bind();
-    shader.setUniform4fv(UNI_COLOR, new Float32Array([
-      config.color.red,
-      config.color.green,
-      config.color.blue,
-      config.color.alpha
-    ]));
-    layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-    layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    buffer.unbind();
+    shader.color = config.color;
     shader.unbind();
-    this.vertexArray = vertexArray;
     this.buffer = buffer;
-    this.layout = layout;
     this.shader = shader;
     this.texture = texture;
   }
@@ -23015,14 +23013,12 @@ class ColoredImageDrawable extends Drawable {
     this.isVertexUpdate = true;
   }
   unbind() {
-    this.vertexArray.unbind();
     this.buffer.unbind();
     this.texture.unbind();
     this.shader.unbind();
   }
   bind() {
     this.texture.bind(this.textureUnit);
-    this.vertexArray.bind();
     this.buffer.bind();
     this.shader.bind();
   }
@@ -23033,17 +23029,16 @@ class ColoredImageDrawable extends Drawable {
       this.isVertexUpdate = false;
     }
     const shader = this.shader;
-    shader.setUniform1i(UNI_SAMPLER, this.textureUnit);
-    shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
-    shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
-    shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha);
-    this.vertexArray.addBuffer(this.layout);
+    shader.sampler2D = this.textureUnit;
+    shader.transform = this.matrixArray;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    this.config.color.alpha = this.appliedTransform.alpha;
+    shader.color = this.config.color;
+    shader.use();
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
   dispose() {
     this.texture.dispose();
-    this.vertexArray.dispose();
-    this.shader.dispose();
     this.buffer.dispose();
   }
 }
@@ -23108,7 +23103,7 @@ class TestScreen extends Box {
     }, 0);
   }
 }
-class StaticTextureShader2 {
+class StaticTextureShader {
   constructor() {
     this.vertex = `
         attribute vec2 ${ATTR_POSITION};
@@ -23165,7 +23160,7 @@ class StaticTextureShader2 {
     this.layout = null;
   }
 }
-const BrightnessTextureShader = new StaticTextureShader2();
+const BrightnessTextureShader = new StaticTextureShader();
 class LegacyLogo extends Drawable {
   constructor(gl, config) {
     super(gl, config);
@@ -23177,7 +23172,6 @@ class LegacyLogo extends Drawable {
     const buffer = new VertexBuffer(gl);
     const shader = BrightnessTextureShader.newShader(gl);
     const layout = new VertexBufferLayout(gl);
-    console.log(Images.LegacyLogo);
     const texture = new Texture(gl, Images.LegacyLogo);
     buffer.bind();
     shader.bind();
@@ -23734,8 +23728,44 @@ class LegacyScreen extends Box {
       new Flashlight(gl, {
         size: ["fill-parent", "fill-parent"],
         color: Color.fromHex(16777215)
-      })
+      }),
+      new HomeOverlay(gl)
     );
+  }
+}
+class HomeOverlay extends Box {
+  constructor(gl) {
+    super(gl, {
+      size: ["fill-parent", "fill-parent"]
+    });
+    this.lastPosition = Vector2.newZero();
+    this.top = new ColorDrawable(gl, {
+      size: ["fill-parent", 100],
+      anchor: Axis.Y_TOP | Axis.X_CENTER,
+      color: Color.fromHex(0, 128)
+    });
+    this.bottom = new ColorDrawable(gl, {
+      size: ["fill-parent", 100],
+      anchor: Axis.Y_BOTTOM | Axis.X_CENTER,
+      color: Color.fromHex(0, 128)
+    });
+    this.add(this.top, this.bottom);
+    this.alpha = 0;
+  }
+  onMouseMove() {
+    const position = MouseState.position;
+    if (this.lastPosition.isZero()) {
+      this.lastPosition.setFrom(position);
+    }
+    const distance = position.distance(this.lastPosition);
+    this.lastPosition.setFrom(position);
+    if (distance > 500) {
+      this.transform().fadeTo(1, 250).fadeTo(0, 1e4);
+    } else {
+      this.alpha = Math.min(this.alpha + distance / 500, 1);
+      this.transform().fadeTo(this.alpha, 0).fadeTo(0, this.alpha * 1e4);
+    }
+    return true;
   }
 }
 class StoryTextureManager {
@@ -23777,88 +23807,6 @@ class StoryTextureManager {
   }
 }
 const StoryTextureManager$1 = new StoryTextureManager();
-class ColoredTextureShader extends BaseShader {
-  constructor() {
-    super(...arguments);
-    this.vertex = `
-    attribute vec2 a_position;
-    attribute vec2 a_texcoord;
-    
-    varying vec2 v_texcoord;
-    
-    uniform mat4 u_orth;
-    uniform mat4 u_transform;
-    
-    void main() {
-        vec4 position = vec4(a_position, 0.0, 1.0) * u_transform;
-        gl_Position = position * u_orth;
-        v_texcoord = a_texcoord;
-    }
-  `;
-    this.fragment = `
-    varying highp vec2 v_texcoord;
-    
-    uniform sampler2D u_sampler;
-    uniform mediump vec4 u_color;
-    
-    void main() {
-        mediump vec4 tex_color = texture2D(u_sampler, v_texcoord);
-        mediump vec4 out_color = vec4(tex_color.rgba * u_color.rgba);
-        gl_FragColor = out_color;
-    }
-  `;
-    this.shader = null;
-    this.layout = null;
-    this.vertexArray = null;
-  }
-  getVertexArray() {
-    return this.vertexArray;
-  }
-  getLayout() {
-    return this.layout;
-  }
-  getShader(gl) {
-    if (this.shader === null) {
-      this.shader = new Shader(gl, this.vertex, this.fragment);
-      this.layout = new VertexBufferLayout(gl);
-      this.vertexArray = new VertexArray(gl);
-      this.vertexArray.bind();
-      this.shader.bind();
-      this.layout.pushFloat(this.shader.getAttributeLocation("a_position"), 2);
-      this.layout.pushFloat(this.shader.getAttributeLocation("a_texcoord"), 2);
-      this.vertexArray.addBuffer(this.layout);
-      this.shader.unbind();
-      this.vertexArray.unbind();
-    }
-    return this.shader;
-  }
-  newShader(gl) {
-    return new Shader(gl, this.vertex, this.fragment);
-  }
-  createUniform() {
-    return { orth: void 0, color: void 0, sampler: void 0, transform: void 0 };
-  }
-  setUniform(uniform) {
-    const shader = this.shader;
-    if (!shader) {
-      return;
-    }
-    if (uniform.orth)
-      shader.setUniformMatrix4fv("u_orth", uniform.orth);
-    if (uniform.transform)
-      shader.setUniformMatrix4fv("u_transform", uniform.transform);
-    if (uniform.sampler)
-      shader.setUniform1i("u_sampler", uniform.sampler);
-    if (uniform.color)
-      shader.setUniform4fv("u_color", uniform.color);
-  }
-  dispose() {
-    var _a;
-    (_a = this.shader) == null ? void 0 : _a.dispose();
-    this.shader = null;
-  }
-}
-const ColoredTextureShader$1 = new ColoredTextureShader();
 class TransitionQueue {
   constructor() {
     this.first = null;
@@ -24710,11 +24658,11 @@ class Sprite {
     bottomRight.set(this.originPosition.x + this.size.x, this.originPosition.y + this.size.y);
     this.color.alpha = transform.alpha;
   }
-  draw(vertexArray) {
+  draw() {
     if (!this.shouldVisible()) {
       return;
     }
-    const shader = ColoredTextureShader$1.getShader(this.gl), gl = this.gl;
+    const shader = Shaders.Default, gl = this.gl;
     this.vertexBuffer.bind();
     if (this.needUpdateVertex) {
       Shape2D.quadVector2(this.topLeft, this.bottomRight, this.buffer, 0, 4);
@@ -24722,14 +24670,9 @@ class Sprite {
       this.vertexBuffer.setBufferData(new Float32Array(this.buffer));
       this.needUpdateVertex = false;
     }
-    shader.setUniformMatrix4fv("u_transform", this.transformMatrix4);
-    const array = this.colorArray, color = this.color;
-    array[0] = color.red;
-    array[1] = color.green;
-    array[2] = color.blue;
-    array[3] = color.alpha;
-    shader.setUniform4fv("u_color", array);
-    vertexArray.addBuffer(ColoredTextureShader$1.getLayout());
+    shader.transform = this.transformMatrix4;
+    shader.color = this.color;
+    shader.use();
     StoryTextureManager$1.tryBind(this.path);
     if (this.additiveBlend) {
       gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
@@ -24782,7 +24725,7 @@ class Animation extends Sprite {
     }
     return frameNum % this.frameCount;
   }
-  draw(vertexArray) {
+  draw() {
     if (!this.shouldVisible()) {
       return;
     }
@@ -24790,7 +24733,7 @@ class Animation extends Sprite {
     if (frameIndex < 0) {
       return;
     }
-    const shader = ColoredTextureShader$1.getShader(this.gl), gl = this.gl;
+    const shader = Shaders.Default, gl = this.gl;
     this.vertexBuffer.bind();
     if (this.needUpdateVertex) {
       Shape2D.quadVector2(this.topLeft, this.bottomRight, this.buffer, 0, 4);
@@ -24798,14 +24741,9 @@ class Animation extends Sprite {
       this.vertexBuffer.setBufferData(new Float32Array(this.buffer));
       this.needUpdateVertex = false;
     }
-    shader.setUniformMatrix4fv("u_transform", this.transformMatrix4);
-    const array = this.colorArray, color = this.color;
-    array[0] = color.red;
-    array[1] = color.green;
-    array[2] = color.blue;
-    array[3] = color.alpha;
-    shader.setUniform4fv("u_color", array);
-    vertexArray.addBuffer(ColoredTextureShader$1.getLayout());
+    shader.transform = this.transformMatrix4;
+    shader.color = this.color;
+    shader.use();
     StoryTextureManager$1.tryBind(this.frames[frameIndex]);
     if (this.additiveBlend) {
       gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
@@ -24844,13 +24782,10 @@ class StoryScreen extends Drawable {
         }
       }
     }
-    this.vertexArray = new VertexArray(gl);
-    this.vertexArray.bind();
-    const shader = ColoredTextureShader$1.getShader(gl);
+    const shader = Shaders.Default;
     shader.bind();
-    shader.setUniform1i("u_sampler", 0);
+    shader.sampler2D = 0;
     shader.unbind();
-    this.vertexArray.unbind();
     const scale = 480 / Coordinate$1.height;
     const scaledWidth = Coordinate$1.width * scale;
     const s = scaledWidth - 640 < 0 ? 0 : scaledWidth - 640;
@@ -24887,25 +24822,48 @@ class StoryScreen extends Drawable {
     }
   }
   bind() {
-    ColoredTextureShader$1.bind();
-    this.vertexArray.bind();
+    Shaders.Default.bind();
   }
   onDraw() {
-    ColoredTextureShader$1.getShader(this.gl).setUniformMatrix4fv("u_orth", this.orth);
+    Shaders.Default.orth = this.orth;
     const sprites = this.spriteList;
     for (let i = 0; i < sprites.length; i++) {
-      sprites[i].draw(this.vertexArray);
+      sprites[i].draw(
+        /*this.vertexArray*/
+      );
     }
   }
   unbind() {
-    this.vertexArray.unbind();
   }
   dispose() {
     super.dispose();
     StoryTextureManager$1.dispose();
-    ColoredTextureShader$1.dispose();
     this.spriteList.forEach((v) => v.dispose());
-    this.vertexArray.dispose();
+  }
+}
+class LegacyPlayScreen extends BeatBox {
+  constructor(gl) {
+    super(gl, {
+      size: ["fill-parent", "fill-parent"]
+    });
+    this.activeScale = Vector(1.1);
+    this.fadeLogoMinScale = Vector(1.12);
+    this.fadeLogoMaxScale = Vector(1.18);
+    this.fade = 0.65;
+    const config = {
+      size: [520, 520],
+      offset: [250 - 66, -250 + 36],
+      anchor: Axis.X_RIGHT | Axis.Y_BOTTOM
+    };
+    this.logo = new LegacyLogo(gl, config);
+    this.fadeLogo = new LegacyLogo(gl, config);
+    this.fadeLogo.alpha = this.fade;
+    this.scale = Vector(0.45);
+    this.add(this.logo, this.fadeLogo);
+  }
+  onNewBeat(isKiai, newBeatTimestamp, gap) {
+    this.logo.transform().delay(30).scaleTo(this.activeScale, 30, easeOut).scaleTo(Vector(1), gap * 2, easeOutQuint);
+    this.fadeLogo.transform().delay(60).fadeTo(this.fade, 0).fadeTo(0, gap * 2, easeOutQuint).clear.delay(60).scaleTo(this.fadeLogoMinScale, 0).scaleTo(this.fadeLogoMaxScale, gap * 2, easeOutQuint);
   }
 }
 const _hoisted_1$4 = {
@@ -24975,12 +24933,13 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
         task.progress.value = 0;
         await loadImage();
         task.progress.value = 0.5;
-        await BackgroundLoader$1.init();
+        await BackgroundManager$1.changeLoader(BackgroundManager$1.Default);
         task.progress.value = 1;
         task.finish("Images downloaded", Icon.Check);
       }, true);
       await loadSoundEffect();
       ShaderManager$1.init(webgl);
+      Shaders.init(webgl);
       renderer2 = new WebGLRenderer(webgl);
       window.onresize = () => {
         resizeCanvas();
@@ -25005,6 +24964,9 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
       });
       ScreenManager$1.addScreen("story", () => {
         return new StoryScreen(webgl);
+      });
+      ScreenManager$1.addScreen("legacyPlay", () => {
+        return new LegacyPlayScreen(webgl);
       });
       ScreenManager$1.activeScreen("main");
       draw();
@@ -25442,6 +25404,10 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       {
         name: "Storyboard",
         id: "story"
+      },
+      {
+        name: "LegacyPlay",
+        id: "legacyPlay"
       }
     ];
     function changeScreen(id2) {
@@ -25475,8 +25441,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ScreenSelector_vue_vue_type_style_index_0_scoped_5f6b2e66_lang = "";
-const ScreenSelector = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-5f6b2e66"]]);
+const ScreenSelector_vue_vue_type_style_index_0_scoped_4b3d218e_lang = "";
+const ScreenSelector = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-4b3d218e"]]);
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "SideButton",
   emits: ["sideClick"],

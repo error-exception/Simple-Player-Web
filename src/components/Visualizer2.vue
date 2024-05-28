@@ -7,7 +7,6 @@
 <script setup lang="ts">
 
 import {onMounted, onUnmounted, ref} from "vue";
-import BackgroundLoader from "../ts/global/BackgroundLoader";
 import BeatBooster from "../ts/global/BeatBooster";
 import {BeatState} from "../ts/global/Beater";
 import {MOUSE_KEY_LEFT, MOUSE_KEY_NONE, MOUSE_KEY_RIGHT, MouseState} from "../ts/global/MouseState";
@@ -34,6 +33,9 @@ import {StoryScreen} from "../ts/webgl/screen/story/StoryScreen";
 import {useKeyboard} from "../ts/Utils";
 import VideoPlayer from "../ts/player/VideoPlayer";
 import type {Nullable} from "../ts/type";
+import {LegacyPlayScreen} from "../ts/webgl/screen/legacyPlay/LegacyPlayScreen";
+import {Shaders} from "../ts/webgl/shader/Shaders";
+import BackgroundManager from "../ts/global/BackgroundManager";
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 let renderer: WebGLRenderer
@@ -99,12 +101,13 @@ onMounted(async () => {
     task.progress.value = 0
     await loadImage()
     task.progress.value = .5
-    await BackgroundLoader.init()
+    await BackgroundManager.changeLoader(BackgroundManager.Default)
     task.progress.value = 1
     task.finish("Images downloaded", Icon.Check)
   }, true)
   await loadSoundEffect()
   ShaderManager.init(webgl)
+  Shaders.init(webgl)
   renderer = new WebGLRenderer(webgl)
   window.onresize = () => {
     resizeCanvas()
@@ -129,6 +132,9 @@ onMounted(async () => {
   })
   ScreenManager.addScreen("story", () => {
     return new StoryScreen(webgl)
+  })
+  ScreenManager.addScreen("legacyPlay", () => {
+    return new LegacyPlayScreen(webgl)
   })
   ScreenManager.activeScreen("main")
   draw()

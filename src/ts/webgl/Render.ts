@@ -1,17 +1,17 @@
-import {BindGroup} from "./BindGroup";
+import {Bind} from "./Bind";
 import {VertexBuffer} from "./core/VertexBuffer";
 import {VertexArray} from "./core/VertexArray";
 
 export class Render {
 
-  private bindGroup = new BindGroup()
+  private bind = new Bind()
 
   public setVertexBuffer(vb: VertexBuffer) {
-    this.bindGroup.vertexBuffer = vb
+    this.bind.vertexBuffer = vb
   }
 
   public setVertexArray(va: VertexArray) {
-    this.bindGroup.vertexArray = va
+    this.bind.vertexArray = va
   }
 
 }

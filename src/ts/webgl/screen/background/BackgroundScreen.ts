@@ -11,6 +11,7 @@ import {onLeftSide, onRightSide} from "../../../global/GlobalState";
 import {UIState} from "../../../global/UISettings";
 import {effectScope, watch} from "vue";
 import {collectLatest} from "../../../util/eventRef";
+import BackgroundManager from "../../../global/BackgroundManager";
 
 export class BackgroundScreen extends Box {
 
@@ -41,7 +42,12 @@ export class BackgroundScreen extends Box {
   }
 
   private setupImageBackground(bg: OSUBackground) {
-    this.background.updateBackground2(bg.image && UIState.beatmapBackground ? bg.image : BackgroundLoader.getBackground())
+    if (bg.image && BackgroundManager.currentLoader.value === BackgroundManager.Beatmap) {
+      this.background.updateBackground2(bg.image)
+    } else {
+      this.background.updateBackground2(BackgroundManager.getBackground())
+    }
+    // this.background.updateBackground2(bg.image && UIState.beatmapBackground ? bg.image : BackgroundLoader.getBackground())
   }
 
   constructor(gl: WebGL2RenderingContext) {
@@ -54,7 +60,6 @@ export class BackgroundScreen extends Box {
     this.addDisposable(() => {
       return collectLatest(OSUPlayer.background, this.collector)
     })
-
     this.add(
       this.background,
       this.videoBackground
@@ -72,11 +77,11 @@ export class BackgroundScreen extends Box {
     this.addDisposable(() => {
       const scope = effectScope()
       scope.run(() => {
-        watch(() => UIState.beatmapBackground, value => {
-          if (!value) {
+        watch(BackgroundManager.currentLoader, value => {
+          if (value === BackgroundManager.Default || value === BackgroundManager.Custom) {
             this.videoBackground.isVisible = false
-            this.background.updateBackground2(BackgroundLoader.getBackground())
-          } else {
+            this.background.updateBackground2(BackgroundManager.getBackground())
+          } else if (value === BackgroundManager.Beatmap) {
             const bg = OSUPlayer.background.value
             if (bg.video && !['main', 'legacy'].includes(ScreenManager.currentId.value)) {
               this.videoBackground.isVisible = true
@@ -84,7 +89,23 @@ export class BackgroundScreen extends Box {
             }
             this.background.updateBackground2(bg.image ?? BackgroundLoader.getBackground())
           }
+          watch(BackgroundManager.customBackgroundChange, () => {
+            this.background.updateBackground2(BackgroundManager.getBackground())
+          })
         })
+        // watch(() => UIState.beatmapBackground, value => {
+        //   if (!value) {
+        //     this.videoBackground.isVisible = false
+        //     this.background.updateBackground2(BackgroundLoader.getBackground())
+        //   } else {
+        //     const bg = OSUPlayer.background.value
+        //     if (bg.video && !['main', 'legacy'].includes(ScreenManager.currentId.value)) {
+        //       this.videoBackground.isVisible = true
+        //       this.videoBackground.setVideo(bg.video)
+        //     }
+        //     this.background.updateBackground2(bg.image ?? BackgroundLoader.getBackground())
+        //   }
+        // })
 
       })
       return scope.stop

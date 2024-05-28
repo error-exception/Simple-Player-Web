@@ -1,33 +1,23 @@
-import {Disposable} from "../core/Disposable";
-import {Shader} from "../core/Shader";
-import {BindGroup} from "../BindGroup";
+import {DefaultShaderWrapper} from "./DefaultShaderWrapper";
+import {SimpleShaderWrapper} from "./SimpleShaderWrapper";
+import {RoundClipShaderWrapper} from "./RoundClipShaderWrapper";
+import {WhiteShaderWrapper} from "./WhiteShaderWrapper";
+import {AlphaTextureShaderWrapper} from "./AlphaTextureShaderWrapper";
 
-export class Shaders implements Disposable {
+export class Shaders {
 
-  private static shaderMap = new Map<string, Shader>()
+  public static Default: DefaultShaderWrapper
+  public static Simple: SimpleShaderWrapper
+  public static RoundClip: RoundClipShaderWrapper
+  public static White: WhiteShaderWrapper
+  public static AlphaTexture: AlphaTextureShaderWrapper
 
-  public static add(name: string, shader: Shader) {
-    if (this.shaderMap.has(name)) {
-      return
-    }
-    this.shaderMap.set(name, shader)
+  public static init(gl: WebGL2RenderingContext) {
+    this.Default = new DefaultShaderWrapper(gl)
+    this.RoundClip = new RoundClipShaderWrapper(gl)
+    this.Simple = new SimpleShaderWrapper(gl)
+    this.White = new WhiteShaderWrapper(gl)
+    this.AlphaTexture = new AlphaTextureShaderWrapper(gl)
   }
 
-  public static bind(name: string) {
-    const shader = this.shaderMap.get(name)
-    if (!shader) {
-      return
-    }
-    BindGroup.bind(shader)
-  }
-
-  public static dispose() {
-    this.shaderMap.forEach(v => {
-      BindGroup.unbind(v)
-      v.dispose()
-    })
-  }
-
-  dispose(): void {
-  }
 }

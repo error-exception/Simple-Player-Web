@@ -70,11 +70,14 @@ class VideoPlayer extends AbstractPlayer {
     if (isString(src)) {
       video.src = src
     } else if (src instanceof Blob) {
+      video.src = ''
       if (this.previousObjectUrl) {
         URL.revokeObjectURL(this.previousObjectUrl)
       }
       this.previousObjectUrl = URL.createObjectURL(src)
       video.src = this.previousObjectUrl
+      // this.previousObjectUrl = URL.createObjectURL(src)
+      // video.src = this.previousObjectUrl
     } else {
       return
     }

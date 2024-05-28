@@ -1,20 +1,15 @@
 import {Drawable} from "../../drawable/Drawable";
 import {ColorDrawableConfig} from "../../drawable/ColorDrawable";
-import {Shader} from "../../core/Shader";
 import {VertexBuffer} from "../../core/VertexBuffer";
-import {VertexBufferLayout} from "../../core/VertexBufferLayout";
-import {VertexArray} from "../../core/VertexArray";
 import {Shape2D} from "../../util/Shape2D";
 import Coordinate from "../../base/Coordinate";
-import RoundClipColoredShader from "../../shader/RoundClipColoredShader";
-import {UNI_CIRCLE, UNI_ORTH, UNI_TRANSFORM} from "../../shader/ShaderConstant";
 import {Vector2} from "../../core/Vector2";
+import type {RoundClipShaderWrapper} from "../../shader/RoundClipShaderWrapper";
+import {Shaders} from "../../shader/Shaders";
 
 export class RoundColorDrawable extends Drawable<ColorDrawableConfig> {
-  private readonly shader: Shader
+  private readonly shader: RoundClipShaderWrapper
   private readonly buffer: VertexBuffer
-  private readonly layout: VertexBufferLayout
-  private readonly vertexArray: VertexArray
   private needUpdateVertex = true
 
   constructor(
@@ -22,27 +17,8 @@ export class RoundColorDrawable extends Drawable<ColorDrawableConfig> {
     config: ColorDrawableConfig
   ) {
     super(gl, config)
-    const vertexArray = new VertexArray(gl)
-    vertexArray.bind()
-    const buffer = new VertexBuffer(gl)
-    const shader = RoundClipColoredShader.newShader(gl)
-    const layout = new VertexBufferLayout(gl)
-
-    buffer.bind()
-    shader.bind()
-
-    layout.pushFloat(shader.getAttributeLocation('a_position'), 2)
-    layout.pushFloat(shader.getAttributeLocation('a_color'), 4)
-    vertexArray.addBuffer(layout)
-
-    vertexArray.unbind()
-    buffer.unbind()
-    shader.unbind()
-
-    this.vertexArray = vertexArray
-    this.buffer = buffer;
-    this.layout = layout
-    this.shader = shader
+    this.buffer = new VertexBuffer(gl);
+    this.shader = Shaders.RoundClip
 
   }
 
@@ -86,13 +62,11 @@ export class RoundColorDrawable extends Drawable<ColorDrawableConfig> {
   }
 
   public unbind() {
-    this.vertexArray.unbind()
     this.buffer.unbind()
     this.shader.unbind()
   }
 
   public bind() {
-    this.vertexArray.bind()
     this.buffer.bind()
     this.shader.bind()
   }
@@ -104,16 +78,14 @@ export class RoundColorDrawable extends Drawable<ColorDrawableConfig> {
       this.buffer.setBufferData(this.createVertexArray())
     }
     const shader = this.shader
-    shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
-    shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
-    shader.setUniform3fv(UNI_CIRCLE, this.uniCircle)
-    this.vertexArray.addBuffer(this.layout)
+    shader.transform = this.matrixArray
+    shader.orth = Coordinate.orthographicProjectionMatrix4
+    shader.circle = this.uniCircle
+    shader.use()
     gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 
   public dispose() {
-    this.vertexArray.dispose()
-    this.shader.dispose()
     this.buffer.dispose()
   }
 }

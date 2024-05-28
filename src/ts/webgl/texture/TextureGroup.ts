@@ -1,6 +1,6 @@
 import {Texture} from "../core/Texture";
 import {Disposable} from "../core/Disposable";
-import {BindGroup} from "../BindGroup";
+import {Bind} from "../Bind";
 
 export class TextureGroup implements Disposable {
 
@@ -18,13 +18,13 @@ export class TextureGroup implements Disposable {
   public bind(name: string) {
     const texture = this.textureMap.get(name)
     if (!texture) return false
-    BindGroup.bind(texture)
+    Bind.bind(texture)
     return true;
   }
 
   public dispose() {
     this.textureMap.forEach(value => {
-      BindGroup.unbind(value)
+      Bind.unbind(value)
       value.dispose()
     })
     this.textureMap.clear()

@@ -1,21 +1,11 @@
 import {BaseDrawableConfig, Drawable} from "../../drawable/Drawable"
-import {Shader} from "../../core/Shader";
 import {VertexBuffer} from "../../core/VertexBuffer";
 import {Texture} from "../../core/Texture";
-import {VertexBufferLayout} from "../../core/VertexBufferLayout";
-import {VertexArray} from "../../core/VertexArray";
-import {
-  ATTR_POSITION,
-  ATTR_TEXCOORD,
-  UNI_ALPHA, UNI_COLOR,
-  UNI_ORTH,
-  UNI_SAMPLER,
-  UNI_TRANSFORM
-} from "../../shader/ShaderConstant";
 import {Shape2D} from "../../util/Shape2D";
 import Coordinate from "../../base/Coordinate";
 import {Color} from "../../base/Color";
-import ColorTextureShader from "../../shader/ColorTextureShader";
+import type {DefaultShaderWrapper} from "../../shader/DefaultShaderWrapper";
+import {Shaders} from "../../shader/Shaders";
 
 interface ColoredImageDrawableConfig extends BaseDrawableConfig {
   color: Color,
@@ -24,11 +14,11 @@ interface ColoredImageDrawableConfig extends BaseDrawableConfig {
 
 export class ColoredImageDrawable extends Drawable<ColoredImageDrawableConfig> {
 
-  private readonly shader: Shader
+  private readonly shader: DefaultShaderWrapper
   private readonly buffer: VertexBuffer
   private readonly texture: Texture
-  private readonly layout: VertexBufferLayout
-  private readonly vertexArray: VertexArray
+  // private readonly layout: VertexBufferLayout
+  // private readonly vertexArray: VertexArray
   private textureUnit = 0
   private isVertexUpdate = true
 
@@ -37,32 +27,21 @@ export class ColoredImageDrawable extends Drawable<ColoredImageDrawableConfig> {
     config: ColoredImageDrawableConfig
   ) {
     super(gl, config)
-    const vertexArray = new VertexArray(gl)
-    vertexArray.bind()
+    // const vertexArray = new VertexArray(gl)
+    // vertexArray.bind()
     const buffer = new VertexBuffer(gl)
-    const shader = ColorTextureShader.newShader(gl)//new Shader(gl, vertexShader, fragmentShader)
-    const layout = new VertexBufferLayout(gl)
+    const shader = Shaders.Default//new Shader(gl, vertexShader, fragmentShader)
+    // const layout = new VertexBufferLayout(gl)
     const texture = new Texture(gl, config.image)
 
-    buffer.bind()
     shader.bind()
-    shader.setUniform4fv(UNI_COLOR, new Float32Array([
-      config.color.red, config.color.green, config.color.blue, config.color.alpha
-    ]))
-    layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2)
-    layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2)
-    vertexArray.addBuffer(layout)
+    shader.color = config.color
 
-    vertexArray.unbind()
-    buffer.unbind()
     shader.unbind()
 
-    this.vertexArray = vertexArray
     this.buffer = buffer;
-    this.layout = layout
     this.shader = shader
     this.texture = texture
-
   }
 
   public createVertexArray() {
@@ -86,7 +65,6 @@ export class ColoredImageDrawable extends Drawable<ColoredImageDrawableConfig> {
   }
 
   public unbind() {
-    this.vertexArray.unbind()
     this.buffer.unbind()
     this.texture.unbind()
     this.shader.unbind()
@@ -94,7 +72,6 @@ export class ColoredImageDrawable extends Drawable<ColoredImageDrawableConfig> {
 
   public bind() {
     this.texture.bind(this.textureUnit)
-    this.vertexArray.bind()
     this.buffer.bind()
     this.shader.bind()
   }
@@ -106,18 +83,24 @@ export class ColoredImageDrawable extends Drawable<ColoredImageDrawableConfig> {
       this.isVertexUpdate = false
     }
     const shader = this.shader
-    shader.setUniform1i(UNI_SAMPLER, this.textureUnit)
-    shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
-    shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
-    shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha)
-    this.vertexArray.addBuffer(this.layout)
+    shader.sampler2D = this.textureUnit
+    shader.transform = this.matrixArray
+    shader.orth = Coordinate.orthographicProjectionMatrix4
+    this.config.color.alpha = this.appliedTransform.alpha
+    shader.color = this.config.color
+    // shader.setUniform1i(UNI_SAMPLER, this.textureUnit)
+    // shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
+    // shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
+    // shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha)
+    shader.use()
+    // this.vertexArray.addBuffer(this.layout)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 
   public dispose() {
     this.texture.dispose()
-    this.vertexArray.dispose()
-    this.shader.dispose()
+    // this.vertexArray.dispose()
+    // this.shader.dispose()
     this.buffer.dispose()
   }
 }

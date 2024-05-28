@@ -1,9 +1,6 @@
 import {BaseDrawableConfig} from "../../drawable/Drawable";
-import {VertexArray} from "../../core/VertexArray";
 import {VertexBuffer} from "../../core/VertexBuffer";
 import {Texture} from "../../core/Texture";
-import {Shader} from "../../core/Shader";
-import {VertexBufferLayout} from "../../core/VertexBufferLayout";
 import Coordinate from "../../base/Coordinate";
 import {Shape2D} from "../../util/Shape2D";
 import {BeatDrawable} from "../../drawable/BeatDrawable";
@@ -12,24 +9,17 @@ import {Time} from "../../../global/Time";
 import {int} from "../../../Utils";
 import {easeInQuart, easeOut} from "../../../util/Easing";
 import BeatBooster from "../../../global/BeatBooster";
-import {
-    ATTR_ALPHA,
-    ATTR_POSITION,
-    ATTR_TEXCOORD,
-    UNI_ORTH,
-    UNI_SAMPLER,
-    UNI_TRANSFORM
-} from "../../shader/ShaderConstant";
-import DynamicTextureShader from "../../shader/DynamicTextureShader";
 import {Images} from "../../util/ImageResource";
+import {Shaders} from "../../shader/Shaders";
+import type {AlphaTextureShaderWrapper} from "../../shader/AlphaTextureShaderWrapper";
 
 export class Ripples extends BeatDrawable {
 
-    private readonly vertexArray: VertexArray
+    // private readonly vertexArray: VertexArray
     private readonly buffer: VertexBuffer
     private readonly texture: Texture
-    private readonly shader: Shader
-    private readonly layout: VertexBufferLayout
+    private readonly shader: AlphaTextureShaderWrapper
+    // private readonly layout: VertexBufferLayout
     private readonly textureUnit: number = 1
     private ripples: Ripple[] = []
 
@@ -38,30 +28,9 @@ export class Ripples extends BeatDrawable {
         config: BaseDrawableConfig
     ) {
         super(gl, config)
-        const vertexArray = new VertexArray(gl)
-        vertexArray.bind()
-        const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
-        const layout = new VertexBufferLayout(gl)
-        // const shader = new Shader(gl, vertexShader, fragmentShader)
-        const shader = DynamicTextureShader.newShader(gl)
-        const texture = new Texture(gl, Images.Ripple)
-
-        buffer.bind()
-        shader.bind()
-        layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2)
-        layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2)
-        layout.pushFloat(shader.getAttributeLocation(ATTR_ALPHA), 1)
-        vertexArray.addBuffer(layout)
-
-        vertexArray.unbind()
-        buffer.unbind()
-        shader.unbind()
-
-        this.vertexArray = vertexArray
-        this.buffer = buffer
-        this.texture = texture
-        this.layout = layout
-        this.shader = shader
+        this.buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
+        this.texture = new Texture(gl, Images.Ripple)
+        this.shader = Shaders.AlphaTexture
 
     }
 
@@ -90,7 +59,7 @@ export class Ripples extends BeatDrawable {
     }
 
     public bind() {
-        this.vertexArray.bind()
+        // this.vertexArray.bind()
         this.buffer.bind()
         this.texture.bind(this.textureUnit)
         this.shader.bind()
@@ -116,7 +85,6 @@ export class Ripples extends BeatDrawable {
     }
 
     public unbind() {
-        this.vertexArray.unbind()
         this.buffer.unbind()
         this.texture.unbind()
         this.shader.unbind()
@@ -125,22 +93,19 @@ export class Ripples extends BeatDrawable {
     public onDraw() {
         const gl = this.gl
         const shader = this.shader
-
-        shader.setUniform1i(UNI_SAMPLER, this.textureUnit)
-        shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
-        shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
+        shader.sampler2D = this.textureUnit
+        shader.transform = this.matrixArray
+        shader.orth = Coordinate.orthographicProjectionMatrix4
         if (this.vertexCount === 0) return
 
         this.buffer.setBufferData(this.vertexData)
-        this.vertexArray.addBuffer(this.layout)
+        shader.use()
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
     }
 
     public dispose() {
         super.dispose()
         this.texture.dispose()
-        this.vertexArray.dispose()
-        this.shader.dispose()
         this.buffer.dispose()
     }
 

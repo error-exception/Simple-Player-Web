@@ -1,13 +1,12 @@
 import {Sprite} from "./Sprite";
 import {Drawable} from "../../drawable/Drawable";
 import StoryTextureManager from "./StoryTextureManager";
-import {VertexArray} from "../../core/VertexArray";
-import ColoredTextureShader from "../../shader/ColoredTextureShader";
 import OSUPlayer from "../../../player/OSUPlayer";
 import Coordinate from "../../base/Coordinate";
 import {TransformUtils} from "../../core/TransformUtils";
 import {isAnimation} from "../../../osu/OSUFile";
 import {Animation} from "./Animation";
+import {Shaders} from "../../shader/Shaders";
 
 /**
  * TODO: 1. 根据 Texture 和 Layer 进行分组，然后调用实例绘制
@@ -17,7 +16,7 @@ export class StoryScreen extends Drawable {
 
   public spriteList: Sprite[] = []
 
-  private readonly vertexArray: VertexArray
+  // private readonly vertexArray: VertexArray
   // private readonly vertexBuffer: VertexBuffer
 
   private orth: Float32Array = new Float32Array(16)
@@ -47,14 +46,15 @@ export class StoryScreen extends Drawable {
         }
       }
     }
-    this.vertexArray = new VertexArray(gl)
-    this.vertexArray.bind()
+    // this.vertexArray = new VertexArray(gl)
+    // this.vertexArray.bind()
     // this.vertexBuffer = new VertexBuffer(gl, new Float32Array(this.spriteList.length * 48), gl.DYNAMIC_DRAW)
-    const shader = ColoredTextureShader.getShader(gl)
+    const shader = Shaders.Default
     shader.bind()
-    shader.setUniform1i("u_sampler", 0)
+    shader.sampler2D = 0
+    // shader.setUniform1i("u_sampler", 0)
     shader.unbind()
-    this.vertexArray.unbind()
+    // this.vertexArray.unbind()
     const scale = 480 / Coordinate.height
     const scaledWidth = Coordinate.width * scale
     const s = scaledWidth - 640 < 0 ? 0 : scaledWidth - 640
@@ -85,30 +85,32 @@ export class StoryScreen extends Drawable {
   }
 
   public bind() {
-    ColoredTextureShader.bind()
-    this.vertexArray.bind()
+    Shaders.Default.bind()
+    // ColoredTextureShader.bind()
+    // this.vertexArray.bind()
     // this.vertexBuffer.bind()
   }
 
   public onDraw() {
     // this.vertexArray.addBuffer(this.vertexBuffer, ColoredTextureShader.getLayout())
-    ColoredTextureShader.getShader(this.gl).setUniformMatrix4fv("u_orth", this.orth)
+    Shaders.Default.orth = this.orth
+    // ColoredTextureShader.getShader(this.gl).setUniformMatrix4fv("u_orth", this.orth)
     const sprites = this.spriteList
     for (let i = 0; i < sprites.length; i++) {
-      sprites[i].draw(this.vertexArray)
+      sprites[i].draw(/*this.vertexArray*/)
     }
   }
 
   public unbind() {
-    this.vertexArray.unbind()
+    // this.vertexArray.unbind()
   }
 
   public dispose() {
     super.dispose();
     StoryTextureManager.dispose()
-    ColoredTextureShader.dispose()
+    // ColoredTextureShader.dispose()
     this.spriteList.forEach(v => v.dispose())
-    this.vertexArray.dispose()
+    // this.vertexArray.dispose()
   }
 
 }

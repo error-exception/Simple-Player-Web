@@ -163,8 +163,6 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
       ty = -Coordinate.height / 2 + height;
     }
 
-
-
     // offset
     if (this.config.offset) {
       const [ offsetX, offsetY ] = this.config.offset

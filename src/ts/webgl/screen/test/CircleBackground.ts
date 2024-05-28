@@ -1,24 +1,18 @@
 import {BaseDrawableConfig, Drawable} from "../../drawable/Drawable";
-import {Shader} from "../../core/Shader";
 import {VertexBuffer} from "../../core/VertexBuffer";
-import {VertexBufferLayout} from "../../core/VertexBufferLayout";
-import {VertexArray} from "../../core/VertexArray";
 import Coordinate from "../../base/Coordinate";
-import RoundClipColoredShader from "../../shader/RoundClipColoredShader";
-import {ATTR_COLOR, ATTR_POSITION, UNI_CIRCLE, UNI_ORTH, UNI_TRANSFORM} from "../../shader/ShaderConstant";
 import {Shape2D} from "../../util/Shape2D";
 import {ObjectTransition} from "../../transition/Transition";
 import {Time} from "../../../global/Time";
 import {Color} from "../../base/Color";
 import {easeIn} from "../../../util/Easing";
+import {Shaders} from "../../shader/Shaders";
+import type {RoundClipShaderWrapper} from "../../shader/RoundClipShaderWrapper";
 
 export class CircleBackground extends Drawable {
 
-  private readonly shader: Shader
+  private readonly shader: RoundClipShaderWrapper
   private readonly buffer: VertexBuffer
-  private readonly layout: VertexBufferLayout
-  private readonly vertexArray: VertexArray
-
   private radius = 240
   private thickWidth = 0
   private radiusTransition = new ObjectTransition(this, 'radius')
@@ -29,27 +23,8 @@ export class CircleBackground extends Drawable {
     config: BaseDrawableConfig
   ) {
     super(gl, config)
-    const vertexArray = new VertexArray(gl)
-    vertexArray.bind()
-    const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
-    const shader = RoundClipColoredShader.newShader(gl)
-    const layout = new VertexBufferLayout(gl)
-
-    buffer.bind()
-    shader.bind()
-
-    layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2)
-    layout.pushFloat(shader.getAttributeLocation(ATTR_COLOR), 4)
-    vertexArray.addBuffer(layout)
-
-    vertexArray.unbind()
-    buffer.unbind()
-    shader.unbind()
-
-    this.vertexArray = vertexArray
-    this.buffer = buffer;
-    this.layout = layout
-    this.shader = shader
+    this.buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
+    this.shader = Shaders.RoundClip
 
     setTimeout(() => {
       const ease = easeIn
@@ -107,13 +82,11 @@ export class CircleBackground extends Drawable {
   }
 
   public unbind() {
-    this.vertexArray.unbind()
     this.buffer.unbind()
     this.shader.unbind()
   }
 
   public bind() {
-    this.vertexArray.bind()
     this.buffer.bind()
     this.shader.bind()
   }
@@ -122,16 +95,14 @@ export class CircleBackground extends Drawable {
     const gl = this.gl
     this.buffer.setBufferData(this.vertex)
     const shader = this.shader
-    shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
-    shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
-    shader.setUniform3fv(UNI_CIRCLE, this.uniCircle)
-    this.vertexArray.addBuffer(this.layout)
+    shader.transform = this.matrixArray
+    shader.orth = Coordinate.orthographicProjectionMatrix4
+    shader.circle = this.uniCircle
+    shader.use()
     gl.drawArrays(gl.TRIANGLES, 0, 12)
   }
 
   public dispose() {
-    this.vertexArray.dispose()
-    this.shader.dispose()
     this.buffer.dispose()
   }
 

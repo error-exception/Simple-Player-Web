@@ -36,7 +36,6 @@ export class OSZ {
         // }
       }
     })
-    console.log(zip)
     const filenames = Object.getOwnPropertyNames(zip.files)
     const osuFilenames = filenames.filter(filename => filename.endsWith('.osu'))
     if (osuFilenames) {
@@ -108,7 +107,6 @@ export class OSZ {
         }
       }
     }
-    console.log(this.oszSource.osb)
     return osbFile
   }
 
@@ -171,7 +169,7 @@ export class OSZ {
 export function loadOSZ(file: File, preview = true) {
   OSZ.newOSZ(file).then(osz => {
     load(osz.getOSZFile(), preview)
-  })
+  }).catch(console.log)
 }
 async function load(osz: OSZFile, preview = true) {
   const osu = osz.osu[0]

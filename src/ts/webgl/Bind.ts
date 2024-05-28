@@ -7,7 +7,7 @@ import {Texture} from "./core/Texture";
 import {IndexBuffer} from "./core/IndexBuffer";
 import {VertexBufferLayout} from "./core/VertexBufferLayout";
 
-export class BindGroup {
+export class Bind {
 
   public static currentBoundedVertexArray: Nullable<VertexArray> = null
   public static currentBoundedShader: Nullable<Shader> = null
@@ -23,54 +23,54 @@ export class BindGroup {
   public texture: Nullable<Texture> = null
 
   public bindAll() {
-    if (this.vertexBuffer) BindGroup.bind(this.vertexBuffer)
-    if (this.texture) BindGroup.bind(this.texture)
-    if (this.shader) BindGroup.bind(this.shader)
-    if (this.indexBuffer) BindGroup.bind(this.indexBuffer)
-    if (this.vertexArray) BindGroup.bind(this.vertexArray)
+    if (this.vertexBuffer) Bind.bind(this.vertexBuffer)
+    if (this.texture) Bind.bind(this.texture)
+    if (this.shader) Bind.bind(this.shader)
+    if (this.indexBuffer) Bind.bind(this.indexBuffer)
+    if (this.vertexArray) Bind.bind(this.vertexArray)
   }
 
   // TODO: 增加返回值，当返回 false 时，表示要绑定的对象已经绑定。当返回 true 时，表示绑定已更改
   public static bind(bindable: Bindable) {
     if (bindable instanceof VertexBuffer) {
-      const vertexBuffer = BindGroup.currentBoundedVertexBuffer
+      const vertexBuffer = Bind.currentBoundedVertexBuffer
       if (bindable === vertexBuffer) {
         return false
       }
       bindable.bind()
-      BindGroup.currentBoundedVertexBuffer = bindable
+      Bind.currentBoundedVertexBuffer = bindable
       return true
     } else if (bindable instanceof Texture) {
-      const texture = BindGroup.currentBoundedTexture
+      const texture = Bind.currentBoundedTexture
       if (bindable === texture) {
         return false;
       }
       bindable.bind()
-      BindGroup.currentBoundedTexture = bindable
+      Bind.currentBoundedTexture = bindable
       return true
     } else if (bindable instanceof Shader) {
-      const shader = BindGroup.currentBoundedShader
+      const shader = Bind.currentBoundedShader
       if (bindable === shader) {
         return false;
       }
       bindable.bind()
-      BindGroup.currentBoundedShader = bindable
+      Bind.currentBoundedShader = bindable
       return true
     } else if (bindable instanceof IndexBuffer) {
-      const indexBuffer = BindGroup.currentBoundedIndexBuffer
+      const indexBuffer = Bind.currentBoundedIndexBuffer
       if (bindable === indexBuffer) {
         return false;
       }
       bindable.bind()
-      BindGroup.currentBoundedIndexBuffer = bindable
+      Bind.currentBoundedIndexBuffer = bindable
       return true
     } else if (bindable instanceof VertexArray) {
-      const vertexArray = BindGroup.currentBoundedVertexArray
+      const vertexArray = Bind.currentBoundedVertexArray
       if (bindable === vertexArray) {
         return false;
       }
       bindable.bind()
-      BindGroup.currentBoundedVertexArray = bindable
+      Bind.currentBoundedVertexArray = bindable
       return true
     } else {
       throw new Error("cannot bind this " + bindable)
@@ -80,37 +80,37 @@ export class BindGroup {
   // TODO: 增加返回值，当返回 true 时，表示当前可解邦，并已解绑，当返回 false 时，表示与当前绑定的对象不同，不做任何操作
   public static unbind(bindable: Bindable) {
     if (bindable instanceof VertexBuffer) {
-      if (BindGroup.currentBoundedVertexBuffer === bindable) {
+      if (Bind.currentBoundedVertexBuffer === bindable) {
         bindable.unbind()
-        BindGroup.currentBoundedVertexBuffer = null
+        Bind.currentBoundedVertexBuffer = null
         return true
       }
       return false
     } else if (bindable instanceof Texture) {
-      if (BindGroup.currentBoundedTexture === bindable) {
+      if (Bind.currentBoundedTexture === bindable) {
         bindable.unbind()
-        BindGroup.currentBoundedTexture = null
+        Bind.currentBoundedTexture = null
         return true
       }
       return false
     } else if (bindable instanceof Shader) {
-      if (BindGroup.currentBoundedShader === bindable) {
+      if (Bind.currentBoundedShader === bindable) {
         bindable.unbind()
-        BindGroup.currentBoundedShader = null
+        Bind.currentBoundedShader = null
         return true
       }
       return false
     } else if (bindable instanceof IndexBuffer) {
-      if (BindGroup.currentBoundedIndexBuffer === bindable) {
+      if (Bind.currentBoundedIndexBuffer === bindable) {
         bindable.unbind()
-        BindGroup.currentBoundedIndexBuffer = null
+        Bind.currentBoundedIndexBuffer = null
         return true
       }
       return false
     } else if (bindable instanceof VertexArray) {
-      if (BindGroup.currentBoundedVertexArray === bindable) {
+      if (Bind.currentBoundedVertexArray === bindable) {
         bindable.unbind()
-        BindGroup.currentBoundedVertexArray = null
+        Bind.currentBoundedVertexArray = null
         return true
       }
       return false
@@ -137,7 +137,7 @@ export class BindGroup {
 
 
   public copy() {
-    const group = new BindGroup()
+    const group = new Bind()
     group.layout = this.layout
     group.vertexArray = this.vertexArray
     group.shader = this.shader
@@ -148,4 +148,4 @@ export class BindGroup {
 
 }
 
-export const commonBindGroup: BindGroup = new BindGroup()
+export const commonBindGroup: Bind = new Bind()

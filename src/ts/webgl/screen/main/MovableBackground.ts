@@ -3,23 +3,14 @@ import {Box} from "../../box/Box";
 import Coordinate from "../../base/Coordinate";
 import {Drawable} from "../../drawable/Drawable";
 import {Shape2D} from "../../util/Shape2D";
-import {Shader} from "../../core/Shader";
 import {Texture} from "../../core/Texture";
 import {TransformUtils} from "../../core/TransformUtils";
 import {Vector2} from "../../core/Vector2";
-import {VertexArray} from "../../core/VertexArray";
 import {VertexBuffer} from "../../core/VertexBuffer";
-import {VertexBufferLayout} from "../../core/VertexBufferLayout";
 import {easeOutQuint} from "../../../util/Easing";
-import {
-    ATTR_POSITION,
-    ATTR_TEXCOORD,
-    UNI_ALPHA,
-    UNI_ORTH,
-    UNI_SAMPLER,
-    UNI_TRANSFORM
-} from "../../shader/ShaderConstant";
-import StaticTextureShader from "../../shader/StaticTextureShader";
+import {UNI_COLOR, UNI_ORTH, UNI_SAMPLER, UNI_TRANSFORM} from "../../shader/ShaderConstant";
+import type {ShaderWrapper} from "../../shader/ShaderWrapper";
+import {Shaders} from "../../shader/Shaders";
 
 // const vertexShader = `
 //     attribute vec4 a_position;
@@ -69,10 +60,10 @@ interface ImageDrawInfo {
 
 export class MovableBackground extends Drawable {
 
-    private readonly vertexArray: VertexArray
-    private readonly shader: Shader
+    // private readonly vertexArray: VertexArray
+    private readonly shader: ShaderWrapper
     private readonly buffer: VertexBuffer
-    private readonly layout: VertexBufferLayout
+    // private readonly layout: VertexBufferLayout
     private readonly texture: Texture
 
     public imageDrawInfo: ImageDrawInfo = {
@@ -87,29 +78,10 @@ export class MovableBackground extends Drawable {
         private textureUnit: number
     ) {
         super(gl, { size: ['fill-parent', 'fill-parent'] })
-        const vertexArray = new VertexArray(gl);
-        vertexArray.bind()
-        const buffer = new VertexBuffer(gl)
-        const layout = new VertexBufferLayout(gl)
-        const shader = StaticTextureShader.newShader(gl)//new Shader(gl, vertexShader, fragmentShader)
-        const texture = new Texture(gl, null)
 
-        buffer.bind()
-        shader.bind()
-
-        layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2)
-        layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2)
-        vertexArray.addBuffer(layout)
-
-        vertexArray.unbind()
-        buffer.unbind()
-        shader.unbind()
-
-        this.vertexArray = vertexArray;
-        this.buffer = buffer;
-        this.layout = layout;
-        this.texture = texture
-        this.shader = shader
+        this.buffer = new VertexBuffer(gl);
+        this.texture = new Texture(gl, null)
+        this.shader = Shaders.Default;
     }
 
     protected onUpdate() {
@@ -187,14 +159,14 @@ export class MovableBackground extends Drawable {
         TransformUtils.applyOrigin(imageTopLeft, imageScale)
         
         TransformUtils.applyOrigin(imageBottomRight, imageScale)
-        Shape2D.quad(
-            topLeft.x, topLeft.y, 
-            bottomRight.x, bottomRight.y, 
+        Shape2D.quadVector2(
+            topLeft,
+            bottomRight,
             this.vertex, 0, 4
         )
-        Shape2D.quad(
-            imageTopLeft.x, imageTopLeft.y, 
-            imageBottomRight.x, imageBottomRight.y, 
+        Shape2D.quadVector2(
+            imageTopLeft,
+            imageBottomRight,
             this.vertex, 2, 4
         )
     }
@@ -215,7 +187,7 @@ export class MovableBackground extends Drawable {
     }
 
     public unbind() {
-        this.vertexArray.unbind()
+        // this.vertexArray.unbind()
         this.texture.unbind()
         this.buffer.unbind()
         this.shader.unbind()
@@ -223,10 +195,12 @@ export class MovableBackground extends Drawable {
 
     public bind() {
         this.texture.bind(this.textureUnit)
-        this.vertexArray.bind()
+        // this.vertexArray.bind()
         this.buffer.bind()
         this.shader.bind()
     }
+
+    private white = new Float32Array([1, 1, 1, 1])
 
     public onDraw() {
         if (this.needUpdateTexture && this.image) {
@@ -237,21 +211,22 @@ export class MovableBackground extends Drawable {
         this.buffer.setBufferData(this.vertex)
         
         const gl = this.gl
-        const shader = this.shader
+        const shader = this.shader.shader
         shader.setUniform1i(UNI_SAMPLER, this.textureUnit)
         shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
-        shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha)
+        this.white[3] = this.appliedTransform.alpha
+        shader.setUniform4fv(UNI_COLOR, this.white)
         shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
-        this.vertexArray.addBuffer(this.layout)
-
+        // this.vertexArray.addBuffer(this.layout)
+        this.shader.use()
         gl.drawArrays(gl.TRIANGLES, 0, 6)
     }
 
     public dispose() {
         super.dispose()
         this.texture.dispose()
-        this.vertexArray.dispose()
-        this.shader.dispose()
+        // this.vertexArray.dispose()
+        // this.shader.dispose()
         this.buffer.dispose()
     }
 }

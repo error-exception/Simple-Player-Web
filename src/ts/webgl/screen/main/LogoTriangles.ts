@@ -5,53 +5,15 @@ import {BaseDrawableConfig, Drawable} from "../../drawable/Drawable";
 import {Interpolation} from "../../util/Interpolation";
 import {Shape2D} from "../../util/Shape2D";
 import {ObjectTransition} from "../../transition/Transition";
-import {Shader} from "../../core/Shader";
 import {Vector2} from "../../core/Vector2";
-import {VertexArray} from "../../core/VertexArray";
 import {VertexBuffer} from "../../core/VertexBuffer";
-import {VertexBufferLayout} from "../../core/VertexBufferLayout";
-
-const vertexShader = `
-    attribute vec2 a_position;
-    attribute vec4 a_color;
-    
-    varying mediump vec4 v_color;
-    
-    uniform mat4 u_orth;
-    uniform mat4 u_transform;
-    void main() {
-        vec4 position = vec4(a_position, 0.0, 1.0) * u_transform;
-        gl_Position = position * u_orth;
-        v_color = a_color;
-    }
-`
-
-const fragmentShader = `
-    varying mediump vec4 v_color;
-    uniform mediump vec3 u_circle;
-    uniform mediump float u_light;
-    void main() {
-//        gl_FragColor = v_color;
-        lowp float dist = distance(u_circle.xy, gl_FragCoord.xy);
-        if (dist < u_circle.z) {
-            mediump vec4 color = vec4(0.0);
-            color.rgb = min(v_color.rgb + u_light, 1.0);
-            color.a = v_color.a;
-            gl_FragColor = color;
-//            gl_FragColor = v_color;
-        } else {
-//            gl_FragColor = vec4(0.0, 1.0, 0.0, 0.5);
-            discard;
-        }
-    }
-`
+import type {RoundClipShaderWrapper} from "../../shader/RoundClipShaderWrapper";
+import {Shaders} from "../../shader/Shaders";
 
 export class LogoTriangles extends Drawable {
 
-    private readonly vertexArray: VertexArray
     private readonly vertexBuffer: VertexBuffer
-    private readonly layout: VertexBufferLayout
-    private readonly shader: Shader
+    private readonly shader: RoundClipShaderWrapper
     private vertexCount: number = 0
     private vertex: Float32Array
     private particles: TriangleParticle[] = []
@@ -68,31 +30,14 @@ export class LogoTriangles extends Drawable {
 
     constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
         super(gl, config);
-        const vertexArray = new VertexArray(gl)
-        vertexArray.bind()
-        const vertexBuffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
-        const layout = new VertexBufferLayout(gl)
-        const shader = new Shader(gl, vertexShader, fragmentShader)
-        vertexBuffer.bind()
-        shader.bind()
-
-        layout.pushFloat(shader.getAttributeLocation("a_position"), 2)
-        layout.pushFloat(shader.getAttributeLocation("a_color"), 4)
         this.vertexCount = 3 * 42
         this.vertex = new Float32Array(this.vertexCount * 6)
         for (let i = 0; i < this.vertexCount / 3 - 2; i++) {
             const triangle = new TriangleParticle(this)
             this.particles.push(triangle)
         }
-
-        vertexArray.unbind()
-        vertexBuffer.unbind()
-        shader.unbind()
-
-        this.shader = shader
-        this.vertexBuffer = vertexBuffer
-        this.vertexArray = vertexArray
-        this.layout = layout
+        this.shader = Shaders.RoundClip
+        this.vertexBuffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
     }
 
     public lightBegin(atTime: number = Time.currentTime) {
@@ -184,35 +129,30 @@ export class LogoTriangles extends Drawable {
 
 
     public bind(): void {
-        this.vertexArray.bind()
         this.vertexBuffer.bind()
         this.shader.bind()
     }
 
     public onDraw(): void {
         const gl = this.gl
-
-        this.shader.setUniform1f('u_light', this.light)
-        this.shader.setUniform3fv('u_circle', this.circleInfo)
-        this.shader.setUniformMatrix4fv("u_transform", this.matrixArray)
-        this.shader.setUniformMatrix4fv("u_orth", Coordinate.orthographicProjectionMatrix4)
+        const shader = this.shader
+        shader.light = this.light
+        shader.circle = this.circleInfo
+        shader.transform = this.matrixArray
+        shader.orth = Coordinate.orthographicProjectionMatrix4
         this.vertexBuffer.setBufferData(this.vertex)
-
-        this.vertexArray.addBuffer(this.layout)
+        shader.use()
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
 
     }
 
     public unbind(): void {
-        this.vertexArray.unbind()
         this.vertexBuffer.unbind()
         this.shader.unbind()
     }
 
     public dispose() {
         super.dispose();
-        this.shader.dispose()
-        this.vertexArray.dispose()
         this.vertexBuffer.dispose()
     }
 

@@ -26,6 +26,10 @@ const screenSource = [
   {
     name: "Storyboard",
     id: "story"
+  },
+  {
+    name: "LegacyPlay",
+    id: "legacyPlay"
   }
 ]
 

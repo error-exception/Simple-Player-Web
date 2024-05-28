@@ -1,8 +1,5 @@
 import {BaseDrawableConfig, Drawable} from "../../drawable/Drawable";
-import {VertexArray} from "../../core/VertexArray";
 import {VertexBuffer} from "../../core/VertexBuffer";
-import {Shader} from "../../core/Shader";
-import {VertexBufferLayout} from "../../core/VertexBufferLayout";
 import {degreeToRadian} from "../../../Utils";
 import {TransformUtils} from "../../core/TransformUtils";
 import {Vector2} from "../../core/Vector2";
@@ -12,23 +9,8 @@ import {VisualizerV2} from "../../../VisualizerV2";
 import {Time} from "../../../global/Time";
 import {BeatState} from "../../../global/Beater";
 import Coordinate from "../../base/Coordinate";
-
-const vertexShader = `
-    attribute vec2 a_vertexPosition;
-    uniform mat4 u_orth;
-    uniform mat4 u_transform;
-    void main() {
-        vec4 coord = vec4(a_vertexPosition, 0.0, 1.0) * u_transform;
-        gl_Position = coord * u_orth;
-    }
-`
-
-const fragmentShader = `
-    uniform lowp float u_alpha;
-    void main() {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, u_alpha);
-    }
-`
+import type {WhiteShaderWrapper} from "../../shader/WhiteShaderWrapper";
+import {Shaders} from "../../shader/Shaders";
 
 export interface RoundVisualizerConfig extends BaseDrawableConfig {
     innerRadius?: number
@@ -36,10 +18,8 @@ export interface RoundVisualizerConfig extends BaseDrawableConfig {
 
 export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
 
-    private readonly vertexArray: VertexArray
     private readonly buffer: VertexBuffer
-    private readonly shader: Shader
-    private readonly layout: VertexBufferLayout
+    private readonly shader: WhiteShaderWrapper
     private readonly indexBuffer: IndexBuffer
     private vertexCount = 0
     private readonly barCountPerRound = 256
@@ -55,11 +35,7 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
         if (config.innerRadius) {
             this.innerRadius = config.innerRadius
         }
-        const vertexArray = new VertexArray(gl)
-        vertexArray.bind()
-        const shader = new Shader(gl, vertexShader, fragmentShader)
         const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
-        const layout = new VertexBufferLayout(gl)
         const indexBuffer = new IndexBuffer(gl)
         const index: number[] = [
             0, 1, 2, 1, 2, 3
@@ -77,23 +53,9 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
         }
         indexBuffer.bind()
         indexBuffer.setIndexBuffer(new Uint32Array(indexArray))
-
-        buffer.bind()
-        shader.bind()
-
-        const location = shader.getAttributeLocation('a_vertexPosition')
-        layout.pushFloat(location, 2)
-        vertexArray.addBuffer(layout)
-
-        vertexArray.unbind()
-        buffer.unbind()
         indexBuffer.unbind()
-        shader.unbind()
-
-        this.vertexArray = vertexArray
         this.buffer = buffer
-        this.shader = shader
-        this.layout = layout
+        this.shader = Shaders.White
         this.indexBuffer = indexBuffer
 
         this.visualizer = AudioPlayerV2.getVisualizer()
@@ -225,35 +187,29 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
 
     public bind() {
         this.shader.bind()
-        this.vertexArray.bind()
         this.indexBuffer.bind()
         this.buffer.bind()
     }
 
     public unbind() {
         this.shader.unbind()
-        this.vertexArray.unbind()
         this.indexBuffer.unbind()
         this.buffer.unbind()
     }
 
     public onDraw() {
         const gl = this.gl
-
-        this.shader.setUniform1f("u_alpha", BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14)
-        this.shader.setUniformMatrix4fv('u_transform', this.matrixArray)
-        this.shader.setUniformMatrix4fv('u_orth', Coordinate.orthographicProjectionMatrix4)
-
+        this.shader.alpha = BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14
+        this.shader.transform = this.matrixArray
+        this.shader.orth = Coordinate.orthographicProjectionMatrix4
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-        this.vertexArray.addBuffer(this.layout)
+        this.shader.use()
         gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_INT, 0)
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     }
 
     public dispose() {
-        this.vertexArray.dispose()
         this.buffer.dispose()
-        this.shader.dispose()
         this.indexBuffer.dispose()
     }
 

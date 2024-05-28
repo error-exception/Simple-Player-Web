@@ -49,7 +49,6 @@ class OSUPlayer {
     this.artist.value = Metadata?.ArtistUnicode ?? "None"
     this.duration.value = AudioPlayerV2.duration()
     const background: OSUBackground = {}
-    this.isVideoAvailable = false
     if (video) {
       try {
         VideoPlayer.baseOffset = Events?.videoOffset ?? 0

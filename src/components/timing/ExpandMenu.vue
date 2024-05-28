@@ -1,21 +1,24 @@
 <script setup lang="ts">
-import {ref, watch} from "vue";
+import {computed, ref} from "vue";
 
-const props = defineProps<{
-  modelValue: string,
-  items: string[]
-}>()
-const emits = defineEmits<{
-  (e: 'update:modelValue', v: string): void
-}>()
-const selectedIndex = ref(0)
+const props = withDefaults(defineProps<{
+  items: string[],
+  align?: 'center' | 'left' | 'right'
+}>(), {
+  align: 'left',
+})
+const value = defineModel({ default: '' })
+const selectedIndex = computed({
+  get() {
+    return props.items.indexOf(value.value)
+  },
+  set(v: number) {
+    value.value = props.items[v]
+  }
+})
 const hidden = ref(true)
-
-watch(selectedIndex, value => {
-  emits('update:modelValue', props.items[value])
-}, {immediate: true})
-
 const select = (index: number) => {
+  console.log("fasfasf")
   selectedIndex.value = index
   hidden.value = true
 }
@@ -23,15 +26,31 @@ const select = (index: number) => {
 
 <template>
   <div class="relative">
-    <input @focus="hidden = false" autofocus class="expand-select text-center" readonly :value="items[selectedIndex]">
+    <input
+        @focus="hidden = false"
+        autofocus
+        class="expand-select"
+        :class="{
+          'text-center': align === 'center',
+          'text-left': align === 'left',
+          'text-right': align === 'right',
+        }"
+        readonly
+        :value="value"
+    >
     <div
       class="expand-item-list"
       :style="{
-          display: hidden ? 'none' : 'block'
+        display: hidden ? 'none' : 'block'
       }"
     >
-      <div @click="select(index)" v-for="(item, index) in items"
-           :class="{ 'expand-item-selected': index === selectedIndex }">
+      <div
+          v-for="(item, index) in items"
+          @click="select(index)"
+          :class="{
+            'expand-item-selected': index === selectedIndex
+          }"
+      >
         {{ item }}
       </div>
     </div>
@@ -46,13 +65,14 @@ const select = (index: number) => {
   width: 100%;
   height: 32px;
   border: 2px solid transparent;
+  padding: 0 8px;
 }
 
 .expand-select:focus {
   border: 2px solid #38e7ab;
 }
 .expand-item-list {
-  @apply text-white;
+  @apply text-white w-full;
   background-color: #2e3835;
   position: absolute;
   box-shadow: 0 0 8px rgba(0, 0, 0, .8);

@@ -59,6 +59,19 @@ export class Vector2 {
         this.y = y
     }
 
+    public setFrom(from: Vector2) {
+        this.x = from.x
+        this.y = from.y
+    }
+
+    public distance(other: Vector2) {
+        return Math.sqrt(
+          (this.x - other.x) * (this.x - other.x)
+          +
+          (this.y - other.y) * (this.y - other.y)
+        )
+    }
+
 }
 
 export function Vector(x: number = 0, y?: number) {

@@ -1,30 +1,19 @@
 import Coordinate from "../../base/Coordinate";
 import {BaseDrawableConfig, Drawable} from "../../drawable/Drawable";
 import {Shape2D} from "../../util/Shape2D";
-import {Shader} from "../../core/Shader";
 import {Texture} from "../../core/Texture";
 import {Vector2} from "../../core/Vector2";
-import {VertexArray} from "../../core/VertexArray";
 import {VertexBuffer} from "../../core/VertexBuffer";
-import {VertexBufferLayout} from "../../core/VertexBufferLayout";
-import {
-    ATTR_POSITION,
-    ATTR_TEXCOORD,
-    UNI_ALPHA,
-    UNI_ORTH,
-    UNI_SAMPLER,
-    UNI_TRANSFORM
-} from "../../shader/ShaderConstant";
-import StaticTextureShader from "../../shader/StaticTextureShader";
 import {Images} from "../../util/ImageResource";
+import type {DefaultShaderWrapper} from "../../shader/DefaultShaderWrapper";
+import {Shaders} from "../../shader/Shaders";
+import {Color} from "../../base/Color";
 
 export class Logo extends Drawable {
 
-    private readonly shader: Shader
+    private readonly shader: DefaultShaderWrapper
     private readonly buffer: VertexBuffer
     private readonly texture: Texture
-    private readonly layout: VertexBufferLayout
-    private readonly vertexArray: VertexArray
     private readonly textureUnit = 0
 
     constructor(
@@ -32,30 +21,9 @@ export class Logo extends Drawable {
         config: BaseDrawableConfig
     ) {
         super(gl, config)
-        
-        const vertexArray = new VertexArray(gl)
-        vertexArray.bind()
-        const buffer = new VertexBuffer(gl)
-        const shader = StaticTextureShader.getShader(gl)
-        const layout = new VertexBufferLayout(gl)
-        const texture = new Texture(gl, Images.Logo)
-
-        buffer.bind()
-        shader.bind()
-
-        layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2)
-        layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2)
-        vertexArray.addBuffer(layout)
-
-        vertexArray.unbind()
-        buffer.unbind()
-        shader.unbind()
-
-        this.vertexArray = vertexArray
-        this.buffer = buffer;
-        this.layout = layout
-        this.shader = shader
-        this.texture = texture
+        this.buffer = new VertexBuffer(gl);
+        this.shader = Shaders.Default
+        this.texture = new Texture(gl, Images.Logo)
     }
 
     public createVertexArray() {
@@ -92,7 +60,6 @@ export class Logo extends Drawable {
     }
 
     public unbind() {
-        this.vertexArray.unbind()
         this.texture.unbind()
         this.shader.unbind()
         this.buffer.unbind()
@@ -100,26 +67,24 @@ export class Logo extends Drawable {
 
     public bind() {
         this.texture.bind(this.textureUnit)
-        this.vertexArray.bind()
         this.shader.bind()
         this.buffer.bind()
     }
 
+    private white = Color.fromHex(0xffffff)
     public onDraw() {
         const gl = this.gl
-        this.shader.setUniform1i(UNI_SAMPLER, this.textureUnit)
-
-        this.shader.setUniformMatrix4fv(UNI_ORTH, Coordinate.orthographicProjectionMatrix4)
-        this.shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray)
-        this.shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha)
-        this.vertexArray.addBuffer(this.layout)
+        this.shader.sampler2D = this.textureUnit
+        this.shader.orth = Coordinate.orthographicProjectionMatrix4
+        this.shader.transform = this.matrixArray
+        this.white.alpha = this.appliedTransform.alpha
+        this.shader.color = this.white
+        this.shader.use()
         gl.drawArrays(gl.TRIANGLES, 0, 6)
     }
 
     public dispose() {
         this.texture.dispose()
-        this.vertexArray.dispose()
-        StaticTextureShader.dispose()
         this.buffer.dispose()
     }
 
