@@ -1,13 +1,20 @@
-import {Drawable} from "../drawable/Drawable";
+import {type BaseDrawableConfig, Drawable} from "../drawable/Drawable";
 import {Queue} from "../../util/Queue";
 import {Vector2} from "../core/Vector2";
 import {MouseState} from "../../global/MouseState";
 import {ArrayUtils} from "../../util/ArrayUtils";
+import  {type WebGLRenderer} from "../WebGLRenderer";
+import {DrawNode} from "../drawable/DrawNode";
 
-export class Box extends Drawable {
+/**
+ * todo: use transform instead relative axes
+ * todo: 增加重新布局子 Drawable 的功能
+ */
+export class Box<T extends BaseDrawableConfig = BaseDrawableConfig> extends Drawable<T> {
 
     protected childrenList: Drawable[] = []
     private posts: Queue<() => void> = new Queue<() => void>()
+    public drawNode: BoxDrawNode = new BoxDrawNode(this)
 
     public add(...children: Drawable[]) {
         for (let i = 0; i < children.length; i++) {
@@ -65,10 +72,10 @@ export class Box extends Drawable {
         this.posts.push(call)
     }
 
-    public load(): void {
-        super.load()
+    public load(renderer: WebGLRenderer): void {
+        super.load(renderer)
         for (let i = 0; i < this.childrenList.length; i++) {
-            this.childrenList[i].load()
+            this.childrenList[i].load(renderer)
         }
     }
 
@@ -116,13 +123,13 @@ export class Box extends Drawable {
         }
     }
 
-    public draw(): void {
+    public draw(renderer: WebGLRenderer): void {
         if (!this.isVisible) {
             return
         }
         this.bind()
         for (let i = 0; i < this.childrenList.length; i++) {
-            this.childrenList[i].draw()
+            this.childrenList[i].draw(renderer)
         }
         this.unbind()
     }
@@ -132,7 +139,7 @@ export class Box extends Drawable {
     public unbind(): void {}
 
     public click(which: number, position: Vector2) {
-        if (this.isAvailable && this.isInBound(position)) {
+        if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
             if ('onClick' in this && typeof this.onClick === "function")
                 this.onClick(which)
         }
@@ -142,7 +149,7 @@ export class Box extends Drawable {
     }
 
     public mouseDown(which: number, position: Vector2) {
-        if (this.isAvailable && this.isInBound(position)) {
+        if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
             if ('onMouseDown' in this && typeof this.onMouseDown === "function") {
                 this.onMouseDown(which)
             }
@@ -154,7 +161,7 @@ export class Box extends Drawable {
     }
 
     public mouseUp(which: number, position: Vector2) {
-        if (this.isAvailable && this.isInBound(position)) {
+        if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
             if ('onMouseUp' in this && typeof this.onMouseUp === "function") {
                 this.onMouseUp(which)
             }
@@ -167,7 +174,7 @@ export class Box extends Drawable {
     }
 
     public mouseMove(position: Vector2) {
-        if (this.isAvailable && this.isInBound(position)) {
+        if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
             if ('onMouseMove' in this && typeof this.onMouseMove === "function") {
                 this.onMouseMove()
             }
@@ -190,12 +197,12 @@ export class Box extends Drawable {
     #isHovered = false
 
     public hover(position: Vector2) {
-        // if (this.isAvailable && this.isInBound(position)) {
-        if ('onHover' in this && typeof this.onHover === "function" && !this.#isHovered) {
-            this.#isHovered = true
-            this.onHover()
+        if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
+            if ('onHover' in this && typeof this.onHover === "function" && !this.#isHovered) {
+                this.#isHovered = true
+                this.onHover()
+            }
         }
-        // }
     }
 
     public hoverLost(position: Vector2) {
@@ -209,12 +216,12 @@ export class Box extends Drawable {
 
     #isDragged = false
     public drag(which: number, position: Vector2) {
-        // if (this.isAvailable && this.isInBound(position)) {
-        if ('onDrag' in this && typeof this.onDrag === "function") {
-            this.#isDragged = true
-            this.onDrag(which)
+        if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
+            if ('onDrag' in this && typeof this.onDrag === "function") {
+                this.#isDragged = true
+                this.onDrag(which)
+            }
         }
-        // }
     }
 
     public dragLost(which: number, position: Vector2) {
@@ -225,5 +232,12 @@ export class Box extends Drawable {
             }
         }
     }
+}
 
+class BoxDrawNode extends DrawNode {
+    draw(renderer: WebGLRenderer) {
+        for (let i = 0; i < this.childrenNodes.length; i++) {
+            this.childrenNodes[i].draw(renderer)
+        }
+    }
 }

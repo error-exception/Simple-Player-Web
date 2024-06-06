@@ -1,12 +1,14 @@
-import {Texture} from "../core/Texture";
 import {TextureGroup} from "./TextureGroup";
 import {Disposable} from "../core/Disposable";
+import {Bind} from "../Bind";
 
-export class Textures implements Disposable {
-
-  public currentBoundedTexture: Texture | null = null
+class Textures implements Disposable {
 
   private textureGroupList: TextureGroup[] = []
+
+  public get currentBoundedTexture() {
+    return Bind.currentBoundedTexture
+  }
 
   public addTextureGroup(textureGroup: TextureGroup) {
     this.textureGroupList.push(textureGroup)
@@ -19,6 +21,7 @@ export class Textures implements Disposable {
         return
       }
     }
+    console.log("no texture found")
   }
 
   public disposeTextureGroup(textureGroup: TextureGroup) {

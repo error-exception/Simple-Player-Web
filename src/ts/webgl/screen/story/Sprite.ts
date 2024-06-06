@@ -14,6 +14,8 @@ import {StoryEventGroup} from "./event/StoryEventGroup";
 import {Axis} from "../../drawable/Axis";
 import {ImageFormat} from "../../core/Texture";
 import {Shaders} from "../../shader/Shaders";
+import type {WebGLRenderer} from "../../WebGLRenderer";
+import {Blend} from "../../drawable/Blend";
 
 const originMap: Record<StoryOrigin, number> = {
   TopLeft: Axis.Y_TOP | Axis.X_LEFT,
@@ -176,11 +178,12 @@ export class Sprite implements Disposable {
 
   protected colorArray = new Float32Array(4)
 
-  public draw(/*vertexArray: VertexArray*/) {
+  public draw(renderer: WebGLRenderer) {
     if (!this.shouldVisible()) {
       return
     }
-    const shader = Shaders.Default, gl = this.gl
+    const shader = Shaders.StoryDefault, gl = this.gl
+
     this.vertexBuffer.bind()
     if (this.needUpdateVertex) {
       Shape2D.quadVector2(this.topLeft, this.bottomRight, this.buffer, 0, 4)
@@ -189,28 +192,25 @@ export class Sprite implements Disposable {
       this.needUpdateVertex = false
     }
     shader.transform  = this.transformMatrix4
-    // const array = this.colorArray, color = this.color
     shader.color = this.color
-    // array[0] = color.red
-    // array[1] = color.green
-    // array[2] = color.blue
-    // array[3] = color.alpha
-    // shader.setUniform4fv("u_color", array)
     shader.use()
-    // vertexArray.addBuffer(ColoredTextureShader.getLayout())
     StoryTextureManager.tryBind(this.path)
     if (this.additiveBlend) {
+      renderer.setBlend(Blend.Additive)
       // gl.blendFunc(gl.ONE, gl.ONE)
-      gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD)
-      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE)
-      gl.drawArrays(gl.TRIANGLES, 0, 6)
+
+      // gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD)
+      // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE)
+      // gl.drawArrays(gl.TRIANGLES, 0, 6)
     } else {
-      // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD)
-      // gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE)
-      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE)
-      gl.drawArrays(gl.TRIANGLES, 0, 6)
+      // gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+      // gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD)
+      //gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE)
+
+      // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE)
+      renderer.setBlend(Blend.Normal)
     }
+    gl.drawArrays(gl.TRIANGLES, 0, 6)
     this.vertexBuffer.unbind()
   }
 

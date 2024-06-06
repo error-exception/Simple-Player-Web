@@ -3,8 +3,12 @@ import {Vector2} from "../core/Vector2";
 import {ObjectTransition} from "./Transition";
 import {Time} from "../../global/Time";
 import {Transform} from "../base/Transform";
+import type {Color} from "../base/Color";
 
-const M = 0, MX = 1, MY = 2, F = 3, R = 4, S = 5, SX = 6, SY = 7;
+const M = 0, MX = 1, MY = 2,
+  F = 3, R = 4,
+  S = 5, SX = 6, SY = 7,
+  SK = 8, SKX = 9, SKY = 10, C = 11;
 
 /**
  * 变换过渡类，每一种变换相互独立，
@@ -24,6 +28,12 @@ export class DrawableTransition {
   protected transitionScaleY: ObjectTransition
   transitionAlpha: ObjectTransition
   protected transitionRotate: ObjectTransition
+  protected transitionSkewX: ObjectTransition
+  protected transitionSkewY: ObjectTransition
+
+  protected transitionColorR: ObjectTransition
+  protected transitionColorG: ObjectTransition
+  protected transitionColorB: ObjectTransition
 
   private transitionDelay = 0
   private transformType = -1
@@ -35,6 +45,12 @@ export class DrawableTransition {
     this.transitionScaleY = new ObjectTransition(transform.scale, 'y')
     this.transitionAlpha = new ObjectTransition(transform, 'alpha')
     this.transitionRotate = new ObjectTransition(transform, 'rotate')
+    this.transitionSkewX = new ObjectTransition(transform.skew, 'x')
+    this.transitionSkewY = new ObjectTransition(transform.skew, 'y')
+
+    this.transitionColorR = new ObjectTransition(transform.color, 'red')
+    this.transitionColorG = new ObjectTransition(transform.color, 'green')
+    this.transitionColorB = new ObjectTransition(transform.color, 'blue')
   }
 
   /**
@@ -140,6 +156,54 @@ export class DrawableTransition {
     return this
   }
 
+  public skewTo(skew: Vector2, duration: number, ease: TimeFunction = linear) {
+    if (this.transformType !== SK) {
+      const time = Time.currentTime + this.transitionDelay
+      this.transitionSkewX.setStartTime(time)
+      this.transitionSkewY.setStartTime(time)
+      this.transitionDelay = 0
+      this.transformType = SK
+    }
+    this.transitionSkewX.transitionTo(skew.x, duration, ease)
+    this.transitionSkewY.transitionTo(skew.y, duration, ease)
+    return this
+  }
+
+  public skewXTo(skewX: number, duration: number, ease: TimeFunction = linear) {
+    if (this.transformType !== SKX) {
+      this.transitionSkewX.setStartTime(Time.currentTime + this.transitionDelay)
+      this.transitionDelay = 0
+      this.transformType = SKX
+    }
+    this.transitionSkewX.transitionTo(skewX, duration, ease)
+    return this
+  }
+
+  public skewYTo(skewY: number, duration: number, ease: TimeFunction = linear) {
+    if (this.transformType !== SKY) {
+      this.transitionSkewY.setStartTime(Time.currentTime + this.transitionDelay)
+      this.transitionDelay = 0
+      this.transformType = SKY
+    }
+    this.transitionSkewY.transitionTo(skewY, duration, ease)
+    return this
+  }
+
+  public colorTo(color: Color, duration: number, ease: TimeFunction = linear) {
+    if (this.transformType !== C) {
+      const time = Time.currentTime + this.transitionDelay
+      this.transitionColorR.setStartTime(time)
+      this.transitionColorG.setStartTime(time)
+      this.transitionColorB.setStartTime(time)
+      this.transitionDelay = 0
+      this.transformType = C
+    }
+    this.transitionColorR.transitionTo(color.red, duration, ease)
+    this.transitionColorG.transitionTo(color.green, duration, ease)
+    this.transitionColorB.transitionTo(color.blue, duration, ease)
+    return this
+  }
+
   public update(transform: Transform) {
     // transform.translate.set(this.x, this.y)
     // transform.scale.set(this.scaleX, this.scaleY)
@@ -155,6 +219,11 @@ export class DrawableTransition {
     this.transitionScaleY.update(time)
     this.transitionAlpha.update(time)
     this.transitionRotate.update(time)
+    this.transitionSkewX.update(time)
+    this.transitionSkewY.update(time)
+    this.transitionColorR.update(time)
+    this.transitionColorG.update(time)
+    this.transitionColorB.update(time)
   }
 
 }

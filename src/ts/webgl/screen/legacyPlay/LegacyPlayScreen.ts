@@ -1,9 +1,9 @@
 import {LegacyLogo} from "../legacy/LegacyLogo";
-import {Axis} from "../../drawable/Axis";
 import {BeatBox} from "../../box/BeatBox";
 import {Vector} from "../../core/Vector2";
 import {easeOut, easeOutQuint} from "../../../util/Easing";
 import type {BaseDrawableConfig} from "../../drawable/Drawable";
+import {Anchor} from "../../drawable/Anchor";
 
 export class LegacyPlayScreen extends BeatBox {
 
@@ -15,19 +15,18 @@ export class LegacyPlayScreen extends BeatBox {
   private readonly fadeLogoMaxScale = Vector(1.18)
   private readonly fade = 0.65
 
-  constructor(gl: WebGL2RenderingContext) {
-    super(gl, {
+  constructor() {
+    super({
       size: ['fill-parent', 'fill-parent']
     });
     const config: BaseDrawableConfig = {
-      size: [520, 520],
-      offset: [ 250 - 66, -250 + 36],
-      anchor: Axis.X_RIGHT | Axis.Y_BOTTOM,
+      size: [225, 225],
+      offset: [36, 65],
+      anchor: Anchor.BottomRight,
     }
-    this.logo = new LegacyLogo(gl, config)
-    this.fadeLogo = new LegacyLogo(gl, config)
+    this.logo = new LegacyLogo(config)
+    this.fadeLogo = new LegacyLogo(config)
     this.fadeLogo.alpha = this.fade
-    this.scale = Vector(0.45)
     this.add(this.logo, this.fadeLogo)
   }
 

@@ -1,51 +1,58 @@
 import {Box} from "../../box/Box";
-import {LegacyBeatLogoBox} from "./LegacyBeatLogoBox";
-import {Flashlight} from "../main/Flashlight";
+import {LogoBounceBox} from "./LegacyBeatLogoBox";
 import {Color} from "../../base/Color";
-import {ColorDrawable} from "../../drawable/ColorDrawable";
 import {Axis} from "../../drawable/Axis";
 import {MouseState} from "../../../global/MouseState";
 import {Vector2} from "../../core/Vector2";
+import {Anchor} from "../../drawable/Anchor";
+import {SideFlashlight} from "../main/SideFlashlight";
+import {ImageDrawable} from "../../drawable/ImageDrawable";
+import {TextureStore} from "../../texture/TextureStore";
 
 export class LegacyScreen extends Box {
 
-  constructor(gl: WebGL2RenderingContext) {
-    super(gl, {
+  constructor() {
+    super({
       size: ['fill-parent', 'fill-parent']
     });
     this.add(
-      new LegacyBeatLogoBox(gl, {
-        size: [520, 520]
+      new LogoBounceBox({
+        size: [500, 500],
+        anchor: Anchor.Center
       }),
-      new Flashlight(gl, {
-        size: ['fill-parent', 'fill-parent'],
-        color: Color.fromHex(0xffffff)
-      }),
-      new HomeOverlay(gl)
+      new SideFlashlight(Color.fromHex(0xffffff)),
+      new HomeOverlay()
     )
   }
 }
 
 class HomeOverlay extends Box {
 
-  private top: ColorDrawable
-  private bottom: ColorDrawable
+  private top: ImageDrawable
+  private bottom: ImageDrawable
 
-  constructor(gl: WebGL2RenderingContext) {
-    super(gl, {
+  constructor() {
+    super({
       size: ['fill-parent', 'fill-parent'],
     });
-    this.top = new ColorDrawable(gl, {
+    const texture = TextureStore.get('Square')
+    this.top = new ImageDrawable(texture,{
       size: ['fill-parent', 100],
       anchor: Axis.Y_TOP | Axis.X_CENTER,
       color: Color.fromHex(0x0, 128)
     })
-    this.bottom = new ColorDrawable(gl, {
+    this.bottom = new ImageDrawable(texture, {
       size: ['fill-parent', 100],
       anchor: Axis.Y_BOTTOM | Axis.X_CENTER,
       color: Color.fromHex(0x0, 128)
     })
-    this.add(this.top, this.bottom)
+    this.add(
+      this.top, this.bottom,
+      // new PlayControls({
+      //   size: [Coordinate.width / 2, 20],
+      //   anchor: Anchor.TopRight
+      // })
+    )
     this.alpha = 0
   }
 
@@ -69,5 +76,4 @@ class HomeOverlay extends Box {
     }
     return true
   }
-
 }

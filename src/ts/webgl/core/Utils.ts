@@ -12,3 +12,7 @@ export function glCall(gl: WebGL2RenderingContext, func: () => void) {
 export function isUndef(v: any | undefined): v is undefined {
     return typeof v === 'undefined'
 }
+
+export function almostEquals(a: number, b: number) {
+    return Math.abs(a - b) <= 1e-5
+}

@@ -2,10 +2,10 @@ import {Box} from "./Box";
 import {BeatDispatcher, IBeat} from "../../global/Beater";
 import {BaseDrawableConfig} from "../drawable/Drawable";
 
-export abstract class BeatBox extends Box implements IBeat {
+export abstract class BeatBox<T extends BaseDrawableConfig = BaseDrawableConfig> extends Box<T> implements IBeat {
 
-    constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
-        super(gl, config);
+    constructor(config: T) {
+        super(config);
         BeatDispatcher.register(this)
     }
 

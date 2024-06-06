@@ -16,7 +16,7 @@ export class Texture implements Disposable, Bindable {
 
     constructor(
         private gl: WebGL2RenderingContext,
-        image: HTMLImageElement | HTMLVideoElement | null = null,
+        image: TexImageSource | null = null,
         format: number = ImageFormat.PNG
     ) {
         const texture = gl.createTexture();

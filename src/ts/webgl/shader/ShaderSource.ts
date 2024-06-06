@@ -4,8 +4,9 @@ import {
   ATTR_POSITION,
   ATTR_TEXCOORD,
   UNI_ALPHA,
-  UNI_CIRCLE, UNI_COLOR,
-  UNI_ORTH, UNI_SAMPLER,
+  UNI_COLOR,
+  UNI_ORTH,
+  UNI_SAMPLER,
   UNI_TRANSFORM
 } from "./ShaderConstant";
 
@@ -24,11 +25,9 @@ export class ShaderSource {
       varying vec2 v_texcoord;
       
       uniform mat4 ${UNI_ORTH};
-      uniform mat4 ${UNI_TRANSFORM};
-      
       void main() {
-          vec4 position = vec4(a_position, 0.0, 1.0) * ${UNI_TRANSFORM};
-          gl_Position = position * ${UNI_ORTH};
+          vec4 position = vec4(a_position, 0.0, 1.0) * ${UNI_ORTH};
+          gl_Position = position;
           v_texcoord = ${ATTR_TEXCOORD};
       }
     `,
@@ -40,13 +39,56 @@ export class ShaderSource {
     
       void main() {
           mediump vec4 tex_color = texture2D(${UNI_SAMPLER}, v_texcoord);
-          mediump vec4 out_color = vec4(tex_color.rgba * ${UNI_COLOR}.rgba);
+          mediump vec4 out_color = vec4(tex_color.rgb / tex_color.a, tex_color.a) * ${UNI_COLOR};
+          // out_color = out_color.rgba * ${UNI_COLOR}.rgba;
           gl_FragColor = out_color;
       }
     `
   }
 
+  static StoryDefault: Source = {
+    vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      attribute vec2 ${ATTR_TEXCOORD};
+      
+      varying vec2 v_texcoord;
+      
+      uniform mat4 ${UNI_ORTH};
+      uniform mat4 ${UNI_TRANSFORM};
+      void main() {
+          vec4 position = vec4(a_position, 0.0, 1.0) * ${UNI_TRANSFORM};
+          gl_Position = position * ${UNI_ORTH};
+          v_texcoord = ${ATTR_TEXCOORD};
+      }
+    `,
+    fragment: this.Default.fragment
+
+  }
+
+  /**
+   * todo: 修复竖屏下的位置异常问题
+   */
   static RoundClip: Source = {
+    fragment: `
+      varying mediump vec4 v_color;
+      uniform mediump vec3 u_circle;
+      uniform mediump vec2 u_resolution;
+      uniform mediump float u_light;
+      void main() {
+          mediump float minLength = min(u_resolution.x, u_resolution.y);
+          mediump vec2 coord = gl_FragCoord.xy / minLength;
+          coord = vec2(coord.x, 1.0 - coord.y);
+          mediump float dist = distance(u_circle.xy, coord);
+          if (dist < u_circle.z) {
+              lowp vec4 color = vec4(0.0);
+              color.rgb = min(v_color.rgb + u_light, 1.0);
+              color.a = v_color.a;
+              gl_FragColor = color;
+          } else {
+              discard;
+          }
+      }
+    `,
     vertex: `
       attribute vec2 ${ATTR_POSITION};
       attribute vec4 ${ATTR_COLOR};
@@ -54,27 +96,11 @@ export class ShaderSource {
       varying mediump vec4 v_color;
       
       uniform mat4 ${UNI_ORTH};
-      uniform mat4 ${UNI_TRANSFORM};
+      // uniform mat4 ${UNI_TRANSFORM};
       void main() {
-          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
+          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0);
           gl_Position = position * ${UNI_ORTH};
           v_color = ${ATTR_COLOR};
-      }
-    `,
-    fragment: `
-      varying mediump vec4 v_color;
-      uniform mediump vec3 ${UNI_CIRCLE};
-      uniform mediump float u_light;
-      void main() {
-          lowp float dist = distance(${UNI_CIRCLE}.xy, gl_FragCoord.xy);
-          if (dist < ${UNI_CIRCLE}.z) {
-              mediump vec4 color = vec4(0.0);
-              color.rgb = min(v_color.rgb + u_light, 1.0);
-              color.a = v_color.a;
-              gl_FragColor = color;
-          } else {
-              discard;
-          }
       }
     `
   }
@@ -130,9 +156,9 @@ export class ShaderSource {
       varying mediump vec2 v_tex_coord;
       varying mediump float v_alpha;
       uniform mat4 ${UNI_ORTH};
-      uniform mat4 ${UNI_TRANSFORM};
+      // uniform mat4 ${UNI_TRANSFORM};
       void main() {
-          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
+          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0);
           gl_Position = position * ${UNI_ORTH};
           v_tex_coord = ${ATTR_TEXCOORD};
           v_alpha = ${ATTR_ALPHA};
@@ -146,6 +172,92 @@ export class ShaderSource {
       void main() {
           mediump vec4 texelColor = texture2D(${UNI_SAMPLER}, v_tex_coord);
           texelColor.a = texelColor.a * v_alpha;
+          gl_FragColor = texelColor;
+      }
+    `
+  }
+
+  /**
+   * todo: test, use this source as RoundClip shader source
+   */
+  static RoundClipV2: Source = {
+    vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      attribute vec4 ${ATTR_COLOR};
+      
+      varying mediump vec4 v_color;
+      
+      uniform mat4 ${UNI_ORTH};
+      uniform mat4 ${UNI_TRANSFORM};
+      void main() {
+          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
+          gl_Position = position * ${UNI_ORTH};
+          v_color = ${ATTR_COLOR};
+          v_texcoord = a_texcoord;
+      }
+    `,
+    fragment: `
+      varying mediump vec4 v_color;
+      
+      uniform mediump float u_light;
+      uniform highp vec2 u_resolution;
+      highp float radius = 0.5;
+      void main() {
+          highp float minLength = min(u_resolution.x, u_resolution.y);
+          highp vec2 resolutionCoord = u_resolution / minLength;
+          highp vec2 center = resolutionCoord / 2.0;
+          highp vec2 coord = gl_FragCoord.xy / minLength;
+          
+          highp float distanceToCenter = distance(coord, center);
+          
+          if (distanceToCenter <= radius) {
+              lowp vec4 color = vec4(0.0);
+              color.rgb = min(v_color.rgb + u_light, 1.0);
+              color.a = v_color.a;
+              gl_FragColor = color;
+          } else {
+              discard;
+          }
+      }
+    `
+  }
+
+  static LegacyVisualizer: Source = {
+    vertex: `
+      attribute vec2 a_vertexPosition;
+      attribute vec2 a_tex_coord;
+      attribute float a_sampler_flag;
+      
+      varying lowp float v_sampler_flag;
+      varying mediump vec2 v_tex_coord;
+      
+      uniform mat4 u_orth;
+      
+      void main() {
+          vec4 coord = vec4(a_vertexPosition, 0.0, 1.0);
+          v_sampler_flag = a_sampler_flag;
+          v_tex_coord = a_tex_coord;
+          gl_Position = coord * u_orth;
+      }
+    `,
+    fragment: `
+      uniform lowp float u_alpha;
+      uniform sampler2D u_sampler_4;
+      uniform sampler2D u_sampler_5;
+      
+      varying mediump vec2 v_tex_coord;
+      varying lowp float v_sampler_flag;
+      
+      void main() {
+          mediump vec4 texelColor = vec4(0.0);
+          if (v_sampler_flag > 0.5) {
+              texelColor = texture2D(u_sampler_4, v_tex_coord);
+          } else {
+              texelColor = texture2D(u_sampler_5, v_tex_coord);
+          }
+          
+          texelColor.a = texelColor.a * u_alpha;
+//          gl_FragColor = vec4(1.0, 1.0, 1.0, u_alpha);
           gl_FragColor = texelColor;
       }
     `

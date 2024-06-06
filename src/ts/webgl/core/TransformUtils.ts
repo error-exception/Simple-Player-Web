@@ -1,14 +1,16 @@
 import {Matrix3} from "./Matrix3";
 import {Vector2} from "./Vector2";
+import {MatrixUtils} from "./MatrixUtils";
+import {degreeToRadian} from "../../Utils";
 
 // 先进行缩放操作，然后是旋转，最后才是位移，
 
 // 乘法顺序（从左到右）平移 旋转 缩放
 export class TransformUtils {
 
-    public static rotate(radius: number): Matrix3 {
-        const cos = Math.cos(radius),
-            sin = Math.sin(radius)
+    public static rotate(radian: number): Matrix3 {
+        const cos = Math.cos(radian),
+            sin = Math.sin(radian)
         const matrix = Matrix3.newIdentify()
         matrix.M11 = cos
         matrix.M12 = -sin
@@ -80,9 +82,9 @@ export class TransformUtils {
         return TransformUtils.apply(vec2, matrix)
     }
 
-    public static applyScaleOrigin(vec2: Vector2, scaleX: number, scaleY: number) {
+    public static applyScaleSelf(vec2: Vector2, scaleX: number, scaleY: number) {
         const matrix = TransformUtils.scale(scaleX, scaleY)
-        TransformUtils.applyOrigin(vec2, matrix)
+        TransformUtils.applySelf(vec2, matrix)
     }
 
     public static applyTranslate(vec2: Vector2, translateX: number, translateY: number) {
@@ -90,9 +92,9 @@ export class TransformUtils {
         return TransformUtils.apply(vec2, matrix)
     }
 
-    public static applyTranslateOrigin(vec2: Vector2, translateX: number, translateY: number) {
+    public static applyTranslateSelf(vec2: Vector2, translateX: number, translateY: number) {
         const matrix = TransformUtils.translate(translateX, translateY)
-        TransformUtils.applyOrigin(vec2, matrix)
+        TransformUtils.applySelf(vec2, matrix)
     }
 
     public static applyRotate(vec2: Vector2, radian: number) {
@@ -100,11 +102,19 @@ export class TransformUtils {
         return TransformUtils.apply(vec2, matrix)
     }
 
-    public static applyOrigin(vec2: Vector2, matrix: Matrix3) {
+    public static applySelf(vec2: Vector2, matrix: Matrix3) {
         const x = vec2.x * matrix.M11 + vec2.y * matrix.M12 + matrix.M13
         const y = vec2.x * matrix.M21 + vec2.y * matrix.M22 + matrix.M23
         vec2.x = x;
         vec2.y = y;
+    }
+
+    public transform(translate: Vector2, scale: Vector2, rotate: number): Matrix3 {
+        const m3 = MatrixUtils.m3Multi(
+          TransformUtils.translate(translate.x, translate.y),
+          TransformUtils.rotate(degreeToRadian(rotate))
+        )
+        return MatrixUtils.m3Multi(m3, TransformUtils.scale(scale.x, scale.y))
     }
 
 }

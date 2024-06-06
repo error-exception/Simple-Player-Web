@@ -3,8 +3,8 @@ import {BeatDispatcher, IBeat} from "../../global/Beater";
 
 export abstract class BeatDrawable<C extends BaseDrawableConfig = BaseDrawableConfig> extends Drawable<C> implements IBeat {
 
-    constructor(gl: WebGL2RenderingContext, config: C) {
-        super(gl, config);
+    constructor(config: C) {
+        super(config);
         BeatDispatcher.register(this)
     }
 

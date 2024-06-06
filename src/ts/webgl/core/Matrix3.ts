@@ -3,11 +3,7 @@ export class Matrix3 {
     /**
      * readonly, do not modify
      */
-    public static identify = [
-        1, 0, 0,
-        0, 1, 0,
-        0, 0, 1
-    ]
+    public static identify = this.newIdentify()
 
     private value: number[] = [
         0, 0, 0,
@@ -36,6 +32,18 @@ export class Matrix3 {
         for (let i = 0; i < out.length; i++) {
             out[i] = ma.value[i]
         }
+    }
+
+    public setFrom(other: Matrix3) {
+        for (let i = 0; i < 9; i++) {
+            this.value[i] = other.value[i]
+        }
+    }
+
+    public copy() {
+        const m = new Matrix3()
+        m.setFrom(this)
+        return m
     }
 
     public get M11() {

@@ -10,6 +10,9 @@ import stdNoteCircle from '../../../assets/hitcircleoverlay.png'
 import bar from '../../../assets/bar.png'
 import borderBar from '../../../assets/border_bar.png'
 import square from '../../../assets/square.png'
+import maniaNote1 from '../../../assets/game/osu_mania/mania-note1@2x.png'
+import maniaKey2 from '../../../assets/game/osu_mania/mania-key2@2x.png'
+import icons from '../../../assets/icons.png'
 
 export type ImageName = string |
   'Logo' |
@@ -23,7 +26,10 @@ export type ImageName = string |
   'Cursor' |
   'Bar' |
   'BorderBar' |
-  'Square'
+  'Square' |
+  'ManiaNote1' |
+  'ManiaKey2' |
+  'Icons'
 
 interface ImageSrc {
   name: ImageName,
@@ -78,5 +84,17 @@ export const ImageResourceMap: ImageSrc[] = [
   {
     name: "Square",
     url: square
+  },
+  {
+    name: 'ManiaNote1',
+    url: maniaNote1
+  },
+  {
+    name: "ManiaKey2",
+    url: maniaKey2
+  },
+  {
+    name: 'Icons',
+    url: icons
   }
 ]

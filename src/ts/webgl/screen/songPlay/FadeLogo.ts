@@ -2,18 +2,19 @@ import {BeatBox} from "../../box/BeatBox";
 import {BaseDrawableConfig} from "../../drawable/Drawable";
 import {ImageDrawable} from "../../drawable/ImageDrawable";
 import {easeOut, easeOutQuint} from "../../../util/Easing";
-import {Images} from "../../util/ImageResource";
+import {TextureStore} from "../../texture/TextureStore";
+import {Blend} from "../../drawable/Blend";
 
 export class FadeLogo extends BeatBox {
 
     private logo: ImageDrawable
 
-    constructor(
-        gl: WebGL2RenderingContext,
-        config: BaseDrawableConfig
-    ) {
-        super(gl, { size: ['fill-parent', 'fill-parent'] });
-        this.logo = new ImageDrawable(gl, Images.Logo, 1, config)
+    constructor(config: BaseDrawableConfig) {
+        super({ size: ['fill-parent', 'fill-parent'] });
+        this.logo = new ImageDrawable(TextureStore.get('Logo'), {
+            ...config,
+            blend: Blend.Additive
+        })
         this.logo.alpha = 0.3
         this.add(this.logo)
     }
@@ -22,18 +23,6 @@ export class FadeLogo extends BeatBox {
         this.logo.transform()
             .fadeTo(0.3, 60, easeOut)
             .fadeTo(0.1, gap * 2, easeOutQuint)
-    }
-
-    bind() {
-        super.bind();
-        const gl = this.gl
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-    }
-
-    unbind() {
-        super.unbind();
-        const gl = this.gl
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     }
 
 }

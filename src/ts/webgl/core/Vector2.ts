@@ -9,8 +9,18 @@ export class Vector2 {
         return this.x === 0 && this.y === 0
     }
 
+    /**
+     * 一个单位向量，注意，不能对这个向量进行修改
+     */
+    public static one = new Vector2(1, 1)
+    public static zero = new Vector2(0, 0)
+
     public static newZero(): Vector2 {
         return new Vector2(0, 0)
+    }
+
+    public static newOne() {
+        return new Vector2(1, 1)
     }
 
     public equals(v2: Vector2) {
@@ -19,6 +29,10 @@ export class Vector2 {
 
     public add(vec2: Vector2): Vector2 {
         return new Vector2(vec2.x + this.x, vec2.y + this.y)
+    }
+
+    public addValue(v: number) {
+        return new Vector2(this.x + v, this.y + v)
     }
 
     public increment(v: Vector2) {
@@ -30,10 +44,33 @@ export class Vector2 {
         return new Vector2(this.x - vec2.x, this.y - vec2.y)
     }
 
+    public minusValue(v: number) {
+        return new Vector2(this.x - v, this.y - v)
+    }
+
+    public div(v: Vector2) {
+        return new Vector2(this.x / v.x, this.y / v.y)
+    }
+
+    public divValue(v: number) {
+        return new Vector2(this.x / v, this.y / v)
+    }
+
+    public mul(v: Vector2) {
+        return new Vector2(this.x * v.x, this.y * v.y)
+    }
+
+    public mulValue(v: number) {
+        return new Vector2(this.x * v, this.y * v)
+    }
+
     public copy() {
         return new Vector2(this.x, this.y)
     }
 
+    public negative() {
+        return new Vector2(-this.x, -this.y)
+    }
     // public static negative(src: Vector2): Vector2 {
     //     return new Vector2(-src.x, -src.y)
     // }

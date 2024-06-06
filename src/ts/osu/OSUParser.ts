@@ -1,5 +1,6 @@
 import {NoteData} from '../webgl/screen/mania/ManiaPanel';
 import {OSUFile, OSUFileGeneral, OSUFileMetadata, OSUFileTimingPoints} from "./OSUFile";
+import {OSBParser} from "./OSBParser";
 
 export class OSUParser {
 
@@ -11,7 +12,7 @@ export class OSUParser {
 
   public static parse(textContent: string): OSUFile {
     const osuFile: OSUFile = {}
-    const lines = textContent.split("\n").map(v => v.trim())
+    const lines = textContent.split("\n").map(v => v.trimEnd())
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]
       if (line === this.hitObject && osuFile.General) {
@@ -32,8 +33,11 @@ export class OSUParser {
   }
 
   private static parseEvents(lines: string[], index: number, out: OSUFile) {
-    let i = index
+    let i = index, hasStoryboard = false
     out.Events = {}
+    const storyLines: string[] = [
+      '[Events]'
+    ]
     while (lines[i].length > 0 && lines[i].charAt(0) !== '[') {
       const line = lines[i++]
       if (line.startsWith("Video")) {
@@ -57,8 +61,14 @@ export class OSUParser {
         if (firstIndex >= 0 && lastIndex > 0) {
           out.Events.imageBackground = line.substring(firstIndex + 1, lastIndex).toLowerCase()
         }
+      } else if (hasStoryboard) {
+        storyLines.push(line)
+      } else if (line.startsWith('Sprite') || line.startsWith('Animation')) {
+        hasStoryboard = true
+        storyLines.push(line)
       }
     }
+    out.Events.storyboard = OSBParser.parse(storyLines.join('\n'))
   }
 
   // track, none, startTime, none, none, endTime

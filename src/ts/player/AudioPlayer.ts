@@ -1,4 +1,3 @@
-// TODO: complete this class
 import {TimePlayer} from "../TimePlayer";
 import {ref} from "vue";
 import {clamp, int} from "../Utils";
@@ -7,7 +6,9 @@ import {PlayerState} from "./PlayerState";
 import {AbstractPlayer, MediaDataSource} from "./AbstractPlayer";
 import {eventRef} from "../util/eventRef";
 
-
+/**
+ * todo: impl volume
+ */
 class AudioPlayer extends AbstractPlayer {
 
   private readonly audioContext: AudioContext

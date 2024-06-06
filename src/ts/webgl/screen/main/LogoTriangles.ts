@@ -3,19 +3,17 @@ import {Color} from "../../base/Color";
 import Coordinate from "../../base/Coordinate";
 import {BaseDrawableConfig, Drawable} from "../../drawable/Drawable";
 import {Interpolation} from "../../util/Interpolation";
-import {Shape2D} from "../../util/Shape2D";
 import {ObjectTransition} from "../../transition/Transition";
-import {Vector2} from "../../core/Vector2";
-import {VertexBuffer} from "../../core/VertexBuffer";
+import {Vector, Vector2} from "../../core/Vector2";
 import type {RoundClipShaderWrapper} from "../../shader/RoundClipShaderWrapper";
 import {Shaders} from "../../shader/Shaders";
+import {BasicVertexBuffer} from "../../buffer/BasicVertexBuffer";
+import {type DrawNode} from "../../drawable/DrawNode";
+import {type WebGLRenderer} from "../../WebGLRenderer";
+import {TransformUtils} from "../../core/TransformUtils";
 
 export class LogoTriangles extends Drawable {
 
-    private readonly vertexBuffer: VertexBuffer
-    private readonly shader: RoundClipShaderWrapper
-    private vertexCount: number = 0
-    private vertex: Float32Array
     private particles: TriangleParticle[] = []
     private startColor = Color.fromHex(0xff7db7)
     private endColor = Color.fromHex(0xde5b95)
@@ -28,16 +26,12 @@ export class LogoTriangles extends Drawable {
     public velocityIncrement = 0
     private velocityTransition = new ObjectTransition(this, 'velocityIncrement')
 
-    constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
-        super(gl, config);
-        this.vertexCount = 3 * 42
-        this.vertex = new Float32Array(this.vertexCount * 6)
-        for (let i = 0; i < this.vertexCount / 3 - 2; i++) {
+    constructor(config: BaseDrawableConfig) {
+        super(config);
+        for (let i = 0; i < 32; i++) {
             const triangle = new TriangleParticle(this)
             this.particles.push(triangle)
         }
-        this.shader = Shaders.RoundClip
-        this.vertexBuffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
     }
 
     public lightBegin(atTime: number = Time.currentTime) {
@@ -56,18 +50,13 @@ export class LogoTriangles extends Drawable {
         super.onUpdate();
         this.lightTransition.update(Time.currentTime)
         this.velocityTransition.update(Time.currentTime)
-        const width = this.width;
-        const height = this.height;
-        const { x, y } = this.position
-        const topLeft = new Vector2(x, y)
-        const bottomRight = new Vector2(x + width, y - height)
-        const vertex = this.vertex
-        Shape2D.quadVector2(topLeft, bottomRight, vertex, 0, 6)
-        Shape2D.oneColor(this.startColor, vertex, 2, 6)
-
         this.updateParticles()
     }
 
+    /**
+     * todo: 解决高帧率下的移动速度过快
+     * @private
+     */
     private updateParticles() {
         for (let i = 0; i < this.particles.length; i++) {
             const triangle = this.particles[i]
@@ -76,22 +65,31 @@ export class LogoTriangles extends Drawable {
                 const { x, y } = this.position
                 triangle.position = new Vector2(
                     Interpolation.valueAt(Math.random(), x, x + this.width),
-                    y - this.height - triangle.size
+                    y + this.height + triangle.size
                 )
-                triangle.color = colorAt(Math.random(), this.startColor, this.endColor)
-                triangle.updateVertex()
+                triangle.color = Interpolation.colorAt(Math.random(), this.startColor, this.endColor)
             } else {
                 const size = triangle.size
-                triangle.position.y += 0.2 + size / 400 + this.velocityIncrement * (size / 400)
-                triangle.updateVertex()
-                triangle.copyTo(this.vertex, 36 + 18 * i, 6)
+                triangle.position.y -= 0.2 + size / 400 + this.velocityIncrement * (size / 400)
             }
+            triangle.updateVertex()
         }
     }
 
-    public onLoad(): void {
-        super.onLoad()
+    public onLoad(renderer: WebGLRenderer): void {
+        super.onLoad(renderer)
         this.initParticles()
+        this.MAX_SIZE = this.size.x * 0.7
+        this.MIN_SIZE = this.MAX_SIZE * 0.066667
+        const node = this.drawNode
+        node.shader = Shaders.RoundClip
+        node.vertexBuffer = new BasicVertexBuffer(
+          renderer,
+          this.particles.length * 3,
+          6,
+          renderer.gl.STREAM_DRAW
+        )
+        node.apply()
     }
 
     private isInitialed = false
@@ -103,59 +101,81 @@ export class LogoTriangles extends Drawable {
             const triangle = this.particles[i]
             triangle.size = Interpolation.valueAt(Math.random(), this.MIN_SIZE, this.MAX_SIZE);
             const { x, y } = this.position
-            triangle.position = new Vector2(
+            triangle.position.set(
                 Interpolation.valueAt(Math.random(), x, x + this.width),
-                Interpolation.valueAt(Math.random(), y, y - this.height)
+                Interpolation.valueAt(Math.random(), y, y + this.height)
             )
-            triangle.color = colorAt(Math.random(), this.startColor, this.endColor)
+            triangle.color = Interpolation.colorAt(Math.random(), this.startColor, this.endColor)
             triangle.updateVertex()
         }
     }
 
     protected onTransformApplied() {
         super.onTransformApplied();
-        const transform = this.appliedTransform
-        const scaledWidth = this.width / Coordinate.ratio * transform.scale.x * window.devicePixelRatio
-        const scaledHeight = this.height / Coordinate.ratio * transform.scale.y * window.devicePixelRatio
-        const circleMaxRadius = Math.min(scaledWidth, scaledHeight) / 2
-        const circleCenter = new Vector2(
-            (Coordinate.nativeWidth / 2 + transform.translate.x) * window.devicePixelRatio,
-            (Coordinate.nativeHeight / 2 + transform.translate.y) * window.devicePixelRatio
-        )
-        this.circleInfo[0] = circleCenter.x
-        this.circleInfo[1] = circleCenter.y
-        this.circleInfo[2] = circleMaxRadius
+
+        const matrix = this.drawNode.matrix
+        const topLeft = TransformUtils.apply(this.position, matrix)
+        const bottomRight = TransformUtils.apply(this.position.add(this.size), matrix)
+        const size = bottomRight.minus(topLeft)
+        const radius = Math.min(size.x, size.y) / 2
+        const center = topLeft.add(size.divValue(2))
+
+        const minLength = Math.min(Coordinate.size.x, Coordinate.size.y)
+
+        this.circleInfo[0] = center.x / minLength
+        this.circleInfo[1] = center.y / minLength
+        this.circleInfo[2] = radius / minLength
+
+        const alpha = this.appliedTransform.alpha
+        const particles = this.particles
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].color.alpha = alpha
+        }
     }
 
-
-    public bind(): void {
-        this.vertexBuffer.bind()
-        this.shader.bind()
-    }
-
-    public onDraw(): void {
-        const gl = this.gl
-        const shader = this.shader
-        shader.light = this.light
-        shader.circle = this.circleInfo
-        shader.transform = this.matrixArray
+    public beforeCommit(node: DrawNode) {
+        const shader = node.shader as RoundClipShaderWrapper
         shader.orth = Coordinate.orthographicProjectionMatrix4
-        this.vertexBuffer.setBufferData(this.vertex)
-        shader.use()
-        gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
-
+        shader.circle = this.circleInfo
+        shader.light = this.light
+        shader.resolution = Coordinate.resolution
     }
 
-    public unbind(): void {
-        this.vertexBuffer.unbind()
-        this.shader.unbind()
+    public onDraw(node: DrawNode): void {
+        const startColor = this.startColor
+        startColor.alpha = this.appliedTransform.alpha
+        const position = this.position
+        node.drawTriangle(
+          position,
+          Vector(position.x, position.y + this.height),
+          position.add(this.size),
+          startColor,
+          0
+        )
+        node.drawTriangle(
+          position,
+          Vector(position.x + this.width, position.y),
+          position.add(this.size),
+          startColor,
+          1
+        )
+        const particles = this.particles
+        for (let i = 0; i < particles.length; i++) {
+            const particle = this.particles[i]
+            node.drawTriangle(
+              particle.top,
+              particle.bottomLeft,
+              particle.bottomRight,
+              particle.color,
+              i + 2
+            )
+        }
     }
 
     public dispose() {
         super.dispose();
-        this.vertexBuffer.dispose()
+        this.drawNode.vertexBuffer.dispose()
     }
-
 }
 
 class TriangleParticle {
@@ -164,7 +184,7 @@ class TriangleParticle {
     public bottomLeft: Vector2 = Vector2.newZero()
     public bottomRight: Vector2 = Vector2.newZero()
 
-    public position: Vector2 = Vector2.newZero()
+    public position: Vector2 = Vector2.newZero() // center of triangle
     public size: number = 0
     public color: Color = Color.fromHex(0xff7db7)
 
@@ -174,41 +194,24 @@ class TriangleParticle {
     private sin30 = 0.5
 
     public isFinish(): boolean {
-        const centerY = this.position.y - 0.5 /* Math.cos(degreeToRadian(60))*/ * this.size
-        return centerY > this.parent.width / 2
+        return this.bottomLeft.y <= this.parent.position.y
     }
 
     public updateVertex() {
-
         const position = this.position
         const size = this.size
         this.top.set(
             position.x,
-            position.y + size
+            position.y - size
         )
         this.bottomLeft.set(
             position.x - size * this.cos30,
-            position.y - size * this.sin30
+            position.y + size * this.sin30
         )
         this.bottomRight.set(
             position.x + size * this.cos30,
-            position.y - size * this.sin30
+            position.y + size * this.sin30
         )
     }
 
-    public copyTo(out: Float32Array, offset: number, stride: number) {
-        const top = this.top
-        const bottomLeft = this.bottomLeft
-        const bottomRight = this.bottomRight
-        Shape2D.triangle(top, bottomLeft, bottomRight, out, offset, stride)
-        Shape2D.oneColor(this.color, out, offset + 2, stride)
-    }
-
-}
-
-function colorAt(randomValue: number, startColor: Color, endColor: Color): Color {
-    const r = startColor.red + (endColor.red - startColor.red) * randomValue
-    const g = startColor.green + (endColor.green - startColor.green) * randomValue
-    const b = startColor.blue + (endColor.blue - startColor.blue) * randomValue
-    return new Color(r, g, b, 1)
 }

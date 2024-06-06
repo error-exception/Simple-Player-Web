@@ -271,8 +271,6 @@ export class TranslateTransition {
 
 }
 
-
-
 export class ObjectTransition {
 
     private transitionGroup: TransitionGroup | null = null

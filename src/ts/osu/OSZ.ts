@@ -56,7 +56,7 @@ export class OSZ {
 
     const osbFilename = filenames.find(filename => filename.endsWith(".osb"))
     if (osbFilename) {
-      const osb = await this.decompressOSBFile(zip, osbFilename)
+      const osb = await this.decompressOSBFile(zip, osbFilename, this.osuFile)
       if (this.osuFile && this.osuFile.Events && osb) {
         this.osuFile.Events.storyboard = osb
       }
@@ -68,10 +68,12 @@ export class OSZ {
     }
   }
 
-  private async decompressOSBFile(zip: JSZip, osbFilename: string) {
+  private async decompressOSBFile(zip: JSZip, osbFilename: string, osuFile: Nullable<OSUFile>) {
     const osbFileContent = await zip.file(osbFilename)?.async("string")
     if (!osbFileContent) return null
     const osbFile = OSBParser.parse(osbFileContent)
+    if (osuFile && osuFile.Events && osuFile.Events.storyboard)
+      osbFile.sprites.push(...osuFile.Events.storyboard.sprites)
     for (let i = 0; i < osbFile.sprites.length; i++) {
       const sprite = osbFile.sprites[i]
 

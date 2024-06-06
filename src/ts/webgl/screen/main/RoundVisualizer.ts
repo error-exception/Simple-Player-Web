@@ -1,16 +1,21 @@
 import {BaseDrawableConfig, Drawable} from "../../drawable/Drawable";
-import {VertexBuffer} from "../../core/VertexBuffer";
 import {degreeToRadian} from "../../../Utils";
 import {TransformUtils} from "../../core/TransformUtils";
-import {Vector2} from "../../core/Vector2";
-import {IndexBuffer} from "../../core/IndexBuffer";
+import {Vector, Vector2} from "../../core/Vector2";
 import AudioPlayerV2 from "../../../player/AudioPlayer";
 import {VisualizerV2} from "../../../VisualizerV2";
 import {Time} from "../../../global/Time";
 import {BeatState} from "../../../global/Beater";
 import Coordinate from "../../base/Coordinate";
-import type {WhiteShaderWrapper} from "../../shader/WhiteShaderWrapper";
-import {Shaders} from "../../shader/Shaders";
+import type {WebGLRenderer} from "../../WebGLRenderer";
+import {Blend} from "../../drawable/Blend";
+import type {DrawNode} from "../../drawable/DrawNode";
+import {Matrix3} from "../../core/Matrix3";
+import {TransformUtils2} from "../../core/TransformUtils2";
+import {TextureStore} from "../../texture/TextureStore";
+import {Color} from "../../base/Color";
+import type {DefaultShaderWrapper} from "../../shader/DefaultShaderWrapper";
+import {QuadBuffer} from "../../buffer/QuadBuffer";
 
 export interface RoundVisualizerConfig extends BaseDrawableConfig {
     innerRadius?: number
@@ -18,123 +23,39 @@ export interface RoundVisualizerConfig extends BaseDrawableConfig {
 
 export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
 
-    private readonly buffer: VertexBuffer
-    private readonly shader: WhiteShaderWrapper
-    private readonly indexBuffer: IndexBuffer
-    private vertexCount = 0
-    private readonly barCountPerRound = 256
+    private readonly barCountPerRound = 220
 
     private readonly visualizer: VisualizerV2
 
-    private innerRadius = 236
+    private readonly innerRadius: number = 236
     constructor(
-        gl: WebGL2RenderingContext,
         config: RoundVisualizerConfig
     ) {
-        super(gl, config)
+        super(config)
         if (config.innerRadius) {
             this.innerRadius = config.innerRadius
         }
-        const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
-        const indexBuffer = new IndexBuffer(gl)
-        const index: number[] = [
-            0, 1, 2, 1, 2, 3
-        ]
-        const c = this.barCountPerRound
-        const indexArray: number[] = new Array(index.length * c * 5)
-        for (let i = 0, j = 0; i < c * 5; i++, j += 6) {
-            const increment = i << 2
-            indexArray[j] = index[0] + increment
-            indexArray[j + 1] = index[1] + increment
-            indexArray[j + 2] = index[2] + increment
-            indexArray[j + 3] = index[3] + increment
-            indexArray[j + 4] = index[4] + increment
-            indexArray[j + 5] = index[5] + increment
-        }
-        indexBuffer.bind()
-        indexBuffer.setIndexBuffer(new Uint32Array(indexArray))
-        indexBuffer.unbind()
-        this.buffer = buffer
-        this.shader = Shaders.White
-        this.indexBuffer = indexBuffer
-
         this.visualizer = AudioPlayerV2.getVisualizer()
     }
 
-    private vertexData = new Float32Array(0)
+    private centerOfDrawable = Vector()
+    public onLoad(renderer: WebGLRenderer) {
+        const node = this.drawNode
+        node.vertexBuffer = new QuadBuffer(renderer, this.barCountPerRound * 5, renderer.gl.STREAM_DRAW)
+        node.blend = Blend.Additive
+        node.apply()
+        this.centerOfDrawable = this.position.add(this.size.divValue(2))
+        this.scale = Vector(-1, 1)
+    }
+
+    public onWindowResize() {
+        super.onWindowResize();
+        this.centerOfDrawable = this.position.add(this.size.divValue(2))
+    }
 
     protected onUpdate() {
         super.onUpdate();
         this.getSpectrum(Time.currentTime, BeatState.isKiai ? 1 : 0.5)
-        this.updateVertex(this.targetSpectrum, this.barCountPerRound)
-    }
-
-    private updateVertex(spectrum: number[], length: number = spectrum.length) {
-        // const centerX = this.boundary.getAbsoluteLeft() + this.boundary.rect.getWidth() / 2 - Coordinate.width / 2
-        //const centerX = this.rawPosition.x + this.rawSize.x / 2
-        // const centerY = this.boundary.getAbsoluteTop() + this.boundary.rect.getHeight() / 2 - Coordinate.height / 2
-        // const centerY = this.rawPosition.y - this.rawSize.y / 2
-        const centerX = 0, centerY = 0
-        if (this.vertexData.length !== length) {
-            this.vertexData = new Float32Array(length * 8 * 5)
-        }
-        const array = this.vertexData
-        const innerRadius = this.innerRadius
-        const lineWidth = (
-            innerRadius / 2 * Math.sin(
-                degreeToRadian(360 / (length))
-            )
-        ) * 2
-        const half = lineWidth / 2
-
-        let k = 0;
-
-        for (let j = 0; j < 5; j++) {
-            for (let i = 0; i < length; i++) {
-
-                const degree = i / length * 360 + j * 360 / 5
-
-                const radian = degreeToRadian(degree)
-                const value = innerRadius + spectrum[i] * (160)
-                const fromX = centerX
-                const fromY = centerY + innerRadius
-                const toX = centerX
-                const toY = centerY + value
-
-                let point1 = new Vector2(fromX - half, fromY)
-                let point2 = new Vector2(fromX + half, fromY)
-                let point3 = new Vector2(toX - half, toY)
-                let point4 = new Vector2(toX + half, toY)
-
-                const matrix3 = TransformUtils.rotate(radian)
-
-                point1 = TransformUtils.apply(point1, matrix3)
-                point2 = TransformUtils.apply(point2, matrix3)
-                point3 = TransformUtils.apply(point3, matrix3)
-                point4 = TransformUtils.apply(point4, matrix3)
-
-                this.updateAt(array, k, point1)
-                this.updateAt(array, k + 2, point2)
-                this.updateAt(array, k + 4, point3)
-                this.updateAt(array, k + 6, point4)
-
-                k += 8
-
-            }
-        }
-
-        this.vertexCount = length * 6 * 5
-
-        this.buffer.bind()
-        this.buffer.setBufferData(array)
-        this.buffer.unbind()
-    }
-
-    private updateAt(array: Float32Array, offset: number, point: Vector2) {
-        // array[offset] = this.viewport.convertX(point.x);
-        // array[offset + 1] = this.viewport.convertY(point.y);
-        array[offset] = point.x// * 1 / (Coordinate.width / 2)
-        array[offset + 1] = point.y// * 1 / (Coordinate.height / 2)
     }
 
     private simpleSpectrum: number[] = new Array<number>(this.barCountPerRound)
@@ -185,32 +106,63 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
         this.lastTime = timestamp
     }
 
-    public bind() {
-        this.shader.bind()
-        this.indexBuffer.bind()
-        this.buffer.bind()
+    private color = Color.White.copy()
+    public beforeCommit(node: DrawNode) {
+
+        const shader = node.shader as DefaultShaderWrapper
+        shader.orth = Coordinate.orthographicProjectionMatrix4
+        this.color.alpha = BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14
+        shader.color = this.color
+        shader.sampler2D = 0
     }
 
-    public unbind() {
-        this.shader.unbind()
-        this.indexBuffer.unbind()
-        this.buffer.unbind()
-    }
+    public onDraw(node: DrawNode) {
+        const centerX = 0, centerY = 0
+        const spectrum = this.targetSpectrum
+        const length = this.barCountPerRound
+        const innerRadius = this.innerRadius
+        const lineWidth = (
+          innerRadius / 2 * Math.sin(
+            degreeToRadian(360 / (length))
+          )
+        ) * 2
+        const half = lineWidth / 2
 
-    public onDraw() {
-        const gl = this.gl
-        this.shader.alpha = BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14
-        this.shader.transform = this.matrixArray
-        this.shader.orth = Coordinate.orthographicProjectionMatrix4
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-        this.shader.use()
-        gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_INT, 0)
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    }
+        let k = 0;
 
-    public dispose() {
-        this.buffer.dispose()
-        this.indexBuffer.dispose()
+        const texture = TextureStore.get('Square')
+
+        for (let j = 0; j < 5; j++) {
+            for (let i = 0; i < length; i++) {
+
+                const degree = i / length * 360 + j * 360 / 5
+
+                const value = innerRadius + spectrum[i] * (160)
+                const fromX = centerX
+                const fromY = centerY + innerRadius
+                const toX = centerX
+                const toY = centerY + value
+
+                const point1 = new Vector2(fromX - half, fromY)
+                const point2 = new Vector2(fromX + half, fromY)
+                const point3 = new Vector2(toX - half, toY)
+                const point4 = new Vector2(toX + half, toY)
+
+                const matrix3 = Matrix3.newIdentify()
+                TransformUtils2.rotateFromLeft(matrix3, degree)
+                TransformUtils2.translateFromLeft(matrix3, this.centerOfDrawable)
+
+                TransformUtils.applySelf(point1, matrix3)
+                TransformUtils.applySelf(point2, matrix3)
+                TransformUtils.applySelf(point3, matrix3)
+                TransformUtils.applySelf(point4, matrix3)
+
+                // k += 8
+                node.drawQuad(point1, point2, point3, point4, undefined, k)
+                node.drawTexture(texture, undefined, undefined, k)
+                k++
+            }
+        }
     }
 
 }

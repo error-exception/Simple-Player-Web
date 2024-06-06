@@ -7,18 +7,18 @@
     @dragover="handleDrop"
   >
     <Visualizer2 class="absolute"/>
-    <Transition name="top-bar">
-      <TopBar
-        style="position: absolute; top: 0"
-        :stateText="stateText"
-        @settingsClick="ui.settings = !ui.settings"
-        @bpmCalcClick="ui.bpmCalculator = !ui.bpmCalculator"
-        @beatmapListClick="ui.beatmapList = !ui.beatmapList"
-        @notifyClick="ui.notify = !ui.notify"
-        @hideUI="hideUI()"
-        v-show="ui.showUI"
-      />
-    </Transition>
+<!--    <Transition name="top-bar">-->
+<!--      <TopBar-->
+<!--        style="position: absolute; top: 0"-->
+<!--        :stateText="stateText"-->
+<!--        @settingsClick="VueUI.settings = !VueUI.settings"-->
+<!--        @bpmCalcClick="ui.bpmCalculator = !ui.bpmCalculator"-->
+<!--        @beatmapListClick="VueUI.selectBeatmapDirectory = !VueUI.selectBeatmapDirectory"-->
+<!--        @notifyClick="VueUI.notification = !VueUI.notification"-->
+<!--        @hideUI="hideUI()"-->
+<!--        v-show="ui.showUI"-->
+<!--      />-->
+<!--    </Transition>-->
     <Transition name="mask">
       <div class="max-size mask absolute" v-if="hasSomeUIShow" @click="closeAll()"></div>
     </Transition>
@@ -30,7 +30,7 @@
     
     <Transition name="settings">
       <SettingsPanel
-        v-if="ui.settings"
+        v-if="VueUI.settings"
         class="absolute left-0"
       />
     </Transition>
@@ -45,10 +45,10 @@
     </Transition>
     
     <Transition name="player">
-      <MiniPlayer v-if="ui.miniPlayer" style="position: absolute; top: var(--top-bar-height); right: 80px"/>
+      <MiniPlayer v-if="VueUI.miniPlayer" style="position: absolute; top: var(--top-bar-height); right: 80px"/>
     </Transition>
     <Transition name="list">
-      <Notification v-if="ui.notify" class="absolute right-0"/>
+      <Notification v-if="VueUI.notification" class="absolute right-0"/>
     </Transition>
     <BpmCalculator
       v-if="ui.bpmCalculator"
@@ -56,9 +56,9 @@
       @close="ui.bpmCalculator = false"
     />
     <Transition name="popup">
-      <OSUBeatmapList class="absolute" v-if="ui.beatmapList" @close="ui.beatmapList = false"/>
+      <OSUBeatmapList class="absolute" v-if="VueUI.selectBeatmapDirectory" @close="VueUI.selectBeatmapDirectory = false"/>
     </Transition>
-    <FloatNotification v-if="!ui.notify" class="absolute right-0"/>
+    <FloatNotification v-if="!VueUI.notification" class="absolute right-0"/>
     <Toast class="absolute" style="position: absolute"/>
     <DevelopTip class="absolute right-0 bottom-0"/>
   </div>
@@ -84,7 +84,7 @@ import PlayManager from "./ts/player/PlayManager";
 import {PlayerState} from "./ts/player/PlayerState";
 import {loadOSZ} from './ts/osu/OSZ';
 import OSUBeatmapList from './components/OSUBeatmapList.vue';
-import {onEnterMenu, onLeftSide, onRightSide} from './ts/global/GlobalState';
+import {onEnterMenu, onLeftSide, onRightSide, VueUI} from './ts/global/GlobalState';
 import ScreenManager from "./ts/webgl/util/ScreenManager";
 import {useCollect} from "./ts/util/use";
 import {PLAYER} from "./ts/build";
@@ -99,12 +99,8 @@ import SideButton from "./components/SideButton.vue";
 
 const ui = reactive({
   list: false,
-  settings: false,
   bpmCalculator: false,
   showUI: false,
-  miniPlayer: false,
-  beatmapList: false,
-  notify: false,
   screenSelector: false
 })
 const screenId = ref("main")
@@ -120,10 +116,10 @@ provide("openList", () => {
 })
 
 provide("openMiniPlayer", () => {
-  ui.miniPlayer = true
+  VueUI.miniPlayer = true
 })
 
-watch(() => ui.settings, value => {
+watch(() => VueUI.settings, value => {
   if (value) {
     playSound(Sound.OverlayBigPopIn)
   } else {
@@ -131,7 +127,7 @@ watch(() => ui.settings, value => {
   }
   onLeftSide.emit(value)
 })
-watch(() => ui.notify, value => {
+watch(() => VueUI.notification, value => {
   if (value) {
     playSound(Sound.OverlayBigPopIn)
   } else {
@@ -139,8 +135,8 @@ watch(() => ui.notify, value => {
   }
   onRightSide.emit(value)
 })
-watch(() => ui.miniPlayer, value => playSound(value ? Sound.NowPlayingPopIn : Sound.NowPlayingPopOut))
-watch(() => ui.beatmapList, value => playSound(value ? Sound.WavePopIn : Sound.WavePopOut))
+watch(() => VueUI.miniPlayer, value => playSound(value ? Sound.NowPlayingPopIn : Sound.NowPlayingPopOut))
+watch(() => VueUI.settings, value => playSound(value ? Sound.WavePopIn : Sound.WavePopOut))
 useKeyboard('up', (evt) => {
   if (evt.code === 'KeyO') {
     ui.showUI = true
@@ -153,7 +149,7 @@ useKeyboard('up', (evt) => {
     Toaster.show("停止")
   }
   if (evt.code === 'KeyM') {
-    ui.miniPlayer = !ui.miniPlayer
+    VueUI.miniPlayer = !VueUI.miniPlayer
   }
   if (ui.bpmCalculator) {
     return
@@ -173,7 +169,7 @@ onEnterMenu.collect((value) => {
   ui.showUI = value
 })
 
-const hasSomeUIShow = computed(() => ui.list || ui.settings || ui.miniPlayer || ui.beatmapList || ui.notify || ui.screenSelector)
+const hasSomeUIShow = computed(() => ui.list || VueUI.settings || VueUI.miniPlayer || VueUI.selectBeatmapDirectory || VueUI.notification || ui.screenSelector)
 
 function hideUI() {
   ui.showUI = false
@@ -181,11 +177,11 @@ function hideUI() {
 }
 
 function closeAll() {
-  ui.settings = false
+  VueUI.settings = false
   ui.list = false
-  ui.miniPlayer = false
-  ui.beatmapList = false
-  ui.notify = false
+  VueUI.miniPlayer = false
+  VueUI.selectBeatmapDirectory = false
+  VueUI.notification = false
 }
 
 const stateText = ref("")

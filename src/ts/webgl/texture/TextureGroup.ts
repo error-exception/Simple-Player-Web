@@ -6,11 +6,10 @@ export class TextureGroup implements Disposable {
 
   private textureMap: Map<string, Texture> = new Map()
 
-  public addTexture(gl:WebGL2RenderingContext, name: string, imageBitmap: ImageBitmap) {
+  public addTexture(gl:WebGL2RenderingContext, name: string, image: TexImageSource) {
     let texture = this.textureMap.get(name);
     if (texture) return
-    texture = new Texture(gl)
-    texture.setTextureImage(imageBitmap)
+    texture = new Texture(gl, image)
     this.textureMap.set(name, texture)
 
   }

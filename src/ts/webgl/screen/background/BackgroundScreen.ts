@@ -50,12 +50,12 @@ export class BackgroundScreen extends Box {
     // this.background.updateBackground2(bg.image && UIState.beatmapBackground ? bg.image : BackgroundLoader.getBackground())
   }
 
-  constructor(gl: WebGL2RenderingContext) {
-    super(gl, {
+  constructor() {
+    super({
       size: ['fill-parent', 'fill-parent']
     });
-    this.background = new BackgroundBounce(gl, OSUPlayer.background.value.image)
-    this.videoBackground = new VideoBackground(gl, null)
+    this.background = new BackgroundBounce(OSUPlayer.background.value.image)
+    this.videoBackground = new VideoBackground(null)
     // OSUPlayer.background.collect(this.collector)
     this.addDisposable(() => {
       return collectLatest(OSUPlayer.background, this.collector)

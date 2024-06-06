@@ -1,4 +1,5 @@
 import TypedArray = NodeJS.TypedArray;
+import {almostEquals} from "../webgl/core/Utils";
 
 export class ArrayUtils {
 
@@ -36,6 +37,15 @@ export class ArrayUtils {
         return newArray
     }
 
+    public static copyTo<T = any>(src: T[] | Float32Array, start: number, length: number, dest: T[] | Float32Array, destStart: number) {
+        if (src.length < start + length || dest.length < destStart + length) {
+            return
+        }
+        for (let i = 0; i < length; i++) {
+            dest[destStart + i] = src[start + i]
+        }
+    }
+
     public static inBound<T>(arr: T[] | TypedArray, index: number): boolean {
         if (!Number.isInteger(index)) {
             return false
@@ -70,4 +80,30 @@ export class ArrayUtils {
         }
         return min
     }
+
+    public static equals(a: ArrayLike<any>, b: ArrayLike<any>) {
+        if (a.length !== b.length) {
+            return false
+        }
+        for (let i = 0; i < a.length; i++) {
+            if (a[i] !== b[i]) {
+                return false;
+            }
+        }
+        return true
+    }
+
+    public static almostEquals(a: number[] | Float32Array, b: number[] | Float32Array) {
+        if (a.length !== b.length) {
+            return false
+        }
+        for (let i = 0; i < a.length; i++) {
+            if (!almostEquals(a[i], b[i])) {
+                return false;
+            }
+        }
+        return true
+    }
+
+    public static emptyFloat32Array = new Float32Array()
 }

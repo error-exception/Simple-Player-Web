@@ -2,6 +2,8 @@ import type {Shader} from "../core/Shader";
 import {VertexBufferLayout} from "../core/VertexBufferLayout";
 import {VertexArray} from "../core/VertexArray";
 import type {Bindable} from "../core/Bindable";
+import type {WebGLRenderer} from "../WebGLRenderer";
+import type {Disposable} from "../core/Disposable";
 
 export interface AttribLayout {
   name: string
@@ -12,19 +14,19 @@ export interface AttribLayout {
   count: number
 }
 
-export class ShaderWrapper implements Bindable {
+export class ShaderWrapper implements Bindable, Disposable {
 
   public stride = 0
   public layout: VertexBufferLayout
   public vertexArray: VertexArray
 
   constructor(
-    gl: WebGL2RenderingContext,
+    protected renderer: WebGLRenderer,
     public shader: Shader,
-
     public shaderAttributes: AttribLayout[]
   ) {
     shader.bind()
+    const gl = renderer.gl
     this.layout = new VertexBufferLayout(gl)
     this.vertexArray = new VertexArray(gl)
     for (let i = 0; i < shaderAttributes.length; i++) {
@@ -39,25 +41,37 @@ export class ShaderWrapper implements Bindable {
       }
       this.stride += attr.count
     }
-    this.vertexArray.bind()
-    this.vertexArray.addBuffer(this.layout)
-
-    this.vertexArray.unbind()
+    // this.vertexArray.bind()
+    // this.vertexArray.addBuffer(this.layout)
+    //
+    // this.vertexArray.unbind()
     shader.unbind()
   }
 
   public bind() {
-    this.shader.bind()
-    this.vertexArray.bind()
+    const renderer = this.renderer
+    renderer.bindShader(this.shader)
+    renderer.bindVertexArray(this.vertexArray)
   }
 
   public unbind() {
-    this.shader.unbind()
-    this.vertexArray.unbind()
+    const renderer = this.renderer
+    renderer.unbindShader(this.shader)
+    renderer.unbindVertexArray(this.vertexArray)
+    // renderer.popShader()
+    // renderer.popVertexArray()
   }
 
   public use() {
     this.vertexArray.addBuffer(this.layout)
+  }
+
+  public dispose() {
+    const renderer = this.renderer
+    renderer.unbindShader(this.shader)
+    renderer.unbindVertexArray(this.vertexArray)
+    this.shader.dispose()
+    this.vertexArray.dispose()
   }
 
 }

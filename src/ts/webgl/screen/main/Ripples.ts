@@ -1,37 +1,35 @@
-import {BaseDrawableConfig} from "../../drawable/Drawable";
-import {VertexBuffer} from "../../core/VertexBuffer";
-import {Texture} from "../../core/Texture";
-import Coordinate from "../../base/Coordinate";
 import {Shape2D} from "../../util/Shape2D";
 import {BeatDrawable} from "../../drawable/BeatDrawable";
 import {ObjectTransition} from "../../transition/Transition";
 import {Time} from "../../../global/Time";
-import {int} from "../../../Utils";
 import {easeInQuart, easeOut} from "../../../util/Easing";
 import BeatBooster from "../../../global/BeatBooster";
-import {Images} from "../../util/ImageResource";
+import {DrawNode} from "../../drawable/DrawNode";
+import type {WebGLRenderer} from "../../WebGLRenderer";
+import {DynamicQuadBuffer} from "../../buffer/DynamicQuadBuffer";
+import {TextureStore} from "../../texture/TextureStore";
+import {Vector} from "../../core/Vector2";
 import {Shaders} from "../../shader/Shaders";
 import type {AlphaTextureShaderWrapper} from "../../shader/AlphaTextureShaderWrapper";
+import Coordinate from "../../base/Coordinate";
+import {Blend} from "../../drawable/Blend";
 
 export class Ripples extends BeatDrawable {
 
-    // private readonly vertexArray: VertexArray
-    private readonly buffer: VertexBuffer
-    private readonly texture: Texture
-    private readonly shader: AlphaTextureShaderWrapper
-    // private readonly layout: VertexBufferLayout
-    private readonly textureUnit: number = 1
     private ripples: Ripple[] = []
 
-    constructor(
-        gl: WebGL2RenderingContext,
-        config: BaseDrawableConfig
-    ) {
-        super(gl, config)
-        this.buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW)
-        this.texture = new Texture(gl, Images.Ripple)
-        this.shader = Shaders.AlphaTexture
+    public drawNode: DrawNode = new class extends DrawNode {
+        public apply() {
+            this.bufferData = []
+        }
+    }(this)
 
+    public onLoad(renderer: WebGLRenderer) {
+        super.onLoad(renderer);
+        this.drawNode.vertexBuffer = new DynamicQuadBuffer(renderer, 5)
+        this.drawNode.shader = Shaders.AlphaTexture
+        this.drawNode.blend = Blend.Additive
+        this.drawNode.apply()
     }
 
     public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {
@@ -58,55 +56,49 @@ export class Ripples extends BeatDrawable {
         ripple.start()
     }
 
-    public bind() {
-        // this.vertexArray.bind()
-        this.buffer.bind()
-        this.texture.bind(this.textureUnit)
-        this.shader.bind()
-    }
-
-    private vertexData = new Float32Array([])
-    private vertexCount = 0
     protected onUpdate() {
         super.onUpdate();
-        const data: number[] = []
         const ripples = this.ripples
-        let currentOffset = 0
         if (ripples.length === 0) {
             return
         }
         for (let i = 0; i < ripples.length; i++) {
             const ripple = ripples[i]
             ripple.update()
-            currentOffset += ripple.copyTo(data, currentOffset)
         }
-        this.vertexData = new Float32Array(data)
-        this.vertexCount = int(data.length / 5)
     }
 
-    public unbind() {
-        this.buffer.unbind()
-        this.texture.unbind()
-        this.shader.unbind()
-    }
-
-    public onDraw() {
-        const gl = this.gl
-        const shader = this.shader
-        shader.sampler2D = this.textureUnit
-        shader.transform = this.matrixArray
+    beforeCommit(node: DrawNode) {
+        const shader = node.shader as AlphaTextureShaderWrapper
         shader.orth = Coordinate.orthographicProjectionMatrix4
-        if (this.vertexCount === 0) return
+        shader.sampler2D = 0
+    }
 
-        this.buffer.setBufferData(this.vertexData)
-        shader.use()
-        gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount)
+    public onDraw(node: DrawNode) {
+        const ripples = this.ripples
+        if (ripples.length === 0) {
+            return
+        }
+        const texture = TextureStore.get('Ripple')
+        const center = Vector(this.position.x + this.width / 2, this.position.y + this.height / 2)
+        let ripple: Ripple
+        for (let i = 0; i < ripples.length; i++) {
+            ripple = ripples[i]
+            const currentRadius = ripple.innerRadius + ripple.currentThickWidth
+            node.drawRect(
+              center.minusValue(currentRadius),
+              center.addValue(currentRadius),
+              undefined,
+              i
+            )
+            node.drawTexture(texture, undefined, undefined, i)
+            node.drawOne(ripple.alpha, DrawNode.VERTEX_PER_QUAD, 4, i)
+        }
     }
 
     public dispose() {
         super.dispose()
-        this.texture.dispose()
-        this.buffer.dispose()
+        this.drawNode.vertexBuffer.dispose()
     }
 
 }
@@ -114,11 +106,11 @@ export class Ripples extends BeatDrawable {
 class Ripple {
 
     private readonly maxThickWidth: number
-    private readonly innerRadius: number
-    private currentThickWidth: number = 1
+    public readonly innerRadius: number
+    public currentThickWidth: number = 1
     private readonly defaultAlpha = 0.045
     private transition: ObjectTransition = new ObjectTransition(this, 'currentThickWidth')
-    private alpha = this.defaultAlpha
+    public alpha = this.defaultAlpha
     private alphaTransition: ObjectTransition = new ObjectTransition(this, 'alpha')
 
     constructor(

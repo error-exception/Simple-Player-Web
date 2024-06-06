@@ -1,11 +1,10 @@
 import {Box} from "../../box/Box";
-import {BeatDispatcher, BeatState, IBeat} from "../../../global/Beater";
+import {BeatState} from "../../../global/Beater";
 import {BaseDrawableConfig} from "../../drawable/Drawable";
 import {easeOut, easeOutElastic, easeOutQuint} from "../../../util/Easing";
 import AudioPlayerV2 from "../../../player/AudioPlayer";
 import {Time} from "../../../global/Time";
-import {Vector, Vector2} from "../../core/Vector2";
-import {MouseState} from "../../../global/MouseState";
+import {Vector} from "../../core/Vector2";
 import {Interpolation} from "../../util/Interpolation";
 import {effectScope, watch} from "vue";
 import {UIState} from "../../../global/UISettings";
@@ -14,23 +13,22 @@ import {Ripples} from "../main/Ripples";
 import {BeatBox} from "../../box/BeatBox";
 import {LegacyRoundVisualizer} from "./LegacyRoundVisualizer";
 import AudioChannel from "../../../player/AudioChannel";
+import {Anchor} from "../../drawable/Anchor";
 
-const logoSize = 610
-
-class LegacyBeatLogo extends Box implements IBeat {
+class LegacyBeatLogo extends BeatBox<LegacyLogoConfig> {
 
   // @ts-ignore
   private readonly logo: LegacyLogo
 
-  constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
-    super(gl, config);
+  constructor(config: LegacyLogoConfig) {
+    super(config);
 
-    const logo = new LegacyLogo(gl, {
-      size: [logoSize, logoSize]
+    const logo = new LegacyLogo({
+      size: config.size,
+      anchor: Anchor.Center
     })
     this.logo = logo
     this.add(logo)
-    BeatDispatcher.register(this)
 
   }
 
@@ -54,28 +52,23 @@ class LegacyBeatLogo extends Box implements IBeat {
     }
   }
 
-  public dispose() {
-    super.dispose();
-    BeatDispatcher.unregister(this)
-  }
-
 }
 
-class LegacyFadeBeatLogo extends Box implements IBeat {
+class LegacyFadeBeatLogo extends BeatBox<LegacyLogoConfig> {
 
   // @ts-ignore
   private readonly logo: LegacyLogo
 
-  constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
-    super(gl, config);
+  constructor(config: LegacyLogoConfig) {
+    super(config);
 
-    const logo = new LegacyLogo(gl, {
-      size: [logoSize, logoSize]
+    const logo = new LegacyLogo({
+      size: config.size,
+      anchor: Anchor.Center
     })
     this.logo = logo
     this.logo.alpha = .08
     this.add(logo)
-    BeatDispatcher.register(this)
   }
 
   public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {
@@ -90,21 +83,16 @@ class LegacyFadeBeatLogo extends Box implements IBeat {
       .scaleTo(Vector(1), gap * 2, easeOutQuint)
   }
 
-  public dispose() {
-    super.dispose();
-    BeatDispatcher.unregister(this)
-  }
-
 }
 
-class LegacyLogoBeatBox extends Box {
+class LegacyLogoBeatBox extends Box<LegacyLogoConfig> {
 
   public readonly beatLogo: LegacyBeatLogo
 
-  constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
-    super(gl, config);
+  constructor(config: LegacyLogoConfig) {
+    super(config);
 
-    this.beatLogo = new LegacyBeatLogo(gl, config)
+    this.beatLogo = new LegacyBeatLogo(config)
     this.add(this.beatLogo)
   }
 
@@ -121,14 +109,14 @@ class LegacyLogoBeatBox extends Box {
 
 }
 
-class LegacyFadeLogoBeatBox extends Box {
+class LegacyFadeLogoBeatBox extends Box<LegacyLogoConfig> {
 
   private readonly beatLogo: LegacyFadeBeatLogo
 
-  constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
-    super(gl, config);
+  constructor(config: LegacyLogoConfig) {
+    super(config);
 
-    this.beatLogo = new LegacyFadeBeatLogo(gl, config)
+    this.beatLogo = new LegacyFadeBeatLogo(config)
     this.add(this.beatLogo)
   }
 
@@ -147,7 +135,7 @@ class LegacyFadeLogoBeatBox extends Box {
 
 }
 
-class LogoAmpBox extends BeatBox {
+class LogoAmpBox extends BeatBox<LegacyLogoConfig> {
 
   private readonly visualizer: LegacyRoundVisualizer
   private readonly logoBeatBox: LegacyLogoBeatBox
@@ -155,17 +143,20 @@ class LogoAmpBox extends BeatBox {
   private logoHoverable = false
   private scope = effectScope()
 
-  constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
-    super(gl, config);
+  constructor(config: LegacyLogoConfig) {
+    super(config);
 
-    this.visualizer = new LegacyRoundVisualizer(gl, {
-      size: ['fill-parent', 'fill-parent'], innerRadius: logoSize * 0.92 / 2
+    this.visualizer = new LegacyRoundVisualizer({
+      size: [config.size[0] * 0.96, config.size[1] * 0.96],
+      innerRadius: config.size[0] * 0.92 / 2,
+      anchor: Anchor.Center
     })
-    const ripple = new Ripples(gl, {
-      size: [600, 600]
+    const ripple = new Ripples({
+      size: [config.size[0] * 0.98, config.size[1] * 0.98],
+      anchor: Anchor.Center
     })
-    this.logoBeatBox = new LegacyLogoBeatBox(gl, config)
-    this.fadeLogoBeatBox = new LegacyFadeLogoBeatBox(gl, config)
+    this.logoBeatBox = new LegacyLogoBeatBox(config)
+    this.fadeLogoBeatBox = new LegacyFadeLogoBeatBox(config)
     this.add(this.visualizer, ripple, this.logoBeatBox, this.fadeLogoBeatBox)
     this.scope.run(() => {
       watch(() => UIState.logoHover, val => this.logoHoverable = val, {immediate: true})
@@ -200,66 +191,17 @@ class LogoAmpBox extends BeatBox {
   }
 }
 
-export class LogoBounceBox extends Box {
-
-  private readonly logoAmpBox: LogoAmpBox
-  private isDraggable = true
-  private scope = effectScope()
-  private flag = false
-  private startPosition = Vector2.newZero()
-
-  constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
-    super(gl, config);
-
-    this.logoAmpBox = new LogoAmpBox(gl, {size: config.size})
-    this.add(this.logoAmpBox)
-    this.scope.run(() => {
-      watch(() => UIState.logoDrag, value => {
-        this.isDraggable = value
-      }, {immediate: true})
-    })
-  }
-
-  public onDrag(which: number): boolean {
-    if (!this.isDraggable) {
-      return true
-    }
-    const position = MouseState.position
-    if (!this.flag) {
-      this.flag = true
-      this.startPosition.x = MouseState.position.x
-      this.startPosition.y = MouseState.position.y
-    }
-    this.translate = new Vector2((position.x - this.startPosition.x) * 0.05, (position.y - this.startPosition.y) * 0.05)
-    // console.log(this._translate)
-    return true
-  }
-
-  public onDragLost(which: number): boolean {
-    if (!this.isDraggable) {
-      return true
-    }
-    this.flag = false
-    this.transform()
-      .moveTo(new Vector2(0, 0), 600, easeOutElastic)
-    return true
-  }
-
-  public dispose() {
-    super.dispose();
-    this.scope.stop()
-  }
+interface LegacyLogoConfig extends BaseDrawableConfig {
+  size: [number, number]
 }
 
-export class LegacyBeatLogoBox extends Box {
+export class LogoBounceBox extends Box<LegacyLogoConfig> {
 
-  private readonly logoBounceBox: Box
+  // private readonly logoAmpBox: LogoAmpBox
 
-  constructor(gl: WebGL2RenderingContext, config: BaseDrawableConfig) {
-    super(gl, config);
-
-    this.logoBounceBox = new LogoBounceBox(gl, {size: config.size})
-    this.add(this.logoBounceBox)
+  constructor(config: LegacyLogoConfig) {
+    super(config);
+    this.add(new LogoAmpBox(config))
   }
 
   // private flag = true
@@ -287,5 +229,6 @@ export class LegacyBeatLogoBox extends Box {
     // this.flag = !this.flag
     return true
   }
+
 
 }

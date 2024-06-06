@@ -1,5 +1,9 @@
 export class Color {
 
+    public static White = Color.fromHex(0xffffff)
+    public static Black = Color.fromHex(0x0)
+    public static Transparent = Color.fromHex(0, 0)
+
     public red: number = 0.0
     public green: number = 0
     public blue: number = 0

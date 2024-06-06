@@ -56,6 +56,10 @@ export class Shader implements Bindable, Disposable {
         this.gl.uniformMatrix4fv(this.getUniformLocation(name), false, value)
     }
 
+    public setUniformMatrix3fv(name: string, value: Float32Array) {
+        this.gl.uniformMatrix3fv(this.getUniformLocation(name), false, value)
+    }
+
     public getUniformLocation(name: string): WebGLUniformLocation | null {
         const gl = this.gl
         if (name in this.uniformLocationCache) {

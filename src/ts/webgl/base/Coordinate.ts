@@ -1,14 +1,12 @@
 import {TransformUtils} from "../core/TransformUtils"
+import {Vector, type Vector2} from "../core/Vector2";
 
 class Coordinate {
 
-    public static readonly MAX_WIDTH = 1536
-
-    private _width: number = 0;
-    private _height: number = 0;
-
-    private _nativeWidth = 0
-    private _nativeHeight = 0
+    public static readonly MAX_WIDTH = 1280
+    public size: Vector2 = Vector()
+    public nativeSize = Vector()
+    public resolution = Vector()
 
     public onWindowResize: (() => void) | null = null;
 
@@ -19,57 +17,63 @@ class Coordinate {
         0, 0, 0, 1
     ])
 
+    public center = Vector()
     public ratio = 1
     public updateCoordinate(width: number, height: number) {
         console.log("window resize", width, height);
-
-        this._nativeWidth = width
-        this._nativeHeight = height
+        this.nativeSize.set(width, height)
 
         this.ratio = Coordinate.MAX_WIDTH / width
 
-        this._width = Coordinate.MAX_WIDTH;
-        this._height = height * this.ratio;
+        this.size.set(Coordinate.MAX_WIDTH, height * this.ratio)
         console.log("adjust", this.ratio)
 
         this.orthographicProjectionMatrix4 = TransformUtils.orth(
-            -this._width / 2, this._width / 2, -this._height / 2, this._height / 2,
-            0, 1
+            0, this.size.x, this.size.y, 0, 0, 1
         )
-
+        this.center.set(this.size.x / 2, this.size.y / 2)
+        this.resolution.set(width * window.devicePixelRatio, height * window.devicePixelRatio)
         this.onWindowResize?.();
     }
 
     public get width() {
-        return this._width;
+        return this.size.x;
     }
 
     public get height() {
-        return this._height;
+        return this.size.y;
+    }
+
+    public get left() {
+        return 0
+    }
+
+    public get right() {
+        return this.size.x
+    }
+
+    public get top() {
+        return 0
+    }
+
+    public get bottom() {
+        return this.size.y
     }
 
     public get nativeWidth() {
-        return this._nativeWidth
+        return this.nativeSize.x
     }
 
     public get nativeHeight() {
-        return this._nativeHeight
+        return this.nativeSize.y
     }
 
     public get centerX() {
-        return this._width / 2;
+        return this.width / 2;
     }
 
     public get centerY() {
-        return this._height / 2;
-    }
-
-    public glXLength(worldOrScreen: number) {
-        return worldOrScreen * (2 / this.width);
-    }
-
-    public glYLength(worldOrScreen: number) {
-        return worldOrScreen * (2 / this.height);
+        return this.height / 2;
     }
 }
 
