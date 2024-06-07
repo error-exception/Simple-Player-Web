@@ -1,9 +1,7 @@
 import {type BaseDrawableConfig, Drawable} from "../drawable/Drawable";
 import {Queue} from "../../util/Queue";
-import {Vector2} from "../core/Vector2";
-import {MouseState} from "../../global/MouseState";
 import {ArrayUtils} from "../../util/ArrayUtils";
-import  {type WebGLRenderer} from "../WebGLRenderer";
+import {type WebGLRenderer} from "../WebGLRenderer";
 import {DrawNode} from "../drawable/DrawNode";
 
 /**
@@ -95,9 +93,6 @@ export class Box<T extends BaseDrawableConfig = BaseDrawableConfig> extends Draw
 
     public update() {
         super.update()
-        if (!this.isVisible) {
-            return
-        }
         if (!this.posts.isEmpty()) {
             console.log("handle post")
             this.posts.foreach((e) => {
@@ -138,100 +133,6 @@ export class Box<T extends BaseDrawableConfig = BaseDrawableConfig> extends Draw
 
     public unbind(): void {}
 
-    public click(which: number, position: Vector2) {
-        if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
-            if ('onClick' in this && typeof this.onClick === "function")
-                this.onClick(which)
-        }
-        for (let i = this.childrenList.length - 1; i >= 0; i--) {
-            this.childrenList[i].click(which, position)
-        }
-    }
-
-    public mouseDown(which: number, position: Vector2) {
-        if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
-            if ('onMouseDown' in this && typeof this.onMouseDown === "function") {
-                this.onMouseDown(which)
-            }
-
-        }
-        for (let i = this.childrenList.length - 1; i >= 0; i--) {
-            this.childrenList[i].mouseDown(which, position)
-        }
-    }
-
-    public mouseUp(which: number, position: Vector2) {
-        if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
-            if ('onMouseUp' in this && typeof this.onMouseUp === "function") {
-                this.onMouseUp(which)
-            }
-
-        }
-        this.dragLost(which, position)
-        for (let i = this.childrenList.length - 1; i >= 0; i--) {
-            this.childrenList[i].mouseUp(which, position)
-        }
-    }
-
-    public mouseMove(position: Vector2) {
-        if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
-            if ('onMouseMove' in this && typeof this.onMouseMove === "function") {
-                this.onMouseMove()
-            }
-            this.hover(position)
-            if (MouseState.hasKeyDown()) {
-                this.drag(MouseState.which, position)
-            }
-        } else {
-
-            if (this.#isDragged) {
-                this.drag(MouseState.which, position)
-            }
-            this.hoverLost(position)
-        }
-        for (let i = this.childrenList.length - 1; i >= 0; i--) {
-            this.childrenList[i].mouseMove(position)
-        }
-    }
-
-    #isHovered = false
-
-    public hover(position: Vector2) {
-        if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
-            if ('onHover' in this && typeof this.onHover === "function" && !this.#isHovered) {
-                this.#isHovered = true
-                this.onHover()
-            }
-        }
-    }
-
-    public hoverLost(position: Vector2) {
-        if (this.isAvailable && this.#isHovered && !this.isInBound(position)) {
-            if ('onHoverLost' in this && typeof this.onHoverLost === "function") {
-                this.#isHovered = false
-                this.onHoverLost()
-            }
-        }
-    }
-
-    #isDragged = false
-    public drag(which: number, position: Vector2) {
-        if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
-            if ('onDrag' in this && typeof this.onDrag === "function") {
-                this.#isDragged = true
-                this.onDrag(which)
-            }
-        }
-    }
-
-    public dragLost(which: number, position: Vector2) {
-        if (this.isAvailable && this.#isDragged) {
-            if ('onDragLost' in this && typeof this.onDragLost === "function") {
-                this.#isDragged = false
-                this.onDragLost()
-            }
-        }
-    }
 }
 
 class BoxDrawNode extends DrawNode {

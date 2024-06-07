@@ -31,7 +31,6 @@ export class DrawNode {
 
   public vertexBuffer: BasicVertexBuffer = Buffers.SingleQuad
   public shader: ShaderWrapper = Shaders.Default
-  public shouldDraw = true
 
   constructor(
     public source: Drawable,
@@ -219,7 +218,7 @@ export class DrawNode {
   }
 
   public draw(renderer: WebGLRenderer) {
-    if (!this.shouldDraw) {
+    if (!this.source.isPresent) {
       return
     }
     this.source.onDraw(this, renderer)

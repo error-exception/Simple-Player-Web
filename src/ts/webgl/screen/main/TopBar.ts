@@ -80,6 +80,7 @@ class TopBarButton extends Box {
     super({
       size: [36, 36], anchor
     });
+    this.enableMouseEvent()
     this.add(
       new ButtonBackground(),
       new ImageDrawable(textureRegin, {
@@ -112,6 +113,7 @@ class ButtonBackground extends ImageDrawable {
       size: [36, 36],
       color: Color.White.copy()
     });
+    this.enableMouseEvent()
     this.alpha = 0
   }
 

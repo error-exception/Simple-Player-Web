@@ -96,6 +96,7 @@ import {playSound, Sound} from "./ts/player/SoundEffect";
 import {collect, collectLatest} from "./ts/util/eventRef";
 import ScreenSelector from "./components/ScreenSelector.vue";
 import SideButton from "./components/SideButton.vue";
+import {MouseEventFire} from "./ts/webgl/event/MouseEventFire";
 
 const ui = reactive({
   list: false,
@@ -136,7 +137,7 @@ watch(() => VueUI.notification, value => {
   onRightSide.emit(value)
 })
 watch(() => VueUI.miniPlayer, value => playSound(value ? Sound.NowPlayingPopIn : Sound.NowPlayingPopOut))
-watch(() => VueUI.settings, value => playSound(value ? Sound.WavePopIn : Sound.WavePopOut))
+watch(() => VueUI.selectBeatmapDirectory, value => playSound(value ? Sound.WavePopIn : Sound.WavePopOut))
 useKeyboard('up', (evt) => {
   if (evt.code === 'KeyO') {
     ui.showUI = true
@@ -170,6 +171,14 @@ onEnterMenu.collect((value) => {
 })
 
 const hasSomeUIShow = computed(() => ui.list || VueUI.settings || VueUI.miniPlayer || VueUI.selectBeatmapDirectory || VueUI.notification || ui.screenSelector)
+
+watch(hasSomeUIShow, (value) => {
+  if (value) {
+    MouseEventFire.pause()
+  } else {
+    MouseEventFire.resume()
+  }
+}, { immediate: true })
 
 function hideUI() {
   ui.showUI = false

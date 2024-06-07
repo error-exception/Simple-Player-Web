@@ -1,6 +1,5 @@
 import {Drawable} from "./drawable/Drawable";
 import {Disposable} from "./core/Disposable";
-import {MouseState} from "../global/MouseState";
 import Coordinate from "./base/Coordinate";
 import type {VertexBuffer} from "./core/VertexBuffer";
 import type {Texture} from "./core/Texture";
@@ -21,7 +20,7 @@ export class WebGLRenderer implements Disposable {
   private readonly drawables: Drawable[] = []
   private readonly disposables: Disposable[] = []
   private isViewportChanged: boolean = false
-  private isEventReady: boolean = false
+  // private isEventReady: boolean = false
 
   public onDispose: Nullable<() => void> = null
 
@@ -47,10 +46,10 @@ export class WebGLRenderer implements Disposable {
     console.log("Max elements vertices : " + maxVertexAttribStride);
 
 
-    MouseState.onClick = this.onClick.bind(this)
-    MouseState.onMouseMove = this.onMouseMove.bind(this)
-    MouseState.onMouseDown = this.onMouseDown.bind(this)
-    MouseState.onMouseUp = this.onMouseUp.bind(this)
+    // MouseState.onClick = this.onClick.bind(this)
+    // MouseState.onMouseMove = this.onMouseMove.bind(this)
+    // MouseState.onMouseDown = this.onMouseDown.bind(this)
+    // MouseState.onMouseUp = this.onMouseUp.bind(this)
 
     Coordinate.onWindowResize = () => {
       this.isViewportChanged = true
@@ -159,33 +158,33 @@ export class WebGLRenderer implements Disposable {
     this.currentBoundedIndexBuffer?.dispose()
   }
 
-  private onClick(which: number) {
-    if (!this.isEventReady) return
-    for (let i = 0; i < this.drawables.length; i++) {
-      this.drawables[i].click(which, MouseState.position)
-    }
-  }
+  // private onClick(which: number) {
+  //   if (!this.isEventReady) return
+  //   for (let i = 0; i < this.drawables.length; i++) {
+  //     this.drawables[i].click(which, MouseState.position)
+  //   }
+  // }
+  //
+  // private onMouseDown(which: number) {
+  //   if (!this.isEventReady) return
+  //   for (let i = 0; i < this.drawables.length; i++) {
+  //     this.drawables[i].mouseDown(which, MouseState.position)
+  //   }
+  // }
 
-  private onMouseDown(which: number) {
-    if (!this.isEventReady) return
-    for (let i = 0; i < this.drawables.length; i++) {
-      this.drawables[i].mouseDown(which, MouseState.position)
-    }
-  }
-
-  private onMouseMove() {
-    if (!this.isEventReady) return
-    for (let i = 0; i < this.drawables.length; i++) {
-      this.drawables[i].mouseMove(MouseState.position)
-    }
-  }
-
-  private onMouseUp(which: number) {
-    if (!this.isEventReady) return
-    for (let i = 0; i < this.drawables.length; i++) {
-      this.drawables[i].mouseUp(which, MouseState.position)
-    }
-  }
+  // private onMouseMove() {
+  //   if (!this.isEventReady) return
+  //   for (let i = 0; i < this.drawables.length; i++) {
+  //     this.drawables[i].mouseMove(MouseState.position)
+  //   }
+  // }
+  //
+  // private onMouseUp(which: number) {
+  //   if (!this.isEventReady) return
+  //   for (let i = 0; i < this.drawables.length; i++) {
+  //     this.drawables[i].mouseUp(which, MouseState.position)
+  //   }
+  // }
 
   public addDrawable(drawable: Drawable) {
     this.drawables.push(drawable)
@@ -202,7 +201,7 @@ export class WebGLRenderer implements Disposable {
   }
 
   public render() {
-    this.isEventReady = true
+    // this.isEventReady = true
     const gl = this.gl
     if (this.isViewportChanged) {
       this.isViewportChanged = false

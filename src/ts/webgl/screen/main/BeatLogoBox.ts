@@ -113,7 +113,7 @@ class LogoAmpBox extends Box<LogoConfig> {
 
   constructor(config: LogoConfig) {
     super(config);
-
+    this.enableMouseEvent()
     this.visualizer = new RoundVisualizer({
       size: ['fill-parent', 'fill-parent'],
       innerRadius: Math.min(config.size[0], config.size[1]) / 2 * 0.9,
@@ -123,7 +123,10 @@ class LogoAmpBox extends Box<LogoConfig> {
       size: [config.size[0] * 0.98, config.size[1] * 0.98],
       anchor: Anchor.Center
     })
-    this.logoBeatBox = new LogoBeatBox(config)
+    this.logoBeatBox = new LogoBeatBox({
+      size: config.size,
+      anchor: Anchor.Center
+    })
 
     this.add(
       this.visualizer,
@@ -175,7 +178,7 @@ export class LogoBounceBox extends Box<LogoConfig> {
 
   constructor(config: LogoConfig) {
     super(config);
-
+    this.enableMouseEvent()
     this.logoAmpBox = new LogoAmpBox(config)
     this.add(this.logoAmpBox)
     this.scope.run(() => {
@@ -226,7 +229,7 @@ export class BeatLogoBox extends Box<LogoConfig> {
 
   constructor(config: LogoConfig) {
     super(config);
-
+    this.enableMouseEvent()
     this.logoBounceBox = new LogoBounceBox(config)
     this.add(this.logoBounceBox)
   }

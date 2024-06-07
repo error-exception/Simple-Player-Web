@@ -1,12 +1,9 @@
 import {LogoBounceBox} from "../main/BeatLogoBox";
 import {Box} from "../../box/Box";
-import {Vector} from "../../core/Vector2";
 import {FadeLogo} from "./FadeLogo";
 import {Anchor} from "../../drawable/Anchor";
 
 export class SongPlayScreen extends Box {
-
-  private targetScale = Vector(0.4)
 
   constructor() {
     super({
@@ -17,11 +14,12 @@ export class SongPlayScreen extends Box {
       anchor: Anchor.Center,
     })
     const logo = new LogoBounceBox({
-      size: [520, 520],
+      size: [225, 225],
       anchor: Anchor.BottomRight,
+      offset: [16, 34]
     })
-    logo.scale = this.targetScale
-    logo.translate = Vector(460, 540)
+    // logo.scale = this.targetScale
+    // logo.translate = Vector(460, 540)
     this.add(fadeLogo, logo)
   }
 }

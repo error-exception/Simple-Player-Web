@@ -1,4 +1,4 @@
-import {IMouseEvent, MouseState} from "../../global/MouseState";
+import {IMouseEvent} from "../../global/MouseState";
 import {Box} from "../box/Box";
 import Coordinate from "../base/Coordinate";
 import {Transform} from "../base/Transform";
@@ -14,6 +14,9 @@ import {DrawNode} from "./DrawNode";
 import type {WebGLRenderer} from "../WebGLRenderer";
 import {Matrix3} from "../core/Matrix3";
 import {TransformUtils} from "../core/TransformUtils";
+import {DrawableRecorder} from "./DrawableRecorder";
+import {DrawableMouseEvent} from "../event/DrawableMouseEvent";
+import type {Nullable} from "../../type";
 
 export interface BaseDrawableConfig {
   size: [number | "fill-parent", number | "fill-parent"];
@@ -38,6 +41,8 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
 
   public size = new Vector2();
   public position = new Vector2();
+  public drawTopLeft = new Vector2()
+  public drawBottomRight = new Vector2()
   public anchor = Axis.X_CENTER | Axis.Y_CENTER;
 
   protected parent: Box | null = null;
@@ -56,6 +61,7 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
     this.isAvailable = true;
     this.updateBounding();
     provide(this.constructor.name, this)
+    DrawableRecorder.record(this)
   }
 
   protected addDisposable(init: () => ((() => void) | void)) {
@@ -157,6 +163,8 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
       positionY = this.config.position.y
     }
     this.position.set(positionX + parentPosition.x, positionY + parentPosition.y)
+    this.drawTopLeft.setFrom(this.position)
+    this.drawBottomRight.set(this.position.x + this.size.x, this.position.y + this.size.y)
   }
 
   /**
@@ -216,9 +224,7 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
     return this.transition
   }
 
-  protected get shouldDraw() {
-    return this.drawNode.shouldDraw
-  }
+  public isPresent = true
 
   public beforeCommit(node: DrawNode) {}
 
@@ -226,7 +232,8 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
 
     const transform = this.selfTransform
     const node = this.drawNode
-    node.matrix.setFrom(this.parent ? this.parent.drawNode.matrix : Matrix3.identify)
+    const matrix = node.matrix
+    matrix.setFrom(this.parent ? this.parent.drawNode.matrix : Matrix3.identify)
     const origin = this.parent ? TransformUtils.apply(this.origin, node.matrix) : this.origin
     node.applyTransform(
       transform.translate,
@@ -239,9 +246,18 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
     const applied = this.appliedTransform
     applied.alphaTo(parentTransform.alpha)
     applied.alphaBy(transform.alpha)
-    node.shouldDraw = !almostEquals(applied.alpha, 0) ||
-      !(almostEquals(transform.scale.x, 0) ||
-        almostEquals(transform.scale.y, 0))
+
+    const drawTopLeft = this.drawTopLeft
+    const drawBottomRight = this.drawBottomRight
+    drawTopLeft.setFrom(this.position)
+    drawBottomRight.set(this.position.x + this.size.x, this.position.y + this.size.y)
+    TransformUtils.applySelf(drawTopLeft, matrix)
+    TransformUtils.applySelf(drawBottomRight, matrix)
+
+    this.isPresent = !almostEquals(applied.alpha, 0) ||
+      !(almostEquals(drawTopLeft.x - drawBottomRight.x, 0) ||
+        almostEquals(drawTopLeft.y - drawBottomRight.y, 0))
+
     this.onTransformApplied();
   }
 
@@ -278,122 +294,22 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
       const disposable = this.disposeList[i]
       disposable && disposable()
     }
+    DrawableRecorder.remove(this)
+    this.disableMouseEvent()
   }
 
   unbind(): void {};
 
   public placeholder() {}
 
-  /**
-   * 检查 position 是否在 Drawable 区域内
-   * @param position
-   */
-  public isInBound(position: Vector2) {
+  public mouseEvent: Nullable<DrawableMouseEvent> = null
 
-    const matrix = this.drawNode.matrix
-    const topLeft = TransformUtils.apply(this.position, matrix)
-    const bottomRight = TransformUtils.apply(this.position.add(this.size), matrix)
-
-    return (
-      position.x > topLeft.x &&
-      position.x <= bottomRight.x &&
-      position.y > topLeft.y &&
-      position.y <= bottomRight.y
-    );
+  public enableMouseEvent() {
+    this.mouseEvent = new DrawableMouseEvent(this)
   }
 
-  // TODO: when mousedown and mouseup in a same bound, click still effect
-  public click(which: number, position: Vector2) {
-    if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
-      if ("onClick" in this && typeof this.onClick === "function")
-        this.onClick(which);
-    }
-  }
-
-  public mouseDown(which: number, position: Vector2) {
-    if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
-      if (
-        "onMouseDown" in this &&
-        typeof this.onMouseDown === "function"
-      ) {
-        this.onMouseDown(which);
-      }
-    }
-  }
-
-  public mouseUp(which: number, position: Vector2) {
-    if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
-      if ("onMouseUp" in this && typeof this.onMouseUp === "function") {
-        this.onMouseUp(which);
-      }
-    }
-    this.dragLost(which, position);
-  }
-
-  public mouseMove(position: Vector2) {
-    if (this.isAvailable && this.isInBound(position) && this.shouldDraw) {
-      if (
-        "onMouseMove" in this &&
-        typeof this.onMouseMove === "function"
-      ) {
-        this.onMouseMove();
-      }
-      this.hover(position);
-      if (MouseState.hasKeyDown()) {
-        this.drag(MouseState.which, position);
-      }
-      return;
-    }
-    if (this.isDragged) {
-      this.drag(MouseState.which, position);
-    }
-    this.hoverLost(position);
-  }
-
-  private isHovered = false;
-
-  public hover(position: Vector2) {
-    // if (this.isAvailable && this.isInBound(position)) {
-    if (
-      "onHover" in this &&
-      typeof this.onHover === "function" &&
-      !this.isHovered &&
-      this.shouldDraw
-    ) {
-      this.isHovered = true;
-      this.onHover();
-    }
-    // }
-  }
-
-  public hoverLost(position: Vector2) {
-    if (this.isAvailable && this.isHovered && !this.isInBound(position)) {
-      if (
-        "onHoverLost" in this &&
-        typeof this.onHoverLost === "function"
-      ) {
-        this.isHovered = false;
-        this.onHoverLost();
-      }
-    }
-  }
-
-  private isDragged = false;
-  public drag(which: number, position: Vector2) {
-    if (this.isAvailable && this.shouldDraw) {
-      if ("onDrag" in this && typeof this.onDrag === "function") {
-        this.isDragged = true;
-        this.onDrag(which);
-      }
-    }
-  }
-
-  public dragLost(which: number, position: Vector2) {
-    if (this.isAvailable && this.isDragged) {
-      if ("onDragLost" in this && typeof this.onDragLost === "function") {
-        this.isDragged = false;
-        this.onDragLost();
-      }
-    }
+  public disableMouseEvent() {
+    this.mouseEvent?.dispose()
+    this.mouseEvent = null
   }
 }

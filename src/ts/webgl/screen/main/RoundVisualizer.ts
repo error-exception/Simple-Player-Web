@@ -24,7 +24,8 @@ export interface RoundVisualizerConfig extends BaseDrawableConfig {
 export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
 
     private readonly barCountPerRound = 220
-
+    private readonly maxSpectrumHeight: number = 160
+    private readonly scaleFactor = 160 / (450 / 2 * 0.9)
     private readonly visualizer: VisualizerV2
 
     private readonly innerRadius: number = 236
@@ -36,6 +37,7 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
             this.innerRadius = config.innerRadius
         }
         this.visualizer = AudioPlayerV2.getVisualizer()
+        this.maxSpectrumHeight = this.innerRadius * this.scaleFactor
     }
 
     private centerOfDrawable = Vector()
@@ -131,13 +133,14 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
         let k = 0;
 
         const texture = TextureStore.get('Square')
+        const maxSpectrumHeight = this.maxSpectrumHeight;
 
         for (let j = 0; j < 5; j++) {
             for (let i = 0; i < length; i++) {
 
                 const degree = i / length * 360 + j * 360 / 5
 
-                const value = innerRadius + spectrum[i] * (160)
+                const value = innerRadius + spectrum[i] * (maxSpectrumHeight)
                 const fromX = centerX
                 const fromY = centerY + innerRadius
                 const toX = centerX
