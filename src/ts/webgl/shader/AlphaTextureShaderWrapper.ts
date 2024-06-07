@@ -1,7 +1,7 @@
 import {ShaderWrapper} from "./ShaderWrapper";
 import {Shader} from "../core/Shader";
 import {ShaderSource} from "./ShaderSource";
-import {ATTR_ALPHA, ATTR_POSITION, ATTR_TEXCOORD, UNI_ORTH, UNI_SAMPLER, UNI_TRANSFORM} from "./ShaderConstant";
+import {ATTR_ALPHA, ATTR_POSITION, ATTR_TEXCOORD, UNI_ORTH, UNI_SAMPLER} from "./ShaderConstant";
 import {ArrayUtils} from "../../util/ArrayUtils";
 import type {WebGLRenderer} from "../WebGLRenderer";
 

@@ -1,6 +1,6 @@
 import {OSUFile} from "../osu/OSUFile";
-import {createMutableStateFlow} from "../util/flow";
-import {NoteData} from "../webgl/screen/mania/ManiaPanel";
+// import {createMutableStateFlow} from "../util/flow";
+// import {NoteData} from "../webgl/screen/mania/ManiaPanel";
 import AudioPlayerV2 from "./AudioPlayer";
 import VideoPlayer from "./VideoPlayer";
 import {ref, shallowRef} from "vue";
@@ -21,7 +21,6 @@ class OSUPlayer {
   public currentTime = ref(0)
   public duration = ref(0)
   public onChanged = eventRef<[OSUFile, OSZFile]>()
-  public maniaNoteData = createMutableStateFlow<NoteData[][] | null>(null)
 
   public static readonly EMPTY_OSU: OSUFile = {}
   // @ts-ignore

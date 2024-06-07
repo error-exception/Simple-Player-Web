@@ -228,7 +228,7 @@ class LegacyVisualizerDrawNode extends DrawNode {
   }
 
   draw(renderer: WebGLRenderer) {
-    this.source.onDraw(this)
+    this.source.onDraw(this, renderer)
     this.shader.bind()
     const textures = this.textures
     for (let i = 0; i < textures.length; i++) {

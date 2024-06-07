@@ -1,5 +1,5 @@
 import {Vector2} from "../webgl/core/Vector2";
-import {NoteData} from "../webgl/screen/mania/ManiaPanel";
+// import {NoteData} from "../webgl/screen/mania/ManiaPanel";
 import {Ease, EventType, LoopType, StoryLayer, StoryOrigin} from "../webgl/screen/story/StoryType";
 import {Color} from "../webgl/base/Color";
 
@@ -7,7 +7,7 @@ export interface OSUFile {
     General?: OSUFileGeneral
     Metadata?: OSUFileMetadata
     TimingPoints?: OSUFileTimingPoints
-    NoteData?: NoteData[][]
+    // NoteData?: NoteData[][]
     Events?: OSUEvent
     // HitObjects?: OSUFileHitObjects
 }

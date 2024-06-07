@@ -1,22 +1,3 @@
-var __accessCheck = (obj, member, msg) => {
-  if (!member.has(obj))
-    throw TypeError("Cannot " + msg);
-};
-var __privateGet = (obj, member, getter) => {
-  __accessCheck(obj, member, "read from private field");
-  return getter ? getter.call(obj) : member.get(obj);
-};
-var __privateAdd = (obj, member, value) => {
-  if (member.has(obj))
-    throw TypeError("Cannot add the same private member more than once");
-  member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
-};
-var __privateSet = (obj, member, value, setter) => {
-  __accessCheck(obj, member, "write to private field");
-  setter ? setter.call(obj, value) : member.set(obj, value);
-  return value;
-};
-var _isHovered, _isDragged;
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -3054,19 +3035,19 @@ function createAppAPI(render, hydrate) {
     if (rootProps != null && !isObject$1(rootProps)) {
       rootProps = null;
     }
-    const context = createAppContext();
+    const context2 = createAppContext();
     const installedPlugins = /* @__PURE__ */ new Set();
     let isMounted = false;
-    const app2 = context.app = {
+    const app2 = context2.app = {
       _uid: uid$1++,
       _component: rootComponent,
       _props: rootProps,
       _container: null,
-      _context: context,
+      _context: context2,
       _instance: null,
       version,
       get config() {
-        return context.config;
+        return context2.config;
       },
       set config(v) {
       },
@@ -3085,24 +3066,24 @@ function createAppAPI(render, hydrate) {
       },
       mixin(mixin) {
         {
-          if (!context.mixins.includes(mixin)) {
-            context.mixins.push(mixin);
+          if (!context2.mixins.includes(mixin)) {
+            context2.mixins.push(mixin);
           }
         }
         return app2;
       },
       component(name, component) {
         if (!component) {
-          return context.components[name];
+          return context2.components[name];
         }
-        context.components[name] = component;
+        context2.components[name] = component;
         return app2;
       },
       directive(name, directive) {
         if (!directive) {
-          return context.directives[name];
+          return context2.directives[name];
         }
-        context.directives[name] = directive;
+        context2.directives[name] = directive;
         return app2;
       },
       mount(rootContainer, isHydrate, isSVG) {
@@ -3111,7 +3092,7 @@ function createAppAPI(render, hydrate) {
             rootComponent,
             rootProps
           );
-          vnode.appContext = context;
+          vnode.appContext = context2;
           if (isHydrate && hydrate) {
             hydrate(vnode, rootContainer);
           } else {
@@ -3130,7 +3111,7 @@ function createAppAPI(render, hydrate) {
         }
       },
       provide(key, value) {
-        context.provides[key] = value;
+        context2.provides[key] = value;
         return app2;
       },
       runWithContext(fn) {
@@ -5164,11 +5145,11 @@ function cloneVNode(vnode, extraProps, mergeRef = false) {
   };
   return cloned;
 }
-function createTextVNode(text2 = " ", flag = 0) {
-  return createVNode(Text, null, text2, flag);
+function createTextVNode(text = " ", flag = 0) {
+  return createVNode(Text, null, text, flag);
 }
-function createCommentVNode(text2 = "", asBlock = false) {
-  return asBlock ? (openBlock(), createBlock(Comment, null, text2)) : createVNode(Comment, null, text2);
+function createCommentVNode(text = "", asBlock = false) {
+  return asBlock ? (openBlock(), createBlock(Comment, null, text)) : createVNode(Comment, null, text);
 }
 function normalizeVNode(child) {
   if (child == null || typeof child === "boolean") {
@@ -5574,13 +5555,13 @@ const nodeOps = {
     }
     return el;
   },
-  createText: (text2) => doc.createTextNode(text2),
-  createComment: (text2) => doc.createComment(text2),
-  setText: (node, text2) => {
-    node.nodeValue = text2;
+  createText: (text) => doc.createTextNode(text),
+  createComment: (text) => doc.createComment(text),
+  setText: (node, text) => {
+    node.nodeValue = text;
   },
-  setElementText: (el, text2) => {
-    el.textContent = text2;
+  setElementText: (el, text) => {
+    el.textContent = text;
   },
   parentNode: (node) => node.parentNode,
   nextSibling: (node) => node.nextSibling,
@@ -6328,44 +6309,6 @@ function getCheckboxValue(el, checked) {
   const key = checked ? "_trueValue" : "_falseValue";
   return key in el ? el[key] : checked;
 }
-const vShow = {
-  beforeMount(el, { value }, { transition }) {
-    el._vod = el.style.display === "none" ? "" : el.style.display;
-    if (transition && value) {
-      transition.beforeEnter(el);
-    } else {
-      setDisplay(el, value);
-    }
-  },
-  mounted(el, { value }, { transition }) {
-    if (transition && value) {
-      transition.enter(el);
-    }
-  },
-  updated(el, { value, oldValue }, { transition }) {
-    if (!value === !oldValue)
-      return;
-    if (transition) {
-      if (value) {
-        transition.beforeEnter(el);
-        setDisplay(el, true);
-        transition.enter(el);
-      } else {
-        transition.leave(el, () => {
-          setDisplay(el, false);
-        });
-      }
-    } else {
-      setDisplay(el, value);
-    }
-  },
-  beforeUnmount(el, { value }) {
-    setDisplay(el, value);
-  }
-};
-function setDisplay(el, value) {
-  el.style.display = value ? el._vod : "none";
-}
 const rendererOptions = /* @__PURE__ */ extend$1({ patchProp }, nodeOps);
 let renderer;
 function ensureRenderer() {
@@ -6401,7 +6344,7 @@ function normalizeContainer(container) {
 }
 const style = "";
 const materialIcons = "";
-const _sfc_main$o = /* @__PURE__ */ defineComponent({
+const _sfc_main$n = /* @__PURE__ */ defineComponent({
   __name: "Row",
   props: {
     center: { type: Boolean },
@@ -6451,8 +6394,8 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const Row = /* @__PURE__ */ _export_sfc(_sfc_main$o, [["__scopeId", "data-v-98094a68"]]);
-const _sfc_main$n = /* @__PURE__ */ defineComponent({
+const Row = /* @__PURE__ */ _export_sfc(_sfc_main$n, [["__scopeId", "data-v-98094a68"]]);
+const _sfc_main$m = /* @__PURE__ */ defineComponent({
   __name: "Column",
   props: {
     center: { type: Boolean },
@@ -6495,7 +6438,7 @@ const _sfc_main$n = /* @__PURE__ */ defineComponent({
   }
 });
 const Column_vue_vue_type_style_index_0_scoped_5a6a4ea8_lang = "";
-const Column = /* @__PURE__ */ _export_sfc(_sfc_main$n, [["__scopeId", "data-v-5a6a4ea8"]]);
+const Column = /* @__PURE__ */ _export_sfc(_sfc_main$m, [["__scopeId", "data-v-5a6a4ea8"]]);
 var Icon = /* @__PURE__ */ ((Icon2) => {
   Icon2["ThreeDRotation"] = "";
   Icon2["AcUnit"] = "";
@@ -7431,7 +7374,13 @@ var Icon = /* @__PURE__ */ ((Icon2) => {
   Icon2["ZoomOutMap"] = "";
   return Icon2;
 })(Icon || {});
-class ArrayUtils {
+function isUndef(v) {
+  return typeof v === "undefined";
+}
+function almostEquals(a, b) {
+  return Math.abs(a - b) <= 1e-5;
+}
+const _ArrayUtils = class _ArrayUtils {
   static sumOf(arr, start = 0, end = arr.length) {
     let sum = 0;
     for (let i = start; i < end; i++) {
@@ -7440,7 +7389,7 @@ class ArrayUtils {
     return sum;
   }
   static averageOf(arr, start = 0, end = arr.length) {
-    return ArrayUtils.sumOf(arr, start, end) / (end - start);
+    return _ArrayUtils.sumOf(arr, start, end) / (end - start);
   }
   static removeAt(array, index) {
     if (array.length === 0 || index < 0 || index >= array.length) {
@@ -7460,6 +7409,14 @@ class ArrayUtils {
       newArray[i - start] = arr[i];
     }
     return newArray;
+  }
+  static copyTo(src, start, length, dest, destStart) {
+    if (src.length < start + length || dest.length < destStart + length) {
+      return;
+    }
+    for (let i = 0; i < length; i++) {
+      dest[destStart + i] = src[start + i];
+    }
   }
   static inBound(arr, index) {
     if (!Number.isInteger(index)) {
@@ -7492,7 +7449,31 @@ class ArrayUtils {
     }
     return min;
   }
-}
+  static equals(a, b) {
+    if (a.length !== b.length) {
+      return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+  static almostEquals(a, b) {
+    if (a.length !== b.length) {
+      return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+      if (!almostEquals(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+};
+_ArrayUtils.emptyFloat32Array = new Float32Array();
+let ArrayUtils = _ArrayUtils;
 function degreeToRadian(degree) {
   return degree * (Math.PI / 180);
 }
@@ -7608,11 +7589,11 @@ const _RunningTask = class _RunningTask {
   async run(scope2) {
     return scope2(this);
   }
-  finish(text2, icon = Icon.Info) {
+  finish(text, icon = Icon.Info) {
     this.always = false;
     OsuNotification.removeFrom(OsuNotification.runningTasks, this);
     OsuNotification.removeFrom(OsuNotification.tempQueue, this);
-    this.text.value = text2;
+    this.text.value = text;
     this.icon.value = icon;
     this.state = _RunningTask.STATE_FINISH;
     this.progress.value = 0;
@@ -7623,17 +7604,17 @@ _RunningTask.STATE_WAIT = 0;
 _RunningTask.STATE_RUNNING = 1;
 _RunningTask.STATE_FINISH = 2;
 let RunningTask = _RunningTask;
-function notifyMessage(text2, icon = Icon.Info) {
+function notifyMessage(text, icon = Icon.Info) {
   const task = new RunningTask();
-  task.text.value = text2;
+  task.text.value = text;
   task.icon.value = icon;
   task.state = RunningTask.STATE_FINISH;
   OsuNotification.push(task);
 }
-async function runTask(text2, scope2, isAlways = false) {
+async function runTask(text, scope2, isAlways = false) {
   const task = new RunningTask();
   task.always = isAlways;
-  task.text.value = text2;
+  task.text.value = text;
   task.state = RunningTask.STATE_RUNNING;
   OsuNotification.push(task);
   return task.run(scope2);
@@ -7963,7 +7944,7 @@ function playSound(buffer) {
     source.disconnect();
   };
 }
-const _sfc_main$m = /* @__PURE__ */ defineComponent({
+const _sfc_main$l = /* @__PURE__ */ defineComponent({
   __name: "CheckBox",
   props: mergeModels({
     color: { default: "#33cb98" }
@@ -7998,7 +7979,7 @@ const _sfc_main$m = /* @__PURE__ */ defineComponent({
   }
 });
 const CheckBox_vue_vue_type_style_index_0_scoped_baa6d9c1_lang = "";
-const CheckBox = /* @__PURE__ */ _export_sfc(_sfc_main$m, [["__scopeId", "data-v-baa6d9c1"]]);
+const CheckBox = /* @__PURE__ */ _export_sfc(_sfc_main$l, [["__scopeId", "data-v-baa6d9c1"]]);
 class TimePlayer {
   constructor() {
     this.previousTime = 0;
@@ -8753,7 +8734,7 @@ const _global = (() => {
     return globalThis;
   return typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : global;
 })();
-const isContextDefined = (context) => !isUndefined(context) && context !== _global;
+const isContextDefined = (context2) => !isUndefined(context2) && context2 !== _global;
 function merge() {
   const { caseless } = isContextDefined(this) && this || {};
   const result = {};
@@ -9579,7 +9560,7 @@ function parseTokens(str) {
 function isValidHeaderName(str) {
   return /^[-_a-zA-Z]+$/.test(str.trim());
 }
-function matchHeaderValue(context, value, header, filter2, isHeaderNameFilter) {
+function matchHeaderValue(context2, value, header, filter2, isHeaderNameFilter) {
   if (utils.isFunction(filter2)) {
     return filter2.call(this, value, header);
   }
@@ -9769,9 +9750,9 @@ utils.freezeMethods(AxiosHeaders);
 const AxiosHeaders$1 = AxiosHeaders;
 function transformData(fns, response) {
   const config = this || defaults$1;
-  const context = response || config;
-  const headers = AxiosHeaders$1.from(context.headers);
-  let data = context.data;
+  const context2 = response || config;
+  const headers = AxiosHeaders$1.from(context2.headers);
+  let data = context2.data;
   utils.forEach(fns, function transform(fn) {
     data = fn.call(config, data, headers.normalize(), response ? response.status : void 0);
   });
@@ -10615,10 +10596,10 @@ Object.entries(HttpStatusCode).forEach(([key, value]) => {
 });
 const HttpStatusCode$1 = HttpStatusCode;
 function createInstance(defaultConfig) {
-  const context = new Axios$1(defaultConfig);
-  const instance = bind(Axios$1.prototype.request, context);
-  utils.extend(instance, Axios$1.prototype, context, { allOwnKeys: true });
-  utils.extend(instance, context, null, { allOwnKeys: true });
+  const context2 = new Axios$1(defaultConfig);
+  const instance = bind(Axios$1.prototype.request, context2);
+  utils.extend(instance, Axios$1.prototype, context2, { allOwnKeys: true });
+  utils.extend(instance, context2, null, { allOwnKeys: true });
   instance.create = function create(instanceConfig) {
     return createInstance(mergeConfig(defaultConfig, instanceConfig));
   };
@@ -10767,6 +10748,31 @@ function newBullet() {
     available: false
   };
 }
+const _Color = class _Color {
+  constructor(r, g, b, a) {
+    this.red = 0;
+    this.green = 0;
+    this.blue = 0;
+    this.alpha = 0;
+    this.red = r;
+    this.blue = b;
+    this.green = g;
+    this.alpha = a;
+  }
+  static fromHex(hex, alphaInt = 255) {
+    const red = hex >> 16 & 255;
+    const green = hex >> 8 & 255;
+    const blue = hex & 255;
+    return new _Color(red / 255, green / 255, blue / 255, alphaInt / 255);
+  }
+  copy() {
+    return new _Color(this.red, this.green, this.blue, this.alpha);
+  }
+};
+_Color.White = _Color.fromHex(16777215);
+_Color.Black = _Color.fromHex(0);
+_Color.Transparent = _Color.fromHex(0, 0);
+let Color = _Color;
 class Interpolation {
   static damp(start, final, base, exponent) {
     const amount = 1 - Math.pow(base, exponent);
@@ -10774,6 +10780,12 @@ class Interpolation {
   }
   static valueAt(factor, start, end) {
     return start + factor * (end - start);
+  }
+  static colorAt(randomValue, startColor, endColor) {
+    const r = startColor.red + (endColor.red - startColor.red) * randomValue;
+    const g = startColor.green + (endColor.green - startColor.green) * randomValue;
+    const b = startColor.blue + (endColor.blue - startColor.blue) * randomValue;
+    return new Color(r, g, b, 1);
   }
 }
 var PlayMode = /* @__PURE__ */ ((PlayMode2) => {
@@ -10874,7 +10886,6 @@ const _OSUPlayer = class _OSUPlayer {
     this.currentTime = ref(0);
     this.duration = ref(0);
     this.onChanged = eventRef();
-    this.maniaNoteData = createMutableStateFlow(null);
     this.currentOSUFile = shallowRef(_OSUPlayer.EMPTY_OSU);
     this.currentOSZFile = shallowRef(_OSUPlayer.EMPTY_OSZ);
     this.isVideoAvailable = false;
@@ -10958,7 +10969,6 @@ _OSUPlayer.EMPTY_OSU = {};
 _OSUPlayer.EMPTY_OSZ = {};
 let OSUPlayer = _OSUPlayer;
 const OSUPlayer$1 = new OSUPlayer();
-const PLAYER = false;
 class PlayManager {
   constructor() {
     this._musicList = createMutableStateFlow([
@@ -11079,10 +11089,10 @@ function useAnimationFrame(key, callback) {
     handle !== void 0 && cancelAnimationFrame(handle);
   });
 }
-const _hoisted_1$d = { class: "relative" };
-const _hoisted_2$a = ["value"];
+const _hoisted_1$c = { class: "relative" };
+const _hoisted_2$9 = ["value"];
 const _hoisted_3$5 = ["onClick"];
-const _sfc_main$l = /* @__PURE__ */ defineComponent({
+const _sfc_main$k = /* @__PURE__ */ defineComponent({
   __name: "ExpandMenu",
   props: mergeModels({
     items: {},
@@ -11109,7 +11119,7 @@ const _sfc_main$l = /* @__PURE__ */ defineComponent({
       hidden.value = true;
     };
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$d, [
+      return openBlock(), createElementBlock("div", _hoisted_1$c, [
         createBaseVNode("input", {
           onFocus: _cache[0] || (_cache[0] = ($event) => hidden.value = false),
           autofocus: "",
@@ -11120,7 +11130,7 @@ const _sfc_main$l = /* @__PURE__ */ defineComponent({
           }]),
           readonly: "",
           value: value.value
-        }, null, 42, _hoisted_2$a),
+        }, null, 42, _hoisted_2$9),
         createBaseVNode("div", {
           class: "expand-item-list",
           style: normalizeStyle({
@@ -11141,10 +11151,10 @@ const _sfc_main$l = /* @__PURE__ */ defineComponent({
   }
 });
 const ExpandMenu_vue_vue_type_style_index_0_scoped_b503c886_lang = "";
-const ExpandMenu = /* @__PURE__ */ _export_sfc(_sfc_main$l, [["__scopeId", "data-v-b503c886"]]);
-const _hoisted_1$c = { class: "w-full text-center text-white text-sm" };
-const _hoisted_2$9 = ["value"];
-const _sfc_main$k = /* @__PURE__ */ defineComponent({
+const ExpandMenu = /* @__PURE__ */ _export_sfc(_sfc_main$k, [["__scopeId", "data-v-b503c886"]]);
+const _hoisted_1$b = { class: "w-full text-center text-white text-sm" };
+const _hoisted_2$8 = ["value"];
+const _sfc_main$j = /* @__PURE__ */ defineComponent({
   __name: "ValueAdjust",
   props: mergeModels({
     label: {}
@@ -11172,11 +11182,11 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
         gap: 8
       }, {
         default: withCtx(() => [
-          createBaseVNode("span", _hoisted_1$c, toDisplayString(_ctx.label), 1),
+          createBaseVNode("span", _hoisted_1$b, toDisplayString(_ctx.label), 1),
           createBaseVNode("input", {
             class: "w-full bg-black text-white rounded text-center text-[22px] py-2",
             value: value.value
-          }, null, 8, _hoisted_2$9),
+          }, null, 8, _hoisted_2$8),
           createVNode(Row, {
             class: "w-full text-white",
             gap: 8
@@ -11206,7 +11216,7 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
   }
 });
 const ValueAdjust_vue_vue_type_style_index_0_scoped_cc3e4111_lang = "";
-const ValueAdjust = /* @__PURE__ */ _export_sfc(_sfc_main$k, [["__scopeId", "data-v-cc3e4111"]]);
+const ValueAdjust = /* @__PURE__ */ _export_sfc(_sfc_main$j, [["__scopeId", "data-v-cc3e4111"]]);
 const _Toaster = class _Toaster {
   static show(message) {
     this.toast.emit(message);
@@ -11214,9 +11224,9 @@ const _Toaster = class _Toaster {
 };
 _Toaster.toast = createMutableSharedFlow();
 let Toaster = _Toaster;
-const _withScopeId$2 = (n) => (pushScopeId("data-v-ac71abb2"), n = n(), popScopeId(), n);
-const _hoisted_1$b = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("button", { class: "text-white fill-height" }, "Timing", -1));
-const _hoisted_2$8 = {
+const _withScopeId$1 = (n) => (pushScopeId("data-v-ac71abb2"), n = n(), popScopeId(), n);
+const _hoisted_1$a = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("button", { class: "text-white fill-height" }, "Timing", -1));
+const _hoisted_2$7 = {
   class: "h-full flex flex-col justify-evenly px-1",
   style: { "background-color": "var(--bpm-color-3)" }
 };
@@ -11228,21 +11238,21 @@ const _hoisted_4$2 = {
   class: "text-white stack flex flex-row flex-grow h-full",
   style: { "background-color": "var(--bpm-color-3)" }
 };
-const _hoisted_5$1 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("div", {
+const _hoisted_5$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("div", {
   class: "flex-grow h-full w-96",
   style: { "background-color": "var(--bpm-color-4)" }
 }, null, -1));
 const _hoisted_6 = { class: "w-full h-full flex flex-col pb-2" };
 const _hoisted_7 = { class: "w-96 px-4" };
 const _hoisted_8 = { style: { "background-color": "#171c1a", "height": "240px", "width": "50%" } };
-const _hoisted_9 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("span", { class: "text-white" }, "Kiai Mode", -1));
+const _hoisted_9 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("span", { class: "text-white" }, "Kiai Mode", -1));
 const _hoisted_10 = {
   class: "text-white select-none",
   style: { "font-size": "26px", "letter-spacing": "2px" }
 };
 const _hoisted_11 = { class: "select-none text-[--bpm-color-7]" };
 const _hoisted_12 = { class: "flex-grow" };
-const _hoisted_13 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("div", {
+const _hoisted_13 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("div", {
   class: "flex items-end flex-grow",
   style: { "flex-basis": "0" }
 }, [
@@ -11250,7 +11260,7 @@ const _hoisted_13 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createB
 ], -1));
 const _hoisted_14 = ["onClick"];
 const WINDOW = 12;
-const _sfc_main$j = /* @__PURE__ */ defineComponent({
+const _sfc_main$i = /* @__PURE__ */ defineComponent({
   __name: "BpmCalculator",
   emits: ["close"],
   setup(__props, { emit: emit2 }) {
@@ -11733,21 +11743,21 @@ const _sfc_main$j = /* @__PURE__ */ defineComponent({
       drawBeatWave();
     });
     function resizeCanvas(htmlRef, pixelRatio = 1) {
-      const canvas = htmlRef.value;
-      if (!canvas) {
+      const canvas2 = htmlRef.value;
+      if (!canvas2) {
         return {
           width: 0,
           height: 0
         };
       }
-      const parent = canvas.parentElement;
-      if (canvas.height !== parent.offsetHeight || canvas.width !== parent.offsetWidth) {
-        canvas.height = parent.offsetHeight * pixelRatio;
-        canvas.width = parent.offsetWidth * pixelRatio;
+      const parent = canvas2.parentElement;
+      if (canvas2.height !== parent.offsetHeight || canvas2.width !== parent.offsetWidth) {
+        canvas2.height = parent.offsetHeight * pixelRatio;
+        canvas2.width = parent.offsetWidth * pixelRatio;
       }
       return {
-        width: canvas.width,
-        height: canvas.height
+        width: canvas2.width,
+        height: canvas2.height
       };
     }
     return (_ctx, _cache) => {
@@ -11761,7 +11771,7 @@ const _sfc_main$j = /* @__PURE__ */ defineComponent({
             style: { "background-color": "#374340", "padding": "0 16px" }
           }, {
             default: withCtx(() => [
-              _hoisted_1$b,
+              _hoisted_1$a,
               createBaseVNode("button", {
                 class: "text-white h-full bpm-close ml-auto",
                 onClick: _cache[0] || (_cache[0] = ($event) => closeCalculator())
@@ -11771,7 +11781,7 @@ const _sfc_main$j = /* @__PURE__ */ defineComponent({
           }),
           createVNode(Row, { class: "w-full" }, {
             default: withCtx(() => [
-              createBaseVNode("div", _hoisted_2$8, [
+              createBaseVNode("div", _hoisted_2$7, [
                 createBaseVNode("button", {
                   class: "ma text-white",
                   onClick: _cache[1] || (_cache[1] = ($event) => isRef(DRAW_COUNT) ? DRAW_COUNT.value++ : DRAW_COUNT++)
@@ -11995,18 +12005,18 @@ const _sfc_main$j = /* @__PURE__ */ defineComponent({
   }
 });
 const BpmCalculator_vue_vue_type_style_index_0_scoped_ac71abb2_lang = "";
-const BpmCalculator = /* @__PURE__ */ _export_sfc(_sfc_main$j, [["__scopeId", "data-v-ac71abb2"]]);
-const _sfc_main$i = {};
-const _hoisted_1$a = { class: "flex flex-row develop-box rounded-tl-[8px] py-2 px-4 text-white bg-[#00000080] pointer-events-none" };
-const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode("span", null, "开发中版本", -1);
+const BpmCalculator = /* @__PURE__ */ _export_sfc(_sfc_main$i, [["__scopeId", "data-v-ac71abb2"]]);
+const _sfc_main$h = {};
+const _hoisted_1$9 = { class: "flex flex-row develop-box rounded-tl-[8px] py-2 px-4 text-white bg-[#00000080] pointer-events-none" };
+const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode("span", null, "开发中版本", -1);
 const _hoisted_3$3 = [
-  _hoisted_2$7
+  _hoisted_2$6
 ];
 function _sfc_render(_ctx, _cache) {
-  return openBlock(), createElementBlock("div", _hoisted_1$a, _hoisted_3$3);
+  return openBlock(), createElementBlock("div", _hoisted_1$9, _hoisted_3$3);
 }
-const DevelopTip = /* @__PURE__ */ _export_sfc(_sfc_main$i, [["render", _sfc_render]]);
-const _sfc_main$h = /* @__PURE__ */ defineComponent({
+const DevelopTip = /* @__PURE__ */ _export_sfc(_sfc_main$h, [["render", _sfc_render]]);
+const _sfc_main$g = /* @__PURE__ */ defineComponent({
   __name: "ProgressBar",
   setup(__props) {
     const state = reactive({
@@ -12043,7 +12053,7 @@ const _sfc_main$h = /* @__PURE__ */ defineComponent({
   }
 });
 const ProgressBar_vue_vue_type_style_index_0_scoped_2949efd0_lang = "";
-const ProgressBar = /* @__PURE__ */ _export_sfc(_sfc_main$h, [["__scopeId", "data-v-2949efd0"]]);
+const ProgressBar = /* @__PURE__ */ _export_sfc(_sfc_main$g, [["__scopeId", "data-v-2949efd0"]]);
 var commonjsGlobal = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
@@ -12195,15 +12205,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         t2 && !r2 || (x.crc32 = e2.crc32, x.compressedSize = e2.compressedSize, x.uncompressedSize = e2.uncompressedSize);
         var S2 = 0;
         t2 && (S2 |= 8), l || !_ && !g || (S2 |= 2048);
-        var z = 0, C = 0;
-        w && (z |= 16), "UNIX" === i2 ? (C = 798, z |= function(e3, t3) {
+        var z = 0, C2 = 0;
+        w && (z |= 16), "UNIX" === i2 ? (C2 = 798, z |= function(e3, t3) {
           var r3 = e3;
           return e3 || (r3 = t3 ? 16893 : 33204), (65535 & r3) << 16;
-        }(h2.unixPermissions, w)) : (C = 20, z |= function(e3) {
+        }(h2.unixPermissions, w)) : (C2 = 20, z |= function(e3) {
           return 63 & (e3 || 0);
         }(h2.dosPermissions)), a = k.getUTCHours(), a <<= 6, a |= k.getUTCMinutes(), a <<= 5, a |= k.getUTCSeconds() / 2, o = k.getUTCFullYear() - 1980, o <<= 4, o |= k.getUTCMonth() + 1, o <<= 5, o |= k.getUTCDate(), _ && (v = A(1, 1) + A(B(f), 4) + c, b += "up" + A(v.length, 2) + v), g && (y = A(1, 1) + A(B(p2), 4) + m, b += "uc" + A(y.length, 2) + y);
         var E = "";
-        return E += "\n\0", E += A(S2, 2), E += u.magic, E += A(a, 2), E += A(o, 2), E += A(x.crc32, 4), E += A(x.compressedSize, 4), E += A(x.uncompressedSize, 4), E += A(f.length, 2), E += A(b.length, 2), { fileRecord: R2.LOCAL_FILE_HEADER + E + f + b, dirRecord: R2.CENTRAL_FILE_HEADER + A(C, 2) + E + A(p2.length, 2) + "\0\0\0\0" + A(z, 4) + A(n2, 4) + f + b + p2 };
+        return E += "\n\0", E += A(S2, 2), E += u.magic, E += A(a, 2), E += A(o, 2), E += A(x.crc32, 4), E += A(x.compressedSize, 4), E += A(x.uncompressedSize, 4), E += A(f.length, 2), E += A(b.length, 2), { fileRecord: R2.LOCAL_FILE_HEADER + E + f + b, dirRecord: R2.CENTRAL_FILE_HEADER + A(C2, 2) + E + A(p2.length, 2) + "\0\0\0\0" + A(z, 4) + A(n2, 4) + f + b + p2 };
       }
       var I = e("../utils"), i = e("../stream/GenericWorker"), O = e("../utf8"), B = e("../crc32"), R2 = e("../signature");
       function s(e2, t2, r2, n2) {
@@ -13570,7 +13580,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         return -1 ^ e2;
       };
     }, {}], 46: [function(e, t, r) {
-      var h2, c = e("../utils/common"), u = e("./trees"), d = e("./adler32"), p2 = e("./crc32"), n = e("./messages"), l = 0, f = 4, m = 0, _ = -2, g = -1, b = 4, i = 2, v = 8, y = 9, s = 286, a = 30, o = 19, w = 2 * s + 1, k = 15, x = 3, S2 = 258, z = S2 + x + 1, C = 42, E = 113, A = 1, I = 2, O = 3, B = 4;
+      var h2, c = e("../utils/common"), u = e("./trees"), d = e("./adler32"), p2 = e("./crc32"), n = e("./messages"), l = 0, f = 4, m = 0, _ = -2, g = -1, b = 4, i = 2, v = 8, y = 9, s = 286, a = 30, o = 19, w = 2 * s + 1, k = 15, x = 3, S2 = 258, z = S2 + x + 1, C2 = 42, E = 113, A = 1, I = 2, O = 3, B = 4;
       function R2(e2, t2) {
         return e2.msg = n[t2], t2;
       }
@@ -13679,7 +13689,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
       function G(e2) {
         var t2;
-        return e2 && e2.state ? (e2.total_in = e2.total_out = 0, e2.data_type = i, (t2 = e2.state).pending = 0, t2.pending_out = 0, t2.wrap < 0 && (t2.wrap = -t2.wrap), t2.status = t2.wrap ? C : E, e2.adler = 2 === t2.wrap ? 0 : 1, t2.last_flush = l, u._tr_init(t2), m) : R2(e2, _);
+        return e2 && e2.state ? (e2.total_in = e2.total_out = 0, e2.data_type = i, (t2 = e2.state).pending = 0, t2.pending_out = 0, t2.wrap < 0 && (t2.wrap = -t2.wrap), t2.status = t2.wrap ? C2 : E, e2.adler = 2 === t2.wrap ? 0 : 1, t2.last_flush = l, u._tr_init(t2), m) : R2(e2, _);
       }
       function K(e2) {
         var t2 = G(e2);
@@ -13724,7 +13734,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           return e2 ? R2(e2, _) : _;
         if (n2 = e2.state, !e2.output || !e2.input && 0 !== e2.avail_in || 666 === n2.status && t2 !== f)
           return R2(e2, 0 === e2.avail_out ? -5 : _);
-        if (n2.strm = e2, r2 = n2.last_flush, n2.last_flush = t2, n2.status === C)
+        if (n2.strm = e2, r2 = n2.last_flush, n2.last_flush = t2, n2.status === C2)
           if (2 === n2.wrap)
             e2.adler = 0, U(n2, 31), U(n2, 139), U(n2, 8), n2.gzhead ? (U(n2, (n2.gzhead.text ? 1 : 0) + (n2.gzhead.hcrc ? 2 : 0) + (n2.gzhead.extra ? 4 : 0) + (n2.gzhead.name ? 8 : 0) + (n2.gzhead.comment ? 16 : 0)), U(n2, 255 & n2.gzhead.time), U(n2, n2.gzhead.time >> 8 & 255), U(n2, n2.gzhead.time >> 16 & 255), U(n2, n2.gzhead.time >> 24 & 255), U(n2, 9 === n2.level ? 2 : 2 <= n2.strategy || n2.level < 2 ? 4 : 0), U(n2, 255 & n2.gzhead.os), n2.gzhead.extra && n2.gzhead.extra.length && (U(n2, 255 & n2.gzhead.extra.length), U(n2, n2.gzhead.extra.length >> 8 & 255)), n2.gzhead.hcrc && (e2.adler = p2(e2.adler, n2.pending_buf, n2.pending, 0)), n2.gzindex = 0, n2.status = 69) : (U(n2, 0), U(n2, 0), U(n2, 0), U(n2, 0), U(n2, 0), U(n2, 9 === n2.level ? 2 : 2 <= n2.strategy || n2.level < 2 ? 4 : 0), U(n2, 3), n2.status = E);
           else {
@@ -13810,12 +13820,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         return t2 !== f ? m : n2.wrap <= 0 ? 1 : (2 === n2.wrap ? (U(n2, 255 & e2.adler), U(n2, e2.adler >> 8 & 255), U(n2, e2.adler >> 16 & 255), U(n2, e2.adler >> 24 & 255), U(n2, 255 & e2.total_in), U(n2, e2.total_in >> 8 & 255), U(n2, e2.total_in >> 16 & 255), U(n2, e2.total_in >> 24 & 255)) : (P(n2, e2.adler >>> 16), P(n2, 65535 & e2.adler)), F2(e2), 0 < n2.wrap && (n2.wrap = -n2.wrap), 0 !== n2.pending ? m : 1);
       }, r.deflateEnd = function(e2) {
         var t2;
-        return e2 && e2.state ? (t2 = e2.state.status) !== C && 69 !== t2 && 73 !== t2 && 91 !== t2 && 103 !== t2 && t2 !== E && 666 !== t2 ? R2(e2, _) : (e2.state = null, t2 === E ? R2(e2, -3) : m) : _;
+        return e2 && e2.state ? (t2 = e2.state.status) !== C2 && 69 !== t2 && 73 !== t2 && 91 !== t2 && 103 !== t2 && t2 !== E && 666 !== t2 ? R2(e2, _) : (e2.state = null, t2 === E ? R2(e2, -3) : m) : _;
       }, r.deflateSetDictionary = function(e2, t2) {
         var r2, n2, i2, s2, a2, o2, h3, u2, l2 = t2.length;
         if (!e2 || !e2.state)
           return _;
-        if (2 === (s2 = (r2 = e2.state).wrap) || 1 === s2 && r2.status !== C || r2.lookahead)
+        if (2 === (s2 = (r2 = e2.state).wrap) || 1 === s2 && r2.status !== C2 || r2.lookahead)
           return _;
         for (1 === s2 && (e2.adler = d(e2.adler, t2, l2, 0)), r2.wrap = 0, l2 >= r2.w_size && (0 === s2 && (D(r2.head), r2.strstart = 0, r2.block_start = 0, r2.insert = 0), u2 = new c.Buf8(r2.w_size), c.arraySet(u2, t2, l2 - r2.w_size, r2.w_size, 0), t2 = u2, l2 = r2.w_size), a2 = e2.avail_in, o2 = e2.next_in, h3 = e2.input, e2.avail_in = l2, e2.next_in = 0, e2.input = t2, j(r2); r2.lookahead >= x; ) {
           for (n2 = r2.strstart, i2 = r2.lookahead - (x - 1); r2.ins_h = (r2.ins_h << r2.hash_shift ^ r2.window[n2 + x - 1]) & r2.hash_mask, r2.prev[n2 & r2.w_mask] = r2.head[r2.ins_h], r2.head[r2.ins_h] = n2, n2++, --i2; )
@@ -13830,15 +13840,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       };
     }, {}], 48: [function(e, t, r) {
       t.exports = function(e2, t2) {
-        var r2, n, i, s, a, o, h2, u, l, f, c, d, p2, m, _, g, b, v, y, w, k, x, S2, z, C;
-        r2 = e2.state, n = e2.next_in, z = e2.input, i = n + (e2.avail_in - 5), s = e2.next_out, C = e2.output, a = s - (t2 - e2.avail_out), o = s + (e2.avail_out - 257), h2 = r2.dmax, u = r2.wsize, l = r2.whave, f = r2.wnext, c = r2.window, d = r2.hold, p2 = r2.bits, m = r2.lencode, _ = r2.distcode, g = (1 << r2.lenbits) - 1, b = (1 << r2.distbits) - 1;
+        var r2, n, i, s, a, o, h2, u, l, f, c, d, p2, m, _, g, b, v, y, w, k, x, S2, z, C2;
+        r2 = e2.state, n = e2.next_in, z = e2.input, i = n + (e2.avail_in - 5), s = e2.next_out, C2 = e2.output, a = s - (t2 - e2.avail_out), o = s + (e2.avail_out - 257), h2 = r2.dmax, u = r2.wsize, l = r2.whave, f = r2.wnext, c = r2.window, d = r2.hold, p2 = r2.bits, m = r2.lencode, _ = r2.distcode, g = (1 << r2.lenbits) - 1, b = (1 << r2.distbits) - 1;
         e:
           do {
             p2 < 15 && (d += z[n++] << p2, p2 += 8, d += z[n++] << p2, p2 += 8), v = m[d & g];
             t:
               for (; ; ) {
                 if (d >>>= y = v >>> 24, p2 -= y, 0 === (y = v >>> 16 & 255))
-                  C[s++] = 65535 & v;
+                  C2[s++] = 65535 & v;
                 else {
                   if (!(16 & y)) {
                     if (0 == (64 & y)) {
@@ -13874,32 +13884,32 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                         }
                         if (S2 = c, (x = 0) === f) {
                           if (x += u - y, y < w) {
-                            for (w -= y; C[s++] = c[x++], --y; )
+                            for (w -= y; C2[s++] = c[x++], --y; )
                               ;
-                            x = s - k, S2 = C;
+                            x = s - k, S2 = C2;
                           }
                         } else if (f < y) {
                           if (x += u + f - y, (y -= f) < w) {
-                            for (w -= y; C[s++] = c[x++], --y; )
+                            for (w -= y; C2[s++] = c[x++], --y; )
                               ;
                             if (x = 0, f < w) {
-                              for (w -= y = f; C[s++] = c[x++], --y; )
+                              for (w -= y = f; C2[s++] = c[x++], --y; )
                                 ;
-                              x = s - k, S2 = C;
+                              x = s - k, S2 = C2;
                             }
                           }
                         } else if (x += f - y, y < w) {
-                          for (w -= y; C[s++] = c[x++], --y; )
+                          for (w -= y; C2[s++] = c[x++], --y; )
                             ;
-                          x = s - k, S2 = C;
+                          x = s - k, S2 = C2;
                         }
                         for (; 2 < w; )
-                          C[s++] = S2[x++], C[s++] = S2[x++], C[s++] = S2[x++], w -= 3;
-                        w && (C[s++] = S2[x++], 1 < w && (C[s++] = S2[x++]));
+                          C2[s++] = S2[x++], C2[s++] = S2[x++], C2[s++] = S2[x++], w -= 3;
+                        w && (C2[s++] = S2[x++], 1 < w && (C2[s++] = S2[x++]));
                       } else {
-                        for (x = s - k; C[s++] = C[x++], C[s++] = C[x++], C[s++] = C[x++], 2 < (w -= 3); )
+                        for (x = s - k; C2[s++] = C2[x++], C2[s++] = C2[x++], C2[s++] = C2[x++], 2 < (w -= 3); )
                           ;
-                        w && (C[s++] = C[x++], 1 < w && (C[s++] = C[x++]));
+                        w && (C2[s++] = C2[x++], 1 < w && (C2[s++] = C2[x++]));
                       }
                       break;
                     }
@@ -13958,7 +13968,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       r.inflateReset = o, r.inflateReset2 = h2, r.inflateResetKeep = a, r.inflateInit = function(e2) {
         return u(e2, 15);
       }, r.inflateInit2 = u, r.inflate = function(e2, t2) {
-        var r2, n2, i2, s2, a2, o2, h3, u2, l2, f2, c2, d, p2, m, _, g, b, v, y, w, k, x, S2, z, C = 0, E = new I.Buf8(4), A = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
+        var r2, n2, i2, s2, a2, o2, h3, u2, l2, f2, c2, d, p2, m, _, g, b, v, y, w, k, x, S2, z, C2 = 0, E = new I.Buf8(4), A = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
         if (!e2 || !e2.state || !e2.output || !e2.input && 0 !== e2.avail_in)
           return U;
         12 === (r2 = e2.state).mode && (r2.mode = 13), a2 = e2.next_out, i2 = e2.output, h3 = e2.avail_out, s2 = e2.next_in, n2 = e2.input, o2 = e2.avail_in, u2 = r2.hold, l2 = r2.bits, f2 = o2, c2 = h3, x = N;
@@ -14169,7 +14179,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                 r2.have = 0, r2.mode = 19;
               case 19:
                 for (; r2.have < r2.nlen + r2.ndist; ) {
-                  for (; g = (C = r2.lencode[u2 & (1 << r2.lenbits) - 1]) >>> 16 & 255, b = 65535 & C, !((_ = C >>> 24) <= l2); ) {
+                  for (; g = (C2 = r2.lencode[u2 & (1 << r2.lenbits) - 1]) >>> 16 & 255, b = 65535 & C2, !((_ = C2 >>> 24) <= l2); ) {
                     if (0 === o2)
                       break e;
                     o2--, u2 += n2[s2++] << l2, l2 += 8;
@@ -14234,13 +14244,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                   e2.next_out = a2, e2.avail_out = h3, e2.next_in = s2, e2.avail_in = o2, r2.hold = u2, r2.bits = l2, R2(e2, c2), a2 = e2.next_out, i2 = e2.output, h3 = e2.avail_out, s2 = e2.next_in, n2 = e2.input, o2 = e2.avail_in, u2 = r2.hold, l2 = r2.bits, 12 === r2.mode && (r2.back = -1);
                   break;
                 }
-                for (r2.back = 0; g = (C = r2.lencode[u2 & (1 << r2.lenbits) - 1]) >>> 16 & 255, b = 65535 & C, !((_ = C >>> 24) <= l2); ) {
+                for (r2.back = 0; g = (C2 = r2.lencode[u2 & (1 << r2.lenbits) - 1]) >>> 16 & 255, b = 65535 & C2, !((_ = C2 >>> 24) <= l2); ) {
                   if (0 === o2)
                     break e;
                   o2--, u2 += n2[s2++] << l2, l2 += 8;
                 }
                 if (g && 0 == (240 & g)) {
-                  for (v = _, y = g, w = b; g = (C = r2.lencode[w + ((u2 & (1 << v + y) - 1) >> v)]) >>> 16 & 255, b = 65535 & C, !(v + (_ = C >>> 24) <= l2); ) {
+                  for (v = _, y = g, w = b; g = (C2 = r2.lencode[w + ((u2 & (1 << v + y) - 1) >> v)]) >>> 16 & 255, b = 65535 & C2, !(v + (_ = C2 >>> 24) <= l2); ) {
                     if (0 === o2)
                       break e;
                     o2--, u2 += n2[s2++] << l2, l2 += 8;
@@ -14271,13 +14281,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                 }
                 r2.was = r2.length, r2.mode = 23;
               case 23:
-                for (; g = (C = r2.distcode[u2 & (1 << r2.distbits) - 1]) >>> 16 & 255, b = 65535 & C, !((_ = C >>> 24) <= l2); ) {
+                for (; g = (C2 = r2.distcode[u2 & (1 << r2.distbits) - 1]) >>> 16 & 255, b = 65535 & C2, !((_ = C2 >>> 24) <= l2); ) {
                   if (0 === o2)
                     break e;
                   o2--, u2 += n2[s2++] << l2, l2 += 8;
                 }
                 if (0 == (240 & g)) {
-                  for (v = _, y = g, w = b; g = (C = r2.distcode[w + ((u2 & (1 << v + y) - 1) >> v)]) >>> 16 & 255, b = 65535 & C, !(v + (_ = C >>> 24) <= l2); ) {
+                  for (v = _, y = g, w = b; g = (C2 = r2.distcode[w + ((u2 & (1 << v + y) - 1) >> v)]) >>> 16 & 255, b = 65535 & C2, !(v + (_ = C2 >>> 24) <= l2); ) {
                     if (0 === o2)
                       break e;
                     o2--, u2 += n2[s2++] << l2, l2 += 8;
@@ -14379,7 +14389,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }, { "../utils/common": 41, "./adler32": 43, "./crc32": 45, "./inffast": 48, "./inftrees": 50 }], 50: [function(e, t, r) {
       var D = e("../utils/common"), F2 = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0], N = [16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18, 19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 16, 72, 78], U = [1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577, 0, 0], P = [16, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 26, 27, 27, 28, 28, 29, 29, 64, 64];
       t.exports = function(e2, t2, r2, n, i, s, a, o) {
-        var h2, u, l, f, c, d, p2, m, _, g = o.bits, b = 0, v = 0, y = 0, w = 0, k = 0, x = 0, S2 = 0, z = 0, C = 0, E = 0, A = null, I = 0, O = new D.Buf16(16), B = new D.Buf16(16), R2 = null, T = 0;
+        var h2, u, l, f, c, d, p2, m, _, g = o.bits, b = 0, v = 0, y = 0, w = 0, k = 0, x = 0, S2 = 0, z = 0, C2 = 0, E = 0, A = null, I = 0, O = new D.Buf16(16), B = new D.Buf16(16), R2 = null, T = 0;
         for (b = 0; b <= 15; b++)
           O[b] = 0;
         for (v = 0; v < n; v++)
@@ -14399,7 +14409,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           B[b + 1] = B[b] + O[b];
         for (v = 0; v < n; v++)
           0 !== t2[r2 + v] && (a[B[t2[r2 + v]]++] = v);
-        if (d = 0 === e2 ? (A = R2 = a, 19) : 1 === e2 ? (A = F2, I -= 257, R2 = N, T -= 257, 256) : (A = U, R2 = P, -1), b = y, c = s, S2 = v = E = 0, l = -1, f = (C = 1 << (x = k)) - 1, 1 === e2 && 852 < C || 2 === e2 && 592 < C)
+        if (d = 0 === e2 ? (A = R2 = a, 19) : 1 === e2 ? (A = F2, I -= 257, R2 = N, T -= 257, 256) : (A = U, R2 = P, -1), b = y, c = s, S2 = v = E = 0, l = -1, f = (C2 = 1 << (x = k)) - 1, 1 === e2 && 852 < C2 || 2 === e2 && 592 < C2)
           return 1;
         for (; ; ) {
           for (p2 = b - S2, _ = a[v] < d ? (m = 0, a[v]) : a[v] > d ? (m = R2[T + a[v]], A[I + a[v]]) : (m = 96, 0), h2 = 1 << b - S2, y = u = 1 << x; i[c + (E >> S2) + (u -= h2)] = p2 << 24 | m << 16 | _ | 0, 0 !== u; )
@@ -14414,7 +14424,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           if (k < b && (E & f) !== l) {
             for (0 === S2 && (S2 = k), c += y, z = 1 << (x = b - S2); x + S2 < w && !((z -= O[x + S2]) <= 0); )
               x++, z <<= 1;
-            if (C += 1 << x, 1 === e2 && 852 < C || 2 === e2 && 592 < C)
+            if (C2 += 1 << x, 1 === e2 && 852 < C2 || 2 === e2 && 592 < C2)
               return 1;
             i[l = E & f] = k << 24 | x << 16 | c - s | 0;
           }
@@ -14431,8 +14441,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
       var s = 0, a = 29, u = 256, l = u + 1 + a, f = 30, c = 19, _ = 2 * l + 1, g = 15, d = 16, p2 = 7, m = 256, b = 16, v = 17, y = 18, w = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0], k = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13], x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7], S2 = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15], z = new Array(2 * (l + 2));
       n(z);
-      var C = new Array(2 * f);
-      n(C);
+      var C2 = new Array(2 * f);
+      n(C2);
       var E = new Array(512);
       n(E);
       var A = new Array(256);
@@ -14576,8 +14586,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           for (; e3 <= 287; )
             z[2 * e3 + 1] = 8, e3++, s2[8]++;
           for (Z(z, l + 1, s2), e3 = 0; e3 < f; e3++)
-            C[2 * e3 + 1] = 5, C[2 * e3] = j(e3, 5);
-          O = new D(z, w, u + 1, l, g), B = new D(C, k, 0, f, g), R2 = new D(new Array(0), x, 0, c, p2);
+            C2[2 * e3 + 1] = 5, C2[2 * e3] = j(e3, 5);
+          O = new D(z, w, u + 1, l, g), B = new D(C2, k, 0, f, g), R2 = new D(new Array(0), x, 0, c, p2);
         }(), q = true), e2.l_desc = new F2(e2.dyn_ltree, O), e2.d_desc = new F2(e2.dyn_dtree, B), e2.bl_desc = new F2(e2.bl_tree, R2), e2.bi_buf = 0, e2.bi_valid = 0, W(e2);
       }, r._tr_stored_block = J, r._tr_flush_block = function(e2, t2, r2, n2) {
         var i2, s2, a2 = 0;
@@ -14597,7 +14607,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           for (X(e3, e3.dyn_ltree, e3.l_desc.max_code), X(e3, e3.dyn_dtree, e3.d_desc.max_code), Y(e3, e3.bl_desc), t3 = c - 1; 3 <= t3 && 0 === e3.bl_tree[2 * S2[t3] + 1]; t3--)
             ;
           return e3.opt_len += 3 * (t3 + 1) + 5 + 5 + 4, t3;
-        }(e2), i2 = e2.opt_len + 3 + 7 >>> 3, (s2 = e2.static_len + 3 + 7 >>> 3) <= i2 && (i2 = s2)) : i2 = s2 = r2 + 5, r2 + 4 <= i2 && -1 !== t2 ? J(e2, t2, r2, n2) : 4 === e2.strategy || s2 === i2 ? (P(e2, 2 + (n2 ? 1 : 0), 3), K(e2, z, C)) : (P(e2, 4 + (n2 ? 1 : 0), 3), function(e3, t3, r3, n3) {
+        }(e2), i2 = e2.opt_len + 3 + 7 >>> 3, (s2 = e2.static_len + 3 + 7 >>> 3) <= i2 && (i2 = s2)) : i2 = s2 = r2 + 5, r2 + 4 <= i2 && -1 !== t2 ? J(e2, t2, r2, n2) : 4 === e2.strategy || s2 === i2 ? (P(e2, 2 + (n2 ? 1 : 0), 3), K(e2, z, C2)) : (P(e2, 4 + (n2 ? 1 : 0), 3), function(e3, t3, r3, n3) {
           var i3;
           for (P(e3, t3 - 257, 5), P(e3, r3 - 1, 5), P(e3, n3 - 4, 4), i3 = 0; i3 < n3; i3++)
             P(e3, e3.bl_tree[2 * S2[i3] + 1], 3);
@@ -14697,154 +14707,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 })(jszip_min);
 var jszip_minExports = jszip_min.exports;
 const JSZip = /* @__PURE__ */ getDefaultExportFromCjs(jszip_minExports);
-const _OSUParser = class _OSUParser {
-  static parse(textContent) {
-    const osuFile2 = {};
-    const lines = textContent.split("\n").map((v) => v.trim());
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (line === this.hitObject && osuFile2.General) {
-        if (osuFile2.General.Mode === 3) {
-          this.parseMania(lines, i + 1, osuFile2);
-        }
-      } else if (line === this.general) {
-        this.parseGeneral(lines, i + 1, osuFile2);
-      } else if (line === this.metadata) {
-        this.parseMetadata(lines, i + 1, osuFile2);
-      } else if (line === this.timingPoints) {
-        this.parseTimingPoints(lines, i + 1, osuFile2);
-      } else if (line === this.events) {
-        this.parseEvents(lines, i + 1, osuFile2);
-      }
-    }
-    return osuFile2;
-  }
-  static parseEvents(lines, index, out) {
-    let i = index;
-    out.Events = {};
-    while (lines[i].length > 0 && lines[i].charAt(0) !== "[") {
-      const line = lines[i++];
-      if (line.startsWith("Video")) {
-        let firstIndex = line.indexOf('"');
-        let lastIndex = line.lastIndexOf('"');
-        if (firstIndex >= 0 && lastIndex > 0) {
-          out.Events.videoBackground = line.substring(firstIndex + 1, lastIndex).toLowerCase();
-        }
-        firstIndex = line.indexOf(",");
-        lastIndex = line.indexOf(",", firstIndex + 1);
-        if (firstIndex >= 0 && lastIndex > 0) {
-          try {
-            out.Events.videoOffset = parseInt(line.substring(firstIndex + 1, lastIndex).trim());
-          } catch (_) {
-            out.Events.videoOffset = 0;
-          }
-        }
-      } else if (line.startsWith("0,0")) {
-        const firstIndex = line.indexOf('"');
-        const lastIndex = line.lastIndexOf('"');
-        if (firstIndex >= 0 && lastIndex > 0) {
-          out.Events.imageBackground = line.substring(firstIndex + 1, lastIndex).toLowerCase();
-        }
-      }
-    }
-  }
-  // track, none, startTime, none, none, endTime
-  static parseMania(lines, index, out) {
-    let i = index;
-    const tracks = [];
-    while (lines[i] && lines[i].length > 0 && lines[i].charAt(0) !== "[") {
-      const line = lines[i++];
-      const [track2, _1, startTime, _2, _3, endTime] = line.split(",");
-      const trackNumber = parseInt(track2);
-      const startTimeNumber = parseInt(startTime);
-      const endTimeNumber = parseInt(endTime);
-      let trackIndex = 0;
-      if (trackNumber === 64)
-        trackIndex = 0;
-      else if (trackNumber === 192)
-        trackIndex = 1;
-      else if (trackNumber === 320)
-        trackIndex = 2;
-      else if (trackNumber === 448)
-        trackIndex = 3;
-      let list = tracks[trackIndex];
-      if (!list) {
-        list = [];
-        tracks[trackIndex] = list;
-      }
-      list.push({
-        noteIndex: 0,
-        startTime: startTimeNumber,
-        endTime: endTimeNumber
-      });
-    }
-    for (let j = 0; j < tracks.length; j++) {
-      for (let k = 0; k < tracks[j].length; k++) {
-        tracks[j][k].noteIndex = k;
-      }
-    }
-    out.NoteData = tracks;
-  }
-  static parseGeneral(lines, index, out) {
-    let i = index;
-    const general = {
-      AudioFilename: "",
-      PreviewTime: 0,
-      Mode: 3
-    };
-    while (lines[i].length > 0 && lines[i].charAt(0) !== "[") {
-      const [key, value] = lines[i++].split(":").map((v) => v.trim());
-      if (key === "AudioFilename") {
-        general.AudioFilename = value.toLowerCase();
-      } else if (key === "PreviewTime") {
-        general.PreviewTime = parseInt(value);
-      } else if (key === "Mode") {
-        general.Mode = parseInt(value);
-      }
-    }
-    out.General = general;
-  }
-  static parseMetadata(lines, index, out) {
-    let i = index;
-    const metadata = { Title: "", TitleUnicode: "", Artist: "", ArtistUnicode: "", Version: "", BeatmapID: "-1" };
-    while (lines[i].length > 0 && lines[i].charAt(0) !== "[") {
-      const [key, value] = lines[i++].split(":").map((v) => v.trim());
-      if (key === "Title") {
-        metadata.Title = value;
-      } else if (key === "TitleUnicode") {
-        metadata.TitleUnicode = value;
-      } else if (key === "Artist") {
-        metadata.Artist = value;
-      } else if (key === "ArtistUnicode") {
-        metadata.ArtistUnicode = value;
-      } else if (key === "Version") {
-        metadata.Version = value;
-      }
-    }
-    out.Metadata = metadata;
-  }
-  static parseTimingPoints(lines, index, out) {
-    let i = index;
-    const timingPoints = {
-      timingList: []
-    };
-    while (lines[i].length > 0 && lines[i].charAt(0) !== "[") {
-      const [time, beatLength, _1, _2, _3, _4, _5, isKiai] = lines[i++].split(",").map((v) => v.trim());
-      timingPoints.timingList.push({
-        time: parseInt(time),
-        beatLength: parseFloat(beatLength),
-        isKiai: isKiai === "1"
-      });
-    }
-    out.TimingPoints = timingPoints;
-  }
-};
-_OSUParser.hitObject = "[HitObjects]";
-_OSUParser.general = "[General]";
-_OSUParser.metadata = "[Metadata]";
-_OSUParser.timingPoints = "[TimingPoints]";
-_OSUParser.events = "[Events]";
-let OSUParser = _OSUParser;
 function isAnimation(sprite) {
   return "frameCount" in sprite && "frameDelay" in sprite && "loopType" in sprite;
 }
@@ -14863,7 +14725,7 @@ function isLoopEvent(event) {
 function isParamEvent(event) {
   return event.type === "P";
 }
-class Vector2 {
+const _Vector2 = class _Vector2 {
   constructor(x = 0, y = 0) {
     this.x = x;
     this.y = y;
@@ -14872,23 +14734,47 @@ class Vector2 {
     return this.x === 0 && this.y === 0;
   }
   static newZero() {
-    return new Vector2(0, 0);
+    return new _Vector2(0, 0);
+  }
+  static newOne() {
+    return new _Vector2(1, 1);
   }
   equals(v2) {
     return this.x === v2.x && this.y === v2.y;
   }
   add(vec2) {
-    return new Vector2(vec2.x + this.x, vec2.y + this.y);
+    return new _Vector2(vec2.x + this.x, vec2.y + this.y);
+  }
+  addValue(v) {
+    return new _Vector2(this.x + v, this.y + v);
   }
   increment(v) {
     this.x += v.x;
     this.y += v.y;
   }
   minus(vec2) {
-    return new Vector2(this.x - vec2.x, this.y - vec2.y);
+    return new _Vector2(this.x - vec2.x, this.y - vec2.y);
+  }
+  minusValue(v) {
+    return new _Vector2(this.x - v, this.y - v);
+  }
+  div(v) {
+    return new _Vector2(this.x / v.x, this.y / v.y);
+  }
+  divValue(v) {
+    return new _Vector2(this.x / v, this.y / v);
+  }
+  mul(v) {
+    return new _Vector2(this.x * v.x, this.y * v.y);
+  }
+  mulValue(v) {
+    return new _Vector2(this.x * v, this.y * v);
   }
   copy() {
-    return new Vector2(this.x, this.y);
+    return new _Vector2(this.x, this.y);
+  }
+  negative() {
+    return new _Vector2(-this.x, -this.y);
   }
   // public static negative(src: Vector2): Vector2 {
   //     return new Vector2(-src.x, -src.y)
@@ -14918,33 +14804,12 @@ class Vector2 {
       (this.x - other.x) * (this.x - other.x) + (this.y - other.y) * (this.y - other.y)
     );
   }
-}
+};
+_Vector2.one = new _Vector2(1, 1);
+_Vector2.zero = new _Vector2(0, 0);
+let Vector2 = _Vector2;
 function Vector(x = 0, y) {
   return new Vector2(x, y === void 0 ? x : y);
-}
-class Color {
-  constructor(r, g, b, a) {
-    this.red = 0;
-    this.green = 0;
-    this.blue = 0;
-    this.alpha = 0;
-    this.red = r;
-    this.blue = b;
-    this.green = g;
-    this.alpha = a;
-  }
-  static fromHex(hex, alphaInt = 255) {
-    const red = hex >> 16 & 255;
-    const green = hex >> 8 & 255;
-    const blue = hex & 255;
-    return new Color(red / 255, green / 255, blue / 255, alphaInt / 255);
-  }
-  copy() {
-    return new Color(this.red, this.green, this.blue, this.alpha);
-  }
-}
-function isUndef(v) {
-  return typeof v === "undefined";
 }
 class OSBParser {
   static parse(content) {
@@ -15165,12 +15030,126 @@ class OSBParser {
     return result;
   }
 }
+const _OSUParser = class _OSUParser {
+  static parse(textContent) {
+    const osuFile = {};
+    const lines = textContent.split("\n").map((v) => v.trimEnd());
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line === this.general) {
+        this.parseGeneral(lines, i + 1, osuFile);
+      } else if (line === this.metadata) {
+        this.parseMetadata(lines, i + 1, osuFile);
+      } else if (line === this.timingPoints) {
+        this.parseTimingPoints(lines, i + 1, osuFile);
+      } else if (line === this.events) {
+        this.parseEvents(lines, i + 1, osuFile);
+      }
+    }
+    return osuFile;
+  }
+  static parseEvents(lines, index, out) {
+    let i = index, hasStoryboard = false;
+    out.Events = {};
+    const storyLines = [
+      "[Events]"
+    ];
+    while (lines[i].length > 0 && lines[i].charAt(0) !== "[") {
+      const line = lines[i++];
+      if (line.startsWith("Video")) {
+        let firstIndex = line.indexOf('"');
+        let lastIndex = line.lastIndexOf('"');
+        if (firstIndex >= 0 && lastIndex > 0) {
+          out.Events.videoBackground = line.substring(firstIndex + 1, lastIndex).toLowerCase();
+        }
+        firstIndex = line.indexOf(",");
+        lastIndex = line.indexOf(",", firstIndex + 1);
+        if (firstIndex >= 0 && lastIndex > 0) {
+          try {
+            out.Events.videoOffset = parseInt(line.substring(firstIndex + 1, lastIndex).trim());
+          } catch (_) {
+            out.Events.videoOffset = 0;
+          }
+        }
+      } else if (line.startsWith("0,0")) {
+        const firstIndex = line.indexOf('"');
+        const lastIndex = line.lastIndexOf('"');
+        if (firstIndex >= 0 && lastIndex > 0) {
+          out.Events.imageBackground = line.substring(firstIndex + 1, lastIndex).toLowerCase();
+        }
+      } else if (hasStoryboard) {
+        storyLines.push(line);
+      } else if (line.startsWith("Sprite") || line.startsWith("Animation")) {
+        hasStoryboard = true;
+        storyLines.push(line);
+      }
+    }
+    out.Events.storyboard = OSBParser.parse(storyLines.join("\n"));
+  }
+  static parseGeneral(lines, index, out) {
+    let i = index;
+    const general = {
+      AudioFilename: "",
+      PreviewTime: 0,
+      Mode: 3
+    };
+    while (lines[i].length > 0 && lines[i].charAt(0) !== "[") {
+      const [key, value] = lines[i++].split(":").map((v) => v.trim());
+      if (key === "AudioFilename") {
+        general.AudioFilename = value.toLowerCase();
+      } else if (key === "PreviewTime") {
+        general.PreviewTime = parseInt(value);
+      } else if (key === "Mode") {
+        general.Mode = parseInt(value);
+      }
+    }
+    out.General = general;
+  }
+  static parseMetadata(lines, index, out) {
+    let i = index;
+    const metadata = { Title: "", TitleUnicode: "", Artist: "", ArtistUnicode: "", Version: "", BeatmapID: "-1" };
+    while (lines[i].length > 0 && lines[i].charAt(0) !== "[") {
+      const [key, value] = lines[i++].split(":").map((v) => v.trim());
+      if (key === "Title") {
+        metadata.Title = value;
+      } else if (key === "TitleUnicode") {
+        metadata.TitleUnicode = value;
+      } else if (key === "Artist") {
+        metadata.Artist = value;
+      } else if (key === "ArtistUnicode") {
+        metadata.ArtistUnicode = value;
+      } else if (key === "Version") {
+        metadata.Version = value;
+      }
+    }
+    out.Metadata = metadata;
+  }
+  static parseTimingPoints(lines, index, out) {
+    let i = index;
+    const timingPoints = {
+      timingList: []
+    };
+    while (lines[i].length > 0 && lines[i].charAt(0) !== "[") {
+      const [time, beatLength, _1, _2, _3, _4, _5, isKiai] = lines[i++].split(",").map((v) => v.trim());
+      timingPoints.timingList.push({
+        time: parseInt(time),
+        beatLength: parseFloat(beatLength),
+        isKiai: isKiai === "1"
+      });
+    }
+    out.TimingPoints = timingPoints;
+  }
+};
+_OSUParser.general = "[General]";
+_OSUParser.metadata = "[Metadata]";
+_OSUParser.timingPoints = "[TimingPoints]";
+_OSUParser.events = "[Events]";
+let OSUParser = _OSUParser;
 class OSZ {
   constructor(oszFile) {
     this.oszFile = oszFile;
     this.osuFile = null;
     this.osuFileList = [];
-    this.maniaNoteData = null;
     this.oszSource = {
       image: null,
       video: null,
@@ -15207,7 +15186,7 @@ class OSZ {
     this.osuFile = await this.decompressOSUFile(zip, osuFilename);
     const osbFilename = filenames.find((filename) => filename.endsWith(".osb"));
     if (osbFilename) {
-      const osb = await this.decompressOSBFile(zip, osbFilename);
+      const osb = await this.decompressOSBFile(zip, osbFilename, this.osuFile);
       if (this.osuFile && this.osuFile.Events && osb) {
         this.osuFile.Events.storyboard = osb;
       }
@@ -15218,12 +15197,14 @@ class OSZ {
       });
     }
   }
-  async decompressOSBFile(zip, osbFilename) {
+  async decompressOSBFile(zip, osbFilename, osuFile) {
     var _a;
     const osbFileContent = await ((_a = zip.file(osbFilename)) == null ? void 0 : _a.async("string"));
     if (!osbFileContent)
       return null;
     const osbFile = OSBParser.parse(osbFileContent);
+    if (osuFile && osuFile.Events && osuFile.Events.storyboard)
+      osbFile.sprites.push(...osuFile.Events.storyboard.sprites);
     for (let i = 0; i < osbFile.sprites.length; i++) {
       const sprite = osbFile.sprites[i];
       if (isAnimation(sprite)) {
@@ -15265,32 +15246,29 @@ class OSZ {
     const osuFileContent = await ((_a = zip.file(osuFilename)) == null ? void 0 : _a.async("string"));
     if (!osuFileContent)
       return null;
-    const osuFile2 = OSUParser.parse(osuFileContent);
+    const osuFile = OSUParser.parse(osuFileContent);
     if (this.hasEmptySource()) {
-      if (osuFile2.General && osuFile2.General.AudioFilename) {
-        const audio = await ((_b = zip.file(osuFile2.General.AudioFilename)) == null ? void 0 : _b.async("arraybuffer"));
+      if (osuFile.General && osuFile.General.AudioFilename) {
+        const audio = await ((_b = zip.file(osuFile.General.AudioFilename)) == null ? void 0 : _b.async("arraybuffer"));
         if (audio) {
           this.oszSource.audio = audio;
         }
       }
-      if (osuFile2.Events && osuFile2.Events.imageBackground) {
-        const background = await ((_c = zip.file(osuFile2.Events.imageBackground)) == null ? void 0 : _c.async("blob"));
+      if (osuFile.Events && osuFile.Events.imageBackground) {
+        const background = await ((_c = zip.file(osuFile.Events.imageBackground)) == null ? void 0 : _c.async("blob"));
         if (background) {
           this.oszSource.image = background;
         }
       }
-      if (osuFile2.Events && osuFile2.Events.videoBackground) {
-        const path = osuFile2.Events.videoBackground;
+      if (osuFile.Events && osuFile.Events.videoBackground) {
+        const path = osuFile.Events.videoBackground;
         const video = await ((_d = zip.file(path)) == null ? void 0 : _d.async("blob"));
         if (video) {
           this.oszSource.video = video;
         }
       }
     }
-    if (!this.maniaNoteData && osuFile2.NoteData) {
-      this.maniaNoteData = osuFile2.NoteData;
-    }
-    return osuFile2;
+    return osuFile;
   }
   hasEmptySource() {
     const { video, audio, image } = this.oszSource;
@@ -15353,15 +15331,15 @@ class TempOSUPlayManager {
   }
 }
 const TempOSUPlayManager$1 = new TempOSUPlayManager();
-const _hoisted_1$9 = {
+const _hoisted_1$8 = {
   style: { "position": "relative" },
   class: "mini-player-box"
 };
-const _hoisted_2$6 = ["src"];
+const _hoisted_2$5 = ["src"];
 const _hoisted_3$2 = { class: "player-title" };
 const _hoisted_4$1 = { class: "player-artist" };
 const _hoisted_5 = ["onClick"];
-const _sfc_main$g = /* @__PURE__ */ defineComponent({
+const _sfc_main$f = /* @__PURE__ */ defineComponent({
   __name: "MiniPlayer",
   setup(__props) {
     const img = ref(null);
@@ -15420,7 +15398,7 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
       const _directive_osu_button = resolveDirective("osu-button");
       return openBlock(), createBlock(Column, { class: "w-fit mini-player gap-y-2" }, {
         default: withCtx(() => [
-          createBaseVNode("div", _hoisted_1$9, [
+          createBaseVNode("div", _hoisted_1$8, [
             createBaseVNode("img", {
               ref_key: "img",
               ref: img,
@@ -15429,7 +15407,7 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
               width: "500",
               height: "240",
               style: { "position": "absolute" }
-            }, null, 8, _hoisted_2$6),
+            }, null, 8, _hoisted_2$5),
             createVNode(Column, {
               class: "fill-size",
               style: { "position": "absolute", "background-color": "#00000040" }
@@ -15534,7 +15512,7 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
   }
 });
 const MiniPlayer_vue_vue_type_style_index_0_scoped_fa4dc804_lang = "";
-const MiniPlayer = /* @__PURE__ */ _export_sfc(_sfc_main$g, [["__scopeId", "data-v-fa4dc804"]]);
+const MiniPlayer = /* @__PURE__ */ _export_sfc(_sfc_main$f, [["__scopeId", "data-v-fa4dc804"]]);
 function useCollect(flow, collector) {
   flow.collect(collector);
   onUnmounted(() => {
@@ -15546,8 +15524,8 @@ function useStateFlow(stateFlow) {
   useCollect(stateFlow, (v) => value.value = v);
   return value;
 }
-const _hoisted_1$8 = { style: { "flex-grow": "1" } };
-const _sfc_main$f = /* @__PURE__ */ defineComponent({
+const _hoisted_1$7 = { style: { "flex-grow": "1" } };
+const _sfc_main$e = /* @__PURE__ */ defineComponent({
   __name: "Playlist",
   setup(__props) {
     function playAt(i) {
@@ -15585,7 +15563,7 @@ const _sfc_main$f = /* @__PURE__ */ defineComponent({
             class: normalizeClass(`list-item ${unref(activeIndex) === index ? "select" : ""}`)
           }, {
             default: withCtx(() => [
-              createBaseVNode("span", _hoisted_1$8, toDisplayString(item.metadata.title), 1)
+              createBaseVNode("span", _hoisted_1$7, toDisplayString(item.metadata.title), 1)
             ]),
             _: 2
           }, 1032, ["onClick", "class"]);
@@ -15595,7 +15573,7 @@ const _sfc_main$f = /* @__PURE__ */ defineComponent({
   }
 });
 const Playlist_vue_vue_type_style_index_0_scoped_b9b7e18b_lang = "";
-const Playlist = /* @__PURE__ */ _export_sfc(_sfc_main$f, [["__scopeId", "data-v-b9b7e18b"]]);
+const Playlist = /* @__PURE__ */ _export_sfc(_sfc_main$e, [["__scopeId", "data-v-b9b7e18b"]]);
 const UIState = reactive({
   starSmoke: false,
   logoDrag: true,
@@ -15828,7 +15806,7 @@ class BackgroundManager {
   }
 }
 const BackgroundManager$1 = new BackgroundManager();
-const _sfc_main$e = /* @__PURE__ */ defineComponent({
+const _sfc_main$d = /* @__PURE__ */ defineComponent({
   __name: "OSUButton",
   props: {
     fill: { type: Boolean, default: false }
@@ -15846,12 +15824,12 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
   }
 });
 const OSUButton_vue_vue_type_style_index_0_scoped_1bc8e835_lang = "";
-const OSUButton = /* @__PURE__ */ _export_sfc(_sfc_main$e, [["__scopeId", "data-v-1bc8e835"]]);
-const _hoisted_1$7 = /* @__PURE__ */ createBaseVNode("span", null, "Logo Drag", -1);
-const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode("span", { class: "flex-row" }, "Logo Hover", -1);
+const OSUButton = /* @__PURE__ */ _export_sfc(_sfc_main$d, [["__scopeId", "data-v-1bc8e835"]]);
+const _hoisted_1$6 = /* @__PURE__ */ createBaseVNode("span", null, "Logo Drag", -1);
+const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode("span", { class: "flex-row" }, "Logo Hover", -1);
 const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode("span", { class: "flex-row" }, "Star Smoke", -1);
 const _hoisted_4 = /* @__PURE__ */ createBaseVNode("span", null, "Background", -1);
-const _sfc_main$d = /* @__PURE__ */ defineComponent({
+const _sfc_main$c = /* @__PURE__ */ defineComponent({
   __name: "UISettings",
   setup(__props) {
     const backgroundType = [
@@ -15890,7 +15868,7 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
             "center-vertical": ""
           }, {
             default: withCtx(() => [
-              _hoisted_1$7,
+              _hoisted_1$6,
               createVNode(CheckBox, {
                 class: "ml-auto",
                 modelValue: unref(UIState).logoDrag,
@@ -15904,7 +15882,7 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
             "center-vertical": ""
           }, {
             default: withCtx(() => [
-              _hoisted_2$5,
+              _hoisted_2$4,
               createVNode(CheckBox, {
                 class: "ml-auto",
                 modelValue: unref(UIState).logoHover,
@@ -15968,7 +15946,7 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$c = /* @__PURE__ */ defineComponent({
+const _sfc_main$b = /* @__PURE__ */ defineComponent({
   __name: "VisualizerSettings",
   setup(__props) {
     return (_ctx, _cache) => {
@@ -15980,12 +15958,12 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1$6 = ["onClick"];
-const _hoisted_2$4 = {
+const _hoisted_1$5 = ["onClick"];
+const _hoisted_2$3 = {
   style: { "flex-grow": "1", "background-color": "var(--settings-content-bg)" },
   class: "fill-height"
 };
-const _sfc_main$b = /* @__PURE__ */ defineComponent({
+const _sfc_main$a = /* @__PURE__ */ defineComponent({
   __name: "SettingsPanel",
   setup(__props) {
     const state = reactive({
@@ -16008,14 +15986,14 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
                   class: normalizeClass(`ma selector-item ${state.selectIndex === index ? "selector-item-selected" : "light-gray-click"}`),
                   style: { "border-radius": "0" },
                   onClick: ($event) => state.selectIndex = index
-                }, toDisplayString(item), 11, _hoisted_1$6);
+                }, toDisplayString(item), 11, _hoisted_1$5);
               }), 256))
             ]),
             _: 1
           }),
-          createBaseVNode("div", _hoisted_2$4, [
-            state.selectIndex === 0 ? (openBlock(), createBlock(_sfc_main$d, { key: 0 })) : createCommentVNode("", true),
-            state.selectIndex === 2 ? (openBlock(), createBlock(_sfc_main$c, { key: 1 })) : createCommentVNode("", true)
+          createBaseVNode("div", _hoisted_2$3, [
+            state.selectIndex === 0 ? (openBlock(), createBlock(_sfc_main$c, { key: 0 })) : createCommentVNode("", true),
+            state.selectIndex === 2 ? (openBlock(), createBlock(_sfc_main$b, { key: 1 })) : createCommentVNode("", true)
           ])
         ]),
         _: 1
@@ -16024,8 +16002,8 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
   }
 });
 const SettingsPanel_vue_vue_type_style_index_0_scoped_ca6acdbd_lang = "";
-const SettingsPanel = /* @__PURE__ */ _export_sfc(_sfc_main$b, [["__scopeId", "data-v-ca6acdbd"]]);
-const _sfc_main$a = /* @__PURE__ */ defineComponent({
+const SettingsPanel = /* @__PURE__ */ _export_sfc(_sfc_main$a, [["__scopeId", "data-v-ca6acdbd"]]);
+const _sfc_main$9 = /* @__PURE__ */ defineComponent({
   __name: "Toast",
   setup(__props) {
     const state = reactive({
@@ -16058,104 +16036,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
   }
 });
 const Toast_vue_vue_type_style_index_0_scoped_6747120f_lang = "";
-const Toast = /* @__PURE__ */ _export_sfc(_sfc_main$a, [["__scopeId", "data-v-6747120f"]]);
-const _withScopeId$1 = (n) => (pushScopeId("data-v-57de2047"), n = n(), popScopeId(), n);
-const _hoisted_1$5 = { class: "text-white" };
-const _hoisted_2$3 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("div", { class: "top-bar-shadow" }, null, -1));
-const _sfc_main$9 = /* @__PURE__ */ defineComponent({
-  __name: "TopBar",
-  props: {
-    stateText: {}
-  },
-  emits: ["settingsClick", "bpmCalcClick", "hideUI", "beatmapListClick", "notifyClick"],
-  setup(__props) {
-    const openPlaylist = inject$1("openList");
-    const openMiniPlayer = inject$1("openMiniPlayer");
-    return (_ctx, _cache) => {
-      const _directive_osu_top_bar_btn = resolveDirective("osu-top-bar-btn");
-      return openBlock(), createBlock(Column, { class: "fill-width" }, {
-        default: withCtx(() => [
-          createVNode(Row, { class: "top-bar fill-size" }, {
-            default: withCtx(() => [
-              withDirectives((openBlock(), createElementBlock("button", {
-                class: "ma top-bar-icon-btn",
-                onClick: _cache[0] || (_cache[0] = ($event) => _ctx.$emit("settingsClick"))
-              }, [
-                createTextVNode(toDisplayString(unref(Icon).Settings), 1)
-              ])), [
-                [_directive_osu_top_bar_btn]
-              ]),
-              createVNode(Row, {
-                style: { "flex-grow": "1" },
-                center: ""
-              }, {
-                default: withCtx(() => [
-                  createBaseVNode("span", _hoisted_1$5, toDisplayString(_ctx.stateText), 1)
-                ]),
-                _: 1
-              }),
-              withDirectives((openBlock(), createElementBlock("button", {
-                class: "ma top-bar-icon-btn",
-                onClick: _cache[1] || (_cache[1] = ($event) => unref(openMiniPlayer)())
-              }, [
-                createTextVNode(toDisplayString(unref(Icon).MusicNote), 1)
-              ])), [
-                [_directive_osu_top_bar_btn]
-              ]),
-              withDirectives((openBlock(), createElementBlock("button", {
-                class: "ma top-bar-icon-btn",
-                onClick: _cache[2] || (_cache[2] = ($event) => _ctx.$emit("beatmapListClick"))
-              }, [
-                createTextVNode(toDisplayString(unref(Icon).FolderOpen), 1)
-              ])), [
-                [_directive_osu_top_bar_btn]
-              ]),
-              withDirectives((openBlock(), createElementBlock("button", {
-                class: "ma top-bar-icon-btn",
-                onClick: _cache[3] || (_cache[3] = ($event) => _ctx.$emit("hideUI"))
-              }, [
-                createTextVNode(toDisplayString(unref(Icon).Fullscreen), 1)
-              ])), [
-                [_directive_osu_top_bar_btn]
-              ]),
-              unref(PLAYER) || true ? withDirectives((openBlock(), createElementBlock("button", {
-                key: 0,
-                class: "ma top-bar-icon-btn",
-                onClick: _cache[4] || (_cache[4] = ($event) => _ctx.$emit("bpmCalcClick"))
-              }, [
-                createTextVNode(toDisplayString(unref(Icon).RadioButtonUnchecked), 1)
-              ])), [
-                [_directive_osu_top_bar_btn]
-              ]) : createCommentVNode("", true),
-              unref(PLAYER) ? withDirectives((openBlock(), createElementBlock("button", {
-                key: 1,
-                class: "ma top-bar-icon-btn",
-                onClick: _cache[5] || (_cache[5] = ($event) => unref(openPlaylist)())
-              }, [
-                createTextVNode(toDisplayString(unref(Icon).List), 1)
-              ])), [
-                [_directive_osu_top_bar_btn]
-              ]) : createCommentVNode("", true),
-              withDirectives((openBlock(), createElementBlock("button", {
-                class: "ma top-bar-icon-btn",
-                onClick: _cache[6] || (_cache[6] = ($event) => _ctx.$emit("notifyClick"))
-              }, [
-                createTextVNode(toDisplayString(unref(Icon).Notifications), 1)
-              ])), [
-                [_directive_osu_top_bar_btn]
-              ])
-            ]),
-            _: 1
-          }),
-          _hoisted_2$3
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const TopBar_vue_vue_type_style_index_0_scoped_57de2047_lang = "";
-const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$9, [["__scopeId", "data-v-57de2047"]]);
+const Toast = /* @__PURE__ */ _export_sfc(_sfc_main$9, [["__scopeId", "data-v-6747120f"]]);
 const _BeatDispatcher = class _BeatDispatcher {
   static register(beat) {
     this.IBeatList.push(beat);
@@ -16308,6 +16189,59 @@ class BeatBooster {
   }
 }
 const BeatBooster$1 = new BeatBooster();
+const _MouseEventRecorder = class _MouseEventRecorder {
+  static record(event) {
+    this.eventList.push(event);
+  }
+  static remove(event) {
+    const index = this.eventList.indexOf(event);
+    this.eventList.splice(index, 1);
+  }
+};
+_MouseEventRecorder.eventList = [];
+let MouseEventRecorder = _MouseEventRecorder;
+const _MouseEventFire = class _MouseEventFire {
+  static pause() {
+    this.fireMouseEvent = false;
+  }
+  static resume() {
+    this.fireMouseEvent = true;
+  }
+  static fireMouseDown(which, position) {
+    if (!this.fireMouseEvent) {
+      return;
+    }
+    const events = MouseEventRecorder.eventList;
+    for (let i = events.length - 1; i >= 0; i--) {
+      const event = events[i];
+      if (event.inBound(position) && event.isPresent) {
+        event.mouseDown(which, position);
+      }
+    }
+  }
+  static fireMouseMove(which, position) {
+    if (!this.fireMouseEvent) {
+      return;
+    }
+    const events = MouseEventRecorder.eventList;
+    for (let i = events.length - 1; i >= 0; i--) {
+      const event = events[i];
+      event.mouseMove(which, position);
+    }
+  }
+  static fireMouseUp(which, position) {
+    if (!this.fireMouseEvent) {
+      return;
+    }
+    const events = MouseEventRecorder.eventList;
+    for (let i = events.length - 1; i >= 0; i--) {
+      const event = events[i];
+      event.mouseUp(which, position);
+    }
+  }
+};
+_MouseEventFire.fireMouseEvent = true;
+let MouseEventFire = _MouseEventFire;
 const MOUSE_LEFT_DOWN = 1;
 const MOUSE_RIGHT_DOWN = 2;
 const MOUSE_MOVE = 4;
@@ -16323,7 +16257,7 @@ const _MouseState = class _MouseState {
     _MouseState.position.y = y;
     _MouseState.downPosition.x = x;
     _MouseState.downPosition.y = y;
-    _MouseState.fireOnMousedown(which);
+    MouseEventFire.fireMouseDown(which, _MouseState.position);
   }
   static receiveMouseUp(which, x, y) {
     _MouseState.which ^= which;
@@ -16332,7 +16266,7 @@ const _MouseState = class _MouseState {
     _MouseState.position.y = y;
     _MouseState.upPosition.x = x;
     _MouseState.upPosition.y = y;
-    _MouseState.fireOnMouseUp(which);
+    MouseEventFire.fireMouseUp(which, _MouseState.position);
     if (_MouseState.downPosition.equals(_MouseState.upPosition)) {
       _MouseState.fireOnClick(which);
     }
@@ -16341,7 +16275,7 @@ const _MouseState = class _MouseState {
     _MouseState.state |= MOUSE_MOVE;
     _MouseState.position.x = x;
     _MouseState.position.y = y;
-    _MouseState.fireOnMouseMove();
+    MouseEventFire.fireMouseMove(_MouseState.which, _MouseState.position);
   }
   static isLeftDown() {
     return (_MouseState.state & MOUSE_LEFT_DOWN) === 1;
@@ -16432,6 +16366,16 @@ const _Matrix3 = class _Matrix3 {
       out[i] = ma.value[i];
     }
   }
+  setFrom(other) {
+    for (let i = 0; i < 9; i++) {
+      this.value[i] = other.value[i];
+    }
+  }
+  copy() {
+    const m = new _Matrix3();
+    m.setFrom(this);
+    return m;
+  }
   get M11() {
     return this.value[0];
   }
@@ -16487,21 +16431,81 @@ const _Matrix3 = class _Matrix3 {
     this.value[8] = v;
   }
 };
-_Matrix3.identify = [
-  1,
-  0,
-  0,
-  0,
-  1,
-  0,
-  0,
-  0,
-  1
-];
+_Matrix3.identify = _Matrix3.newIdentify();
 let Matrix3 = _Matrix3;
+class MatrixUtils {
+  static m3Multi(mt1, mt2) {
+    return this.m3MultiTo(mt1, mt2, new Matrix3());
+  }
+  static m3MultiTo(mt1, mt2, result) {
+    result.M11 = mt1.M11 * mt2.M11 + mt1.M12 * mt2.M21 + mt1.M13 * mt2.M31;
+    result.M12 = mt1.M11 * mt2.M12 + mt1.M12 * mt2.M22 + mt1.M13 * mt2.M32;
+    result.M13 = mt1.M11 * mt2.M13 + mt1.M12 * mt2.M23 + mt1.M13 * mt2.M33;
+    result.M21 = mt1.M21 * mt2.M11 + mt1.M22 * mt2.M21 + mt1.M23 * mt2.M31;
+    result.M22 = mt1.M21 * mt2.M12 + mt1.M22 * mt2.M22 + mt1.M23 * mt2.M32;
+    result.M23 = mt1.M21 * mt2.M13 + mt1.M22 * mt2.M23 + mt1.M23 * mt2.M33;
+    result.M31 = mt1.M31 * mt2.M11 + mt1.M32 * mt2.M21 + mt1.M33 * mt2.M31;
+    result.M32 = mt1.M31 * mt2.M12 + mt1.M32 * mt2.M22 + mt1.M33 * mt2.M32;
+    result.M33 = mt1.M31 * mt2.M13 + mt1.M32 * mt2.M23 + mt1.M33 * mt2.M33;
+    return result;
+  }
+  static m3MultiToArray(mt1, mt2, result) {
+    result[0] = mt1.M11 * mt2.M11 + mt1.M12 * mt2.M21 + mt1.M13 * mt2.M31;
+    result[1] = mt1.M11 * mt2.M12 + mt1.M12 * mt2.M22 + mt1.M13 * mt2.M32;
+    result[2] = mt1.M11 * mt2.M13 + mt1.M12 * mt2.M23 + mt1.M13 * mt2.M33;
+    result[3] = mt1.M21 * mt2.M11 + mt1.M22 * mt2.M21 + mt1.M23 * mt2.M31;
+    result[4] = mt1.M21 * mt2.M12 + mt1.M22 * mt2.M22 + mt1.M23 * mt2.M32;
+    result[5] = mt1.M21 * mt2.M13 + mt1.M22 * mt2.M23 + mt1.M23 * mt2.M33;
+    result[6] = mt1.M31 * mt2.M11 + mt1.M32 * mt2.M21 + mt1.M33 * mt2.M31;
+    result[7] = mt1.M31 * mt2.M12 + mt1.M32 * mt2.M22 + mt1.M33 * mt2.M32;
+    result[8] = mt1.M31 * mt2.M13 + mt1.M32 * mt2.M23 + mt1.M33 * mt2.M33;
+    return result;
+  }
+  static m4Multi(mt1, mt2) {
+    const result = new Float32Array([
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]);
+    this.m4MultiTo(mt1, mt2, result);
+    return result;
+  }
+  static m4MultiTo(mt1, mt2, result) {
+    result[0] = mt1[0] * mt2[0] + mt1[1] * mt2[1] + mt1[2] * mt2[2] + mt1[3] * mt2[3];
+    result[1] = mt1[0] * mt2[4] + mt1[1] * mt2[5] + mt1[2] * mt2[6] + mt1[3] * mt2[7];
+    result[2] = mt1[0] * mt2[8] + mt1[1] * mt2[9] + mt1[2] * mt2[10] + mt1[3] * mt2[11];
+    result[3] = mt1[0] * mt2[12] + mt1[1] * mt2[13] + mt1[2] * mt2[14] + mt1[3] * mt2[15];
+    result[4] = mt1[4] * mt2[0] + mt1[5] * mt2[1] + mt1[6] * mt2[2] + mt1[7] * mt2[3];
+    result[5] = mt1[4] * mt2[4] + mt1[5] * mt2[5] + mt1[6] * mt2[6] + mt1[7] * mt2[7];
+    result[6] = mt1[4] * mt2[8] + mt1[5] * mt2[9] + mt1[6] * mt2[10] + mt1[7] * mt2[11];
+    result[7] = mt1[4] * mt2[12] + mt1[5] * mt2[13] + mt1[6] * mt2[14] + mt1[7] * mt2[15];
+    result[8] = mt1[8] * mt2[0] + mt1[9] * mt2[1] + mt1[10] * mt2[2] + mt1[11] * mt2[3];
+    result[9] = mt1[8] * mt2[4] + mt1[9] * mt2[5] + mt1[10] * mt2[6] + mt1[11] * mt2[7];
+    result[10] = mt1[8] * mt2[8] + mt1[9] * mt2[9] + mt1[10] * mt2[10] + mt1[11] * mt2[11];
+    result[11] = mt1[8] * mt2[12] + mt1[9] * mt2[13] + mt1[10] * mt2[14] + mt1[11] * mt2[15];
+    result[12] = mt1[12] * mt2[0] + mt1[13] * mt2[1] + mt1[14] * mt2[2] + mt1[15] * mt2[3];
+    result[13] = mt1[12] * mt2[4] + mt1[13] * mt2[5] + mt1[14] * mt2[6] + mt1[15] * mt2[7];
+    result[14] = mt1[12] * mt2[8] + mt1[13] * mt2[9] + mt1[14] * mt2[10] + mt1[15] * mt2[11];
+    result[15] = mt1[12] * mt2[12] + mt1[13] * mt2[13] + mt1[14] * mt2[14] + mt1[15] * mt2[15];
+    return result;
+  }
+}
 class TransformUtils {
-  static rotate(radius) {
-    const cos = Math.cos(radius), sin = Math.sin(radius);
+  static rotate(radian) {
+    const cos = Math.cos(radian), sin = Math.sin(radian);
     const matrix = Matrix3.newIdentify();
     matrix.M11 = cos;
     matrix.M12 = -sin;
@@ -16574,35 +16578,41 @@ class TransformUtils {
     const matrix = TransformUtils.scale(scaleX, scaleY);
     return TransformUtils.apply(vec2, matrix);
   }
-  static applyScaleOrigin(vec2, scaleX, scaleY) {
+  static applyScaleSelf(vec2, scaleX, scaleY) {
     const matrix = TransformUtils.scale(scaleX, scaleY);
-    TransformUtils.applyOrigin(vec2, matrix);
+    TransformUtils.applySelf(vec2, matrix);
   }
   static applyTranslate(vec2, translateX, translateY) {
     const matrix = TransformUtils.translate(translateX, translateY);
     return TransformUtils.apply(vec2, matrix);
   }
-  static applyTranslateOrigin(vec2, translateX, translateY) {
+  static applyTranslateSelf(vec2, translateX, translateY) {
     const matrix = TransformUtils.translate(translateX, translateY);
-    TransformUtils.applyOrigin(vec2, matrix);
+    TransformUtils.applySelf(vec2, matrix);
   }
   static applyRotate(vec2, radian) {
     const matrix = TransformUtils.rotate(radian);
     return TransformUtils.apply(vec2, matrix);
   }
-  static applyOrigin(vec2, matrix) {
+  static applySelf(vec2, matrix) {
     const x = vec2.x * matrix.M11 + vec2.y * matrix.M12 + matrix.M13;
     const y = vec2.x * matrix.M21 + vec2.y * matrix.M22 + matrix.M23;
     vec2.x = x;
     vec2.y = y;
   }
+  transform(translate, scale, rotate) {
+    const m3 = MatrixUtils.m3Multi(
+      TransformUtils.translate(translate.x, translate.y),
+      TransformUtils.rotate(degreeToRadian(rotate))
+    );
+    return MatrixUtils.m3Multi(m3, TransformUtils.scale(scale.x, scale.y));
+  }
 }
 const _Coordinate = class _Coordinate {
   constructor() {
-    this._width = 0;
-    this._height = 0;
-    this._nativeWidth = 0;
-    this._nativeHeight = 0;
+    this.size = Vector();
+    this.nativeSize = Vector();
+    this.resolution = Vector();
     this.onWindowResize = null;
     this.orthographicProjectionMatrix4 = new Float32Array([
       1,
@@ -16622,85 +16632,65 @@ const _Coordinate = class _Coordinate {
       0,
       1
     ]);
+    this.center = Vector();
     this.ratio = 1;
   }
   updateCoordinate(width, height) {
     var _a;
     console.log("window resize", width, height);
-    this._nativeWidth = width;
-    this._nativeHeight = height;
+    this.nativeSize.set(width, height);
     this.ratio = _Coordinate.MAX_WIDTH / width;
-    this._width = _Coordinate.MAX_WIDTH;
-    this._height = height * this.ratio;
+    this.size.set(_Coordinate.MAX_WIDTH, height * this.ratio);
     console.log("adjust", this.ratio);
     this.orthographicProjectionMatrix4 = TransformUtils.orth(
-      -this._width / 2,
-      this._width / 2,
-      -this._height / 2,
-      this._height / 2,
+      0,
+      this.size.x,
+      this.size.y,
+      0,
       0,
       1
     );
+    this.center.set(this.size.x / 2, this.size.y / 2);
+    this.resolution.set(width * window.devicePixelRatio, height * window.devicePixelRatio);
     (_a = this.onWindowResize) == null ? void 0 : _a.call(this);
   }
   get width() {
-    return this._width;
+    return this.size.x;
   }
   get height() {
-    return this._height;
+    return this.size.y;
+  }
+  get left() {
+    return 0;
+  }
+  get right() {
+    return this.size.x;
+  }
+  get top() {
+    return 0;
+  }
+  get bottom() {
+    return this.size.y;
   }
   get nativeWidth() {
-    return this._nativeWidth;
+    return this.nativeSize.x;
   }
   get nativeHeight() {
-    return this._nativeHeight;
+    return this.nativeSize.y;
   }
   get centerX() {
-    return this._width / 2;
+    return this.width / 2;
   }
   get centerY() {
-    return this._height / 2;
-  }
-  glXLength(worldOrScreen) {
-    return worldOrScreen * (2 / this.width);
-  }
-  glYLength(worldOrScreen) {
-    return worldOrScreen * (2 / this.height);
+    return this.height / 2;
   }
 };
-_Coordinate.MAX_WIDTH = 1536;
+_Coordinate.MAX_WIDTH = 1280;
 let Coordinate = _Coordinate;
 const Coordinate$1 = new Coordinate();
-class MatrixUtils {
-  static m3Multi(mt1, mt2) {
-    return this.m3MultiTo(mt1, mt2, new Matrix3());
-  }
-  static m3MultiTo(mt1, mt2, result) {
-    result.M11 = mt1.M11 * mt2.M11 + mt1.M12 * mt2.M21 + mt1.M13 * mt2.M31;
-    result.M12 = mt1.M11 * mt2.M12 + mt1.M12 * mt2.M22 + mt1.M13 * mt2.M32;
-    result.M13 = mt1.M11 * mt2.M13 + mt1.M12 * mt2.M23 + mt1.M13 * mt2.M33;
-    result.M21 = mt1.M21 * mt2.M11 + mt1.M22 * mt2.M21 + mt1.M23 * mt2.M31;
-    result.M22 = mt1.M21 * mt2.M12 + mt1.M22 * mt2.M22 + mt1.M23 * mt2.M32;
-    result.M23 = mt1.M21 * mt2.M13 + mt1.M22 * mt2.M23 + mt1.M23 * mt2.M33;
-    result.M31 = mt1.M31 * mt2.M11 + mt1.M32 * mt2.M21 + mt1.M33 * mt2.M31;
-    result.M32 = mt1.M31 * mt2.M12 + mt1.M32 * mt2.M22 + mt1.M33 * mt2.M32;
-    result.M33 = mt1.M31 * mt2.M13 + mt1.M32 * mt2.M23 + mt1.M33 * mt2.M33;
-    return result;
-  }
-  static m3MultiToArray(mt1, mt2, result) {
-    result[0] = mt1.M11 * mt2.M11 + mt1.M12 * mt2.M21 + mt1.M13 * mt2.M31;
-    result[1] = mt1.M11 * mt2.M12 + mt1.M12 * mt2.M22 + mt1.M13 * mt2.M32;
-    result[2] = mt1.M11 * mt2.M13 + mt1.M12 * mt2.M23 + mt1.M13 * mt2.M33;
-    result[3] = mt1.M21 * mt2.M11 + mt1.M22 * mt2.M21 + mt1.M23 * mt2.M31;
-    result[4] = mt1.M21 * mt2.M12 + mt1.M22 * mt2.M22 + mt1.M23 * mt2.M32;
-    result[5] = mt1.M21 * mt2.M13 + mt1.M22 * mt2.M23 + mt1.M23 * mt2.M33;
-    result[6] = mt1.M31 * mt2.M11 + mt1.M32 * mt2.M21 + mt1.M33 * mt2.M31;
-    result[7] = mt1.M31 * mt2.M12 + mt1.M32 * mt2.M22 + mt1.M33 * mt2.M32;
-    result[8] = mt1.M31 * mt2.M13 + mt1.M32 * mt2.M23 + mt1.M33 * mt2.M33;
-    return result;
-  }
-  static m4Multi(mt1, mt2) {
-    const result = new Float32Array([
+const _Transform = class _Transform {
+  constructor() {
+    this.translateMatrix4 = new Float32Array([
       1,
       0,
       0,
@@ -16718,46 +16708,71 @@ class MatrixUtils {
       0,
       1
     ]);
-    this.m4MultiTo(mt1, mt2, result);
-    return result;
-  }
-  static m4MultiTo(mt1, mt2, result) {
-    result[0] = mt1[0] * mt2[0] + mt1[1] * mt2[1] + mt1[2] * mt2[2] + mt1[3] * mt2[3];
-    result[1] = mt1[0] * mt2[4] + mt1[1] * mt2[5] + mt1[2] * mt2[6] + mt1[3] * mt2[7];
-    result[2] = mt1[0] * mt2[8] + mt1[1] * mt2[9] + mt1[2] * mt2[10] + mt1[3] * mt2[11];
-    result[3] = mt1[0] * mt2[12] + mt1[1] * mt2[13] + mt1[2] * mt2[14] + mt1[3] * mt2[15];
-    result[4] = mt1[4] * mt2[0] + mt1[5] * mt2[1] + mt1[6] * mt2[2] + mt1[7] * mt2[3];
-    result[5] = mt1[4] * mt2[4] + mt1[5] * mt2[5] + mt1[6] * mt2[6] + mt1[7] * mt2[7];
-    result[6] = mt1[4] * mt2[8] + mt1[5] * mt2[9] + mt1[6] * mt2[10] + mt1[7] * mt2[11];
-    result[7] = mt1[4] * mt2[12] + mt1[5] * mt2[13] + mt1[6] * mt2[14] + mt1[7] * mt2[15];
-    result[8] = mt1[8] * mt2[0] + mt1[9] * mt2[1] + mt1[10] * mt2[2] + mt1[11] * mt2[3];
-    result[9] = mt1[8] * mt2[4] + mt1[9] * mt2[5] + mt1[10] * mt2[6] + mt1[11] * mt2[7];
-    result[10] = mt1[8] * mt2[8] + mt1[9] * mt2[9] + mt1[10] * mt2[10] + mt1[11] * mt2[11];
-    result[11] = mt1[8] * mt2[12] + mt1[9] * mt2[13] + mt1[10] * mt2[14] + mt1[11] * mt2[15];
-    result[12] = mt1[12] * mt2[0] + mt1[13] * mt2[1] + mt1[14] * mt2[2] + mt1[15] * mt2[3];
-    result[13] = mt1[12] * mt2[4] + mt1[13] * mt2[5] + mt1[14] * mt2[6] + mt1[15] * mt2[7];
-    result[14] = mt1[12] * mt2[8] + mt1[13] * mt2[9] + mt1[14] * mt2[10] + mt1[15] * mt2[11];
-    result[15] = mt1[12] * mt2[12] + mt1[13] * mt2[13] + mt1[14] * mt2[14] + mt1[15] * mt2[15];
-    return result;
-  }
-}
-class Transform {
-  constructor() {
+    this.rotateMatrix4 = new Float32Array([
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]);
+    this.scaleMatrix4 = new Float32Array([
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]);
     this.translate = Vector();
     this.scale = Vector(1);
     this.skew = Vector();
     this.rotate = 0;
     this.alpha = 1;
+    this.color = Color.Black.copy();
     this.transformMatrix = Matrix3.newIdentify();
   }
+  /**
+   * @deprecated
+   */
   extractToMatrix4(matrix4) {
     const sc = this.scale, t = this.translate, r = this.rotate;
-    const scM4 = scaleM4(sc);
-    const tM4 = translateM4(t);
-    const rM4 = rotateM4(degreeToRadian(r));
-    const m4 = MatrixUtils.m4Multi(tM4, rM4);
-    MatrixUtils.m4MultiTo(m4, scM4, matrix4);
+    this.scaleMatrix4[0] = sc.x;
+    this.scaleMatrix4[5] = sc.y;
+    this.translateMatrix4[3] = t.x;
+    this.translateMatrix4[7] = t.y;
+    const radian = degreeToRadian(r);
+    const cos = Math.cos(radian), sin = Math.sin(radian);
+    this.rotateMatrix4[0] = cos;
+    this.rotateMatrix4[1] = -sin;
+    this.rotateMatrix4[4] = sin;
+    this.rotateMatrix4[5] = cos;
+    const m4 = MatrixUtils.m4Multi(this.translateMatrix4, this.rotateMatrix4);
+    MatrixUtils.m4MultiTo(m4, this.scaleMatrix4, matrix4);
   }
+  /**
+   * @deprecated
+   */
   extractToMatrix3(matrix3) {
     const sc = this.scale, t = this.translate, r = this.rotate;
     const scM3 = TransformUtils.scale(sc.x, sc.y);
@@ -16766,112 +16781,66 @@ class Transform {
     const m3 = MatrixUtils.m3Multi(tM3, rM3);
     MatrixUtils.m3MultiTo(m3, scM3, matrix3);
   }
+  /**
+   * @deprecated
+   */
   translateTo(v) {
     this.translate.set(v.x, v.y);
   }
+  /**
+   * @deprecated
+   */
   scaleTo(v) {
     this.scale.set(v.x, v.y);
   }
   alphaTo(alpha) {
     this.alpha = alpha;
   }
+  /**
+   * @deprecated
+   */
   translateBy(v) {
     this.translate.increment(v);
   }
   alphaBy(alpha) {
     this.alpha *= alpha;
   }
+  /**
+   * @deprecated
+   */
   scaleBy(v) {
     this.scale.x *= v.x;
     this.scale.y *= v.y;
   }
+  /**
+   * @deprecated
+   */
   skewBy(v) {
     this.skew.x += v.x;
     this.skew.y += v.y;
   }
+  /**
+   * @deprecated
+   */
   skewTo(v) {
     this.skew.x = v.x;
     this.skew.y = v.y;
   }
+  /**
+   * @deprecated
+   */
   rotateTo(n) {
     this.rotate = n;
   }
+  /**
+   * @deprecated
+   */
   rotateBy(n) {
     this.rotate += n;
   }
-}
-function scaleM4(scale) {
-  const m = [
-    1,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-    1
-  ];
-  m[0] = scale.x;
-  m[5] = scale.y;
-  return m;
-}
-function translateM4(translate) {
-  const m = [
-    1,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-    1
-  ];
-  m[3] = translate.x;
-  m[7] = translate.y;
-  return m;
-}
-function rotateM4(radian) {
-  const m = [
-    1,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-    1
-  ];
-  const cos = Math.cos(radian), sin = Math.sin(radian);
-  m[0] = cos;
-  m[1] = -sin;
-  m[4] = sin;
-  m[5] = cos;
-  return m;
-}
+};
+_Transform.emptyTransform = new _Transform();
+let Transform = _Transform;
 const _Axis = class _Axis {
   static getXAxis(anchor) {
     return anchor & 7;
@@ -17025,7 +16994,7 @@ class ObjectTransition {
     }
   }
 }
-const M = 0, MX = 1, MY = 2, F = 3, R = 4, S = 5, SX = 6, SY = 7;
+const M = 0, MX = 1, MY = 2, F = 3, R = 4, S = 5, SX = 6, SY = 7, SK = 8, SKX = 9, SKY = 10, C = 11;
 class DrawableTransition {
   constructor(transform) {
     this.transform = transform;
@@ -17037,6 +17006,11 @@ class DrawableTransition {
     this.transitionScaleY = new ObjectTransition(transform.scale, "y");
     this.transitionAlpha = new ObjectTransition(transform, "alpha");
     this.transitionRotate = new ObjectTransition(transform, "rotate");
+    this.transitionSkewX = new ObjectTransition(transform.skew, "x");
+    this.transitionSkewY = new ObjectTransition(transform.skew, "y");
+    this.transitionColorR = new ObjectTransition(transform.color, "red");
+    this.transitionColorG = new ObjectTransition(transform.color, "green");
+    this.transitionColorB = new ObjectTransition(transform.color, "blue");
   }
   /**
    * 仅当变换类型变化时生效
@@ -17131,6 +17105,50 @@ class DrawableTransition {
     this.transitionScaleY.transitionTo(scale.y, duration, ease);
     return this;
   }
+  skewTo(skew, duration, ease = linear) {
+    if (this.transformType !== SK) {
+      const time = Time.currentTime + this.transitionDelay;
+      this.transitionSkewX.setStartTime(time);
+      this.transitionSkewY.setStartTime(time);
+      this.transitionDelay = 0;
+      this.transformType = SK;
+    }
+    this.transitionSkewX.transitionTo(skew.x, duration, ease);
+    this.transitionSkewY.transitionTo(skew.y, duration, ease);
+    return this;
+  }
+  skewXTo(skewX, duration, ease = linear) {
+    if (this.transformType !== SKX) {
+      this.transitionSkewX.setStartTime(Time.currentTime + this.transitionDelay);
+      this.transitionDelay = 0;
+      this.transformType = SKX;
+    }
+    this.transitionSkewX.transitionTo(skewX, duration, ease);
+    return this;
+  }
+  skewYTo(skewY, duration, ease = linear) {
+    if (this.transformType !== SKY) {
+      this.transitionSkewY.setStartTime(Time.currentTime + this.transitionDelay);
+      this.transitionDelay = 0;
+      this.transformType = SKY;
+    }
+    this.transitionSkewY.transitionTo(skewY, duration, ease);
+    return this;
+  }
+  colorTo(color, duration, ease = linear) {
+    if (this.transformType !== C) {
+      const time = Time.currentTime + this.transitionDelay;
+      this.transitionColorR.setStartTime(time);
+      this.transitionColorG.setStartTime(time);
+      this.transitionColorB.setStartTime(time);
+      this.transitionDelay = 0;
+      this.transformType = C;
+    }
+    this.transitionColorR.transitionTo(color.red, duration, ease);
+    this.transitionColorG.transitionTo(color.green, duration, ease);
+    this.transitionColorB.transitionTo(color.blue, duration, ease);
+    return this;
+  }
   update(transform) {
   }
   updateTransform() {
@@ -17141,17 +17159,1603 @@ class DrawableTransition {
     this.transitionScaleY.update(time);
     this.transitionAlpha.update(time);
     this.transitionRotate.update(time);
+    this.transitionSkewX.update(time);
+    this.transitionSkewY.update(time);
+    this.transitionColorR.update(time);
+    this.transitionColorG.update(time);
+    this.transitionColorB.update(time);
+  }
+}
+const _Anchor = class _Anchor {
+};
+_Anchor.TopLeft = Axis.X_LEFT | Axis.Y_TOP;
+_Anchor.TopCenter = Axis.X_CENTER | Axis.Y_TOP;
+_Anchor.TopRight = Axis.X_RIGHT | Axis.Y_TOP;
+_Anchor.CenterLeft = Axis.X_LEFT | Axis.Y_CENTER;
+_Anchor.Center = Axis.X_CENTER | Axis.Y_CENTER;
+_Anchor.CenterRight = Axis.X_RIGHT | Axis.Y_CENTER;
+_Anchor.BottomLeft = Axis.X_LEFT | Axis.Y_BOTTOM;
+_Anchor.BottomCenter = Axis.X_CENTER | Axis.Y_BOTTOM;
+_Anchor.BottomRight = Axis.X_RIGHT | Axis.Y_BOTTOM;
+let Anchor = _Anchor;
+const ImageFormat = {
+  PNG: 1,
+  JPEG: 2
+};
+const _Texture = class _Texture {
+  constructor(gl, image = null, format = ImageFormat.PNG) {
+    this.gl = gl;
+    this.imageWidth = 0;
+    this.imageHeight = 0;
+    const texture = gl.createTexture();
+    if (!texture) {
+      throw new Error("create texture error");
+    }
+    this.rendererId = texture;
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      1,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      _Texture.blankData
+    );
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    if (image !== null) {
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      this.imageWidth = image.width;
+      this.imageHeight = image.height;
+      const glFormat = this.getFormat(format);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        glFormat,
+        image.width,
+        image.height,
+        0,
+        glFormat,
+        gl.UNSIGNED_BYTE,
+        image
+      );
+      gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+  }
+  texImage2D(image, format = ImageFormat.PNG) {
+    const gl = this.gl;
+    this.imageWidth = image.width;
+    this.imageHeight = image.height;
+    const glFormat = this.getFormat(format);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      glFormat,
+      image.width,
+      image.height,
+      0,
+      glFormat,
+      gl.UNSIGNED_BYTE,
+      image
+    );
+  }
+  getFormat(imageFormat = ImageFormat.PNG) {
+    if (imageFormat === ImageFormat.JPEG) {
+      return this.gl.RGB;
+    }
+    return this.gl.RGBA;
+  }
+  setTextureImage(image, format = ImageFormat.PNG) {
+    const gl = this.gl;
+    gl.bindTexture(gl.TEXTURE_2D, this.rendererId);
+    this.texImage2D(image);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+  setTextureVideo(video) {
+    const gl = this.gl;
+    gl.bindTexture(gl.TEXTURE_2D, this.rendererId);
+    this.imageWidth = video.width;
+    this.imageHeight = video.height;
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      video
+    );
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+  bind(slot = 0) {
+    const gl = this.gl;
+    gl.activeTexture(gl.TEXTURE0 + slot);
+    gl.bindTexture(gl.TEXTURE_2D, this.rendererId);
+  }
+  unbind() {
+    const gl = this.gl;
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+  dispose() {
+    this.gl.deleteTexture(this.rendererId);
+  }
+};
+_Texture.blankData = new Uint8Array([0, 0, 0, 0]);
+_Texture.NULL = Symbol();
+let Texture = _Texture;
+var Blend = /* @__PURE__ */ ((Blend2) => {
+  Blend2[Blend2["Normal"] = 0] = "Normal";
+  Blend2[Blend2["Additive"] = 1] = "Additive";
+  return Blend2;
+})(Blend || {});
+class TransformUtils2 {
+  /**
+   * Vector2 对应的矩阵 x Matrix3
+   * @param m
+   * @param v
+   */
+  static translateFromLeft(m, v) {
+    m.M11 += m.M31 * v.x;
+    m.M12 += m.M32 * v.x;
+    m.M13 += m.M33 * v.x;
+    m.M21 += m.M31 * v.y;
+    m.M22 += m.M32 * v.y;
+    m.M23 += m.M33 * v.y;
+  }
+  static rotateFromLeft(m, degree) {
+    const radian = degreeToRadian(degree);
+    const cos = Math.cos(radian), sin = Math.sin(radian);
+    const m11 = m.M11 * cos + -sin * m.M21;
+    const m12 = m.M12 * cos + -sin * m.M22;
+    const m13 = m.M13 * cos + -sin * m.M23;
+    const m21 = m.M11 * sin + m.M21 * cos;
+    const m22 = m.M12 * sin + m.M22 * cos;
+    const m23 = m.M13 * sin + m.M23 * cos;
+    m.M11 = m11;
+    m.M12 = m12;
+    m.M13 = m13;
+    m.M21 = m21;
+    m.M22 = m22;
+    m.M23 = m23;
+  }
+  /**
+   * Vector2 对应的矩阵 x Matrix3
+   * @param m
+   * @param s
+   */
+  static scaleFromLeft(m, s) {
+    m.M11 *= s.x;
+    m.M12 *= s.x;
+    m.M13 *= s.x;
+    m.M21 *= s.y;
+    m.M22 *= s.y;
+    m.M23 *= s.y;
+  }
+  /**
+   * Vector2 对应的矩阵 x Matrix3
+   * @param m
+   * @param s
+   */
+  static skewFromLeft(m, s) {
+    const m11 = m.M21 * s.x + m.M11;
+    const m12 = m.M22 * s.x + m.M12;
+    const m13 = m.M23 * s.x + m.M13;
+    const m21 = m.M11 * s.y + m.M21;
+    const m22 = m.M12 * s.y + m.M22;
+    const m23 = m.M13 * s.y + m.M23;
+    m.M11 = m11;
+    m.M12 = m12;
+    m.M13 = m13;
+    m.M21 = m21;
+    m.M22 = m22;
+    m.M23 = m23;
+  }
+  static applyTo(m, v, out, offset = 0) {
+    const x = v.x * m.M11 + v.y * m.M12 + m.M13;
+    const y = v.x * m.M21 + v.y * m.M22 + m.M23;
+    out[offset] = x;
+    out[offset + 1] = y;
+  }
+}
+class VertexBufferElement {
+  constructor(position, type, count, normalized) {
+    this.position = position;
+    this.type = type;
+    this.count = count;
+    this.normalized = normalized;
+  }
+  static getSizeOfType(gl, type) {
+    switch (type) {
+      case gl.FLOAT:
+        return 4;
+      case gl.UNSIGNED_INT:
+        return 4;
+      case gl.UNSIGNED_BYTE:
+        return 1;
+    }
+    return 0;
+  }
+}
+const _VertexBufferLayout = class _VertexBufferLayout {
+  constructor(gl) {
+    this.gl = gl;
+    this.elements = [];
+    this.stride = 0;
+  }
+  pushFloat(position, count) {
+    const gl = this.gl;
+    const element = new VertexBufferElement(position, gl.FLOAT, count, false);
+    this.elements.push(element);
+    this.stride += count * VertexBufferElement.getSizeOfType(gl, gl.FLOAT);
+  }
+  pushUByte(position, count) {
+    const gl = this.gl;
+    const element = new VertexBufferElement(position, gl.UNSIGNED_BYTE, count, true);
+    this.elements.push(element);
+    this.stride += count * VertexBufferElement.getSizeOfType(gl, gl.UNSIGNED_BYTE);
+  }
+  pushUInt(position, count) {
+    const gl = this.gl;
+    const element = new VertexBufferElement(position, gl.UNSIGNED_INT, count, false);
+    this.elements.push(element);
+    this.stride += count * VertexBufferElement.getSizeOfType(gl, gl.UNSIGNED_INT);
+  }
+};
+_VertexBufferLayout.NULL = Symbol();
+let VertexBufferLayout = _VertexBufferLayout;
+class VertexArray {
+  constructor(gl) {
+    this.gl = gl;
+    const va = gl.createVertexArray();
+    if (!va) {
+      throw new Error("create vertex array error");
+    }
+    this.rendererId = va;
+  }
+  addBuffer(layout) {
+    const gl = this.gl;
+    const elements = layout.elements;
+    let offset = 0;
+    for (let i = 0; i < elements.length; i++) {
+      const element = elements[i];
+      gl.enableVertexAttribArray(element.position);
+      gl.vertexAttribPointer(
+        element.position,
+        element.count,
+        element.type,
+        element.normalized,
+        layout.stride,
+        offset
+      );
+      offset += element.count * VertexBufferElement.getSizeOfType(gl, element.type);
+    }
+  }
+  bind() {
+    this.gl.bindVertexArray(this.rendererId);
+  }
+  unbind() {
+    this.gl.bindVertexArray(null);
+  }
+  dispose() {
+    this.gl.deleteVertexArray(this.rendererId);
+  }
+}
+class ShaderWrapper {
+  constructor(renderer2, shader, shaderAttributes) {
+    this.renderer = renderer2;
+    this.shader = shader;
+    this.shaderAttributes = shaderAttributes;
+    this.stride = 0;
+    shader.bind();
+    const gl = renderer2.gl;
+    this.layout = new VertexBufferLayout(gl);
+    this.vertexArray = new VertexArray(gl);
+    for (let i = 0; i < shaderAttributes.length; i++) {
+      const attr = shaderAttributes[i];
+      const position = shader.getAttributeLocation(attr.name);
+      if (attr.type == gl.FLOAT) {
+        this.layout.pushFloat(position, attr.count);
+      } else if (attr.type === gl.UNSIGNED_BYTE) {
+        this.layout.pushUByte(position, attr.count);
+      } else if (attr.type === gl.UNSIGNED_INT) {
+        this.layout.pushUInt(position, attr.count);
+      }
+      this.stride += attr.count;
+    }
+    shader.unbind();
+  }
+  bind() {
+    const renderer2 = this.renderer;
+    renderer2.bindShader(this.shader);
+    renderer2.bindVertexArray(this.vertexArray);
+  }
+  unbind() {
+    const renderer2 = this.renderer;
+    renderer2.unbindShader(this.shader);
+    renderer2.unbindVertexArray(this.vertexArray);
+  }
+  use() {
+    this.vertexArray.addBuffer(this.layout);
+  }
+  dispose() {
+    const renderer2 = this.renderer;
+    renderer2.unbindShader(this.shader);
+    renderer2.unbindVertexArray(this.vertexArray);
+    this.shader.dispose();
+    this.vertexArray.dispose();
+  }
+}
+const ATTR_POSITION = "a_position";
+const ATTR_COLOR = "a_color";
+const ATTR_TEXCOORD = "a_tex_coord";
+const ATTR_ALPHA = "a_alpha";
+const UNI_ORTH = "u_orth";
+const UNI_TRANSFORM = "u_transform";
+const UNI_SAMPLER = "u_sampler";
+const UNI_ALPHA = "u_alpha";
+const UNI_CIRCLE = "u_circle";
+const UNI_COLOR = "u_color";
+const UNI_RESOLUTION = "u_resolution";
+const _ShaderSource = class _ShaderSource {
+};
+_ShaderSource.Default = {
+  vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      attribute vec2 ${ATTR_TEXCOORD};
+      
+      varying vec2 v_texcoord;
+      
+      uniform mat4 ${UNI_ORTH};
+      void main() {
+          vec4 position = vec4(a_position, 0.0, 1.0) * ${UNI_ORTH};
+          gl_Position = position;
+          v_texcoord = ${ATTR_TEXCOORD};
+      }
+    `,
+  fragment: `
+      varying highp vec2 v_texcoord;
+    
+      uniform sampler2D ${UNI_SAMPLER};
+      uniform mediump vec4 ${UNI_COLOR};
+    
+      void main() {
+          mediump vec4 tex_color = texture2D(${UNI_SAMPLER}, v_texcoord);
+          mediump vec4 out_color = vec4(tex_color.rgb / tex_color.a, tex_color.a) * ${UNI_COLOR};
+          // out_color = out_color.rgba * ${UNI_COLOR}.rgba;
+          gl_FragColor = out_color;
+      }
+    `
+};
+_ShaderSource.StoryDefault = {
+  vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      attribute vec2 ${ATTR_TEXCOORD};
+      
+      varying vec2 v_texcoord;
+      
+      uniform mat4 ${UNI_ORTH};
+      uniform mat4 ${UNI_TRANSFORM};
+      void main() {
+          vec4 position = vec4(a_position, 0.0, 1.0) * ${UNI_TRANSFORM};
+          gl_Position = position * ${UNI_ORTH};
+          v_texcoord = ${ATTR_TEXCOORD};
+      }
+    `,
+  fragment: _ShaderSource.Default.fragment
+};
+_ShaderSource.RoundClip = {
+  fragment: `
+      varying mediump vec4 v_color;
+      uniform mediump vec3 u_circle;
+      uniform mediump vec2 u_resolution;
+      uniform mediump float u_light;
+      void main() {
+          mediump float minLength = min(u_resolution.x, u_resolution.y);
+          mediump vec2 coord = gl_FragCoord.xy / minLength;
+          coord = vec2(coord.x, 1.0 - coord.y);
+          mediump float dist = distance(u_circle.xy, coord);
+          if (dist < u_circle.z) {
+              lowp vec4 color = vec4(0.0);
+              color.rgb = min(v_color.rgb + u_light, 1.0);
+              color.a = v_color.a;
+              gl_FragColor = color;
+          } else {
+              discard;
+          }
+      }
+    `,
+  vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      attribute vec4 ${ATTR_COLOR};
+      
+      varying mediump vec4 v_color;
+      
+      uniform mat4 ${UNI_ORTH};
+      // uniform mat4 ${UNI_TRANSFORM};
+      void main() {
+          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0);
+          gl_Position = position * ${UNI_ORTH};
+          v_color = ${ATTR_COLOR};
+      }
+    `
+};
+_ShaderSource.Simple = {
+  vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      attribute vec4 ${ATTR_COLOR};
+      varying mediump vec4 v_color;
+      uniform mat4 ${UNI_ORTH};
+      uniform mat4 ${UNI_TRANSFORM};
+      void main() {
+          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
+          gl_Position = position * ${UNI_ORTH};
+          v_color = ${ATTR_COLOR};
+      }
+    `,
+  fragment: `
+      varying mediump vec4 v_color;
+      uniform mediump float ${UNI_ALPHA};
+      void main() {
+          mediump vec4 color = vec4(v_color);
+          color.a = color.a * ${UNI_ALPHA};
+          gl_FragColor = color;
+      }
+    `
+};
+_ShaderSource.White = {
+  vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      uniform mat4 ${UNI_ORTH};
+      uniform mat4 ${UNI_TRANSFORM};
+      void main() {
+          vec4 coord = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
+          gl_Position = coord * ${UNI_ORTH};
+      }
+    `,
+  fragment: `
+      uniform lowp float ${UNI_ALPHA};
+      void main() {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, ${UNI_ALPHA});
+      }
+    `
+};
+_ShaderSource.AlphaTexture = {
+  vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      attribute vec2 ${ATTR_TEXCOORD};
+      attribute float ${ATTR_ALPHA};
+  
+      varying mediump vec2 v_tex_coord;
+      varying mediump float v_alpha;
+      uniform mat4 ${UNI_ORTH};
+      // uniform mat4 ${UNI_TRANSFORM};
+      void main() {
+          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0);
+          gl_Position = position * ${UNI_ORTH};
+          v_tex_coord = ${ATTR_TEXCOORD};
+          v_alpha = ${ATTR_ALPHA};
+      }
+    `,
+  fragment: `
+      varying mediump float v_alpha;
+      varying mediump vec2 v_tex_coord;
+      uniform sampler2D ${UNI_SAMPLER};
+  
+      void main() {
+          mediump vec4 texelColor = texture2D(${UNI_SAMPLER}, v_tex_coord);
+          texelColor.a = texelColor.a * v_alpha;
+          gl_FragColor = texelColor;
+      }
+    `
+};
+_ShaderSource.RoundClipV2 = {
+  vertex: `
+      attribute vec2 ${ATTR_POSITION};
+      attribute vec4 ${ATTR_COLOR};
+      
+      varying mediump vec4 v_color;
+      
+      uniform mat4 ${UNI_ORTH};
+      uniform mat4 ${UNI_TRANSFORM};
+      void main() {
+          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
+          gl_Position = position * ${UNI_ORTH};
+          v_color = ${ATTR_COLOR};
+          v_texcoord = a_texcoord;
+      }
+    `,
+  fragment: `
+      varying mediump vec4 v_color;
+      
+      uniform mediump float u_light;
+      uniform highp vec2 u_resolution;
+      highp float radius = 0.5;
+      void main() {
+          highp float minLength = min(u_resolution.x, u_resolution.y);
+          highp vec2 resolutionCoord = u_resolution / minLength;
+          highp vec2 center = resolutionCoord / 2.0;
+          highp vec2 coord = gl_FragCoord.xy / minLength;
+          
+          highp float distanceToCenter = distance(coord, center);
+          
+          if (distanceToCenter <= radius) {
+              lowp vec4 color = vec4(0.0);
+              color.rgb = min(v_color.rgb + u_light, 1.0);
+              color.a = v_color.a;
+              gl_FragColor = color;
+          } else {
+              discard;
+          }
+      }
+    `
+};
+_ShaderSource.LegacyVisualizer = {
+  vertex: `
+      attribute vec2 a_vertexPosition;
+      attribute vec2 a_tex_coord;
+      attribute float a_sampler_flag;
+      
+      varying lowp float v_sampler_flag;
+      varying mediump vec2 v_tex_coord;
+      
+      uniform mat4 u_orth;
+      
+      void main() {
+          vec4 coord = vec4(a_vertexPosition, 0.0, 1.0);
+          v_sampler_flag = a_sampler_flag;
+          v_tex_coord = a_tex_coord;
+          gl_Position = coord * u_orth;
+      }
+    `,
+  fragment: `
+      uniform lowp float u_alpha;
+      uniform sampler2D u_sampler_4;
+      uniform sampler2D u_sampler_5;
+      
+      varying mediump vec2 v_tex_coord;
+      varying lowp float v_sampler_flag;
+      
+      void main() {
+          mediump vec4 texelColor = vec4(0.0);
+          if (v_sampler_flag > 0.5) {
+              texelColor = texture2D(u_sampler_4, v_tex_coord);
+          } else {
+              texelColor = texture2D(u_sampler_5, v_tex_coord);
+          }
+          
+          texelColor.a = texelColor.a * u_alpha;
+//          gl_FragColor = vec4(1.0, 1.0, 1.0, u_alpha);
+          gl_FragColor = texelColor;
+      }
+    `
+};
+let ShaderSource = _ShaderSource;
+const _Shader = class _Shader {
+  constructor(gl, vertexShader, fragmentShader) {
+    this.gl = gl;
+    this.uniformLocationCache = {};
+    this.attributeLocationCache = {};
+    this.rendererId = createShader(gl, vertexShader, fragmentShader);
+  }
+  bind() {
+    this.gl.useProgram(this.rendererId);
+  }
+  unbind() {
+    this.gl.useProgram(null);
+  }
+  dispose() {
+    this.gl.deleteProgram(this.rendererId);
+  }
+  setUniform1f(name, value) {
+    this.gl.uniform1f(this.getUniformLocation(name), value);
+  }
+  setUniform2fv(name, value) {
+    this.gl.uniform2fv(this.getUniformLocation(name), value);
+  }
+  setUniform3fv(name, value) {
+    this.gl.uniform3fv(this.getUniformLocation(name), value);
+  }
+  setUniform4fv(name, value) {
+    this.gl.uniform4fv(this.getUniformLocation(name), value);
+  }
+  setUniform1i(name, value) {
+    this.gl.uniform1i(this.getUniformLocation(name), value);
+  }
+  setUniform1iv(name, value) {
+    this.gl.uniform1iv(this.getUniformLocation(name), value);
+  }
+  setUniformMatrix4fv(name, value) {
+    this.gl.uniformMatrix4fv(this.getUniformLocation(name), false, value);
+  }
+  setUniformMatrix3fv(name, value) {
+    this.gl.uniformMatrix3fv(this.getUniformLocation(name), false, value);
+  }
+  getUniformLocation(name) {
+    const gl = this.gl;
+    if (name in this.uniformLocationCache) {
+      return this.uniformLocationCache[name];
+    }
+    const uniformLocation = gl.getUniformLocation(this.rendererId, name);
+    if (!uniformLocation) {
+      console.log("Warning: uniform", name, "does not exist!");
+    }
+    this.uniformLocationCache[name] = uniformLocation;
+    return uniformLocation;
+  }
+  getAttributeLocation(name) {
+    if (name in this.attributeLocationCache) {
+      return this.attributeLocationCache[name];
+    }
+    const location = this.gl.getAttribLocation(this.rendererId, name);
+    if (location === -1) {
+      console.log("Warning: attribute", name, "does not exist!");
+    }
+    this.attributeLocationCache[name] = location;
+    return location;
+  }
+};
+_Shader.NULL = Symbol();
+let Shader = _Shader;
+function createShader(gl, vertexSrc, fragmentSrc) {
+  const program = gl.createProgram();
+  if (!program) {
+    throw new Error("create program error");
+  }
+  const vertex = compileShader(gl, gl.VERTEX_SHADER, vertexSrc);
+  const fragment = compileShader(gl, gl.FRAGMENT_SHADER, fragmentSrc);
+  gl.attachShader(program, vertex);
+  gl.attachShader(program, fragment);
+  gl.linkProgram(program);
+  gl.validateProgram(program);
+  gl.deleteShader(vertex);
+  gl.deleteShader(fragment);
+  return program;
+}
+function compileShader(gl, type, source) {
+  const shader = gl.createShader(type);
+  if (!shader) {
+    throw new Error("create shader error");
+  }
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    console.log(
+      `Error compiling ${type === gl.VERTEX_SHADER ? "vertex" : "fragment"} shader:`
+    );
+    console.log(gl.getShaderInfoLog(shader));
+  }
+  return shader;
+}
+class DefaultShaderWrapper extends ShaderWrapper {
+  constructor(renderer2) {
+    const gl = renderer2.gl;
+    const shader = new Shader(gl, ShaderSource.Default.vertex, ShaderSource.Default.fragment);
+    super(renderer2, shader, [
+      { name: ATTR_POSITION, count: 2, type: gl.FLOAT },
+      { name: ATTR_TEXCOORD, count: 2, type: gl.FLOAT }
+    ]);
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this.colorArray = new Float32Array(4);
+    this._sampler2D = Number.NaN;
+  }
+  set orth(mat4) {
+    if (!ArrayUtils.equals(this._orth, mat4)) {
+      this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
+      this._orth = mat4;
+    }
+  }
+  set color(color) {
+    const arr = this.colorArray;
+    arr[0] = color.red;
+    arr[1] = color.green;
+    arr[2] = color.blue;
+    arr[3] = color.alpha;
+    this.shader.setUniform4fv(UNI_COLOR, arr);
+  }
+  set sampler2D(sampler) {
+    if (sampler !== this._sampler2D) {
+      this.shader.setUniform1i(UNI_SAMPLER, sampler);
+      this._sampler2D = sampler;
+    }
+  }
+  unbind() {
+    super.unbind();
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this._sampler2D = Number.NaN;
+  }
+}
+class SimpleShaderWrapper extends ShaderWrapper {
+  constructor(renderer2) {
+    const gl = renderer2.gl;
+    const shader = new Shader(gl, ShaderSource.Simple.vertex, ShaderSource.Simple.fragment);
+    super(renderer2, shader, [
+      { name: ATTR_POSITION, count: 2, type: gl.FLOAT },
+      { name: ATTR_COLOR, count: 4, type: gl.FLOAT }
+    ]);
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this._transform = ArrayUtils.emptyFloat32Array;
+    this._alpha = Number.NaN;
+  }
+  set orth(mat4) {
+    if (!ArrayUtils.equals(this._orth, mat4)) {
+      this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
+      this._orth = mat4;
+    }
+  }
+  set transform(mat4) {
+    if (!ArrayUtils.equals(this._transform, mat4)) {
+      this.shader.setUniformMatrix4fv(UNI_TRANSFORM, mat4);
+      this._transform = mat4;
+    }
+  }
+  set alpha(a) {
+    if (this._alpha !== a) {
+      this.shader.setUniform1f(UNI_ALPHA, a);
+      this._alpha = a;
+    }
+  }
+  unbind() {
+    super.unbind();
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this._transform = ArrayUtils.emptyFloat32Array;
+    this._alpha = Number.NaN;
+  }
+}
+class RoundClipShaderWrapper extends ShaderWrapper {
+  constructor(renderer2) {
+    const gl = renderer2.gl;
+    const shader = new Shader(gl, ShaderSource.RoundClip.vertex, ShaderSource.RoundClip.fragment);
+    super(renderer2, shader, [
+      { name: ATTR_POSITION, count: 2, type: gl.FLOAT },
+      { name: ATTR_COLOR, count: 4, type: gl.FLOAT }
+    ]);
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this._light = Number.NaN;
+    this._circle = ArrayUtils.emptyFloat32Array;
+    this._resolution = new Float32Array(2);
+  }
+  set orth(mat4) {
+    if (!ArrayUtils.equals(this._orth, mat4)) {
+      this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
+      this._orth = mat4;
+    }
+  }
+  set light(light) {
+    if (this._light !== light) {
+      this.shader.setUniform1f("u_light", light);
+      this._light = light;
+    }
+  }
+  /**
+   *
+   * @param circle 数据分布 [x, y, radius]
+   */
+  set circle(circle) {
+    if (!ArrayUtils.equals(this._circle, circle)) {
+      this.shader.setUniform3fv(UNI_CIRCLE, circle);
+      this._circle = circle;
+    }
+  }
+  set resolution(r) {
+    const res = this._resolution;
+    if (res[0] !== r.x || res[1] !== r.y) {
+      res[0] = r.x;
+      res[1] = r.y;
+      this.shader.setUniform2fv(UNI_RESOLUTION, res);
+    }
+  }
+  unbind() {
+    super.unbind();
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this._circle = ArrayUtils.emptyFloat32Array;
+    this._light = Number.NaN;
+    this._resolution[0] = 0;
+    this._resolution[1] = 0;
+  }
+}
+class WhiteShaderWrapper extends ShaderWrapper {
+  constructor(renderer2) {
+    const gl = renderer2.gl;
+    const shader = new Shader(gl, ShaderSource.White.vertex, ShaderSource.White.fragment);
+    super(renderer2, shader, [
+      { name: ATTR_POSITION, count: 2, type: gl.FLOAT }
+    ]);
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this._alpha = Number.NaN;
+  }
+  set orth(mat4) {
+    if (!ArrayUtils.equals(this._orth, mat4)) {
+      this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
+      this._orth = mat4;
+    }
+  }
+  set alpha(a) {
+    if (this._alpha !== a) {
+      this.shader.setUniform1f(UNI_ALPHA, a);
+      this._alpha = a;
+    }
+  }
+  unbind() {
+    super.unbind();
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this._alpha = Number.NaN;
+  }
+}
+class AlphaTextureShaderWrapper extends ShaderWrapper {
+  constructor(renderer2) {
+    const gl = renderer2.gl;
+    const shader = new Shader(gl, ShaderSource.AlphaTexture.vertex, ShaderSource.AlphaTexture.fragment);
+    super(renderer2, shader, [
+      { name: ATTR_POSITION, count: 2, type: gl.FLOAT },
+      { name: ATTR_TEXCOORD, count: 2, type: gl.FLOAT },
+      { name: ATTR_ALPHA, count: 1, type: gl.FLOAT }
+    ]);
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this._sampler2D = Number.NaN;
+  }
+  set orth(mat4) {
+    if (!ArrayUtils.equals(this._orth, mat4)) {
+      this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
+      this._orth = mat4;
+    }
+  }
+  set sampler2D(sampler) {
+    if (sampler !== this._sampler2D) {
+      this.shader.setUniform1i(UNI_SAMPLER, sampler);
+      this._sampler2D = sampler;
+    }
+  }
+  unbind() {
+    super.unbind();
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this._sampler2D = Number.NaN;
+  }
+}
+class LegacyVisualizerShaderWrapper extends ShaderWrapper {
+  constructor(renderer2) {
+    const gl = renderer2.gl;
+    const shader = new Shader(gl, ShaderSource.LegacyVisualizer.vertex, ShaderSource.LegacyVisualizer.fragment);
+    super(renderer2, shader, [
+      { name: "a_vertexPosition", count: 2, type: gl.FLOAT },
+      { name: "a_tex_coord", count: 2, type: gl.FLOAT },
+      { name: "a_sampler_flag", count: 1, type: gl.FLOAT }
+    ]);
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this._alpha = Number.NaN;
+    this._sampler2D1 = Number.NaN;
+    this._sampler2D2 = Number.NaN;
+  }
+  set orth(mat4) {
+    if (!ArrayUtils.equals(this._orth, mat4)) {
+      this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
+      this._orth = mat4;
+    }
+  }
+  set alpha(a) {
+    if (this._alpha !== a) {
+      this.shader.setUniform1f("u_alpha", a);
+      this._alpha = a;
+    }
+  }
+  set sampler2D1(sampler) {
+    if (this._sampler2D1 !== sampler) {
+      this.shader.setUniform1i("u_sampler_4", sampler);
+      this._sampler2D1 = sampler;
+    }
+  }
+  set sampler2D2(sampler) {
+    if (this._sampler2D2 !== sampler) {
+      this.shader.setUniform1i("u_sampler_5", sampler);
+      this._sampler2D2 = sampler;
+    }
+  }
+  unbind() {
+    super.unbind();
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this._alpha = Number.NaN;
+    this._sampler2D1 = -1;
+    this._sampler2D2 = -1;
+  }
+}
+class StoryShaderWrapper extends ShaderWrapper {
+  constructor(renderer2) {
+    const gl = renderer2.gl;
+    const shader = new Shader(gl, ShaderSource.StoryDefault.vertex, ShaderSource.StoryDefault.fragment);
+    super(renderer2, shader, [
+      { name: ATTR_POSITION, count: 2, type: gl.FLOAT },
+      { name: ATTR_TEXCOORD, count: 2, type: gl.FLOAT }
+    ]);
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this._transform = ArrayUtils.emptyFloat32Array;
+    this.colorArray = new Float32Array(4);
+    this._sampler2D = Number.NaN;
+  }
+  set orth(mat4) {
+    if (!ArrayUtils.equals(this._orth, mat4)) {
+      this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
+      this._orth = mat4;
+    }
+  }
+  set transform(mat4) {
+    if (!ArrayUtils.equals(this._transform, mat4)) {
+      this.shader.setUniformMatrix4fv(UNI_TRANSFORM, mat4);
+      this._transform = mat4;
+    }
+  }
+  set color(color) {
+    const arr = this.colorArray;
+    arr[0] = color.red;
+    arr[1] = color.green;
+    arr[2] = color.blue;
+    arr[3] = color.alpha;
+    this.shader.setUniform4fv(UNI_COLOR, arr);
+  }
+  set sampler2D(sampler) {
+    if (sampler !== this._sampler2D) {
+      this.shader.setUniform1i(UNI_SAMPLER, sampler);
+      this._sampler2D = sampler;
+    }
+  }
+  unbind() {
+    super.unbind();
+    this._orth = ArrayUtils.emptyFloat32Array;
+    this._transform = ArrayUtils.emptyFloat32Array;
+    this._sampler2D = Number.NaN;
+  }
+}
+class Shaders {
+  static init(renderer2) {
+    this.Default = new DefaultShaderWrapper(renderer2);
+    this.RoundClip = new RoundClipShaderWrapper(renderer2);
+    this.Simple = new SimpleShaderWrapper(renderer2);
+    this.White = new WhiteShaderWrapper(renderer2);
+    this.AlphaTexture = new AlphaTextureShaderWrapper(renderer2);
+    this.LegacyVisualizer = new LegacyVisualizerShaderWrapper(renderer2);
+    this.StoryDefault = new StoryShaderWrapper(renderer2);
+  }
+  static dispose() {
+    this.Default.dispose();
+    this.Simple.dispose();
+    this.RoundClip.dispose();
+    this.White.dispose();
+    this.AlphaTexture.dispose();
+    this.LegacyVisualizer.dispose();
+    this.StoryDefault.dispose();
+  }
+}
+class VertexBuffer {
+  constructor(gl, data = null, usage = gl.STATIC_DRAW) {
+    this.gl = gl;
+    this.usage = usage;
+    const buffer = gl.createBuffer();
+    if (!buffer) {
+      throw new Error("create vertex buffer error");
+    }
+    this.rendererId = buffer;
+    if (data !== null) {
+      this.bind();
+      gl.bufferData(gl.ARRAY_BUFFER, data, usage);
+      this.unbind();
+    }
+  }
+  setBufferData(data) {
+    const gl = this.gl;
+    gl.bufferData(gl.ARRAY_BUFFER, data, this.usage);
+  }
+  setBufferSubData(data, byteOffset) {
+    this.gl.bufferSubData(this.gl.ARRAY_BUFFER, byteOffset, data);
+  }
+  bind() {
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rendererId);
+  }
+  unbind() {
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+  }
+  dispose() {
+    this.gl.deleteBuffer(this.rendererId);
+  }
+}
+class BasicVertexBuffer {
+  /**
+   *
+   * @param renderer
+   * @param verticesCount 顶点数量
+   * @param stride 每个顶点的的元素数量
+   * @param usage
+   */
+  constructor(renderer2, verticesCount, stride, usage) {
+    this.renderer = renderer2;
+    this.stride = stride;
+    this.usage = usage;
+    this.isInit = false;
+    this.buffer = null;
+    this.isIndexBufferSet = false;
+    this.maxVerticesToEquals = 24;
+    this.size = verticesCount;
+    this.bufferData = new Float32Array(verticesCount * this.stride);
+  }
+  get elementCount() {
+    return this.size * this.stride;
+  }
+  setVertex(data) {
+    var _a, _b;
+    if (data.length <= this.maxVerticesToEquals) {
+      const bufferData = this.bufferData;
+      if (ArrayUtils.almostEquals(bufferData, data)) {
+        return;
+      }
+      ArrayUtils.copyTo(data, 0, data.length, bufferData, 0);
+      (_a = this.buffer) == null ? void 0 : _a.setBufferData(bufferData);
+    } else {
+      (_b = this.buffer) == null ? void 0 : _b.setBufferData(data);
+    }
+  }
+  init() {
+    this.buffer = new VertexBuffer(this.renderer.gl, null, this.usage);
+    this.renderer.bindVertexBuffer(this.buffer);
+    this.buffer.setBufferData(this.bufferData);
+    this.renderer.unbindVertexBuffer(this.buffer);
+  }
+  bind() {
+    if (!this.isInit) {
+      this.init();
+      this.isInit = true;
+    }
+    if (this.buffer) {
+      this.renderer.bindVertexBuffer(this.buffer);
+    }
+  }
+  unbind() {
+    if (this.buffer) {
+      this.renderer.unbindVertexBuffer(this.buffer);
+    }
+  }
+  toElements(vertices) {
+    return ~~vertices;
+  }
+  toElementIndex(vertexIndex) {
+    return ~~vertexIndex;
+  }
+  draw() {
+    const gl = this.renderer.gl;
+    if (this.isIndexBufferSet) {
+      gl.drawElements(
+        gl.TRIANGLES,
+        this.toElements(this.size),
+        gl.UNSIGNED_INT,
+        0
+      );
+    } else {
+      gl.drawArrays(
+        gl.TRIANGLES,
+        0,
+        this.toElements(this.size)
+      );
+    }
+  }
+  dispose() {
+    var _a;
+    if (this.buffer)
+      this.renderer.unbindVertexBuffer(this.buffer);
+    (_a = this.buffer) == null ? void 0 : _a.dispose();
+  }
+}
+class IndexBuffer {
+  constructor(gl, data = null, usage = gl.STATIC_DRAW) {
+    this.gl = gl;
+    this.usage = usage;
+    const buffer = gl.createBuffer();
+    if (!buffer) {
+      throw new Error("create index buffer error");
+    }
+    this.rendererId = buffer;
+    this.bind();
+    if (data !== null) {
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, usage);
+    }
+    this.unbind();
+  }
+  setIndexBuffer(data) {
+    const gl = this.gl;
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, this.usage);
+  }
+  bind() {
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.rendererId);
+  }
+  unbind() {
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
+  }
+  dispose() {
+    this.gl.deleteBuffer(this.rendererId);
+  }
+}
+class QuadIndexBuffer {
+  constructor() {
+    this.buffer = null;
+    this.renderer = null;
+    this.maxAmountIndices = 0;
+    this.isDisposed = false;
+  }
+  init(renderer2) {
+    if (!this.buffer) {
+      this.buffer = new IndexBuffer(renderer2.gl);
+    }
+    this.renderer = renderer2;
+  }
+  tryExtendTo(count) {
+    if (!this.buffer) {
+      throw new Error("index buffer is null");
+    }
+    const maxAmountIndices = this.maxAmountIndices;
+    if (count > maxAmountIndices) {
+      const indices = new Uint32Array(count);
+      for (let i = 0, j = 0; j < count; i += 4, j += 6) {
+        indices[j] = i;
+        indices[j + 1] = i + 1;
+        indices[j + 2] = i + 3;
+        indices[j + 3] = i + 3;
+        indices[j + 4] = i + 2;
+        indices[j + 5] = i;
+      }
+      this.buffer.setIndexBuffer(indices);
+      this.maxAmountIndices = count;
+    }
+  }
+  bind() {
+    if (this.renderer && this.buffer) {
+      this.renderer.bindIndexBuffer(this.buffer);
+    }
+  }
+  unbind() {
+    if (this.renderer && this.buffer) {
+      this.renderer.unbindIndexBuffer(this.buffer);
+    }
+  }
+  dispose() {
+    var _a;
+    if (!this.isDisposed) {
+      this.unbind();
+      (_a = this.buffer) == null ? void 0 : _a.dispose();
+      this.renderer = null;
+      this.isDisposed = true;
+    }
+  }
+}
+const QuadIndexBuffer$1 = new QuadIndexBuffer();
+class QuadBuffer extends BasicVertexBuffer {
+  constructor(renderer2, quadCount, usage = renderer2.gl.STATIC_DRAW, stride = 4) {
+    super(renderer2, quadCount * 4, stride, usage);
+    QuadIndexBuffer$1.init(renderer2);
+    this.amountIndices = quadCount * 6;
+    console.log("amountIndices", this.amountIndices);
+    this.isIndexBufferSet = true;
+  }
+  init() {
+    super.init();
+    QuadIndexBuffer$1.bind();
+    QuadIndexBuffer$1.tryExtendTo(this.amountIndices);
+    QuadIndexBuffer$1.unbind();
+  }
+  bind() {
+    super.bind();
+    QuadIndexBuffer$1.bind();
+  }
+  unbind() {
+    super.unbind();
+    QuadIndexBuffer$1.unbind();
+  }
+  toElements(vertices) {
+    return ~~(3 * vertices / 2);
+  }
+  toElementIndex(vertexIndex) {
+    return ~~(3 * vertexIndex / 2);
+  }
+}
+class Buffers {
+  static init(renderer2) {
+    this.SingleQuad = new QuadBuffer(renderer2, 1, renderer2.gl.STREAM_DRAW);
+  }
+  static dispose() {
+    this.SingleQuad.dispose();
+  }
+}
+const _DrawNode = class _DrawNode {
+  constructor(source, matrix = Matrix3.newIdentify()) {
+    this.source = source;
+    this.matrix = matrix;
+    this.blend = Blend.Normal;
+    this.color = Color.White.copy();
+    this.texture = null;
+    this.bufferData = ArrayUtils.emptyFloat32Array;
+    this.one = Vector2.newOne();
+    this.childrenNodes = [];
+    this.vertexBuffer = Buffers.SingleQuad;
+    this.shader = Shaders.Default;
+    this.apply();
+  }
+  /**
+   * 如果中途更改了 vertexBuffer 或 Shader，需要调用此方法
+   */
+  apply() {
+    this.bufferData = new Float32Array(this.vertexBuffer.elementCount);
+  }
+  addDrawNodes(...nodes) {
+    this.childrenNodes.push(...nodes);
+  }
+  applyTransform(translate, rotate, scale, skew, origin) {
+    const m = this.matrix;
+    if (!origin.isZero()) {
+      TransformUtils2.translateFromLeft(m, origin.negative());
+    }
+    if (!translate.isZero()) {
+      TransformUtils2.translateFromLeft(m, translate);
+    }
+    if (rotate !== 0) {
+      TransformUtils2.rotateFromLeft(m, rotate);
+    }
+    if (!scale.equals(this.one)) {
+      TransformUtils2.scaleFromLeft(m, scale);
+    }
+    if (!skew.isZero()) {
+      TransformUtils2.skewFromLeft(m, skew);
+    }
+    if (!origin.isZero()) {
+      TransformUtils2.translateFromLeft(m, origin);
+    }
+  }
+  /**
+   * 绘制一个四边形
+   * @param topLeft
+   * @param topRight
+   * @param bottomLeft
+   * @param bottomRight
+   * @param color
+   * @param index
+   */
+  drawQuad(topLeft, topRight, bottomLeft, bottomRight, color, index = 0) {
+    const matrix = this.matrix, data = this.bufferData, stride = this.shader.stride, positionIndex = _DrawNode.POSITION_INDEX, startIndex = index * stride * _DrawNode.VERTEX_PER_QUAD;
+    TransformUtils2.applyTo(matrix, topLeft, data, startIndex + positionIndex);
+    TransformUtils2.applyTo(matrix, topRight, data, startIndex + stride + positionIndex);
+    TransformUtils2.applyTo(matrix, bottomLeft, data, startIndex + stride * 2 + positionIndex);
+    TransformUtils2.applyTo(matrix, bottomRight, data, startIndex + stride * 3 + positionIndex);
+    if (color) {
+      const colorIndex = _DrawNode.COLOR_INDEX;
+      data[startIndex + colorIndex] = color.red;
+      data[startIndex + colorIndex + 1] = color.green;
+      data[startIndex + colorIndex + 2] = color.blue;
+      data[startIndex + colorIndex + 3] = color.alpha;
+      data[startIndex + stride + colorIndex] = color.red;
+      data[startIndex + stride + colorIndex + 1] = color.green;
+      data[startIndex + stride + colorIndex + 2] = color.blue;
+      data[startIndex + stride + colorIndex + 3] = color.alpha;
+      data[startIndex + stride * 2 + colorIndex] = color.red;
+      data[startIndex + stride * 2 + colorIndex + 1] = color.green;
+      data[startIndex + stride * 2 + colorIndex + 2] = color.blue;
+      data[startIndex + stride * 2 + colorIndex + 3] = color.alpha;
+      data[startIndex + stride * 3 + colorIndex] = color.red;
+      data[startIndex + stride * 3 + colorIndex + 1] = color.green;
+      data[startIndex + stride * 3 + colorIndex + 2] = color.blue;
+      data[startIndex + stride * 3 + colorIndex + 3] = color.alpha;
+    }
+  }
+  /**
+   * 绘制一个矩形
+   * @param topLeft
+   * @param bottomRight
+   * @param color
+   * @param index
+   */
+  drawRect(topLeft, bottomRight, color, index = 0) {
+    this.drawQuad(
+      topLeft,
+      Vector(bottomRight.x, topLeft.y),
+      Vector(topLeft.x, bottomRight.y),
+      bottomRight,
+      color,
+      index
+    );
+  }
+  /**
+   * 绘制纹理
+   * @param texture
+   * @param topLeft
+   * @param bottomRight
+   * @param index
+   */
+  drawTexture(texture, topLeft = Vector2.zero, bottomRight = Vector2.one, index = 0) {
+    const data = this.bufferData;
+    const stride = this.shader.stride;
+    const textureIndex = _DrawNode.TEXTURE_INDEX;
+    const startIndex = index * stride * _DrawNode.VERTEX_PER_QUAD;
+    data[startIndex + textureIndex] = topLeft.x;
+    data[startIndex + textureIndex + 1] = topLeft.y;
+    data[startIndex + stride + textureIndex] = bottomRight.x;
+    data[startIndex + stride + textureIndex + 1] = topLeft.y;
+    data[startIndex + stride * 2 + textureIndex] = topLeft.x;
+    data[startIndex + stride * 2 + textureIndex + 1] = bottomRight.y;
+    data[startIndex + stride * 3 + textureIndex] = bottomRight.x;
+    data[startIndex + stride * 3 + textureIndex + 1] = bottomRight.y;
+    if (texture instanceof Texture) {
+      this.texture = texture;
+    } else {
+      this.texture = texture.texture;
+    }
+  }
+  drawTriangle(a1, a2, a3, color, index = 0) {
+    const matrix = this.matrix, data = this.bufferData, positionIndex = _DrawNode.POSITION_INDEX, stride = this.shader.stride, startIndex = index * stride * _DrawNode.VERTEX_PER_TRIANGLE;
+    TransformUtils2.applyTo(matrix, a1, data, startIndex + positionIndex);
+    TransformUtils2.applyTo(matrix, a2, data, startIndex + stride + positionIndex);
+    TransformUtils2.applyTo(matrix, a3, data, startIndex + stride * 2 + positionIndex);
+    if (color) {
+      const colorIndex = _DrawNode.COLOR_INDEX;
+      data[startIndex + colorIndex] = color.red;
+      data[startIndex + colorIndex + 1] = color.green;
+      data[startIndex + colorIndex + 2] = color.blue;
+      data[startIndex + colorIndex + 3] = color.alpha;
+      data[startIndex + stride + colorIndex] = color.red;
+      data[startIndex + stride + colorIndex + 1] = color.green;
+      data[startIndex + stride + colorIndex + 2] = color.blue;
+      data[startIndex + stride + colorIndex + 3] = color.alpha;
+      data[startIndex + stride * 2 + colorIndex] = color.red;
+      data[startIndex + stride * 2 + colorIndex + 1] = color.green;
+      data[startIndex + stride * 2 + colorIndex + 2] = color.blue;
+      data[startIndex + stride * 2 + colorIndex + 3] = color.alpha;
+    }
+  }
+  /**
+   * 向 buffer 顶点填充一个顶点属性值
+   * @param value
+   * @param elementSize 如绘制一个三角形，则为 3，若四边形，则为 4
+   * @param offsetOfStride 一个顶点数据中，该值的位置
+   * @param index
+   */
+  drawOne(value, elementSize, offsetOfStride = 4, index) {
+    const stride = this.shader.stride;
+    const startIndex = index * stride * elementSize;
+    const data = this.bufferData;
+    for (let i = 0; i < elementSize; i++) {
+      data[startIndex + offsetOfStride + stride * i] = value;
+    }
+  }
+  draw(renderer2) {
+    if (!this.source.isPresent) {
+      return;
+    }
+    this.source.onDraw(this, renderer2);
+    this.shader.bind();
+    if (this.texture)
+      renderer2.bindTexture(this.texture);
+    this.vertexBuffer.bind();
+    const data = this.bufferData;
+    this.vertexBuffer.setVertex(
+      data instanceof Float32Array ? data : new Float32Array(data)
+    );
+    renderer2.setBlend(this.blend);
+    this.source.beforeCommit(this);
+    this.shader.use();
+    this.vertexBuffer.draw();
+    this.shader.unbind();
+    this.vertexBuffer.unbind();
+    if (this.texture)
+      renderer2.unbindTexture(this.texture);
+  }
+};
+_DrawNode.POSITION_INDEX = 0;
+_DrawNode.COLOR_INDEX = 2;
+_DrawNode.TEXTURE_INDEX = 2;
+_DrawNode.VERTEX_PER_QUAD = 4;
+_DrawNode.VERTEX_PER_TRIANGLE = 3;
+let DrawNode = _DrawNode;
+const _DrawableRecorder = class _DrawableRecorder {
+  static record(drawable) {
+    this.drawables.push(drawable);
+  }
+  static remove(drawable) {
+    const index = this.drawables.indexOf(drawable);
+    this.drawables.splice(index, 1);
+  }
+  static getIndex(drawable) {
+    return this.drawables.indexOf(drawable);
+  }
+};
+_DrawableRecorder.drawables = [];
+let DrawableRecorder = _DrawableRecorder;
+class DrawableMouseEvent {
+  constructor(source) {
+    this.source = source;
+    this.downPosition = Vector2.newZero();
+    this.isClickDown = false;
+    this.isHovered = false;
+    this.isDragged = false;
+    this.event = { x: 0, y: 9, viewPosition: Vector2.newZero(), which: 0 };
+    this.onMouseDown = null;
+    this.onMouseMove = null;
+    this.onMouseUp = null;
+    this.onClick = null;
+    this.onHover = null;
+    this.onHoverLost = null;
+    this.onDrag = null;
+    this.onDragLost = null;
+    MouseEventRecorder.record(this);
+  }
+  inBound(position) {
+    const source = this.source;
+    const drawTopLeft = source.drawTopLeft;
+    const drawBottomRight = source.drawBottomRight;
+    const { x, y } = position;
+    return x > drawTopLeft.x && x <= drawBottomRight.x && y > drawTopLeft.y && y <= drawBottomRight.y;
+  }
+  get isAvailable() {
+    return this.source.isVisible;
+  }
+  get isPresent() {
+    return this.source.isPresent;
+  }
+  hasEvent(source, eventName) {
+    return eventName in source && typeof source[eventName] === "function";
+  }
+  mouseDown(which, position) {
+    if (this.isAvailable && this.inBound(position) && this.isPresent) {
+      this.downPosition.setFrom(position);
+      this.isClickDown = true;
+      this.triggerMouseDown(which, position);
+    }
+  }
+  mouseUp(which, position) {
+    if (this.isAvailable && this.inBound(position) && this.isPresent) {
+      this.triggerMouseUp(which, position);
+      if (!this.downPosition.isZero() && this.isClickDown) {
+        this.triggerClick(which, position);
+        this.downPosition.set(0, 0);
+        this.isClickDown = false;
+      }
+    }
+    this.dragLost(which, position);
+  }
+  mouseMove(which, position) {
+    if (this.isAvailable && this.inBound(position) && this.isPresent) {
+      this.triggerMouseMove(which, position);
+      this.hover(which, position);
+      if (MouseState.hasKeyDown()) {
+        this.drag(MouseState.which, position);
+      }
+      return;
+    }
+    if (this.isDragged) {
+      this.drag(MouseState.which, position);
+    }
+    this.hoverLost(which, position);
+  }
+  hover(which, position) {
+    if (!this.isHovered) {
+      this.isHovered = true;
+      this.triggerHover(which, position);
+    }
+  }
+  hoverLost(which, position) {
+    if (this.isAvailable && this.isHovered && !this.inBound(position) && this.isPresent) {
+      this.isHovered = false;
+      this.triggerHoverLost(which, position);
+    }
+  }
+  drag(which, position) {
+    if (this.isAvailable && this.isPresent && this.inBound(position)) {
+      this.isDragged = true;
+      this.triggerDrag(which, position);
+    }
+  }
+  dragLost(which, position) {
+    if (this.isAvailable && this.isDragged) {
+      this.isDragged = false;
+      this.triggerDragLost(which, position);
+    }
+  }
+  triggerMouseDown(which, position) {
+    var _a;
+    const event = this.event;
+    event.viewPosition = position;
+    event.which = which;
+    if (this.hasEvent(this.source, "onMouseDown")) {
+      this.source.onMouseDown();
+    }
+    return !!((_a = this.onMouseDown) == null ? void 0 : _a.call(this, event));
+  }
+  triggerMouseMove(which, position) {
+    var _a;
+    const event = this.event;
+    event.viewPosition = position;
+    event.which = which;
+    if (this.hasEvent(this.source, "onMouseMove")) {
+      this.source.onMouseMove();
+    }
+    return !!((_a = this.onMouseMove) == null ? void 0 : _a.call(this, event));
+  }
+  triggerMouseUp(which, position) {
+    var _a;
+    const event = this.event;
+    event.viewPosition = position;
+    event.which = which;
+    if (this.hasEvent(this.source, "onMouseUp")) {
+      this.source.onMouseUp();
+    }
+    return !!((_a = this.onMouseUp) == null ? void 0 : _a.call(this, event));
+  }
+  triggerClick(which, position) {
+    var _a;
+    const event = this.event;
+    event.viewPosition = position;
+    event.which = which;
+    if (this.hasEvent(this.source, "onClick")) {
+      this.source.onClick();
+    }
+    return !!((_a = this.onClick) == null ? void 0 : _a.call(this, event));
+  }
+  triggerHover(which, position) {
+    var _a;
+    const event = this.event;
+    event.viewPosition = position;
+    event.which = which;
+    if (this.hasEvent(this.source, "onHover")) {
+      this.source.onHover();
+    }
+    return !!((_a = this.onHover) == null ? void 0 : _a.call(this, event));
+  }
+  triggerHoverLost(which, position) {
+    var _a;
+    const event = this.event;
+    event.viewPosition = position;
+    event.which = which;
+    if (this.hasEvent(this.source, "onHoverLost")) {
+      this.source.onHoverLost();
+    }
+    return !!((_a = this.onHoverLost) == null ? void 0 : _a.call(this, event));
+  }
+  triggerDrag(which, position) {
+    var _a;
+    const event = this.event;
+    event.viewPosition = position;
+    event.which = which;
+    if (this.hasEvent(this.source, "onDrag")) {
+      this.source.onDrag();
+    }
+    return !!((_a = this.onDrag) == null ? void 0 : _a.call(this, event));
+  }
+  triggerDragLost(which, position) {
+    var _a;
+    const event = this.event;
+    event.viewPosition = position;
+    event.which = which;
+    if (this.hasEvent(this.source, "onDragLost")) {
+      this.source.onDragLost();
+    }
+    return !!((_a = this.onDragLost) == null ? void 0 : _a.call(this, event));
+  }
+  dispose() {
+    this.onMouseDown = null;
+    this.onMouseMove = null;
+    this.onMouseUp = null;
+    this.onClick = null;
+    this.onHover = null;
+    this.onHoverLost = null;
+    this.onDrag = null;
+    this.onDragLost = null;
+    MouseEventRecorder.remove(this);
   }
 }
 class Drawable {
-  constructor(gl, config) {
-    this.gl = gl;
+  constructor(config) {
     this.config = config;
-    this.layoutTransform = new Transform();
     this.selfTransform = new Transform();
     this.appliedTransform = new Transform();
     this.size = new Vector2();
     this.position = new Vector2();
+    this.drawTopLeft = new Vector2();
+    this.drawBottomRight = new Vector2();
     this.anchor = Axis.X_CENTER | Axis.Y_CENTER;
     this.parent = null;
     this.isAvailable = false;
@@ -17175,12 +18779,15 @@ class Drawable {
     ]);
     this.isVisible = true;
     this.disposeList = [];
+    this.origin = Vector();
+    this.drawNode = new DrawNode(this);
     this.transition = new DrawableTransition(this.selfTransform);
-    this.isHovered = false;
-    this.isDragged = false;
+    this.isPresent = true;
+    this.mouseEvent = null;
     this.isAvailable = true;
     this.updateBounding();
     provide(this.constructor.name, this);
+    DrawableRecorder.record(this);
   }
   addDisposable(init) {
     this.disposeList.push(init() || void 0);
@@ -17192,80 +18799,82 @@ class Drawable {
     return this.size.y;
   }
   setParent(parent) {
+    parent.drawNode.addDrawNodes(this.drawNode);
     this.parent = parent;
-  }
-  load() {
     this.updateBounding();
-    this.onLoad();
   }
-  /**
-   * this method will be executed while constructor after execute
-   */
-  onLoad() {
+  load(renderer2) {
+    this.updateBounding();
+    this.onLoad(renderer2);
+  }
+  onLoad(renderer2) {
   }
   updateBounding() {
-    let [width, height] = this.config.size;
-    if (width === "fill-parent") {
-      width = Coordinate$1.width;
-    }
-    if (height === "fill-parent") {
-      height = Coordinate$1.height;
-    }
-    let tx = 0, ty = 0, left = -width / 2, top = height / 2;
-    const origin = isUndef(this.config.origin) ? Axis.X_CENTER | Axis.Y_CENTER : this.config.origin;
-    const isAxis = !Array.isArray(origin);
-    let originX, originY;
-    if (isAxis) {
-      const ax = Axis.getXAxis(origin), ay = Axis.getYAxis(origin);
-      if (ax === Axis.X_LEFT) {
-        originX = -width / 2;
-      } else if (ax === Axis.X_RIGHT) {
-        originX = width / 2;
-      } else {
-        originX = 0;
-      }
-      if (ay === Axis.Y_TOP) {
-        originY = height / 2;
-      } else if (ay === Axis.Y_BOTTOM) {
-        originY = -height / 2;
-      } else {
-        originY = 0;
-      }
+    const [width, height] = this.config.size;
+    const parentSize = this.parent ? this.parent.size : Coordinate$1.size;
+    this.size.x = width === "fill-parent" ? parentSize.x : width;
+    this.size.y = height === "fill-parent" ? parentSize.y : height;
+    this.adjustAnchor();
+    this.adjustOrigin();
+  }
+  /**
+   * todo: 考虑父容器变换中心的影响
+   * @private
+   */
+  adjustOrigin() {
+    const origin = isUndef(this.config.origin) ? Anchor.Center : this.config.origin;
+    if (Array.isArray(origin)) {
+      this.origin.set(origin[0], origin[1]);
     } else {
-      [originX, originY] = origin;
+      const x = Axis.getXAxis(origin), y = Axis.getYAxis(origin);
+      if (x === Axis.X_LEFT) {
+        this.origin.x = this.position.x;
+      } else if (x === Axis.X_CENTER) {
+        this.origin.x = this.position.x + this.width / 2;
+      } else {
+        this.origin.x = this.position.x + this.width;
+      }
+      if (y === Axis.Y_TOP) {
+        this.origin.y = this.position.y;
+      } else if (y === Axis.Y_CENTER) {
+        this.origin.y = this.position.y + this.height / 2;
+      } else {
+        this.origin.y = this.position.y + this.height;
+      }
     }
-    left += -originX;
-    top += -originY;
-    this.anchor = isUndef(this.config.anchor) ? Axis.X_CENTER | Axis.Y_CENTER : this.config.anchor;
-    const xAxis = Axis.getXAxis(this.anchor);
-    const yAxis = Axis.getYAxis(this.anchor);
-    if (xAxis === Axis.X_LEFT) {
-      tx = -Coordinate$1.width / 2;
-    } else if (xAxis === Axis.X_CENTER) {
-      tx = -width / 2;
-    } else if (xAxis === Axis.X_RIGHT) {
-      tx = Coordinate$1.width / 2 - width;
+  }
+  adjustAnchor() {
+    let positionX = 0, positionY = 0;
+    const anchor = isUndef(this.config.anchor) ? Anchor.TopLeft : this.config.anchor;
+    this.anchor = anchor;
+    const anchorX = Axis.getXAxis(anchor), anchorY = Axis.getYAxis(anchor);
+    const parentSize = this.parent ? this.parent.size : Coordinate$1.size;
+    const parentPosition = this.parent ? this.parent.position : Vector2.zero;
+    if (anchorX === Axis.X_LEFT) {
+      positionX = 0;
+    } else if (anchorX === Axis.X_CENTER) {
+      positionX = parentSize.x / 2 - this.size.x / 2;
+    } else {
+      positionX = parentSize.x - this.size.x;
     }
-    if (yAxis === Axis.Y_TOP) {
-      ty = Coordinate$1.height / 2;
-    } else if (yAxis === Axis.Y_CENTER) {
-      ty = height / 2;
-    } else if (yAxis === Axis.Y_BOTTOM) {
-      ty = -Coordinate$1.height / 2 + height;
+    if (anchorY === Axis.Y_TOP) {
+      positionY = 0;
+    } else if (anchorY === Axis.Y_CENTER) {
+      positionY = parentSize.y / 2 - this.size.y / 2;
+    } else {
+      positionY = parentSize.y - this.size.y;
     }
     if (this.config.offset) {
-      const [offsetX, offsetY] = this.config.offset;
-      tx += offsetX;
-      ty += offsetY;
+      positionX += this.config.offset[0];
+      positionY += this.config.offset[1];
     }
-    tx += width / 2;
-    ty -= height / 2;
-    tx += originX;
-    ty += originY;
-    const layoutTranslate = new Vector2(tx, ty);
-    this.position.set(left, top);
-    this.size.set(width, height);
-    this.layoutTransform.translateTo(layoutTranslate);
+    if (this.config.position) {
+      positionX = this.config.position.x;
+      positionY = this.config.position.y;
+    }
+    this.position.set(positionX + parentPosition.x, positionY + parentPosition.y);
+    this.drawTopLeft.setFrom(this.position);
+    this.drawBottomRight.set(this.position.x + this.size.x, this.position.y + this.size.y);
   }
   /**
    * remove self from parent
@@ -17273,27 +18882,9 @@ class Drawable {
   remove() {
     var _a;
     (_a = this.parent) == null ? void 0 : _a.removeChild(this);
+    this.adjustAnchor();
+    this.adjustOrigin();
   }
-  // public scaleBegin(atTime: number = Time.currentTime): Vector2Transition {
-  //   this.scaleTransition.setStartTime(atTime);
-  //   return this.scaleTransition;
-  // }
-  //
-  // public fadeBegin(atTime: number = Time.currentTime): FadeTransition {
-  //   this.fadeTransition.setStartTime(atTime);
-  //   return this.fadeTransition;
-  // }
-  // public translateBegin(
-  //   atTime: number = Time.currentTime
-  // ): TranslateTransition {
-  //   this.translateTransition.setStartTime(atTime);
-  //   return this.translateTransition;
-  // }
-  //
-  // public rotateBegin(atTime: number = Time.currentTime): ObjectTransition {
-  //   this.rotateTransition.setStartTime(atTime)
-  //   return this.rotateTransition
-  // }
   set scale(v) {
     this.selfTransform.scaleTo(v);
   }
@@ -17329,24 +18920,32 @@ class Drawable {
     }
     return this.transition;
   }
+  beforeCommit(node) {
+  }
   updateTransform() {
-    const layoutTransform = this.layoutTransform;
-    const selfTransform = this.selfTransform;
-    const appliedTransform = this.appliedTransform;
-    const parentTransform = this.parent ? this.parent.appliedTransform : new Transform();
-    appliedTransform.translateTo(parentTransform.translate);
-    appliedTransform.translateBy(layoutTransform.translate);
-    appliedTransform.translateBy(selfTransform.translate);
-    appliedTransform.scaleTo(parentTransform.scale);
-    appliedTransform.scaleBy(layoutTransform.scale);
-    appliedTransform.scaleBy(selfTransform.scale);
-    appliedTransform.alphaTo(parentTransform.alpha);
-    appliedTransform.alphaBy(layoutTransform.alpha);
-    appliedTransform.alphaBy(selfTransform.alpha);
-    appliedTransform.rotateTo(parentTransform.rotate);
-    appliedTransform.rotateBy(layoutTransform.rotate);
-    appliedTransform.rotateBy(selfTransform.rotate);
-    appliedTransform.extractToMatrix4(this.matrixArray);
+    const transform = this.selfTransform;
+    const node = this.drawNode;
+    const matrix = node.matrix;
+    matrix.setFrom(this.parent ? this.parent.drawNode.matrix : Matrix3.identify);
+    const origin = this.parent ? TransformUtils.apply(this.origin, node.matrix) : this.origin;
+    node.applyTransform(
+      transform.translate,
+      transform.rotate,
+      transform.scale,
+      transform.skew,
+      origin
+    );
+    const parentTransform = this.parent ? this.parent.appliedTransform : Transform.emptyTransform;
+    const applied = this.appliedTransform;
+    applied.alphaTo(parentTransform.alpha);
+    applied.alphaBy(transform.alpha);
+    const drawTopLeft = this.drawTopLeft;
+    const drawBottomRight = this.drawBottomRight;
+    drawTopLeft.setFrom(this.position);
+    drawBottomRight.set(this.position.x + this.size.x, this.position.y + this.size.y);
+    TransformUtils.applySelf(drawTopLeft, matrix);
+    TransformUtils.applySelf(drawBottomRight, matrix);
+    this.isPresent = !almostEquals(applied.alpha, 0) || !(almostEquals(drawTopLeft.x - drawBottomRight.x, 0) || almostEquals(drawTopLeft.y - drawBottomRight.y, 0));
     this.onTransformApplied();
   }
   onTransformApplied() {
@@ -17354,29 +18953,21 @@ class Drawable {
   onUpdate() {
   }
   update() {
-    if (!this.isVisible) {
-      return;
-    }
     if (this.isAvailable) {
       this.transition.updateTransform();
-      this.transition.update(this.selfTransform);
-    }
-    if (this.isAvailable) {
       this.onUpdate();
-    }
-    if (this.isAvailable) {
       this.updateTransform();
     }
   }
-  draw() {
+  draw(renderer2) {
     if (this.isAvailable && this.isVisible) {
-      this.bind();
-      this.onDraw();
-      this.unbind();
+      this.drawNode.draw(renderer2);
     }
   }
   onWindowResize() {
     this.updateBounding();
+  }
+  bind() {
   }
   dispose() {
     this.isAvailable = false;
@@ -17385,87 +18976,20 @@ class Drawable {
       const disposable = this.disposeList[i];
       disposable && disposable();
     }
+    DrawableRecorder.remove(this);
+    this.disableMouseEvent();
+  }
+  unbind() {
   }
   placeholder() {
   }
-  /**
-   * 检查 position 是否在 Drawable 区域内
-   * @param position
-   */
-  isInBound(position) {
-    let { x, y } = this.position;
-    const { translate, scale } = this.appliedTransform;
-    x *= scale.x;
-    y *= scale.y;
-    x += translate.x;
-    y += translate.y;
-    return position.x > x && position.x <= x + this.width * scale.x && position.y < y && position.y >= y - this.height * scale.y;
+  enableMouseEvent() {
+    this.mouseEvent = new DrawableMouseEvent(this);
   }
-  // TODO: when mousedown and mouseup in a same bound, click still effect
-  click(which, position) {
-    if (this.isAvailable && this.isInBound(position)) {
-      if ("onClick" in this && typeof this.onClick === "function")
-        this.onClick(which);
-    }
-  }
-  mouseDown(which, position) {
-    if (this.isAvailable && this.isInBound(position)) {
-      if ("onMouseDown" in this && typeof this.onMouseDown === "function") {
-        this.onMouseDown(which);
-      }
-    }
-  }
-  mouseUp(which, position) {
-    if (this.isAvailable && this.isInBound(position)) {
-      if ("onMouseUp" in this && typeof this.onMouseUp === "function") {
-        this.onMouseUp(which);
-      }
-    }
-    this.dragLost(which, position);
-  }
-  mouseMove(position) {
-    if (this.isAvailable && this.isInBound(position)) {
-      if ("onMouseMove" in this && typeof this.onMouseMove === "function") {
-        this.onMouseMove();
-      }
-      this.hover(position);
-      if (MouseState.hasKeyDown()) {
-        this.drag(MouseState.which, position);
-      }
-      return;
-    }
-    if (this.isDragged) {
-      this.drag(MouseState.which, position);
-    }
-    this.hoverLost(position);
-  }
-  hover(position) {
-    if ("onHover" in this && typeof this.onHover === "function" && !this.isHovered) {
-      this.isHovered = true;
-      this.onHover();
-    }
-  }
-  hoverLost(position) {
-    if (this.isAvailable && this.isHovered && !this.isInBound(position)) {
-      if ("onHoverLost" in this && typeof this.onHoverLost === "function") {
-        this.isHovered = false;
-        this.onHoverLost();
-      }
-    }
-  }
-  drag(which, position) {
-    if ("onDrag" in this && typeof this.onDrag === "function") {
-      this.isDragged = true;
-      this.onDrag(which);
-    }
-  }
-  dragLost(which, position) {
-    if (this.isAvailable && this.isDragged) {
-      if ("onDragLost" in this && typeof this.onDragLost === "function") {
-        this.isDragged = false;
-        this.onDragLost();
-      }
-    }
+  disableMouseEvent() {
+    var _a;
+    (_a = this.mouseEvent) == null ? void 0 : _a.dispose();
+    this.mouseEvent = null;
   }
 }
 class Queue {
@@ -17525,12 +19049,9 @@ class Node {
 class Box extends Drawable {
   constructor() {
     super(...arguments);
-    __privateAdd(this, _isHovered, void 0);
-    __privateAdd(this, _isDragged, void 0);
     this.childrenList = [];
     this.posts = new Queue();
-    __privateSet(this, _isHovered, false);
-    __privateSet(this, _isDragged, false);
+    this.drawNode = new BoxDrawNode(this);
   }
   add(...children) {
     for (let i = 0; i < children.length; i++) {
@@ -17579,10 +19100,10 @@ class Box extends Drawable {
   post(call) {
     this.posts.push(call);
   }
-  load() {
-    super.load();
+  load(renderer2) {
+    super.load(renderer2);
     for (let i = 0; i < this.childrenList.length; i++) {
-      this.childrenList[i].load();
+      this.childrenList[i].load(renderer2);
     }
   }
   onWindowResize() {
@@ -17599,9 +19120,6 @@ class Box extends Drawable {
   }
   update() {
     super.update();
-    if (!this.isVisible) {
-      return;
-    }
     if (!this.posts.isEmpty()) {
       console.log("handle post");
       this.posts.foreach((e) => {
@@ -17624,13 +19142,13 @@ class Box extends Drawable {
       this.childrenList[i].dispose();
     }
   }
-  draw() {
+  draw(renderer2) {
     if (!this.isVisible) {
       return;
     }
     this.bind();
     for (let i = 0; i < this.childrenList.length; i++) {
-      this.childrenList[i].draw();
+      this.childrenList[i].draw(renderer2);
     }
     this.unbind();
   }
@@ -17638,86 +19156,541 @@ class Box extends Drawable {
   }
   unbind() {
   }
-  click(which, position) {
-    if (this.isAvailable && this.isInBound(position)) {
-      if ("onClick" in this && typeof this.onClick === "function")
-        this.onClick(which);
-    }
-    for (let i = this.childrenList.length - 1; i >= 0; i--) {
-      this.childrenList[i].click(which, position);
+}
+class BoxDrawNode extends DrawNode {
+  draw(renderer2) {
+    for (let i = 0; i < this.childrenNodes.length; i++) {
+      this.childrenNodes[i].draw(renderer2);
     }
   }
-  mouseDown(which, position) {
-    if (this.isAvailable && this.isInBound(position)) {
-      if ("onMouseDown" in this && typeof this.onMouseDown === "function") {
-        this.onMouseDown(which);
+}
+class TextureAtlas {
+  constructor(gl, image) {
+    this.textureReginList = [];
+    this.texture = new Texture(gl, image);
+  }
+  addRegin(regin) {
+    this.textureReginList.push(regin);
+    regin.parent = this;
+  }
+  getRegin(name) {
+    const list = this.textureReginList;
+    for (let i = 0; i < list.length; i++) {
+      if (name === list[i].name) {
+        return list[i];
       }
     }
-    for (let i = this.childrenList.length - 1; i >= 0; i--) {
-      this.childrenList[i].mouseDown(which, position);
+    throw new Error(`no regin found name=${name}`);
+  }
+  dispose() {
+    this.textureReginList.length = 0;
+    this.texture.dispose();
+  }
+  initRegin() {
+    const list = this.textureReginList;
+    for (let i = 0; i < list.length; i++) {
+      list[i].init();
     }
   }
-  mouseUp(which, position) {
-    if (this.isAvailable && this.isInBound(position)) {
-      if ("onMouseUp" in this && typeof this.onMouseUp === "function") {
-        this.onMouseUp(which);
-      }
-    }
-    this.dragLost(which, position);
-    for (let i = this.childrenList.length - 1; i >= 0; i--) {
-      this.childrenList[i].mouseUp(which, position);
-    }
+}
+class TextureRegin {
+  constructor(name) {
+    this.name = name;
+    this.parent = null;
+    this.topLeft = Vector2.newZero();
+    this.size = Vector2.newZero();
+    this.bottomRight = Vector2.zero;
+    this.texTopLeft = Vector2.zero;
+    this.texBottomRight = Vector2.zero;
   }
-  mouseMove(position) {
-    if (this.isAvailable && this.isInBound(position)) {
-      if ("onMouseMove" in this && typeof this.onMouseMove === "function") {
-        this.onMouseMove();
+  init() {
+    const { imageWidth, imageHeight } = this.texture;
+    const scale = Vector(1 / imageWidth, 1 / imageHeight);
+    this.bottomRight = this.topLeft.add(this.size);
+    this.texTopLeft = this.topLeft.mul(scale);
+    this.texBottomRight = this.bottomRight.mul(scale);
+  }
+  get texture() {
+    return this.parent.texture;
+  }
+}
+class TextureAtlasParser {
+  static parse(gl, content, image) {
+    const lines = content.split("\n").map((v) => v.trimEnd());
+    let regin = null;
+    const atlas = new TextureAtlas(gl, image);
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.startsWith(" ")) {
+        const [prop, value] = line.split(":").map((v) => v.trim());
+        if (regin !== null) {
+          if (prop === "x") {
+            regin.topLeft.x = parseFloat(value);
+          } else if (prop === "y") {
+            regin.topLeft.y = parseFloat(value);
+          } else if (prop === "width") {
+            regin.size.x = parseFloat(value);
+          } else if (prop === "height") {
+            regin.size.y = parseFloat(value);
+          }
+        }
+      } else {
+        regin = new TextureRegin(line.trim());
+        atlas.addRegin(regin);
       }
-      this.hover(position);
-      if (MouseState.hasKeyDown()) {
-        this.drag(MouseState.which, position);
-      }
+    }
+    atlas.initRegin();
+    return atlas;
+  }
+}
+const _TextureStore = class _TextureStore {
+  static add(gl, name, source) {
+    this.gl = gl;
+    const texture = new Texture(gl, source);
+    this.map.set(name, texture);
+  }
+  static addTexture(name, texture) {
+    this.map.set(name, texture);
+  }
+  static get(name) {
+    return this.map.get(name);
+  }
+  static getAtlas(name) {
+    return this.map.get(name);
+  }
+  static create(image) {
+    return new Texture(this.gl, image);
+  }
+  static async addTextureAtlas(name, atlasUrl, image, isUrl = true) {
+    let text;
+    if (isUrl) {
+      const response = await fetch(atlasUrl);
+      text = await response.text();
     } else {
-      if (__privateGet(this, _isDragged)) {
-        this.drag(MouseState.which, position);
+      text = atlasUrl;
+    }
+    const atlas = TextureAtlasParser.parse(this.gl, text, image);
+    if (atlas) {
+      this.map.set(name, atlas);
+    } else {
+      throw new Error(`add texture atlas failed, name=${name}, url=${atlasUrl}`);
+    }
+  }
+  static dispose() {
+    this.map.forEach((v) => v.dispose());
+  }
+};
+_TextureStore.map = /* @__PURE__ */ new Map();
+let TextureStore = _TextureStore;
+class RoundVisualizer extends Drawable {
+  constructor(config) {
+    super(config);
+    this.barCountPerRound = 220;
+    this.maxSpectrumHeight = 160;
+    this.scaleFactor = 160 / (450 / 2 * 0.9);
+    this.innerRadius = 236;
+    this.centerOfDrawable = Vector();
+    this.simpleSpectrum = new Array(this.barCountPerRound);
+    this.lastTime = 0;
+    this.updateOffsetTime = 0;
+    this.indexOffset = 0;
+    this.indexChange = ~~Math.round(this.barCountPerRound / 40);
+    this.targetSpectrum = new Array(this.barCountPerRound).fill(0);
+    this.spectrumShape = [
+      1.5,
+      2,
+      2.7,
+      2.1,
+      1.4,
+      1.1,
+      1,
+      1,
+      1,
+      1,
+      ...new Array(this.barCountPerRound - 10).fill(1)
+    ];
+    this.color = Color.White.copy();
+    if (config.innerRadius) {
+      this.innerRadius = config.innerRadius;
+    }
+    this.visualizer = AudioPlayerV2.getVisualizer();
+    this.maxSpectrumHeight = this.innerRadius * this.scaleFactor;
+  }
+  onLoad(renderer2) {
+    const node = this.drawNode;
+    node.vertexBuffer = new QuadBuffer(renderer2, this.barCountPerRound * 5, renderer2.gl.STREAM_DRAW);
+    node.blend = Blend.Additive;
+    node.apply();
+    this.centerOfDrawable = this.position.add(this.size.divValue(2));
+    this.scale = Vector(-1, 1);
+  }
+  onWindowResize() {
+    super.onWindowResize();
+    this.centerOfDrawable = this.position.add(this.size.divValue(2));
+  }
+  onUpdate() {
+    super.onUpdate();
+    this.getSpectrum(Time.currentTime, BeatState.isKiai ? 1 : 0.5);
+  }
+  getSpectrum(timestamp, barScale) {
+    if (this.lastTime === 0 || this.updateOffsetTime === 0) {
+      this.lastTime = timestamp;
+      this.updateOffsetTime = timestamp;
+    }
+    const fftData = this.visualizer.getFFT();
+    for (let i = 0; i < fftData.length; i++) {
+      this.simpleSpectrum[i] = fftData[i] / 255;
+    }
+    const c = this.barCountPerRound;
+    for (let i = 0; i < c; i++) {
+      const targetIndex = (i + this.indexOffset) % c;
+      const target = this.simpleSpectrum[targetIndex];
+      if (target > this.targetSpectrum[i]) {
+        this.targetSpectrum[i] = target * this.spectrumShape[targetIndex] * (0.5 + barScale);
       }
-      this.hoverLost(position);
     }
-    for (let i = this.childrenList.length - 1; i >= 0; i--) {
-      this.childrenList[i].mouseMove(position);
+    if (timestamp - this.updateOffsetTime >= 50) {
+      this.updateOffsetTime = timestamp;
+      this.indexOffset = (this.indexOffset - this.indexChange) % c;
     }
-  }
-  hover(position) {
-    if ("onHover" in this && typeof this.onHover === "function" && !__privateGet(this, _isHovered)) {
-      __privateSet(this, _isHovered, true);
-      this.onHover();
-    }
-  }
-  hoverLost(position) {
-    if (this.isAvailable && __privateGet(this, _isHovered) && !this.isInBound(position)) {
-      if ("onHoverLost" in this && typeof this.onHoverLost === "function") {
-        __privateSet(this, _isHovered, false);
-        this.onHoverLost();
+    const decayFactor = (timestamp - this.lastTime) * 24e-4;
+    for (let i = 0; i < c; i++) {
+      this.targetSpectrum[i] -= decayFactor * (this.targetSpectrum[i] + 0.03);
+      if (this.targetSpectrum[i] < 0) {
+        this.targetSpectrum[i] = 0;
       }
     }
+    this.lastTime = timestamp;
   }
-  drag(which, position) {
-    if ("onDrag" in this && typeof this.onDrag === "function") {
-      __privateSet(this, _isDragged, true);
-      this.onDrag(which);
-    }
+  beforeCommit(node) {
+    const shader = node.shader;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    this.color.alpha = BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14;
+    shader.color = this.color;
+    shader.sampler2D = 0;
   }
-  dragLost(which, position) {
-    if (this.isAvailable && __privateGet(this, _isDragged)) {
-      if ("onDragLost" in this && typeof this.onDragLost === "function") {
-        __privateSet(this, _isDragged, false);
-        this.onDragLost();
+  onDraw(node) {
+    const centerX = 0, centerY = 0;
+    const spectrum = this.targetSpectrum;
+    const length = this.barCountPerRound;
+    const innerRadius = this.innerRadius;
+    const lineWidth = innerRadius / 2 * Math.sin(
+      degreeToRadian(360 / length)
+    ) * 2;
+    const half = lineWidth / 2;
+    let k = 0;
+    const texture = TextureStore.get("Square");
+    const maxSpectrumHeight = this.maxSpectrumHeight;
+    for (let j = 0; j < 5; j++) {
+      for (let i = 0; i < length; i++) {
+        const degree = i / length * 360 + j * 360 / 5;
+        const value = innerRadius + spectrum[i] * maxSpectrumHeight;
+        const fromX = centerX;
+        const fromY = centerY + innerRadius;
+        const toX = centerX;
+        const toY = centerY + value;
+        const point1 = new Vector2(fromX - half, fromY);
+        const point2 = new Vector2(fromX + half, fromY);
+        const point3 = new Vector2(toX - half, toY);
+        const point4 = new Vector2(toX + half, toY);
+        const matrix3 = Matrix3.newIdentify();
+        TransformUtils2.rotateFromLeft(matrix3, degree);
+        TransformUtils2.translateFromLeft(matrix3, this.centerOfDrawable);
+        TransformUtils.applySelf(point1, matrix3);
+        TransformUtils.applySelf(point2, matrix3);
+        TransformUtils.applySelf(point3, matrix3);
+        TransformUtils.applySelf(point4, matrix3);
+        node.drawQuad(point1, point2, point3, point4, void 0, k);
+        node.drawTexture(texture, void 0, void 0, k);
+        k++;
       }
     }
   }
 }
-_isHovered = new WeakMap();
-_isDragged = new WeakMap();
+class LogoTriangles extends Drawable {
+  constructor(config) {
+    super(config);
+    this.particles = [];
+    this.startColor = Color.fromHex(16743863);
+    this.endColor = Color.fromHex(14572437);
+    this.MAX_SIZE = 300;
+    this.MIN_SIZE = 20;
+    this.light = 0;
+    this.lightTransition = new ObjectTransition(this, "light");
+    this.velocityIncrement = 0;
+    this.velocityTransition = new ObjectTransition(this, "velocityIncrement");
+    this.circleInfo = new Float32Array(3);
+    this.isInitialed = false;
+    for (let i = 0; i < 32; i++) {
+      const triangle = new TriangleParticle(this);
+      this.particles.push(triangle);
+    }
+  }
+  lightBegin(atTime = Time.currentTime) {
+    this.lightTransition.setStartTime(atTime);
+    return this.lightTransition;
+  }
+  velocityBegin(atTime = Time.currentTime) {
+    this.velocityTransition.setStartTime(atTime);
+    return this.velocityTransition;
+  }
+  onUpdate() {
+    super.onUpdate();
+    this.lightTransition.update(Time.currentTime);
+    this.velocityTransition.update(Time.currentTime);
+    this.updateParticles();
+  }
+  /**
+   * todo: 解决高帧率下的移动速度过快
+   * @private
+   */
+  updateParticles() {
+    for (let i = 0; i < this.particles.length; i++) {
+      const triangle = this.particles[i];
+      if (triangle.isFinish()) {
+        triangle.size = Interpolation.valueAt(Math.random(), this.MIN_SIZE, this.MAX_SIZE);
+        const { x, y } = this.position;
+        triangle.position = new Vector2(
+          Interpolation.valueAt(Math.random(), x, x + this.width),
+          y + this.height + triangle.size
+        );
+        triangle.color = Interpolation.colorAt(Math.random(), this.startColor, this.endColor);
+      } else {
+        const size2 = triangle.size;
+        triangle.position.y -= 0.2 + size2 / 400 + this.velocityIncrement * (size2 / 400);
+      }
+      triangle.updateVertex();
+    }
+  }
+  onLoad(renderer2) {
+    super.onLoad(renderer2);
+    this.initParticles();
+    this.MAX_SIZE = this.size.x * 0.7;
+    this.MIN_SIZE = this.MAX_SIZE * 0.066667;
+    const node = this.drawNode;
+    node.shader = Shaders.RoundClip;
+    node.vertexBuffer = new BasicVertexBuffer(
+      renderer2,
+      this.particles.length * 3,
+      6,
+      renderer2.gl.STREAM_DRAW
+    );
+    node.apply();
+  }
+  initParticles() {
+    if (this.isInitialed)
+      return;
+    this.isInitialed = true;
+    for (let i = 0; i < this.particles.length; i++) {
+      const triangle = this.particles[i];
+      triangle.size = Interpolation.valueAt(Math.random(), this.MIN_SIZE, this.MAX_SIZE);
+      const { x, y } = this.position;
+      triangle.position.set(
+        Interpolation.valueAt(Math.random(), x, x + this.width),
+        Interpolation.valueAt(Math.random(), y, y + this.height)
+      );
+      triangle.color = Interpolation.colorAt(Math.random(), this.startColor, this.endColor);
+      triangle.updateVertex();
+    }
+  }
+  onTransformApplied() {
+    super.onTransformApplied();
+    const matrix = this.drawNode.matrix;
+    const topLeft = TransformUtils.apply(this.position, matrix);
+    const bottomRight = TransformUtils.apply(this.position.add(this.size), matrix);
+    const size2 = bottomRight.minus(topLeft);
+    const radius = Math.min(size2.x, size2.y) / 2;
+    const center = topLeft.add(size2.divValue(2));
+    const minLength = Math.min(Coordinate$1.size.x, Coordinate$1.size.y);
+    this.circleInfo[0] = center.x / minLength;
+    this.circleInfo[1] = center.y / minLength;
+    this.circleInfo[2] = radius / minLength;
+    const alpha = this.appliedTransform.alpha;
+    const particles = this.particles;
+    for (let i = 0; i < particles.length; i++) {
+      particles[i].color.alpha = alpha;
+    }
+  }
+  beforeCommit(node) {
+    const shader = node.shader;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    shader.circle = this.circleInfo;
+    shader.light = this.light;
+    shader.resolution = Coordinate$1.resolution;
+  }
+  onDraw(node) {
+    const startColor = this.startColor;
+    startColor.alpha = this.appliedTransform.alpha;
+    const position = this.position;
+    node.drawTriangle(
+      position,
+      Vector(position.x, position.y + this.height),
+      position.add(this.size),
+      startColor,
+      0
+    );
+    node.drawTriangle(
+      position,
+      Vector(position.x + this.width, position.y),
+      position.add(this.size),
+      startColor,
+      1
+    );
+    const particles = this.particles;
+    for (let i = 0; i < particles.length; i++) {
+      const particle = this.particles[i];
+      node.drawTriangle(
+        particle.top,
+        particle.bottomLeft,
+        particle.bottomRight,
+        particle.color,
+        i + 2
+      );
+    }
+  }
+  dispose() {
+    super.dispose();
+    this.drawNode.vertexBuffer.dispose();
+  }
+}
+class TriangleParticle {
+  constructor(parent) {
+    this.parent = parent;
+    this.top = Vector2.newZero();
+    this.bottomLeft = Vector2.newZero();
+    this.bottomRight = Vector2.newZero();
+    this.position = Vector2.newZero();
+    this.size = 0;
+    this.color = Color.fromHex(16743863);
+    this.cos30 = Math.sqrt(3) / 2;
+    this.sin30 = 0.5;
+  }
+  isFinish() {
+    return this.bottomLeft.y <= this.parent.position.y;
+  }
+  updateVertex() {
+    const position = this.position;
+    const size2 = this.size;
+    this.top.set(
+      position.x,
+      position.y - size2
+    );
+    this.bottomLeft.set(
+      position.x - size2 * this.cos30,
+      position.y + size2 * this.sin30
+    );
+    this.bottomRight.set(
+      position.x + size2 * this.cos30,
+      position.y + size2 * this.sin30
+    );
+  }
+}
+let beatmapDirectoryId = "beatmap";
+const onEnterMenu = createMutableSharedFlow();
+const onLeftSide = createMutableSharedFlow();
+const onRightSide = createMutableSharedFlow();
+const VueUI = reactive({
+  settings: false,
+  miniPlayer: false,
+  notification: false,
+  selectBeatmapDirectory: false
+});
+class AudioChannel {
+  constructor() {
+    this.left = new Float32Array(0);
+    this.right = new Float32Array(0);
+    this.buffer = new AudioBuffer({
+      sampleRate: 48e3,
+      length: 1
+    });
+    this.leftChannelVolume = 0;
+    this.rightChannelVolume = 0;
+    collect(OSUPlayer$1.onChanged, () => {
+      const audioBuffer = AudioPlayerV2.getAudioBuffer();
+      this.buffer = audioBuffer;
+      if (audioBuffer.numberOfChannels >= 2) {
+        this.left = audioBuffer.getChannelData(0);
+        this.right = audioBuffer.getChannelData(1);
+      } else {
+        this.left = this.right = audioBuffer.getChannelData(0);
+      }
+    });
+  }
+  update(currentTime) {
+    if (AudioPlayerV2.isPlaying()) {
+      this.leftChannelVolume = calculateAmplitude(this.buffer.sampleRate, this.left, currentTime);
+      this.rightChannelVolume = calculateAmplitude(this.buffer.sampleRate, this.right, currentTime);
+    } else {
+      this.leftChannelVolume = 0;
+      this.rightChannelVolume = 0;
+    }
+  }
+  leftVolume() {
+    return this.leftChannelVolume;
+  }
+  rightVolume() {
+    return this.rightChannelVolume;
+  }
+  maxVolume() {
+    return Math.max(this.leftChannelVolume, this.rightChannelVolume);
+  }
+  get leftChannelData() {
+    return this.left;
+  }
+  get rightChannelData() {
+    return this.right;
+  }
+}
+function calculateAmplitude(sampleRate, channelData, time) {
+  const fromIndex = Math.min(Math.floor(time * (sampleRate / 1e3)), channelData.length), toIndex = Math.min(Math.floor((time + 1 / 60 * 1e3) * (sampleRate / 1e3)), channelData.length);
+  let max = -1, min = 1, i = fromIndex;
+  for (; i < toIndex; i++) {
+    max = Math.max(channelData[i], max);
+    min = Math.min(channelData[i], min);
+  }
+  return (max - min) / 2;
+}
+const AudioChannel$1 = new AudioChannel();
+class BeatBox extends Box {
+  constructor(config) {
+    super(config);
+    BeatDispatcher.register(this);
+  }
+  dispose() {
+    super.dispose();
+    BeatDispatcher.unregister(this);
+  }
+}
+class ImageDrawable extends Drawable {
+  constructor(texture, config) {
+    super(config);
+    this.texture = texture;
+    this.color = Color.fromHex(16777215);
+    if (config.color) {
+      this.color = config.color;
+    }
+    this.alpha = this.color.alpha;
+  }
+  onLoad(renderer2) {
+    super.onLoad(renderer2);
+    this.drawNode.blend = this.config.blend ?? Blend.Normal;
+  }
+  beforeCommit(node) {
+    const shader = node.shader;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    this.color.alpha = this.appliedTransform.alpha;
+    shader.color = this.color;
+    shader.sampler2D = 0;
+  }
+  onDraw(node) {
+    node.drawRect(this.position, this.position.add(this.size));
+    if (this.texture instanceof Texture) {
+      node.drawTexture(this.texture);
+    } else {
+      node.drawTexture(this.texture, this.texture.texTopLeft, this.texture.texBottomRight);
+    }
+  }
+}
 class Shape2D {
   static quad(x1, y1, x2, y2, target, offset, stride) {
     target[offset] = x1;
@@ -17848,764 +19821,9 @@ class Shape2D {
     }
   }
 }
-const ImageFormat = {
-  PNG: 1,
-  JPEG: 2
-};
-const _Texture = class _Texture {
-  constructor(gl, image = null, format = ImageFormat.PNG) {
-    this.gl = gl;
-    this.imageWidth = 0;
-    this.imageHeight = 0;
-    const texture = gl.createTexture();
-    if (!texture) {
-      throw new Error("create texture error");
-    }
-    this.rendererId = texture;
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      1,
-      1,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      _Texture.blankData
-    );
-    gl.bindTexture(gl.TEXTURE_2D, null);
-    if (image !== null) {
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      this.imageWidth = image.width;
-      this.imageHeight = image.height;
-      const glFormat = this.getFormat(format);
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        glFormat,
-        image.width,
-        image.height,
-        0,
-        glFormat,
-        gl.UNSIGNED_BYTE,
-        image
-      );
-      gl.bindTexture(gl.TEXTURE_2D, null);
-    }
-  }
-  texImage2D(image, format = ImageFormat.PNG) {
-    const gl = this.gl;
-    this.imageWidth = image.width;
-    this.imageHeight = image.height;
-    const glFormat = this.getFormat(format);
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      glFormat,
-      image.width,
-      image.height,
-      0,
-      glFormat,
-      gl.UNSIGNED_BYTE,
-      image
-    );
-  }
-  getFormat(imageFormat = ImageFormat.PNG) {
-    if (imageFormat === ImageFormat.JPEG) {
-      return this.gl.RGB;
-    }
-    return this.gl.RGBA;
-  }
-  setTextureImage(image, format = ImageFormat.PNG) {
-    const gl = this.gl;
-    gl.bindTexture(gl.TEXTURE_2D, this.rendererId);
-    this.texImage2D(image);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-  }
-  setTextureVideo(video) {
-    const gl = this.gl;
-    gl.bindTexture(gl.TEXTURE_2D, this.rendererId);
-    this.imageWidth = video.width;
-    this.imageHeight = video.height;
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      video
-    );
-    gl.bindTexture(gl.TEXTURE_2D, null);
-  }
-  bind(slot = 0) {
-    const gl = this.gl;
-    gl.activeTexture(gl.TEXTURE0 + slot);
-    gl.bindTexture(gl.TEXTURE_2D, this.rendererId);
-  }
-  unbind() {
-    const gl = this.gl;
-    gl.bindTexture(gl.TEXTURE_2D, null);
-  }
-  dispose() {
-    this.gl.deleteTexture(this.rendererId);
-  }
-};
-_Texture.blankData = new Uint8Array([0, 0, 0, 0]);
-_Texture.NULL = Symbol();
-let Texture = _Texture;
-class VertexBuffer {
-  constructor(gl, data = null, usage = gl.STATIC_DRAW) {
-    this.gl = gl;
-    this.usage = usage;
-    const buffer = gl.createBuffer();
-    if (!buffer) {
-      throw new Error("create vertex buffer error");
-    }
-    this.rendererId = buffer;
-    if (data !== null) {
-      this.bind();
-      gl.bufferData(gl.ARRAY_BUFFER, data, usage);
-      this.unbind();
-    }
-  }
-  setBufferData(data) {
-    const gl = this.gl;
-    gl.bufferData(gl.ARRAY_BUFFER, data, this.usage);
-  }
-  setBufferSubData(data, byteOffset) {
-    this.gl.bufferSubData(this.gl.ARRAY_BUFFER, byteOffset, data);
-  }
-  bind() {
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rendererId);
-  }
-  unbind() {
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
-  }
-  dispose() {
-    this.gl.deleteBuffer(this.rendererId);
-  }
-}
-const logo = "" + new URL("logo-76d27be1.png", import.meta.url).href;
-const cursor = "" + new URL("cursor-40b79df2.png", import.meta.url).href;
-const backIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAABsElEQVRYw+2XMW7CQBBFAdEgDAWUUCJOkMStTwFXwJzABYgoBZzAnMIdSIhjADcAyQ1ISQfdSxF7hbC9XjvyRpGYdv7+2Zn5O7tbKj3tHxhlTBw89vgA+OzxcDAp/568w4ITSXZiQSc/eQuXG2l2w6WVh37ABVW7MMhGXmX5sMstNhY9DAx6WNhsH7JbUlWlr7G6W+hjY8TiDOyg7T+2oqa2+7VYcmVKXYquM+Uq8GuFLO6K42MqZWze5bFMAw8FdKcuQDrsxLqhDNjmLHbfzSSLrsjiTDsZ5oram5llbYpeuMmJhsKb5DqYEyHq+OIyF+VJVA4zZhJFhWWax7krHAP3SEIPSEKMAoYjlbgahgk2pfQATgKiKYoc7SFO4Nqk0n/ykpjDJnELeIFrnEr/Kmn0OEB5UdchcFlS+i/epEqyAtwh6gqPWF9CH2MP2H543KIBwvY0stBHAjRCqfxBgMJLpNpkM2+TVWUqDSGTqfpBk4SQHbQso2KSZ1SoD7uPXMNOeVy/5xzXGi6cwq9MDZd+4c8WDQ8vDU/Hwh+/Gp7vGj4gWr5QGj6BWr6xT9Ng32riAijeSkHUAAAAAElFTkSuQmCC";
-const approachCircle = "" + new URL("approachcircle-0459bffe.png", import.meta.url).href;
-const star = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAV/SURBVHgB7d2Bdds2EAbg310gzgRlJqg9QZkJ6kxQZYK6E1SZoMkESSaIN7A7QbqB2AmUTnA5hNSzrIgKQYLQ8fB/7+HJ0fOLKQI84AgQAoiIiIiIiIiIiIiI/BKRlZYbUJm08u9DAZVHK/5KHtUo1E8o1+3ez+wGSqJXfCVPbbVcokClRoD64N+h8m9BZdCrfSPf24L861K/PjXIty7168OU0LMjg7/io0Bpg8D1gN9hSuhRd/VvB0SAolLCkiJAjTbd+xGmhB7J8dSvzwbkh1bojcSrQT5oZd5JPKaEHsiw1K9PBedKGASuMd4KtGwSN/g75D4ldB0BtPJW+lJhvFD5K9AyTbz6dzgYXCKtuFrSqeGU5y5ghXT+glMXcEja9C313bznFxcXX+CM1wiwRnou5we8RoBw9VdIK1z9L7xFAXcRQKanfn1CSuhurYDHLuAPzOd3kF2JU78iUkJvEWCF+c0ZYbJzMwicKfU7xtVg0FMEyDVAc7VkzFMEmCP16/NFI8BzOOAiAsyY+vW5FCcbS3jpAs6RnrkYDJrtAuRxOVaFx6s7vP588P4lhi33nkMYCDbd6678d+T9xuqgMVsDkHZlTSgVnlZoeO/Zkfc9OmwYRxsL2jFGlgYzugHsVeiuUvdfnx15n+I1eNow/t/7udn9jjaWBiNFNQCt9E/6coXzhl3q12h50PLn0AgS2wAqfQlLpCqQRY2WlzERISoL6P7jay13IGv+0XId2x1Ep4EhtGh5pT++A1nxTuukHjNwHH0fQP9YuB36BnRub7q6GGVyGtjdhXsPyi1c7WGw9wETJLkPoI0gZAYhQ6hAOTRaXmnl/4uJkt0IYoaQTYPIkf4pyeYCugN6qWVyq6Re4dxep6r8IOlkUDgwLSFNZIaQ3ke0V37SW8SzzAYyQ0gujPRXc8wPzDoZpOOC0BD+Bk0RRvpvMZPZZwO7hRMhTeTcQZxwtYeR/gNmlGU6mBlCtAYJR/qnZFkRtJchNKAfCSP9LJUfZFsSxomkQcKETrbKD7KuCdybSGKG8L3REzpTnGVRqH7INdgI9k2a0JnirItCOZGUZkJnirOvCi54IqlBogmdKUwsCy8wTWyQebDXx8SDIYVNJCWf0JnCzJNBhUwkzTKh4452CWvxZw0aTk/YrfhxlhRv8eT0d/wthenKt/50MGcQZ2a9AdRYvhqGmX08PJC8u37MxfRuImYjgLR3CCssX9hNpIJRlruAK/hRwyjLDaCGH7/CKMsN4Bf4UcMok4NAaXcf2cIXk983YDUC1PCnhkFsAPnUMMhqA/DU/++Y/ExWxwACn8yNA8xFAPH9rd3m7m1Y7AI83QA6xAYwwG/wy9xnMzcG0C4g5P9ep4HNTQyZigDdBJDnNQCX3Wc0w1oXkPPkfHsoQ8tr5H1otYYh1hrADfIIK49fhI0XuqdywpL0j8jD4z2ONCTN172f8nAqzQzz9hmOIccXWy1Pd/LnspWIxZnSrkjeyHwq0FN6Um5kHu+lnV2MPZ7QID/IPFYwwtIYoEZau502Xo+5/do9qbRCu6lFg7Q83+waR6+Kz5JGVLiPOL6U3cJn0CM9IZeSxicZEe4jjjNlt8BnHnZk+pc+byTjJJK045WNTFODWjL+YdAQ7tc4k+64tzLObJs/Lo6ejHuJF8J9hTOT8d3CPaglcVfRRgyGT4nvFrwteh1Hhvf/38K9GB88SVx3VqN0MmwfgHALt8JCyPBugfsG6Em4O3GCNku+SqTd32Bz4vNx19SeE7SIcD+U9HcLZY8D9ARcHTkpiwr3Q0l/t1ChVPJ0C5jNksP9UEe6hRVK1V0RrsL9UPLYLZS7Va5++Lclh8CuW1iDiIiIiIiIiIiIiIiIiIiIKKGvmG5znrTvqA4AAAAASUVORK5CYII=";
-const whiteRound = "" + new URL("white_round-9623cbb6.png", import.meta.url).href;
-const ripple = "" + new URL("ripple_new-d127df79.png", import.meta.url).href;
-const legacyLogo = "" + new URL("legacy_logo-21c56fce.png", import.meta.url).href;
-const stdNoteCircle = "" + new URL("hitcircleoverlay-8d1effa1.png", import.meta.url).href;
-const bar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAAYCAYAAAAVgCMkAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAEJSURBVHgB7dx/jcJAEMXxt1WABBychXNwODgJdw4oCsABVkABEgAF4KDMwELCj1TAvu8n2UxS/p7XWdpu0YhhGCZR/mJ9x5rWBaAR5dPFaPxplLVujQ+gUd3rhWj+/yg70fxA854mgGj+eZReACw8AqDe+ZcCYOMaAHXPn2P/RABs3P8D6EXzA3ZKvfvvBcBOTgAzAbCUAfAjAJZyC3AS+3/AUgbAIACWOgGwlQFwFABLGQA8AgRMZQBsBcBSqd/8nwTATldKOUfdCIAdPgYCjF0fA8YUcIiyEAArj/cAIgRWIgQAK29nAtaDQfJkILYDQOPGDgXtY/0KQLPK2I81CGZ1fYmpAGjKBQBvQEcDylpKAAAAAElFTkSuQmCC";
-const borderBar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAAYCAYAAAAVgCMkAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAE2SURBVHgB7dxRbcNADIBhpwgCIQw2CGOwMlgZbAwaJhuTbghWBlURFMLVpzpS61zyXvv/JOsk59m+u8hJJytKKb0unxpvGoMFgCC6VlILf9DlW26FDyCojU9o8X/p8i8UPxDewwlAi3+vyygAcqk7f2n7tWeDAHhqvrin5KBxcc8udh0AEMRSA/hpFP+rAAhl1gBs9/fY+YGAWg3A3/1PAiCkVgM4uNxOAITkG0CdA/B3/aMASKEr05vAKaEEQEi+3jcCIK3aAM73icLAD5BGbQD+rf9WAKRQG8Cfy70LgBz0yN8XBoGAFGZzAJY8uDyjwEBASw2Aj4GABJoNwB4sfQ580thxIgCeny9u/0OQUZe9AEhhNvVnx/7aBHoBENraT0FHjQ8BENbq3L81gq3Fi3AqAEK5AiCXx8ljyVPnAAAAAElFTkSuQmCC";
-const square = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8A/////wn7A/2j0UkKAAAAAElFTkSuQmCC";
-const ImageResourceMap = [
-  {
-    name: "Logo",
-    url: logo
-  },
-  {
-    name: "Ripple",
-    url: ripple
-  },
-  {
-    name: "LegacyLogo",
-    url: legacyLogo
-  },
-  {
-    name: "Cursor",
-    url: cursor
-  },
-  {
-    name: "ApproachCircle",
-    url: approachCircle
-  },
-  {
-    name: "StdNoteCircle",
-    url: stdNoteCircle
-  },
-  {
-    name: "BackIcon",
-    url: backIcon
-  },
-  {
-    name: "WhiteRound",
-    url: whiteRound
-  },
-  {
-    name: "Star",
-    url: star
-  },
-  {
-    name: "Bar",
-    url: bar
-  },
-  {
-    name: "BorderBar",
-    url: borderBar
-  },
-  {
-    name: "Square",
-    url: square
-  }
-];
-const Images = {};
-async function loadImage() {
-  for (const imageSrc of ImageResourceMap) {
-    const image = new Image();
-    image.src = imageSrc.url;
-    await image.decode();
-    Images[imageSrc.name] = image;
-  }
-}
-class VertexBufferElement {
-  constructor(position, type, count, normalized) {
-    this.position = position;
-    this.type = type;
-    this.count = count;
-    this.normalized = normalized;
-  }
-  static getSizeOfType(gl, type) {
-    switch (type) {
-      case gl.FLOAT:
-        return 4;
-      case gl.UNSIGNED_INT:
-        return 4;
-      case gl.UNSIGNED_BYTE:
-        return 1;
-    }
-    return 0;
-  }
-}
-const _VertexBufferLayout = class _VertexBufferLayout {
-  constructor(gl) {
-    this.gl = gl;
-    this.elements = [];
-    this.stride = 0;
-  }
-  pushFloat(position, count) {
-    const gl = this.gl;
-    const element = new VertexBufferElement(position, gl.FLOAT, count, false);
-    this.elements.push(element);
-    this.stride += count * VertexBufferElement.getSizeOfType(gl, gl.FLOAT);
-  }
-  pushUByte(position, count) {
-    const gl = this.gl;
-    const element = new VertexBufferElement(position, gl.UNSIGNED_BYTE, count, true);
-    this.elements.push(element);
-    this.stride += count * VertexBufferElement.getSizeOfType(gl, gl.UNSIGNED_BYTE);
-  }
-  pushUInt(position, count) {
-    const gl = this.gl;
-    const element = new VertexBufferElement(position, gl.UNSIGNED_INT, count, false);
-    this.elements.push(element);
-    this.stride += count * VertexBufferElement.getSizeOfType(gl, gl.UNSIGNED_INT);
-  }
-};
-_VertexBufferLayout.NULL = Symbol();
-let VertexBufferLayout = _VertexBufferLayout;
-class VertexArray {
-  constructor(gl) {
-    this.gl = gl;
-    const va = gl.createVertexArray();
-    if (!va) {
-      throw new Error("create vertex array error");
-    }
-    this.rendererId = va;
-  }
-  addBuffer(layout) {
-    const gl = this.gl;
-    const elements = layout.elements;
-    let offset = 0;
-    for (let i = 0; i < elements.length; i++) {
-      const element = elements[i];
-      gl.enableVertexAttribArray(element.position);
-      gl.vertexAttribPointer(
-        element.position,
-        element.count,
-        element.type,
-        element.normalized,
-        layout.stride,
-        offset
-      );
-      offset += element.count * VertexBufferElement.getSizeOfType(gl, element.type);
-    }
-  }
-  bind() {
-    this.gl.bindVertexArray(this.rendererId);
-  }
-  unbind() {
-    this.gl.bindVertexArray(null);
-  }
-  dispose() {
-    this.gl.deleteVertexArray(this.rendererId);
-  }
-}
-class ShaderWrapper {
-  constructor(gl, shader, shaderAttributes) {
-    this.shader = shader;
-    this.shaderAttributes = shaderAttributes;
-    this.stride = 0;
-    shader.bind();
-    this.layout = new VertexBufferLayout(gl);
-    this.vertexArray = new VertexArray(gl);
-    for (let i = 0; i < shaderAttributes.length; i++) {
-      const attr = shaderAttributes[i];
-      const position = shader.getAttributeLocation(attr.name);
-      if (attr.type == gl.FLOAT) {
-        this.layout.pushFloat(position, attr.count);
-      } else if (attr.type === gl.UNSIGNED_BYTE) {
-        this.layout.pushUByte(position, attr.count);
-      } else if (attr.type === gl.UNSIGNED_INT) {
-        this.layout.pushUInt(position, attr.count);
-      }
-      this.stride += attr.count;
-    }
-    this.vertexArray.bind();
-    this.vertexArray.addBuffer(this.layout);
-    this.vertexArray.unbind();
-    shader.unbind();
-  }
-  bind() {
-    this.shader.bind();
-    this.vertexArray.bind();
-  }
-  unbind() {
-    this.shader.unbind();
-    this.vertexArray.unbind();
-  }
-  use() {
-    this.vertexArray.addBuffer(this.layout);
-  }
-}
-const ATTR_POSITION = "a_position";
-const ATTR_COLOR = "a_color";
-const ATTR_TEXCOORD = "a_tex_coord";
-const ATTR_ALPHA = "a_alpha";
-const UNI_ORTH = "u_orth";
-const UNI_TRANSFORM = "u_transform";
-const UNI_SAMPLER = "u_sampler";
-const UNI_ALPHA = "u_alpha";
-const UNI_CIRCLE = "u_circle";
-const UNI_COLOR = "u_color";
-const UNI_BRIGHTNESS = "u_brightness";
-const _ShaderSource = class _ShaderSource {
-};
-_ShaderSource.Default = {
-  vertex: `
-      attribute vec2 ${ATTR_POSITION};
-      attribute vec2 ${ATTR_TEXCOORD};
-      
-      varying vec2 v_texcoord;
-      
-      uniform mat4 ${UNI_ORTH};
-      uniform mat4 ${UNI_TRANSFORM};
-      
-      void main() {
-          vec4 position = vec4(a_position, 0.0, 1.0) * ${UNI_TRANSFORM};
-          gl_Position = position * ${UNI_ORTH};
-          v_texcoord = ${ATTR_TEXCOORD};
-      }
-    `,
-  fragment: `
-      varying highp vec2 v_texcoord;
-    
-      uniform sampler2D ${UNI_SAMPLER};
-      uniform mediump vec4 ${UNI_COLOR};
-    
-      void main() {
-          mediump vec4 tex_color = texture2D(${UNI_SAMPLER}, v_texcoord);
-          mediump vec4 out_color = vec4(tex_color.rgba * ${UNI_COLOR}.rgba);
-          gl_FragColor = out_color;
-      }
-    `
-};
-_ShaderSource.RoundClip = {
-  vertex: `
-      attribute vec2 ${ATTR_POSITION};
-      attribute vec4 ${ATTR_COLOR};
-      
-      varying mediump vec4 v_color;
-      
-      uniform mat4 ${UNI_ORTH};
-      uniform mat4 ${UNI_TRANSFORM};
-      void main() {
-          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
-          gl_Position = position * ${UNI_ORTH};
-          v_color = ${ATTR_COLOR};
-      }
-    `,
-  fragment: `
-      varying mediump vec4 v_color;
-      uniform mediump vec3 ${UNI_CIRCLE};
-      uniform mediump float u_light;
-      void main() {
-          lowp float dist = distance(${UNI_CIRCLE}.xy, gl_FragCoord.xy);
-          if (dist < ${UNI_CIRCLE}.z) {
-              mediump vec4 color = vec4(0.0);
-              color.rgb = min(v_color.rgb + u_light, 1.0);
-              color.a = v_color.a;
-              gl_FragColor = color;
-          } else {
-              discard;
-          }
-      }
-    `
-};
-_ShaderSource.Simple = {
-  vertex: `
-      attribute vec2 ${ATTR_POSITION};
-      attribute vec4 ${ATTR_COLOR};
-      varying mediump vec4 v_color;
-      uniform mat4 ${UNI_ORTH};
-      uniform mat4 ${UNI_TRANSFORM};
-      void main() {
-          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
-          gl_Position = position * ${UNI_ORTH};
-          v_color = ${ATTR_COLOR};
-      }
-    `,
-  fragment: `
-      varying mediump vec4 v_color;
-      uniform mediump float ${UNI_ALPHA};
-      void main() {
-          mediump vec4 color = vec4(v_color);
-          color.a = color.a * ${UNI_ALPHA};
-          gl_FragColor = color;
-      }
-    `
-};
-_ShaderSource.White = {
-  vertex: `
-      attribute vec2 ${ATTR_POSITION};
-      uniform mat4 ${UNI_ORTH};
-      uniform mat4 ${UNI_TRANSFORM};
-      void main() {
-          vec4 coord = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
-          gl_Position = coord * ${UNI_ORTH};
-      }
-    `,
-  fragment: `
-      uniform lowp float ${UNI_ALPHA};
-      void main() {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, ${UNI_ALPHA});
-      }
-    `
-};
-_ShaderSource.AlphaTexture = {
-  vertex: `
-      attribute vec2 ${ATTR_POSITION};
-      attribute vec2 ${ATTR_TEXCOORD};
-      attribute float ${ATTR_ALPHA};
-  
-      varying mediump vec2 v_tex_coord;
-      varying mediump float v_alpha;
-      uniform mat4 ${UNI_ORTH};
-      uniform mat4 ${UNI_TRANSFORM};
-      void main() {
-          vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
-          gl_Position = position * ${UNI_ORTH};
-          v_tex_coord = ${ATTR_TEXCOORD};
-          v_alpha = ${ATTR_ALPHA};
-      }
-    `,
-  fragment: `
-      varying mediump float v_alpha;
-      varying mediump vec2 v_tex_coord;
-      uniform sampler2D ${UNI_SAMPLER};
-  
-      void main() {
-          mediump vec4 texelColor = texture2D(${UNI_SAMPLER}, v_tex_coord);
-          texelColor.a = texelColor.a * v_alpha;
-          gl_FragColor = texelColor;
-      }
-    `
-};
-let ShaderSource = _ShaderSource;
-const _Shader = class _Shader {
-  constructor(gl, vertexShader2, fragmentShader2) {
-    this.gl = gl;
-    this.uniformLocationCache = {};
-    this.attributeLocationCache = {};
-    this.rendererId = createShader(gl, vertexShader2, fragmentShader2);
-  }
-  bind() {
-    this.gl.useProgram(this.rendererId);
-  }
-  unbind() {
-    this.gl.useProgram(null);
-  }
-  dispose() {
-    this.gl.deleteProgram(this.rendererId);
-  }
-  setUniform1f(name, value) {
-    this.gl.uniform1f(this.getUniformLocation(name), value);
-  }
-  setUniform2fv(name, value) {
-    this.gl.uniform2fv(this.getUniformLocation(name), value);
-  }
-  setUniform3fv(name, value) {
-    this.gl.uniform3fv(this.getUniformLocation(name), value);
-  }
-  setUniform4fv(name, value) {
-    this.gl.uniform4fv(this.getUniformLocation(name), value);
-  }
-  setUniform1i(name, value) {
-    this.gl.uniform1i(this.getUniformLocation(name), value);
-  }
-  setUniform1iv(name, value) {
-    this.gl.uniform1iv(this.getUniformLocation(name), value);
-  }
-  setUniformMatrix4fv(name, value) {
-    this.gl.uniformMatrix4fv(this.getUniformLocation(name), false, value);
-  }
-  getUniformLocation(name) {
-    const gl = this.gl;
-    if (name in this.uniformLocationCache) {
-      return this.uniformLocationCache[name];
-    }
-    const uniformLocation = gl.getUniformLocation(this.rendererId, name);
-    if (!uniformLocation) {
-      console.log("Warning: uniform", name, "does not exist!");
-    }
-    this.uniformLocationCache[name] = uniformLocation;
-    return uniformLocation;
-  }
-  getAttributeLocation(name) {
-    if (name in this.attributeLocationCache) {
-      return this.attributeLocationCache[name];
-    }
-    const location = this.gl.getAttribLocation(this.rendererId, name);
-    if (location === -1) {
-      console.log("Warning: attribute", name, "does not exist!");
-    }
-    this.attributeLocationCache[name] = location;
-    return location;
-  }
-};
-_Shader.NULL = Symbol();
-let Shader = _Shader;
-function createShader(gl, vertexSrc, fragmentSrc) {
-  const program = gl.createProgram();
-  if (!program) {
-    throw new Error("create program error");
-  }
-  const vertex = compileShader(gl, gl.VERTEX_SHADER, vertexSrc);
-  const fragment = compileShader(gl, gl.FRAGMENT_SHADER, fragmentSrc);
-  gl.attachShader(program, vertex);
-  gl.attachShader(program, fragment);
-  gl.linkProgram(program);
-  gl.validateProgram(program);
-  gl.deleteShader(vertex);
-  gl.deleteShader(fragment);
-  return program;
-}
-function compileShader(gl, type, source) {
-  const shader = gl.createShader(type);
-  if (!shader) {
-    throw new Error("create shader error");
-  }
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.log(
-      `Error compiling ${type === gl.VERTEX_SHADER ? "vertex" : "fragment"} shader:`
-    );
-    console.log(gl.getShaderInfoLog(shader));
-  }
-  return shader;
-}
-class DefaultShaderWrapper extends ShaderWrapper {
-  constructor(gl) {
-    const shader = new Shader(gl, ShaderSource.Default.vertex, ShaderSource.Default.fragment);
-    super(gl, shader, [
-      { name: ATTR_POSITION, count: 2, type: gl.FLOAT },
-      { name: ATTR_TEXCOORD, count: 2, type: gl.FLOAT }
-    ]);
-    this.colorArray = new Float32Array(4);
-  }
-  set orth(mat4) {
-    this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
-  }
-  set transform(mat4) {
-    this.shader.setUniformMatrix4fv(UNI_TRANSFORM, mat4);
-  }
-  set color(color) {
-    const arr = this.colorArray;
-    arr[0] = color.red;
-    arr[1] = color.green;
-    arr[2] = color.blue;
-    arr[3] = color.alpha;
-    this.shader.setUniform4fv(UNI_COLOR, arr);
-  }
-  set sampler2D(sampler) {
-    this.shader.setUniform1i(UNI_SAMPLER, sampler);
-  }
-}
-class SimpleShaderWrapper extends ShaderWrapper {
-  constructor(gl) {
-    const shader = new Shader(gl, ShaderSource.Simple.vertex, ShaderSource.Simple.fragment);
-    super(gl, shader, [
-      { name: ATTR_POSITION, count: 2, type: gl.FLOAT },
-      { name: ATTR_COLOR, count: 4, type: gl.FLOAT }
-    ]);
-  }
-  set orth(mat4) {
-    this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
-  }
-  set transform(mat4) {
-    this.shader.setUniformMatrix4fv(UNI_TRANSFORM, mat4);
-  }
-  set alpha(a) {
-    this.shader.setUniform1f(UNI_ALPHA, a);
-  }
-}
-class RoundClipShaderWrapper extends ShaderWrapper {
-  constructor(gl) {
-    const shader = new Shader(gl, ShaderSource.RoundClip.vertex, ShaderSource.RoundClip.fragment);
-    super(gl, shader, [
-      { name: ATTR_POSITION, count: 2, type: gl.FLOAT },
-      { name: ATTR_COLOR, count: 4, type: gl.FLOAT }
-    ]);
-  }
-  set orth(mat4) {
-    this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
-  }
-  set transform(mat4) {
-    this.shader.setUniformMatrix4fv(UNI_TRANSFORM, mat4);
-  }
-  set light(light) {
-    this.shader.setUniform1f("u_light", light);
-  }
-  /**
-   *
-   * @param circle 数据分布 [x, y, radius]
-   */
-  set circle(circle) {
-    this.shader.setUniform3fv(UNI_CIRCLE, circle);
-  }
-}
-class WhiteShaderWrapper extends ShaderWrapper {
-  constructor(gl) {
-    const shader = new Shader(gl, ShaderSource.White.vertex, ShaderSource.White.fragment);
-    super(gl, shader, [
-      { name: ATTR_POSITION, count: 2, type: gl.FLOAT }
-    ]);
-  }
-  set orth(mat4) {
-    this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
-  }
-  set transform(mat4) {
-    this.shader.setUniformMatrix4fv(UNI_TRANSFORM, mat4);
-  }
-  set alpha(a) {
-    this.shader.setUniform1f(UNI_ALPHA, a);
-  }
-}
-class AlphaTextureShaderWrapper extends ShaderWrapper {
-  constructor(gl) {
-    const shader = new Shader(gl, ShaderSource.AlphaTexture.vertex, ShaderSource.AlphaTexture.fragment);
-    super(gl, shader, [
-      { name: ATTR_POSITION, count: 2, type: gl.FLOAT },
-      { name: ATTR_TEXCOORD, count: 2, type: gl.FLOAT },
-      { name: ATTR_ALPHA, count: 1, type: gl.FLOAT }
-    ]);
-  }
-  set orth(mat4) {
-    this.shader.setUniformMatrix4fv(UNI_ORTH, mat4);
-  }
-  set transform(mat4) {
-    this.shader.setUniformMatrix4fv(UNI_TRANSFORM, mat4);
-  }
-  set sampler2D(sampler) {
-    this.shader.setUniform1i(UNI_SAMPLER, sampler);
-  }
-}
-class Shaders {
-  static init(gl) {
-    this.Default = new DefaultShaderWrapper(gl);
-    this.RoundClip = new RoundClipShaderWrapper(gl);
-    this.Simple = new SimpleShaderWrapper(gl);
-    this.White = new WhiteShaderWrapper(gl);
-    this.AlphaTexture = new AlphaTextureShaderWrapper(gl);
-  }
-}
-class Logo extends Drawable {
-  constructor(gl, config) {
-    super(gl, config);
-    this.textureUnit = 0;
-    this.white = Color.fromHex(16777215);
-    this.buffer = new VertexBuffer(gl);
-    this.shader = Shaders.Default;
-    this.texture = new Texture(gl, Images.Logo);
-  }
-  createVertexArray() {
-    const width = this.width;
-    const height = this.height;
-    const { x, y } = this.position;
-    const topLeft = new Vector2(x, y);
-    const bottomRight = new Vector2(x + width, y - height);
-    const vertexData = [];
-    Shape2D.quadVector2(
-      topLeft,
-      bottomRight,
-      vertexData,
-      0,
-      4
-    );
-    Shape2D.quad(
-      0,
-      0,
-      1,
-      1,
-      vertexData,
-      2,
-      4
-    );
-    return new Float32Array(vertexData);
-  }
-  onLoad() {
-    this.buffer.bind();
-    this.buffer.setBufferData(this.createVertexArray());
-    this.buffer.unbind();
-  }
-  onWindowResize() {
-    super.onWindowResize();
-    this.buffer.bind();
-    this.buffer.setBufferData(this.createVertexArray());
-    this.buffer.unbind();
-  }
-  unbind() {
-    this.texture.unbind();
-    this.shader.unbind();
-    this.buffer.unbind();
-  }
-  bind() {
-    this.texture.bind(this.textureUnit);
-    this.shader.bind();
-    this.buffer.bind();
-  }
-  onDraw() {
-    const gl = this.gl;
-    this.shader.sampler2D = this.textureUnit;
-    this.shader.orth = Coordinate$1.orthographicProjectionMatrix4;
-    this.shader.transform = this.matrixArray;
-    this.white.alpha = this.appliedTransform.alpha;
-    this.shader.color = this.white;
-    this.shader.use();
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
-  }
-  dispose() {
-    this.texture.dispose();
-    this.buffer.dispose();
-  }
-}
 class BeatDrawable extends Drawable {
-  constructor(gl, config) {
-    super(gl, config);
+  constructor(config) {
+    super(config);
     BeatDispatcher.register(this);
   }
   dispose() {
@@ -18613,16 +19831,51 @@ class BeatDrawable extends Drawable {
     BeatDispatcher.unregister(this);
   }
 }
+class DynamicQuadBuffer extends BasicVertexBuffer {
+  constructor(renderer2, stride = 4) {
+    super(renderer2, 0, stride, renderer2.gl.STREAM_DRAW);
+    QuadIndexBuffer$1.init(renderer2);
+    this.amountIndices = 0;
+    this.isIndexBufferSet = true;
+  }
+  setVertex(data) {
+    var _a;
+    this.size = ~~(data.length / this.stride);
+    this.amountIndices = this.toElements(this.size);
+    QuadIndexBuffer$1.tryExtendTo(this.amountIndices);
+    (_a = this.buffer) == null ? void 0 : _a.setBufferData(data);
+  }
+  bind() {
+    super.bind();
+    QuadIndexBuffer$1.bind();
+  }
+  unbind() {
+    super.unbind();
+    QuadIndexBuffer$1.unbind();
+  }
+  toElements(vertices) {
+    return ~~(3 * vertices / 2);
+  }
+  toElementIndex(vertexIndex) {
+    return ~~(3 * vertexIndex / 2);
+  }
+}
 class Ripples extends BeatDrawable {
-  constructor(gl, config) {
-    super(gl, config);
-    this.textureUnit = 1;
+  constructor() {
+    super(...arguments);
     this.ripples = [];
-    this.vertexData = new Float32Array([]);
-    this.vertexCount = 0;
-    this.buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
-    this.texture = new Texture(gl, Images.Ripple);
-    this.shader = Shaders.AlphaTexture;
+    this.drawNode = new class extends DrawNode {
+      apply() {
+        this.bufferData = [];
+      }
+    }(this);
+  }
+  onLoad(renderer2) {
+    super.onLoad(renderer2);
+    this.drawNode.vertexBuffer = new DynamicQuadBuffer(renderer2, 5);
+    this.drawNode.shader = Shaders.AlphaTexture;
+    this.drawNode.blend = Blend.Additive;
+    this.drawNode.apply();
   }
   onNewBeat(isKiai, newBeatTimestamp, gap) {
     if (!BeatBooster$1.isAvailable) {
@@ -18647,48 +19900,46 @@ class Ripples extends BeatDrawable {
     }
     ripple2.start();
   }
-  bind() {
-    this.buffer.bind();
-    this.texture.bind(this.textureUnit);
-    this.shader.bind();
-  }
   onUpdate() {
     super.onUpdate();
-    const data = [];
     const ripples = this.ripples;
-    let currentOffset = 0;
     if (ripples.length === 0) {
       return;
     }
     for (let i = 0; i < ripples.length; i++) {
       const ripple2 = ripples[i];
       ripple2.update();
-      currentOffset += ripple2.copyTo(data, currentOffset);
     }
-    this.vertexData = new Float32Array(data);
-    this.vertexCount = int(data.length / 5);
   }
-  unbind() {
-    this.buffer.unbind();
-    this.texture.unbind();
-    this.shader.unbind();
-  }
-  onDraw() {
-    const gl = this.gl;
-    const shader = this.shader;
-    shader.sampler2D = this.textureUnit;
-    shader.transform = this.matrixArray;
+  beforeCommit(node) {
+    const shader = node.shader;
     shader.orth = Coordinate$1.orthographicProjectionMatrix4;
-    if (this.vertexCount === 0)
+    shader.sampler2D = 0;
+  }
+  onDraw(node) {
+    const ripples = this.ripples;
+    if (ripples.length === 0) {
       return;
-    this.buffer.setBufferData(this.vertexData);
-    shader.use();
-    gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
+    }
+    const texture = TextureStore.get("Ripple");
+    const center = Vector(this.position.x + this.width / 2, this.position.y + this.height / 2);
+    let ripple2;
+    for (let i = 0; i < ripples.length; i++) {
+      ripple2 = ripples[i];
+      const currentRadius = ripple2.innerRadius + ripple2.currentThickWidth;
+      node.drawRect(
+        center.minusValue(currentRadius),
+        center.addValue(currentRadius),
+        void 0,
+        i
+      );
+      node.drawTexture(texture, void 0, void 0, i);
+      node.drawOne(ripple2.alpha, DrawNode.VERTEX_PER_QUAD, 4, i);
+    }
   }
   dispose() {
     super.dispose();
-    this.texture.dispose();
-    this.buffer.dispose();
+    this.drawNode.vertexBuffer.dispose();
   }
 }
 class Ripple {
@@ -18741,447 +19992,16 @@ class Ripple {
     return 5 * 6;
   }
 }
-class IndexBuffer {
-  constructor(gl, data = null, usage = gl.STATIC_DRAW) {
-    this.gl = gl;
-    this.usage = usage;
-    const buffer = gl.createBuffer();
-    if (!buffer) {
-      throw new Error("create index buffer error");
-    }
-    this.rendererId = buffer;
-    this.bind();
-    if (data !== null) {
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, usage);
-    }
-    this.unbind();
-  }
-  setIndexBuffer(data) {
-    const gl = this.gl;
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, this.usage);
-  }
-  bind() {
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.rendererId);
-  }
-  unbind() {
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
-  }
-  dispose() {
-    this.gl.deleteBuffer(this.rendererId);
-  }
-}
-class RoundVisualizer extends Drawable {
-  constructor(gl, config) {
-    super(gl, config);
-    this.vertexCount = 0;
-    this.barCountPerRound = 256;
-    this.innerRadius = 236;
-    this.vertexData = new Float32Array(0);
-    this.simpleSpectrum = new Array(this.barCountPerRound);
-    this.lastTime = 0;
-    this.updateOffsetTime = 0;
-    this.indexOffset = 0;
-    this.indexChange = ~~Math.round(this.barCountPerRound / 40);
-    this.targetSpectrum = new Array(this.barCountPerRound).fill(0);
-    this.spectrumShape = [
-      1.5,
-      2,
-      2.7,
-      2.1,
-      1.4,
-      1.1,
-      1,
-      1,
-      1,
-      1,
-      ...new Array(this.barCountPerRound - 10).fill(1)
-    ];
-    if (config.innerRadius) {
-      this.innerRadius = config.innerRadius;
-    }
-    const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
-    const indexBuffer = new IndexBuffer(gl);
-    const index = [
-      0,
-      1,
-      2,
-      1,
-      2,
-      3
-    ];
-    const c = this.barCountPerRound;
-    const indexArray = new Array(index.length * c * 5);
-    for (let i = 0, j = 0; i < c * 5; i++, j += 6) {
-      const increment = i << 2;
-      indexArray[j] = index[0] + increment;
-      indexArray[j + 1] = index[1] + increment;
-      indexArray[j + 2] = index[2] + increment;
-      indexArray[j + 3] = index[3] + increment;
-      indexArray[j + 4] = index[4] + increment;
-      indexArray[j + 5] = index[5] + increment;
-    }
-    indexBuffer.bind();
-    indexBuffer.setIndexBuffer(new Uint32Array(indexArray));
-    indexBuffer.unbind();
-    this.buffer = buffer;
-    this.shader = Shaders.White;
-    this.indexBuffer = indexBuffer;
-    this.visualizer = AudioPlayerV2.getVisualizer();
-  }
-  onUpdate() {
-    super.onUpdate();
-    this.getSpectrum(Time.currentTime, BeatState.isKiai ? 1 : 0.5);
-    this.updateVertex(this.targetSpectrum, this.barCountPerRound);
-  }
-  updateVertex(spectrum, length = spectrum.length) {
-    const centerX = 0, centerY = 0;
-    if (this.vertexData.length !== length) {
-      this.vertexData = new Float32Array(length * 8 * 5);
-    }
-    const array = this.vertexData;
-    const innerRadius = this.innerRadius;
-    const lineWidth = innerRadius / 2 * Math.sin(
-      degreeToRadian(360 / length)
-    ) * 2;
-    const half = lineWidth / 2;
-    let k = 0;
-    for (let j = 0; j < 5; j++) {
-      for (let i = 0; i < length; i++) {
-        const degree = i / length * 360 + j * 360 / 5;
-        const radian = degreeToRadian(degree);
-        const value = innerRadius + spectrum[i] * 160;
-        const fromX = centerX;
-        const fromY = centerY + innerRadius;
-        const toX = centerX;
-        const toY = centerY + value;
-        let point1 = new Vector2(fromX - half, fromY);
-        let point2 = new Vector2(fromX + half, fromY);
-        let point3 = new Vector2(toX - half, toY);
-        let point4 = new Vector2(toX + half, toY);
-        const matrix3 = TransformUtils.rotate(radian);
-        point1 = TransformUtils.apply(point1, matrix3);
-        point2 = TransformUtils.apply(point2, matrix3);
-        point3 = TransformUtils.apply(point3, matrix3);
-        point4 = TransformUtils.apply(point4, matrix3);
-        this.updateAt(array, k, point1);
-        this.updateAt(array, k + 2, point2);
-        this.updateAt(array, k + 4, point3);
-        this.updateAt(array, k + 6, point4);
-        k += 8;
-      }
-    }
-    this.vertexCount = length * 6 * 5;
-    this.buffer.bind();
-    this.buffer.setBufferData(array);
-    this.buffer.unbind();
-  }
-  updateAt(array, offset, point) {
-    array[offset] = point.x;
-    array[offset + 1] = point.y;
-  }
-  getSpectrum(timestamp, barScale) {
-    if (this.lastTime === 0 || this.updateOffsetTime === 0) {
-      this.lastTime = timestamp;
-      this.updateOffsetTime = timestamp;
-    }
-    const fftData = this.visualizer.getFFT();
-    for (let i = 0; i < fftData.length; i++) {
-      this.simpleSpectrum[i] = fftData[i] / 255;
-    }
-    const c = this.barCountPerRound;
-    for (let i = 0; i < c; i++) {
-      const targetIndex = (i + this.indexOffset) % c;
-      const target = this.simpleSpectrum[targetIndex];
-      if (target > this.targetSpectrum[i]) {
-        this.targetSpectrum[i] = target * this.spectrumShape[targetIndex] * (0.5 + barScale);
-      }
-    }
-    if (timestamp - this.updateOffsetTime >= 50) {
-      this.updateOffsetTime = timestamp;
-      this.indexOffset = (this.indexOffset - this.indexChange) % c;
-    }
-    const decayFactor = (timestamp - this.lastTime) * 24e-4;
-    for (let i = 0; i < c; i++) {
-      this.targetSpectrum[i] -= decayFactor * (this.targetSpectrum[i] + 0.03);
-      if (this.targetSpectrum[i] < 0) {
-        this.targetSpectrum[i] = 0;
-      }
-    }
-    this.lastTime = timestamp;
-  }
-  bind() {
-    this.shader.bind();
-    this.indexBuffer.bind();
-    this.buffer.bind();
-  }
-  unbind() {
-    this.shader.unbind();
-    this.indexBuffer.unbind();
-    this.buffer.unbind();
-  }
-  onDraw() {
-    const gl = this.gl;
-    this.shader.alpha = BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14;
-    this.shader.transform = this.matrixArray;
-    this.shader.orth = Coordinate$1.orthographicProjectionMatrix4;
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-    this.shader.use();
-    gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_INT, 0);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  }
-  dispose() {
-    this.buffer.dispose();
-    this.indexBuffer.dispose();
-  }
-}
-class LogoTriangles extends Drawable {
-  constructor(gl, config) {
-    super(gl, config);
-    this.vertexCount = 0;
-    this.particles = [];
-    this.startColor = Color.fromHex(16743863);
-    this.endColor = Color.fromHex(14572437);
-    this.MAX_SIZE = 300;
-    this.MIN_SIZE = 20;
-    this.light = 0;
-    this.lightTransition = new ObjectTransition(this, "light");
-    this.velocityIncrement = 0;
-    this.velocityTransition = new ObjectTransition(this, "velocityIncrement");
-    this.circleInfo = new Float32Array(3);
-    this.isInitialed = false;
-    this.vertexCount = 3 * 42;
-    this.vertex = new Float32Array(this.vertexCount * 6);
-    for (let i = 0; i < this.vertexCount / 3 - 2; i++) {
-      const triangle = new TriangleParticle(this);
-      this.particles.push(triangle);
-    }
-    this.shader = Shaders.RoundClip;
-    this.vertexBuffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
-  }
-  lightBegin(atTime = Time.currentTime) {
-    this.lightTransition.setStartTime(atTime);
-    return this.lightTransition;
-  }
-  velocityBegin(atTime = Time.currentTime) {
-    this.velocityTransition.setStartTime(atTime);
-    return this.velocityTransition;
-  }
-  onUpdate() {
-    super.onUpdate();
-    this.lightTransition.update(Time.currentTime);
-    this.velocityTransition.update(Time.currentTime);
-    const width = this.width;
-    const height = this.height;
-    const { x, y } = this.position;
-    const topLeft = new Vector2(x, y);
-    const bottomRight = new Vector2(x + width, y - height);
-    const vertex = this.vertex;
-    Shape2D.quadVector2(topLeft, bottomRight, vertex, 0, 6);
-    Shape2D.oneColor(this.startColor, vertex, 2, 6);
-    this.updateParticles();
-  }
-  updateParticles() {
-    for (let i = 0; i < this.particles.length; i++) {
-      const triangle = this.particles[i];
-      if (triangle.isFinish()) {
-        triangle.size = Interpolation.valueAt(Math.random(), this.MIN_SIZE, this.MAX_SIZE);
-        const { x, y } = this.position;
-        triangle.position = new Vector2(
-          Interpolation.valueAt(Math.random(), x, x + this.width),
-          y - this.height - triangle.size
-        );
-        triangle.color = colorAt(Math.random(), this.startColor, this.endColor);
-        triangle.updateVertex();
-      } else {
-        const size2 = triangle.size;
-        triangle.position.y += 0.2 + size2 / 400 + this.velocityIncrement * (size2 / 400);
-        triangle.updateVertex();
-        triangle.copyTo(this.vertex, 36 + 18 * i, 6);
-      }
-    }
-  }
-  onLoad() {
-    super.onLoad();
-    this.initParticles();
-  }
-  initParticles() {
-    if (this.isInitialed)
-      return;
-    this.isInitialed = true;
-    for (let i = 0; i < this.particles.length; i++) {
-      const triangle = this.particles[i];
-      triangle.size = Interpolation.valueAt(Math.random(), this.MIN_SIZE, this.MAX_SIZE);
-      const { x, y } = this.position;
-      triangle.position = new Vector2(
-        Interpolation.valueAt(Math.random(), x, x + this.width),
-        Interpolation.valueAt(Math.random(), y, y - this.height)
-      );
-      triangle.color = colorAt(Math.random(), this.startColor, this.endColor);
-      triangle.updateVertex();
-    }
-  }
-  onTransformApplied() {
-    super.onTransformApplied();
-    const transform = this.appliedTransform;
-    const scaledWidth = this.width / Coordinate$1.ratio * transform.scale.x * window.devicePixelRatio;
-    const scaledHeight = this.height / Coordinate$1.ratio * transform.scale.y * window.devicePixelRatio;
-    const circleMaxRadius = Math.min(scaledWidth, scaledHeight) / 2;
-    const circleCenter = new Vector2(
-      (Coordinate$1.nativeWidth / 2 + transform.translate.x) * window.devicePixelRatio,
-      (Coordinate$1.nativeHeight / 2 + transform.translate.y) * window.devicePixelRatio
-    );
-    this.circleInfo[0] = circleCenter.x;
-    this.circleInfo[1] = circleCenter.y;
-    this.circleInfo[2] = circleMaxRadius;
-  }
-  bind() {
-    this.vertexBuffer.bind();
-    this.shader.bind();
-  }
-  onDraw() {
-    const gl = this.gl;
-    const shader = this.shader;
-    shader.light = this.light;
-    shader.circle = this.circleInfo;
-    shader.transform = this.matrixArray;
-    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
-    this.vertexBuffer.setBufferData(this.vertex);
-    shader.use();
-    gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
-  }
-  unbind() {
-    this.vertexBuffer.unbind();
-    this.shader.unbind();
-  }
-  dispose() {
-    super.dispose();
-    this.vertexBuffer.dispose();
-  }
-}
-class TriangleParticle {
-  constructor(parent) {
-    this.parent = parent;
-    this.top = Vector2.newZero();
-    this.bottomLeft = Vector2.newZero();
-    this.bottomRight = Vector2.newZero();
-    this.position = Vector2.newZero();
-    this.size = 0;
-    this.color = Color.fromHex(16743863);
-    this.cos30 = Math.sqrt(3) / 2;
-    this.sin30 = 0.5;
-  }
-  isFinish() {
-    const centerY = this.position.y - 0.5 * this.size;
-    return centerY > this.parent.width / 2;
-  }
-  updateVertex() {
-    const position = this.position;
-    const size2 = this.size;
-    this.top.set(
-      position.x,
-      position.y + size2
-    );
-    this.bottomLeft.set(
-      position.x - size2 * this.cos30,
-      position.y - size2 * this.sin30
-    );
-    this.bottomRight.set(
-      position.x + size2 * this.cos30,
-      position.y - size2 * this.sin30
-    );
-  }
-  copyTo(out, offset, stride) {
-    const top = this.top;
-    const bottomLeft = this.bottomLeft;
-    const bottomRight = this.bottomRight;
-    Shape2D.triangle(top, bottomLeft, bottomRight, out, offset, stride);
-    Shape2D.oneColor(this.color, out, offset + 2, stride);
-  }
-}
-function colorAt(randomValue, startColor, endColor) {
-  const r = startColor.red + (endColor.red - startColor.red) * randomValue;
-  const g = startColor.green + (endColor.green - startColor.green) * randomValue;
-  const b = startColor.blue + (endColor.blue - startColor.blue) * randomValue;
-  return new Color(r, g, b, 1);
-}
-let beatmapDirectoryId = "beatmap";
-const onEnterMenu = createMutableSharedFlow();
-const onLeftSide = createMutableSharedFlow();
-const onRightSide = createMutableSharedFlow();
-class AudioChannel {
-  constructor() {
-    this.left = new Float32Array(0);
-    this.right = new Float32Array(0);
-    this.buffer = new AudioBuffer({
-      sampleRate: 48e3,
-      length: 1
-    });
-    this.leftChannelVolume = 0;
-    this.rightChannelVolume = 0;
-    collect(OSUPlayer$1.onChanged, () => {
-      const audioBuffer = AudioPlayerV2.getAudioBuffer();
-      this.buffer = audioBuffer;
-      if (audioBuffer.numberOfChannels >= 2) {
-        this.left = audioBuffer.getChannelData(0);
-        this.right = audioBuffer.getChannelData(1);
-      } else {
-        this.left = this.right = audioBuffer.getChannelData(0);
-      }
-    });
-  }
-  update(currentTime) {
-    if (AudioPlayerV2.isPlaying()) {
-      this.leftChannelVolume = calculateAmplitude(this.buffer.sampleRate, this.left, currentTime);
-      this.rightChannelVolume = calculateAmplitude(this.buffer.sampleRate, this.right, currentTime);
-    } else {
-      this.leftChannelVolume = 0;
-      this.rightChannelVolume = 0;
-    }
-  }
-  leftVolume() {
-    return this.leftChannelVolume;
-  }
-  rightVolume() {
-    return this.rightChannelVolume;
-  }
-  maxVolume() {
-    return Math.max(this.leftChannelVolume, this.rightChannelVolume);
-  }
-  get leftChannelData() {
-    return this.left;
-  }
-  get rightChannelData() {
-    return this.right;
-  }
-}
-function calculateAmplitude(sampleRate, channelData, time) {
-  const fromIndex = Math.min(Math.floor(time * (sampleRate / 1e3)), channelData.length), toIndex = Math.min(Math.floor((time + 1 / 60 * 1e3) * (sampleRate / 1e3)), channelData.length);
-  let max = -1, min = 1, i = fromIndex;
-  for (; i < toIndex; i++) {
-    max = Math.max(channelData[i], max);
-    min = Math.min(channelData[i], min);
-  }
-  return (max - min) / 2;
-}
-const AudioChannel$1 = new AudioChannel();
-class BeatBox extends Box {
-  constructor(gl, config) {
-    super(gl, config);
-    BeatDispatcher.register(this);
-  }
-  dispose() {
-    super.dispose();
-    BeatDispatcher.unregister(this);
-  }
-}
 class BeatLogo extends BeatBox {
-  constructor(gl, config) {
-    super(gl, config);
-    const logo2 = new Logo(gl, {
-      size: [580, 580]
+  constructor(config) {
+    super(config);
+    const logo2 = new ImageDrawable(TextureStore.get("Logo"), {
+      size: config.size,
+      anchor: Anchor.Center
     });
-    const triangles = new LogoTriangles(gl, {
-      size: [552, 552]
+    const triangles = new LogoTriangles({
+      size: [config.size[0] * 0.9, config.size[1] * 0.9],
+      anchor: Anchor.Center
     });
     this.logo = logo2;
     this.triangles = triangles;
@@ -19202,17 +20022,12 @@ class BeatLogo extends BeatBox {
       this.triangles.lightBegin().transitionTo(0.2, 60, easeOut).transitionTo(0, gap * 2, easeOutQuint);
     }
   }
-  dispose() {
-    super.dispose();
-  }
 }
 class LogoBeatBox extends Box {
-  constructor(gl, config) {
-    super(gl, config);
-    this.beatLogo = new BeatLogo(gl, config);
-    this.add(
-      this.beatLogo
-    );
+  constructor(config) {
+    super(config);
+    this.beatLogo = new BeatLogo(config);
+    this.add(this.beatLogo);
   }
   onUpdate() {
     if (AudioPlayerV2.isPlaying()) {
@@ -19231,18 +20046,24 @@ class LogoBeatBox extends Box {
   }
 }
 let LogoAmpBox$1 = class LogoAmpBox extends Box {
-  constructor(gl, config) {
-    super(gl, config);
+  constructor(config) {
+    super(config);
     this.logoHoverable = false;
     this.scope = effectScope();
-    this.visualizer = new RoundVisualizer(gl, {
+    this.enableMouseEvent();
+    this.visualizer = new RoundVisualizer({
       size: ["fill-parent", "fill-parent"],
-      innerRadius: 266
+      innerRadius: Math.min(config.size[0], config.size[1]) / 2 * 0.9,
+      anchor: Anchor.Center
     });
-    const ripple2 = new Ripples(gl, {
-      size: [558, 558]
+    const ripple2 = new Ripples({
+      size: [config.size[0] * 0.98, config.size[1] * 0.98],
+      anchor: Anchor.Center
     });
-    this.logoBeatBox = new LogoBeatBox(gl, config);
+    this.logoBeatBox = new LogoBeatBox({
+      size: config.size,
+      anchor: Anchor.Center
+    });
     this.add(
       this.visualizer,
       ripple2,
@@ -19263,7 +20084,15 @@ let LogoAmpBox$1 = class LogoAmpBox extends Box {
     if (!this.logoHoverable) {
       return true;
     }
-    this.transform().scaleTo(new Vector2(1, 1), 500, easeOutElastic);
+    this.transform().scaleTo(Vector2.one, 500, easeOutElastic);
+    return true;
+  }
+  onMouseDown(which) {
+    this.transform().scaleTo(Vector(0.9), 1e3, easeOut);
+    return true;
+  }
+  onMouseUp(which) {
+    this.transform().scaleTo(Vector(1), 500, easeOutElastic);
     return true;
   }
   dispose() {
@@ -19272,13 +20101,14 @@ let LogoAmpBox$1 = class LogoAmpBox extends Box {
   }
 };
 let LogoBounceBox$1 = class LogoBounceBox extends Box {
-  constructor(gl, config) {
-    super(gl, config);
+  constructor(config) {
+    super(config);
     this.isDraggable = true;
     this.scope = effectScope();
     this.flag = false;
     this.startPosition = Vector2.newZero();
-    this.logoAmpBox = new LogoAmpBox$1(gl, { size: config.size });
+    this.enableMouseEvent();
+    this.logoAmpBox = new LogoAmpBox$1(config);
     this.add(this.logoAmpBox);
     this.scope.run(() => {
       watch(() => UIState.logoDrag, (value) => {
@@ -19317,24 +20147,28 @@ let LogoBounceBox$1 = class LogoBounceBox extends Box {
   }
 };
 class BeatLogoBox extends Box {
-  constructor(gl, config) {
-    super(gl, config);
+  constructor(config) {
+    super(config);
     this.flag = true;
-    this.logoBounceBox = new LogoBounceBox$1(gl, { size: config.size });
+    this.enableMouseEvent();
+    this.logoBounceBox = new LogoBounceBox$1(config);
     this.add(this.logoBounceBox);
   }
   onClick(which) {
     const menu = inject("Menu");
     const bg = inject("BackgroundBounce");
+    const topBar = inject("TopBar");
     const transition = this.transform();
     if (this.flag) {
-      transition.moveTo(new Vector2(-240, 0), 400, easeInCubic).scaleTo(new Vector2(0.5, 0.5), 400, easeInCubic);
+      transition.moveTo(new Vector2(-480, 0), 400, easeInCubic).scaleTo(new Vector2(0.5, 0.5), 400, easeInCubic);
       menu.show();
       bg.in();
+      topBar.transform().delay(300).moveYTo(0, 500, easeOutQuint);
     } else {
-      transition.moveTo(new Vector2(0, 0), 400, easeOutCubic).scaleTo(new Vector2(1, 1), 400, easeOutCubic);
+      transition.moveTo(Vector2.zero, 400, easeOutCubic).scaleTo(Vector2.one, 400, easeOutCubic);
       menu.hide();
       bg.out();
+      topBar.transform().moveYTo(-36, 500, easeOutQuint);
     }
     const v = this.flag;
     onEnterMenu.emit(v);
@@ -19342,166 +20176,230 @@ class BeatLogoBox extends Box {
     return true;
   }
 }
-const vertexShader$2 = `
-    attribute vec2 a_position;
-    attribute vec4 a_color;
-    
-    varying mediump vec4 v_color;
-    varying mediump float v_coord_x;
-    void main() {
-        gl_Position = vec4(a_position, 0.0, 1.0);
-        v_coord_x = a_position.x;
-        v_color = a_color;
+class ScreenManager {
+  constructor() {
+    this.screenMap = /* @__PURE__ */ new Map();
+    this.currentScreen = null;
+    this.currentId = createMutableStateFlow("");
+    this.renderer = null;
+  }
+  init(renderer2) {
+    this.renderer = renderer2;
+    return this;
+  }
+  addScreen(id2, screenConstructor) {
+    if (id2 === "") {
+      throw Error("id cannot be empty");
     }
-`;
-const fragmentShader$2 = `
-    varying mediump vec4 v_color;
-    varying mediump float v_coord_x;
-    uniform mediump vec2 u_which;
-    
-    void main() {
-        mediump vec4 color = vec4(v_color);
-        mediump float left = 1.0 - step(-0.4, v_coord_x);
-        mediump float right = step(0.4, v_coord_x);       
-        if (left > 0.99) {
-            color.a = color.a * u_which.x;    
-        }
-        if (right > 0.99) {
-            color.a = color.a * u_which.y;
-        }
-        
-        gl_FragColor = color;
+    this.screenMap.set(id2, screenConstructor);
+    return this;
+  }
+  removeScreen(id2) {
+    this.screenMap.delete(id2);
+  }
+  activeScreen(id2) {
+    if (this.currentId.value === id2) {
+      return;
     }
-`;
-class Flashlight extends BeatDrawable {
-  constructor(gl, config) {
-    super(gl, config);
-    this.leftLight = 0;
-    this.rightLight = 0;
-    this.leftTransition = new ObjectTransition(this, "leftLight");
-    this.rightTransition = new ObjectTransition(this, "rightLight");
-    this.color = Color.fromHex(37119);
-    this.color = config.color ?? Color.fromHex(37119);
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const vertexBuffer = new VertexBuffer(gl, this.createVertex());
-    const layout = new VertexBufferLayout(gl);
-    const shader = new Shader(gl, vertexShader$2, fragmentShader$2);
-    vertexBuffer.bind();
-    shader.bind();
-    layout.pushFloat(shader.getAttributeLocation("a_position"), 2);
-    layout.pushFloat(shader.getAttributeLocation("a_color"), 4);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    vertexBuffer.unbind();
-    shader.unbind();
-    this.vertexArray = vertexArray;
-    this.buffer = vertexBuffer;
-    this.shader = shader;
-    this.layout = layout;
+    const constructor = this.screenMap.get(id2);
+    if (constructor) {
+      if (this.currentScreen) {
+        this.renderer.removeDrawable(this.currentScreen);
+      }
+      this.currentScreen = constructor();
+      this.currentId.value = id2;
+      this.renderer.addDrawable(this.currentScreen);
+    }
   }
-  leftLightBegin(atTime = Time.currentTime) {
-    this.leftTransition.setStartTime(atTime);
-    return this.leftTransition;
+  dispose() {
+    var _a;
+    (_a = this.currentScreen) == null ? void 0 : _a.dispose();
+    this.screenMap.clear();
   }
-  rightLightBegin(atTime = Time.currentTime) {
-    this.rightTransition.setStartTime(atTime);
-    return this.rightTransition;
+}
+const ScreenManager$1 = new ScreenManager();
+class Menu extends Box {
+  constructor() {
+    super({
+      size: ["fill-parent", "fill-parent"]
+    });
+    this.menuBackground = new MenuBackground({
+      size: ["fill-parent", 96],
+      anchor: Anchor.CenterLeft
+    });
+    const settings = new MenuButton({
+      size: [120, 96],
+      anchor: Anchor.CenterLeft,
+      origin: Anchor.CenterRight,
+      color: Color.fromHex(5592405),
+      icon: "icon-settings",
+      sound: Sound.ButtonSelect,
+      onClick() {
+        VueUI.settings = true;
+      }
+    });
+    settings.translate = Vector(190, 0);
+    const background = new MenuButton({
+      size: [120, 96],
+      anchor: Anchor.Center,
+      origin: Anchor.CenterLeft,
+      color: Color.fromHex(6702284),
+      icon: "icon-play",
+      sound: Sound.DefaultSelect,
+      onClick() {
+        const mainScreen = inject("MainScreen");
+        mainScreen.transform().moveXTo(-800, 500, easeOut).scaleTo(Vector(0.8), 500, easeOut).fadeTo(0, 500, easeOut);
+        setTimeout(() => {
+          ScreenManager$1.activeScreen("second");
+        }, 500);
+      }
+    });
+    background.translate = Vector(-80, 0);
+    this.add(
+      this.menuBackground,
+      settings
+      // background
+    );
+    this.alpha = 0;
+    this.scale = new Vector2(1, 0);
+    this.isVisible = false;
   }
-  createVertex() {
-    const color = this.color;
-    return new Float32Array([
-      -1,
-      1,
-      color.red,
-      color.green,
-      color.blue,
-      color.alpha,
-      -1,
-      -1,
-      color.red,
-      color.green,
-      color.blue,
-      color.alpha,
-      -0.4,
-      -1,
-      0,
-      0,
-      0,
-      0,
-      -1,
-      1,
-      color.red,
-      color.green,
-      color.blue,
-      color.alpha,
-      -0.4,
-      1,
-      0,
-      0,
-      0,
-      0,
-      -0.4,
-      -1,
-      0,
-      0,
-      0,
-      0,
-      0.4,
-      1,
-      0,
-      0,
-      0,
-      0,
-      1,
-      1,
-      color.red,
-      color.green,
-      color.blue,
-      color.alpha,
-      1,
-      -1,
-      color.red,
-      color.green,
-      color.blue,
-      color.alpha,
-      1,
-      -1,
-      color.red,
-      color.green,
-      color.blue,
-      color.alpha,
-      0.4,
-      -1,
-      0,
-      0,
-      0,
-      0,
-      0.4,
-      1,
-      0,
-      0,
-      0,
-      0
-    ]);
+  onLoad(renderer2) {
+    super.onLoad(renderer2);
+    console.log("menu", this.alpha);
   }
-  onUpdate() {
-    super.onUpdate();
-    this.leftTransition.update(Time.currentTime);
-    this.rightTransition.update(Time.currentTime);
+  show() {
+    this.isVisible = true;
+    this.transform().delay(300).fadeTo(1, 220, easeInCubic).delay(300).scaleTo(new Vector2(1, 1), 400, easeOutBack);
   }
-  bind() {
-    this.vertexArray.bind();
-    this.shader.bind();
-    this.buffer.bind();
+  hide() {
+    this.transform().fadeTo(0, 220, easeOutCubic).scaleTo(new Vector2(1, 0), 220, easeOutCubic);
+    setTimeout(() => {
+      this.isVisible = false;
+    }, 220);
   }
-  onDraw() {
-    const gl = this.gl;
-    this.shader.setUniform2fv("u_which", new Float32Array([this.leftLight, this.rightLight]));
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-    this.vertexArray.addBuffer(this.layout);
-    gl.drawArrays(gl.TRIANGLES, 0, 12);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+}
+class MenuBackground extends Drawable {
+  constructor() {
+    super(...arguments);
+    this.color = Color.fromHex(3289650);
+  }
+  beforeCommit(node) {
+    const shader = node.shader;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    this.color.alpha = this.appliedTransform.alpha;
+    shader.color = this.color;
+    shader.sampler2D = 0;
+  }
+  onDraw(node) {
+    node.drawRect(this.position, this.position.add(this.size));
+    node.drawTexture(TextureStore.get("Square"));
+  }
+}
+class MenuButton extends Box {
+  constructor(config) {
+    super(config);
+    const bg = new MenuButtonBackground(config.color, config.sound, {
+      size: config.size,
+      origin: config.origin
+    });
+    bg.transform().skewXTo(-0.2, 0);
+    const atlas = TextureStore.getAtlas("Icons-Atlas");
+    this.add(
+      bg,
+      new ImageDrawable(atlas.getRegin(config.icon), {
+        size: [36, 36],
+        anchor: Anchor.Center
+      })
+    );
+  }
+  onLoad(renderer2) {
+    super.onLoad(renderer2);
+    this.enableMouseEvent();
+  }
+  onClick(which) {
+    this.config.onClick();
+    console.log(this);
+    return true;
+  }
+}
+class MenuButtonBackground extends Drawable {
+  constructor(color, sound, config) {
+    super(config);
+    this.color = color;
+    this.sound = sound;
+    this.pressColor = new Color(
+      Math.min(this.color.red * 1.2, 1),
+      Math.min(this.color.green * 1.2, 1),
+      Math.min(this.color.blue * 1.2, 1),
+      1
+    );
+    this.activeColor = new Color(
+      Math.min(this.color.red * 2, 1),
+      Math.min(this.color.green * 2, 1),
+      Math.min(this.color.blue * 2, 1),
+      1
+    );
+    this.transform().colorTo(color, 0);
+  }
+  onLoad(renderer2) {
+    super.onLoad(renderer2);
+    this.enableMouseEvent();
+  }
+  onMouseDown(which) {
+    this.transform().colorTo(this.pressColor, 300);
+    return true;
+  }
+  onMouseUp(which) {
+    this.transform().colorTo(this.activeColor, 30).colorTo(this.color, 400, easeOutQuint);
+    playSound(this.sound);
+    return true;
+  }
+  onHover() {
+    this.transform().scaleXTo(1.2, 500, easeOutElastic);
+    playSound(Sound.ButtonHover);
+    return true;
+  }
+  onHoverLost() {
+    this.transform().scaleXTo(1, 500, easeOutElastic);
+    return true;
+  }
+  beforeCommit(node) {
+    const shader = node.shader;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    shader.color = this.selfTransform.color;
+    shader.sampler2D = 0;
+  }
+  onDraw(node, renderer2) {
+    node.drawRect(this.position, this.position.add(this.size));
+    node.drawTexture(TextureStore.get("Square"));
+  }
+}
+class SideFlashlight extends BeatBox {
+  constructor(color, width) {
+    super({
+      size: ["fill-parent", "fill-parent"]
+    });
+    const w = width ?? Coordinate$1.width * 0.2;
+    const texture = TextureStore.get("Gradiant");
+    const left = new ImageDrawable(texture, {
+      size: [w, "fill-parent"],
+      anchor: Anchor.TopLeft,
+      blend: Blend.Additive,
+      color
+    });
+    const right = new ImageDrawable(texture, {
+      size: [w, "fill-parent"],
+      anchor: Anchor.TopRight,
+      blend: Blend.Additive,
+      color
+    });
+    right.scale = Vector(-1, 1);
+    left.alpha = 0;
+    right.alpha = 0;
+    this.add(left, right);
+    this.left = left;
+    this.right = right;
   }
   onNewBeat(isKiai, newBeatTimestamp, gap) {
     if (!this.isAvailable)
@@ -19514,31 +20412,250 @@ class Flashlight extends BeatDrawable {
     const beatLength = gap;
     if (BeatState.isKiai) {
       if ((BeatState.beatIndex & 1) === 0) {
-        left = 0.6 * leftAdjust;
-        this.leftLightBegin().transitionTo(left, 60).transitionTo(0, beatLength, lightTimeFunc);
+        left = 0.54 * leftAdjust;
+        this.left.transform().fadeTo(left, 60).fadeTo(0, beatLength, lightTimeFunc);
       } else {
-        right = 0.6 * rightAdjust;
-        this.rightLightBegin().transitionTo(right, 60).transitionTo(0, beatLength, lightTimeFunc);
+        right = 0.54 * rightAdjust;
+        this.right.transform().fadeTo(right, 60).fadeTo(0, beatLength, lightTimeFunc);
       }
     } else {
       if ((BeatState.beatIndex & 3) === 0 && BeatState.beatIndex != 0) {
         left = 0.3 * leftAdjust;
         right = 0.3 * rightAdjust;
-        this.leftLightBegin().transitionTo(left, 60).transitionTo(0, beatLength, lightTimeFunc);
-        this.rightLightBegin().transitionTo(right, 60).transitionTo(0, beatLength, lightTimeFunc);
+        this.left.transform().fadeTo(left, 60).fadeTo(0, beatLength, lightTimeFunc);
+        this.right.transform().fadeTo(right, 60).fadeTo(0, beatLength, lightTimeFunc);
       }
     }
   }
-  unbind() {
-    this.vertexArray.unbind();
-    this.shader.unbind();
-    this.buffer.unbind();
+}
+class RowBox extends Box {
+  onLoad(renderer2) {
+    super.onLoad(renderer2);
+    this.layoutChildren();
+  }
+  layoutChildren() {
+    let leftOffset = 0, rightOffset = 0, leftOffsetOfCenter = 0, centerWidth = 0;
+    const children = this.childrenList;
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      const anchorX = Axis.getXAxis(child.config.anchor ?? Anchor.TopLeft);
+      const childWidth = this.getSizeValue(child.config.size[0], "x");
+      if (anchorX === Axis.X_LEFT) {
+        if (!child.config.offset) {
+          child.config.offset = [leftOffset, 0];
+        } else {
+          child.config.offset[0] = leftOffset;
+        }
+        leftOffset += childWidth;
+      } else if (anchorX === Axis.X_CENTER) {
+        centerWidth += childWidth;
+      }
+    }
+    leftOffsetOfCenter = (this.width - centerWidth) / 2;
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      const anchorX = Axis.getXAxis(child.config.anchor ?? Anchor.TopLeft);
+      const childWidth = this.getSizeValue(child.config.size[0], "x");
+      if (anchorX === Axis.X_CENTER) {
+        if (!child.config.offset) {
+          child.config.offset = [leftOffsetOfCenter, 0];
+        } else {
+          child.config.offset[0] = leftOffsetOfCenter;
+        }
+        leftOffsetOfCenter += childWidth;
+      }
+    }
+    for (let i = children.length - 1; i >= 0; i--) {
+      const child = children[i];
+      const anchorX = Axis.getXAxis(child.config.anchor ?? Anchor.TopLeft);
+      const childWidth = this.getSizeValue(child.config.size[0], "x");
+      if (anchorX === Axis.X_RIGHT) {
+        if (!child.config.offset) {
+          child.config.offset = [-rightOffset, 0];
+        } else {
+          child.config.offset[0] = -rightOffset;
+        }
+        rightOffset += childWidth;
+      }
+    }
+  }
+  getSizeValue(v, direction = "x") {
+    if (direction === "x") {
+      return v === "fill-parent" ? this.size.x : v;
+    } else {
+      return v === "fill-parent" ? this.size.y : v;
+    }
+  }
+}
+class TopBar extends Box {
+  constructor() {
+    super({
+      size: ["fill-parent", 36]
+    });
+    this.shadow = new TopBarShadow();
+    this.shadow.alpha = 0;
+    this.add(
+      new ImageDrawable(TextureStore.get("Square"), {
+        size: ["fill-parent", 36],
+        color: Color.fromHex(1644825)
+      }),
+      new TopBarButtons(),
+      this.shadow
+    );
+  }
+  onHover() {
+    this.shadow.transform().fadeTo(1, 300);
+    return true;
+  }
+  onHoverLost() {
+    this.shadow.transform().fadeTo(0, 300);
+    return true;
+  }
+}
+class TopBarButtons extends RowBox {
+  constructor() {
+    super({
+      size: ["fill-parent", 36]
+    });
+    const atlas = TextureStore.getAtlas("Icons-Atlas");
+    this.add(
+      new TopBarButton(atlas.getRegin("icon-settings"), Anchor.TopLeft).setOnClickListener(() => {
+        VueUI.settings = true;
+      }),
+      new TopBarButton(atlas.getRegin("icon-note"), Anchor.TopRight).setOnClickListener(() => {
+        VueUI.miniPlayer = true;
+      }),
+      new TopBarButton(atlas.getRegin("icon-folder"), Anchor.TopRight).setOnClickListener(() => {
+        VueUI.selectBeatmapDirectory = true;
+      }),
+      new TopBarButton(atlas.getRegin("icon-fullscreen"), Anchor.TopRight),
+      new TopBarButton(atlas.getRegin("icon-circle"), Anchor.TopRight),
+      new TopBarButton(atlas.getRegin("icon-notification"), Anchor.TopRight).setOnClickListener(() => {
+        VueUI.notification = true;
+      })
+    );
+  }
+}
+class TopBarButton extends Box {
+  constructor(textureRegin, anchor) {
+    super({
+      size: [36, 36],
+      anchor
+    });
+    this._onClickListener = () => {
+    };
+    this.enableMouseEvent();
+    this.add(
+      new ButtonBackground(),
+      new ImageDrawable(textureRegin, {
+        size: [20, 20],
+        anchor: Anchor.Center,
+        color: Color.White.copy()
+      })
+    );
+  }
+  setOnClickListener(l) {
+    this._onClickListener = l;
+    return this;
+  }
+  onClick(which) {
+    this._onClickListener();
+    return true;
+  }
+}
+class ButtonBackground extends ImageDrawable {
+  constructor() {
+    super(TextureStore.get("Square"), {
+      size: [36, 36],
+      color: Color.White.copy()
+    });
+    this.enableMouseEvent();
+    this.alpha = 0;
+  }
+  onMouseDown(which) {
+    this.transform().fadeTo(0.4, 40);
+    return true;
+  }
+  onMouseUp(which) {
+    this.transform().fadeTo(0.8, 45).fadeTo(0.25, 400, easeOutQuint);
+    playSound(Sound.ButtonSelect);
+    return true;
+  }
+  onHover() {
+    this.transform().fadeTo(0.25, 200);
+    playSound(Sound.ButtonHover);
+    return true;
+  }
+  onHoverLost() {
+    this.transform().fadeTo(0, 200);
+    return true;
+  }
+}
+class TopBarShadow extends Drawable {
+  constructor() {
+    super({
+      size: ["fill-parent", 120],
+      anchor: Anchor.TopCenter,
+      offset: [0, 36]
+    });
+    this.color = Color.Black.copy();
+  }
+  beforeCommit(node) {
+    const shader = node.shader;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    shader.sampler2D = 0;
+    this.color.alpha = this.appliedTransform.alpha;
+    shader.color = this.color;
+  }
+  onDraw(node) {
+    node.drawRect(this.position, this.position.add(this.size));
+    node.drawTexture(
+      TextureStore.get("VerticalGradiant"),
+      Vector(0, 0),
+      Vector(1, 1)
+    );
+  }
+}
+class MainScreen extends Box {
+  constructor() {
+    super({
+      size: ["fill-parent", "fill-parent"]
+    });
+    this.leftSideCollector = (value) => {
+      const translate = value ? new Vector2(40, 0) : Vector2.newZero();
+      this.transform().moveTo(translate, 500, easeOutCubic);
+    };
+    this.rightSideCollector = (value) => {
+      const translate = value ? new Vector2(-40, 0) : Vector2.newZero();
+      this.transform().moveTo(translate, 500, easeOutCubic);
+    };
+    this.scope = effectScope();
+    const menu = new Menu();
+    const beatLogo = new BeatLogoBox({
+      size: [460, 460],
+      anchor: Anchor.Center
+    });
+    const flashlight = new SideFlashlight(
+      Color.fromHex(37119),
+      Coordinate$1.width / 5
+    );
+    const topBar = new TopBar();
+    topBar.translate = Vector(0, -36);
+    this.add(
+      menu,
+      flashlight,
+      beatLogo,
+      // smoke,
+      topBar
+    );
+    onLeftSide.collect(this.leftSideCollector);
+    onRightSide.collect(this.rightSideCollector);
   }
   dispose() {
     super.dispose();
-    this.shader.dispose();
-    this.vertexArray.dispose();
-    this.buffer.dispose();
+    onLeftSide.removeCollect(this.leftSideCollector);
+    onRightSide.removeCollect(this.rightSideCollector);
+    this.scope.stop();
   }
 }
 const coloredShaderSource = {
@@ -19606,478 +20723,149 @@ class ShaderManager {
   }
 }
 const ShaderManager$1 = new ShaderManager();
-class ColorDrawable extends Drawable {
-  constructor(gl, config) {
-    super(gl, config);
-    this.needUpdateVertex = true;
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const buffer = new VertexBuffer(gl);
-    const shader = ShaderManager$1.newColoredShader();
-    const layout = new VertexBufferLayout(gl);
-    buffer.bind();
-    shader.bind();
-    layout.pushFloat(shader.getAttributeLocation("a_position"), 2);
-    layout.pushFloat(shader.getAttributeLocation("a_color"), 4);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    buffer.unbind();
-    shader.unbind();
-    this.vertexArray = vertexArray;
-    this.buffer = buffer;
-    this.layout = layout;
-    this.shader = shader;
-  }
-  createVertexArray() {
-    const width = this.width;
-    const height = this.height;
-    const { x, y } = this.position;
-    const vertexData = [];
-    Shape2D.quad(
-      x,
-      y,
-      x + width,
-      y - height,
-      vertexData,
-      0,
-      6
-    );
-    Shape2D.oneColor(this.config.color, vertexData, 2, 6);
-    return new Float32Array(vertexData);
-  }
-  onWindowResize() {
-    super.onWindowResize();
-    this.needUpdateVertex = true;
-  }
-  unbind() {
-    this.vertexArray.unbind();
-    this.buffer.unbind();
-    this.shader.unbind();
-  }
-  bind() {
-    this.vertexArray.bind();
-    this.buffer.bind();
-    this.shader.bind();
-  }
-  onDraw() {
-    const gl = this.gl;
-    if (this.needUpdateVertex) {
-      this.needUpdateVertex = false;
-      this.buffer.setBufferData(this.createVertexArray());
-    }
-    const shader = this.shader;
-    shader.setUniformMatrix4fv("u_transform", this.matrixArray);
-    shader.setUniformMatrix4fv("u_orth", Coordinate$1.orthographicProjectionMatrix4);
-    shader.setUniform1f("u_alpha", this.appliedTransform.alpha);
-    this.vertexArray.addBuffer(this.layout);
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
-  }
-  dispose() {
-    this.vertexArray.dispose();
-    this.shader.dispose();
-    this.buffer.dispose();
-  }
-}
-class Menu extends Box {
-  constructor(gl) {
-    super(gl, {
-      size: ["fill-parent", "fill-parent"]
-    });
-    this.menuBackground = new ColorDrawable(gl, {
-      size: ["fill-parent", 96],
-      anchor: Axis.X_LEFT | Axis.Y_CENTER,
-      color: Color.fromHex(3289650)
-    });
-    this.add(this.menuBackground);
-    this.alpha = 0;
-    this.scale = new Vector2(1, 0);
-    this.isVisible = false;
-  }
-  onLoad() {
-    super.onLoad();
-    console.log("menu", this.alpha);
-  }
-  show() {
-    this.isVisible = true;
-    this.transform().delay(300).fadeTo(1, 220, easeInCubic).delay(300).scaleTo(new Vector2(1, 1), 400, easeOutBack);
-  }
-  hide() {
-    this.transform().fadeTo(0, 220, easeOutCubic).scaleTo(new Vector2(1, 0), 220, easeOutCubic);
-    setTimeout(() => {
-      this.isVisible = false;
-    }, 220);
-  }
-}
-class StarParticle extends DrawableTransition {
-  constructor() {
-    super(...arguments);
-    this.from = Vector(0);
-    this.to = Vector(0);
-    this.size = Vector(56);
-  }
-  setFromAndTo(from, to) {
-    this.from = from;
-    this.to = to;
-    this.transform.translateTo(from);
-  }
-  reset() {
-    this.transform.alphaTo(0.5);
-    this.transform.translateTo(this.from);
-  }
-  isEnd() {
-    return this.transitionAlpha.isEnd;
-  }
-  start(separate) {
-    if (separate) {
-      this.moveTo(this.to, 1500);
-    } else {
-      this.moveTo(this.to, 1500, easeOutBack);
-    }
-    this.delay(1e3).fadeTo(0, 500, easeOutQuint);
-  }
-  update() {
-    this.updateTransform();
-  }
-  copyTo(out, offset) {
-    let currentOffset = offset;
-    const size2 = this.size;
-    const { x, y } = this.transform.translate;
-    Shape2D.quad(
-      x - size2.x / 2,
-      y + size2.y / 2,
-      x + size2.x / 2,
-      y - size2.y / 2,
-      out,
-      currentOffset,
-      5
-    );
-    Shape2D.quad(
-      0,
-      0,
-      1,
-      1,
-      out,
-      currentOffset + 2,
-      5
-    );
-    Shape2D.one(this.transform.alpha, out, currentOffset + 4, 5, 6);
-    return 5 * 6;
-  }
-}
-class SmokeBooster extends DrawableTransition {
-  // private degree = 90
-  // private degreeTransition = new ObjectTransition(this, 'degree')
-  constructor() {
-    super(new Transform());
-    this.leftPosition = Vector(0);
-    this.rightPosition = Vector(0);
-    this.leftStars = [];
-    this.rightStars = [];
-    this.type = void 0;
-    this.duration = 800;
-    this.startTime = -1;
-    this.onWindowResize();
-  }
-  onWindowResize() {
-    const width6 = Coordinate$1.width / 6;
-    const bottom = -Coordinate$1.height / 2 - 20;
-    this.leftPosition.set(
-      -Coordinate$1.width / 2 + width6,
-      bottom
-    );
-    this.rightPosition.set(
-      Coordinate$1.width / 2 - width6,
-      bottom
-    );
-  }
-  fire(type) {
-    this.type = type;
-    if (type === 1) {
-      this.fireVertically();
-    } else if (type === 2) {
-      this.fireRotateToInner();
-    } else if (type === 3) {
-      this.fireRotateToOuter();
-    }
-    console.log("Smoke Booster type", type);
-  }
-  fireVertically() {
-    this.transform.rotateTo(90);
-  }
-  fireRotateToInner() {
-    this.transform.rotateTo(135);
-    this.rotateTo(45, this.duration);
-  }
-  fireRotateToOuter() {
-    this.transform.rotateTo(45);
-    this.rotateTo(135, this.duration);
-  }
-  update() {
-    this.updateTransform();
-    const type = this.type;
-    if (type) {
-      for (let i = 0; i < 3; i++) {
-        this.createOrReuse(this.leftStars, this.leftPosition);
-        this.createOrReuse(this.rightStars, this.rightPosition);
-      }
-    }
-    if (this.startTime < 0 && type) {
-      this.startTime = Time.currentTime;
-      console.time("s");
-    }
-    for (let i = 0; i < this.leftStars.length; i++) {
-      this.leftStars[i].update();
-    }
-    for (let i = 0; i < this.rightStars.length; i++) {
-      this.rightStars[i].update();
-    }
-    if (Time.currentTime - this.startTime >= this.duration && type) {
-      this.startTime = -1;
-      this.type = void 0;
-      console.timeEnd("s");
-    }
-  }
-  createOrReuse(stars, position) {
-    let star2;
-    const targetDistance = Coordinate$1.height / 2;
-    let degree = this.transform.rotate;
-    if (position === this.rightPosition)
-      degree = 180 - degree;
-    const startPosition = position;
-    if (stars.length === 0) {
-      star2 = new StarParticle(new Transform());
-    } else {
-      star2 = stars[0];
-      if (star2.isEnd()) {
-        stars.shift();
-      } else {
-        star2 = new StarParticle(new Transform());
-      }
-    }
-    star2.setFromAndTo(startPosition, Vector(
-      targetDistance * Math.cos(degreeToRadian(degree)) + position.x,
-      targetDistance * Math.sin(degreeToRadian(degree)) + position.y
-    ));
-    star2.reset();
-    star2.start(this.type !== 1);
-    stars.push(star2);
-  }
-  copyTo(out, offset) {
-    let currentOffset = offset;
-    let stars = this.leftStars;
-    for (let i = 0; i < stars.length; i++) {
-      currentOffset += stars[i].copyTo(out, currentOffset);
-    }
-    stars = this.rightStars;
-    for (let i = 0; i < stars.length; i++) {
-      currentOffset += stars[i].copyTo(out, currentOffset);
-    }
-    return currentOffset - offset;
-  }
-}
-class StarSmoke extends BeatDrawable {
-  constructor(gl) {
-    super(gl, {
-      size: ["fill-parent", "fill-parent"]
-    });
-    this.textureUnit = 1;
-    this.booster = new SmokeBooster();
-    this.lastKiai = false;
-    this.vertexData = new Float32Array([]);
-    this.vertexCount = 0;
-    this.buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
-    this.texture = new Texture(gl, Images.Star);
-    this.shader = Shaders.AlphaTexture;
-  }
-  onNewBeat(isKiai, newBeatTimestamp, gap) {
-    if (!BeatBooster$1.isAvailable) {
-      return;
-    }
-    if (BeatState.isKiai && !this.lastKiai) {
-      const rand = Math.random();
-      let type = 1;
-      if (rand > 0.3333 && rand <= 0.66667) {
-        type = 2;
-      } else if (rand > 0.66667 && rand <= 1) {
-        type = 3;
-      }
-      this.booster.fire(type);
-      this.lastKiai = true;
-      console.log("fire", Time.currentTime);
-    }
-    this.lastKiai = BeatState.isKiai;
-  }
-  bind() {
-    this.buffer.bind();
-    this.texture.bind(this.textureUnit);
-    this.shader.bind();
-  }
-  onUpdate() {
-    super.onUpdate();
-    const data = [];
-    this.booster.update();
-    this.booster.copyTo(data, 0);
-    this.vertexData = new Float32Array(data);
-    this.vertexCount = int(data.length / 5);
-  }
-  unbind() {
-    this.buffer.unbind();
-    this.texture.unbind();
-    this.shader.unbind();
-  }
-  onWindowResize() {
-    super.onWindowResize();
-    this.booster.onWindowResize();
-  }
-  onDraw() {
-    const gl = this.gl;
-    const shader = this.shader;
-    shader.sampler2D = this.textureUnit;
-    shader.transform = this.matrixArray;
-    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
-    if (this.vertexCount === 0)
-      return;
-    this.buffer.setBufferData(this.vertexData);
-    shader.use();
-    gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
-  }
-  dispose() {
-    super.dispose();
-    this.texture.dispose();
-    this.buffer.dispose();
-  }
-}
-class MainScreen extends Box {
-  constructor(gl) {
-    super(gl, {
-      size: ["fill-parent", "fill-parent"]
-    });
-    this.leftSideCollector = (value) => {
-      const translate = value ? new Vector2(40, 0) : Vector2.newZero();
-      this.transform().moveTo(translate, 500, easeOutCubic);
-    };
-    this.rightSideCollector = (value) => {
-      const translate = value ? new Vector2(-40, 0) : Vector2.newZero();
-      this.transform().moveTo(translate, 500, easeOutCubic);
-    };
-    this.scope = effectScope();
-    const menu = new Menu(gl);
-    const beatLogo = new BeatLogoBox(gl, { size: [520, 520] });
-    const flashlight = new Flashlight(gl, { size: ["fill-parent", "fill-parent"] });
-    let smoke = new StarSmoke(gl);
-    this.add(
-      menu,
-      flashlight,
-      beatLogo,
-      smoke
-    );
-    onLeftSide.collect(this.leftSideCollector);
-    onRightSide.collect(this.rightSideCollector);
-    this.scope.run(() => {
-      watch(() => UIState.starSmoke, (value) => {
-        smoke.isVisible = value;
-      }, { immediate: true });
-    });
-  }
-  dispose() {
-    super.dispose();
-    onLeftSide.removeCollect(this.leftSideCollector);
-    onRightSide.removeCollect(this.rightSideCollector);
-    this.scope.stop();
-  }
-}
-class ScreenManager {
-  constructor() {
-    this.screenMap = /* @__PURE__ */ new Map();
-    this.currentScreen = null;
-    this.currentId = createMutableStateFlow("");
-    this.renderer = null;
-  }
-  init(renderer2) {
-    this.renderer = renderer2;
-    return this;
-  }
-  addScreen(id2, screenConstructor) {
-    if (id2 === "") {
-      throw Error("id cannot be empty");
-    }
-    this.screenMap.set(id2, screenConstructor);
-    return this;
-  }
-  removeScreen(id2) {
-    this.screenMap.delete(id2);
-  }
-  activeScreen(id2) {
-    if (this.currentId.value === id2) {
-      return;
-    }
-    const constructor = this.screenMap.get(id2);
-    if (constructor) {
-      if (this.currentScreen) {
-        this.renderer.removeDrawable(this.currentScreen);
-      }
-      this.currentScreen = constructor();
-      this.currentId.value = id2;
-      this.renderer.addDrawable(this.currentScreen);
-    }
-  }
-  dispose() {
-    var _a;
-    (_a = this.currentScreen) == null ? void 0 : _a.dispose();
-    this.screenMap.clear();
-  }
-}
-const ScreenManager$1 = new ScreenManager();
 class WebGLRenderer {
   constructor(gl) {
+    this.currentBoundedShader = null;
+    this.currentBoundedVertexBuffer = null;
+    this.currentBoundedIndexBuffer = null;
+    this.currentBoundedVertexArray = null;
+    this.currentBoundedTexture = null;
     this.drawables = [];
     this.disposables = [];
     this.isViewportChanged = false;
-    this.isEventReady = false;
+    this.onDispose = null;
+    this.currentBlend = Blend.Normal;
     this.gl = gl;
+    console.log(Coordinate$1.resolution);
+    console.log(Coordinate$1.nativeWidth * window.devicePixelRatio, Coordinate$1.nativeHeight * window.devicePixelRatio);
     gl.viewport(0, 0, Coordinate$1.nativeWidth * window.devicePixelRatio, Coordinate$1.nativeHeight * window.devicePixelRatio);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.clearColor(0, 0, 0, 0);
-    MouseState.onClick = this.onClick.bind(this);
-    MouseState.onMouseMove = this.onMouseMove.bind(this);
-    MouseState.onMouseDown = this.onMouseDown.bind(this);
-    MouseState.onMouseUp = this.onMouseUp.bind(this);
+    const maxVertexAttribs = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
+    console.log("Max vertex attributes: " + maxVertexAttribs);
+    const maxVertexUniformVectors = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
+    console.log("Max vertex uniform vectors: " + maxVertexUniformVectors);
+    const maxVertexAttribStride = gl.getParameter(gl.MAX_ELEMENTS_VERTICES);
+    console.log("Max elements vertices : " + maxVertexAttribStride);
     Coordinate$1.onWindowResize = () => {
       this.isViewportChanged = true;
     };
   }
-  onClick(which) {
-    if (!this.isEventReady)
+  setBlend(blend) {
+    if (this.currentBlend === blend) {
       return;
-    for (let i = 0; i < this.drawables.length; i++) {
-      this.drawables[i].click(which, MouseState.position);
+    }
+    const gl = this.gl;
+    if (blend === Blend.Normal) {
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    } else if (blend === Blend.Additive) {
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
+    }
+    this.currentBlend = blend;
+  }
+  bindShader(shader) {
+    if (this.currentBoundedShader !== shader) {
+      shader.bind();
+      this.currentBoundedShader = shader;
     }
   }
-  onMouseDown(which) {
-    if (!this.isEventReady)
-      return;
-    for (let i = 0; i < this.drawables.length; i++) {
-      this.drawables[i].mouseDown(which, MouseState.position);
+  unbindShader(shader) {
+    if (this.currentBoundedShader === shader) {
+      shader.unbind();
+      this.currentBoundedShader = null;
     }
   }
-  onMouseMove() {
-    if (!this.isEventReady)
-      return;
-    for (let i = 0; i < this.drawables.length; i++) {
-      this.drawables[i].mouseMove(MouseState.position);
+  bindVertexArray(va) {
+    if (this.currentBoundedVertexArray !== va) {
+      va.bind();
+      this.currentBoundedVertexArray = va;
     }
   }
-  onMouseUp(which) {
-    if (!this.isEventReady)
-      return;
-    for (let i = 0; i < this.drawables.length; i++) {
-      this.drawables[i].mouseUp(which, MouseState.position);
+  unbindVertexArray(va) {
+    if (this.currentBoundedVertexArray === va) {
+      va.unbind();
+      this.currentBoundedVertexArray = null;
     }
   }
+  bindVertexBuffer(vb) {
+    if (this.currentBoundedVertexBuffer !== vb) {
+      vb.bind();
+      this.currentBoundedVertexBuffer = vb;
+    }
+  }
+  unbindVertexBuffer(vb) {
+    if (this.currentBoundedVertexBuffer === vb) {
+      vb.unbind();
+      this.currentBoundedVertexBuffer = null;
+    }
+  }
+  bindTexture(texture, unit = 0) {
+    if (this.currentBoundedTexture !== texture) {
+      texture.bind(unit);
+      this.currentBoundedTexture = texture;
+    }
+  }
+  unbindTexture(texture) {
+    if (this.currentBoundedTexture === texture) {
+      texture.unbind();
+      this.currentBoundedTexture = null;
+    }
+  }
+  bindIndexBuffer(ib) {
+    if (this.currentBoundedIndexBuffer !== ib) {
+      ib.bind();
+      this.currentBoundedIndexBuffer = ib;
+    }
+  }
+  unbindIndexBuffer(ib) {
+    if (this.currentBoundedIndexBuffer === ib) {
+      ib.unbind();
+      this.currentBoundedIndexBuffer = null;
+    }
+  }
+  disposeBounded() {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+    (_a = this.currentBoundedTexture) == null ? void 0 : _a.unbind();
+    (_b = this.currentBoundedShader) == null ? void 0 : _b.dispose();
+    (_c = this.currentBoundedShader) == null ? void 0 : _c.unbind();
+    (_d = this.currentBoundedShader) == null ? void 0 : _d.dispose();
+    (_e = this.currentBoundedVertexArray) == null ? void 0 : _e.unbind();
+    (_f = this.currentBoundedVertexArray) == null ? void 0 : _f.dispose();
+    (_g = this.currentBoundedVertexBuffer) == null ? void 0 : _g.unbind();
+    (_h = this.currentBoundedVertexBuffer) == null ? void 0 : _h.dispose();
+    (_i = this.currentBoundedIndexBuffer) == null ? void 0 : _i.unbind();
+    (_j = this.currentBoundedIndexBuffer) == null ? void 0 : _j.dispose();
+  }
+  // private onClick(which: number) {
+  //   if (!this.isEventReady) return
+  //   for (let i = 0; i < this.drawables.length; i++) {
+  //     this.drawables[i].click(which, MouseState.position)
+  //   }
+  // }
+  //
+  // private onMouseDown(which: number) {
+  //   if (!this.isEventReady) return
+  //   for (let i = 0; i < this.drawables.length; i++) {
+  //     this.drawables[i].mouseDown(which, MouseState.position)
+  //   }
+  // }
+  // private onMouseMove() {
+  //   if (!this.isEventReady) return
+  //   for (let i = 0; i < this.drawables.length; i++) {
+  //     this.drawables[i].mouseMove(MouseState.position)
+  //   }
+  // }
+  //
+  // private onMouseUp(which: number) {
+  //   if (!this.isEventReady) return
+  //   for (let i = 0; i < this.drawables.length; i++) {
+  //     this.drawables[i].mouseUp(which, MouseState.position)
+  //   }
+  // }
   addDrawable(drawable) {
     this.drawables.push(drawable);
-    drawable.load();
+    drawable.load(this);
     this.disposables.push(drawable);
   }
   removeDrawable(drawable) {
@@ -20088,11 +20876,12 @@ class WebGLRenderer {
     drawable.dispose();
   }
   render() {
-    this.isEventReady = true;
     const gl = this.gl;
     if (this.isViewportChanged) {
       this.isViewportChanged = false;
       gl.viewport(0, 0, Coordinate$1.nativeWidth * window.devicePixelRatio, Coordinate$1.nativeHeight * window.devicePixelRatio);
+      console.log(Coordinate$1.resolution);
+      console.log(Coordinate$1.nativeWidth * window.devicePixelRatio, Coordinate$1.nativeHeight * window.devicePixelRatio);
       for (let i = 0; i < this.drawables.length; i++) {
         this.drawables[i].onWindowResize();
       }
@@ -20101,2402 +20890,56 @@ class WebGLRenderer {
     for (let i = 0; i < this.drawables.length; i++) {
       const drawable = this.drawables[i];
       drawable.update();
-      drawable.draw();
+      drawable.draw(this);
     }
   }
   dispose() {
+    var _a;
     for (let i = 0; i < this.disposables.length; i++) {
       this.disposables[i].dispose();
     }
-  }
-}
-class ImageDrawable extends Drawable {
-  constructor(gl, image, textureUnit = 0, config) {
-    super(gl, config);
-    this.textureUnit = 0;
-    this.isVertexUpdate = true;
-    this.white = Color.fromHex(16777215);
-    this.textureUnit = textureUnit;
-    this.buffer = new VertexBuffer(gl);
-    this.shader = Shaders.Default;
-    this.texture = new Texture(gl, image);
-  }
-  createVertexArray() {
-    const width = this.width;
-    const height = this.height;
-    const { x, y } = this.position;
-    const vertexData = [];
-    Shape2D.quad(
-      x,
-      y,
-      x + width,
-      y - height,
-      vertexData,
-      0,
-      4
-    );
-    Shape2D.quad(0, 0, 1, 1, vertexData, 2, 4);
-    return new Float32Array(vertexData);
-  }
-  onWindowResize() {
-    super.onWindowResize();
-    this.isVertexUpdate = true;
-  }
-  unbind() {
-    this.buffer.unbind();
-    this.texture.unbind();
-    this.shader.unbind();
-  }
-  bind() {
-    this.texture.bind(this.textureUnit);
-    this.buffer.bind();
-    this.shader.bind();
-  }
-  onDraw() {
-    const gl = this.gl;
-    if (this.isVertexUpdate) {
-      this.buffer.setBufferData(this.createVertexArray());
-      this.isVertexUpdate = false;
-    }
-    const shader = this.shader;
-    shader.sampler2D = this.textureUnit;
-    shader.transform = this.matrixArray;
-    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
-    this.white.alpha = this.appliedTransform.alpha;
-    shader.color = this.white;
-    shader.use();
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
-  }
-  dispose() {
-    this.texture.dispose();
-    this.buffer.dispose();
+    this.disposeBounded();
+    (_a = this.onDispose) == null ? void 0 : _a.call(this);
+    this.onDispose = null;
   }
 }
 class FadeLogo extends BeatBox {
-  constructor(gl, config) {
-    super(gl, { size: ["fill-parent", "fill-parent"] });
-    this.logo = new ImageDrawable(gl, Images.Logo, 1, config);
+  constructor(config) {
+    super({ size: ["fill-parent", "fill-parent"] });
+    this.logo = new ImageDrawable(TextureStore.get("Logo"), {
+      ...config,
+      blend: Blend.Additive
+    });
     this.logo.alpha = 0.3;
     this.add(this.logo);
   }
   onNewBeat(isKiai, newBeatTimestamp, gap) {
     this.logo.transform().fadeTo(0.3, 60, easeOut).fadeTo(0.1, gap * 2, easeOutQuint);
   }
-  bind() {
-    super.bind();
-    const gl = this.gl;
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-  }
-  unbind() {
-    super.unbind();
-    const gl = this.gl;
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  }
 }
 class SongPlayScreen extends Box {
-  constructor(gl) {
-    super(gl, {
-      size: ["fill-parent", "fill-parent"]
-    });
-    const fadeLogo = new FadeLogo(gl, {
-      size: [250, 250]
-    });
-    const logo2 = new LogoBounceBox$1(gl, {
-      size: [520, 520],
-      anchor: Axis.X_RIGHT | Axis.Y_BOTTOM,
-      offset: [250 - 66, -250 + 24]
-    });
-    logo2.scale = Vector(0);
-    this.add(
-      fadeLogo,
-      logo2
-    );
-  }
-  onLoad() {
-    super.onLoad();
-    this.lastChild.transform().scaleTo(Vector(0.4), 250, easeOutQuint);
-  }
-}
-const Judge = reactive({
-  perfect: 0,
-  good: 0,
-  bad: 0,
-  miss: 0
-});
-function resetJudge() {
-  Judge.perfect = 0;
-  Judge.good = 0;
-  Judge.bad = 0;
-  Judge.miss = 0;
-}
-const vertexShader$1 = `
-    attribute vec2 a_position;
-    attribute vec4 a_color;
-//    attribute vec2 a_tex_coord;
-    
-//    varying mediump vec2 v_tex_coord;
-    varying mediump vec4 v_color;
-    
-//    uniform mat4 u_transform;
-    uniform mat4 u_orth;
-    
-    void main() {
-        gl_Position = vec4(a_position, 0.0, 1.0) * u_orth;
-//        v_tex_coord = a_tex_coord;
-        v_color = a_color;
-    }
-`;
-const fragmentShader$1 = `
-//    varying mediump vec2 v_tex_coord;
-//    uniform sampler2D u_sampler;
-    varying mediump vec4 v_color;
-    void main() {
-//        mediump vec4 texelColor = texture2D(u_sampler, v_tex_coord);
-//        gl_FragColor = texelColor;
-//         gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-        gl_FragColor = v_color;
-    }
-`;
-class ManiaPanel extends Drawable {
-  constructor(gl, offsetLeft = 800, trackWidth = 120, trackGap = 12, noteData) {
-    super(gl, {
-      size: [trackWidth * 4 + trackGap * 5 + 20, "fill-parent"]
-    });
-    this.offsetLeft = offsetLeft;
-    this.trackWidth = trackWidth;
-    this.trackGap = trackGap;
-    this.noteData = noteData;
-    this.trackCount = 4;
-    this.tracks = [];
-    this.judgementLinePosition = 80;
-    this.songProgress = new SongProgress();
-    this.vertexData = new Float32Array();
-    this.vertexArrayData = [];
-    this.vertexCount = 0;
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const vertexBuffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
-    const layout = new VertexBufferLayout(gl);
-    const shader = new Shader(gl, vertexShader$1, fragmentShader$1);
-    vertexBuffer.bind();
-    shader.bind();
-    layout.pushFloat(shader.getAttributeLocation("a_position"), 2);
-    layout.pushFloat(shader.getAttributeLocation("a_color"), 4);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    vertexBuffer.unbind();
-    shader.unbind();
-    this.vertexBuffer = vertexBuffer;
-    this.layout = layout;
-    this.shader = shader;
-    this.vertexArray = vertexArray;
-  }
-  onLoad() {
-    super.onLoad();
-    this.offsetLeft -= Coordinate$1.width / 2;
-    let currentOffsetLeft = this.position.x;
-    const colors = new Array(4).fill(Color.fromHex(16777215));
-    for (let i = 0; i < this.trackCount; i++) {
-      const track2 = new ManiaTrack(
-        this.noteData[i],
-        this.judgementLinePosition,
-        660,
-        currentOffsetLeft,
-        this.trackWidth,
-        colors[i],
-        this
-      );
-      currentOffsetLeft += this.trackWidth + this.trackGap;
-      this.tracks.push(track2);
-    }
-  }
-  bind() {
-    this.vertexArray.bind();
-    this.vertexBuffer.bind();
-    this.shader.bind();
-  }
-  onUpdate() {
-    super.onUpdate();
-    for (let i = 0; i < this.tracks.length; i++) {
-      this.tracks[i].update();
-    }
-    this.songProgress.update();
-    this.vertexArrayData = [];
-    let offset = 0;
-    for (let i = 0; i < this.tracks.length; i++) {
-      offset += this.tracks[i].copyTo(this.vertexArrayData, offset);
-    }
-    this.songProgress.copyTo(this.vertexArrayData, offset, 6);
-    this.vertexData = new Float32Array(this.vertexArrayData);
-    this.vertexCount = int(this.vertexArrayData.length / 6);
-  }
-  unbind() {
-    this.vertexArray.unbind();
-    this.vertexBuffer.unbind();
-    this.shader.unbind();
-  }
-  onDraw() {
-    const gl = this.gl;
-    this.shader.setUniformMatrix4fv("u_orth", Coordinate$1.orthographicProjectionMatrix4);
-    this.vertexBuffer.setBufferData(this.vertexData);
-    this.vertexArray.addBuffer(this.layout);
-    gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
-  }
-}
-const JudgeRange = {
-  perfect: 30,
-  good: 40,
-  bad: 60,
-  miss: 80
-};
-const _ManiaTrack = class _ManiaTrack {
-  constructor(noteDataList, judgementLinePosition, movementDuration, offsetLeft, trackWidth, mainColor, panel) {
-    this.judgementLinePosition = judgementLinePosition;
-    this.movementDuration = movementDuration;
-    this.offsetLeft = offsetLeft;
-    this.trackWidth = trackWidth;
-    this.mainColor = mainColor;
-    this.panel = panel;
-    this.noteList = [];
-    this.isFinish = false;
-    this.alpha = 0;
-    this.fadeTransition = new ObjectTransition(this, "alpha");
-    this.pressState = _ManiaTrack.PRESS_STATE_UP;
-    for (let i = 0; i < noteDataList.length; i++) {
-      const note = new Note(
-        panel,
-        this.trackWidth,
-        12,
-        this.offsetLeft,
-        this.movementDuration,
-        this.judgementLinePosition,
-        void 0,
-        noteDataList[i]
-      );
-      this.noteList.push(note);
-    }
-  }
-  fadeBegin(time = Time.currentTime) {
-    this.fadeTransition.setStartTime(time);
-    return this.fadeTransition;
-  }
-  update() {
-    if (this.isFinish) {
-      return;
-    }
-    this.fadeTransition.update(Time.currentTime);
-    this.updateNoteQueue();
-    this.judgeNote(true);
-  }
-  judgeNote(auto = false) {
-    const current = AudioPlayerV2.currentTime();
-    const endTime = current + this.movementDuration;
-    const noteList = this.noteList;
-    for (let i = 0; i < noteList.length; i++) {
-      const note = noteList[i];
-      const data = note.noteData;
-      if (note.judgeResult !== Note.JUDGE_NONE && note.judgeState === Note.STATE_JUDGED) {
-        continue;
-      }
-      if (note.startTime > endTime) {
-        break;
-      }
-      const time = data.startTime;
-      const diffTime = Math.abs(time - current);
-      if (note.judgeResult === Note.JUDGE_NONE && note.judgeState === Note.STATE_NO_JUDGE) {
-        if (diffTime <= JudgeRange.perfect) {
-          auto && this.effectTap(note, current);
-          Judge.perfect++;
-          note.judgeResult = Note.JUDGE_PERFECT;
-        } else if (diffTime <= JudgeRange.good && !auto) {
-          Judge.good++;
-          note.judgeResult = Note.JUDGE_GOOD;
-        } else if (diffTime <= JudgeRange.bad && !auto) {
-          Judge.bad++;
-          note.judgeResult = Note.JUDGE_BAD;
-        } else if (time - current < -JudgeRange.miss) {
-          Judge.miss++;
-          note.judgeResult = Note.JUDGE_MISS;
-          note.judgeState = Note.STATE_JUDGED;
-          continue;
-        }
-      } else {
-        auto && this.effectTap(note, current);
-      }
-      break;
-    }
-  }
-  effectTap(note, currentTime) {
-    const data = note.noteData;
-    const isHold = data.endTime > 0;
-    if (note.judgeState === Note.STATE_JUDGED) {
-      return;
-    }
-    if (isHold) {
-      if (currentTime >= data.endTime) {
-        this.pressUp();
-        note.judgeState = Note.STATE_JUDGED;
-      } else {
-        this.pressDown();
-        note.judgeState = Note.STATE_JUDGING;
-      }
-    } else {
-      this.tap();
-      note.judgeState = Note.STATE_JUDGED;
-    }
-  }
-  pressDown() {
-    if (this.pressState === _ManiaTrack.PRESS_STATE_DOWN) {
-      return;
-    }
-    this.pressState = _ManiaTrack.PRESS_STATE_DOWN;
-    this.fadeBegin().transitionTo(0.3, 60, easeOut);
-  }
-  pressUp() {
-    this.pressState = _ManiaTrack.PRESS_STATE_UP;
-    this.fadeBegin().transitionTo(0, 500, easeOutQuint);
-  }
-  tap() {
-    this.pressState = _ManiaTrack.PRESS_STATE_TAP;
-    this.fadeBegin().transitionTo(0.3, 60, easeOut).transitionTo(0, 500, easeOutQuint);
-  }
-  updateNoteQueue() {
-    const noteList = this.noteList;
-    for (let i = 0; i < noteList.length; i++) {
-      noteList[i].update();
-    }
-  }
-  copyTo(out, offset) {
-    const noteList = this.noteList;
-    const currentTime = AudioPlayerV2.currentTime();
-    const endTime = currentTime + this.movementDuration;
-    const { red, green, blue } = this.mainColor;
-    Shape2D.quad(
-      this.offsetLeft,
-      Coordinate$1.height / 2,
-      this.offsetLeft + this.trackWidth,
-      // this.panel.position.y - this.panel.height * (this.judgementLinePosition / 100),
-      -this.panel.height / 2,
-      out,
-      offset,
-      6
-    );
-    Shape2D.color(
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      out,
-      offset + 2,
-      6
-    );
-    let currentOffset = offset + 36;
-    Shape2D.quad(
-      this.offsetLeft,
-      Coordinate$1.height / 2 * 0.4,
-      this.offsetLeft + this.trackWidth,
-      this.panel.position.y - this.panel.height * (this.judgementLinePosition / 100),
-      out,
-      currentOffset,
-      6
-    );
-    Shape2D.color(
-      0,
-      0,
-      0,
-      0,
-      red,
-      green,
-      blue,
-      this.alpha,
-      0,
-      0,
-      0,
-      0,
-      red,
-      green,
-      blue,
-      this.alpha,
-      out,
-      currentOffset + 2,
-      6
-    );
-    currentOffset += 36;
-    Shape2D.quad(
-      this.offsetLeft,
-      this.panel.position.y - this.judgementLinePosition / 100 * this.panel.height - 10,
-      this.offsetLeft + this.trackWidth,
-      -this.panel.height / 2 + 20,
-      out,
-      currentOffset,
-      6
-    );
-    const stageAlpha = this.alpha / 0.3;
-    Shape2D.color(
-      red,
-      green,
-      blue,
-      stageAlpha,
-      red,
-      green,
-      blue,
-      stageAlpha,
-      red,
-      green,
-      blue,
-      stageAlpha,
-      red,
-      green,
-      blue,
-      stageAlpha,
-      out,
-      currentOffset + 2,
-      6
-    );
-    currentOffset += 36;
-    for (let i = 0; i < noteList.length; i++) {
-      const note = noteList[i];
-      const data = noteList[i].noteData;
-      if (data.startTime > endTime) {
-        break;
-      }
-      if (note.isJudged()) {
-        continue;
-      }
-      currentOffset += note.copyTo(out, currentOffset, 6);
-    }
-    Shape2D.quad(
-      this.offsetLeft,
-      this.panel.position.y - this.judgementLinePosition / 100 * this.panel.height,
-      this.offsetLeft + this.trackWidth,
-      this.panel.position.y - this.judgementLinePosition / 100 * this.panel.height + 10,
-      out,
-      currentOffset,
-      6
-    );
-    Shape2D.color(
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      out,
-      currentOffset + 2,
-      6
-    );
-    currentOffset += 36;
-    return currentOffset;
-  }
-};
-_ManiaTrack.PRESS_STATE_DOWN = 0;
-_ManiaTrack.PRESS_STATE_UP = 1;
-_ManiaTrack.PRESS_STATE_TAP = 2;
-let ManiaTrack = _ManiaTrack;
-const _Note = class _Note {
-  constructor(panel, noteWidth, noteHeight, offsetLeft, movementDuration, judgementLinePosition, color = Color.fromHex(6737151), noteData) {
-    this.panel = panel;
-    this.noteHeight = noteHeight;
-    this.movementDuration = movementDuration;
-    this.judgementLinePosition = judgementLinePosition;
-    this.noteData = noteData;
-    this.judgeResult = _Note.JUDGE_NONE;
-    this.judgeState = _Note.STATE_NO_JUDGE;
-    this.position = Vector2.newZero();
-    this.topLeft = Vector2.newZero();
-    this.bottomRight = Vector2.newZero();
-    this.color = Color.fromHex(65535);
-    this.color = color;
-    this.position.x = offsetLeft;
-    this.position.y = panel.height / 2;
-    const topLeft = this.topLeft;
-    const bottomRight = this.bottomRight;
-    topLeft.x = this.position.x;
-    topLeft.y = this.position.y;
-    bottomRight.x = this.position.x + noteWidth;
-    bottomRight.y = this.position.y - noteHeight;
-  }
-  isHold() {
-    return this.noteData.endTime > this.noteData.startTime;
-  }
-  isJudged() {
-    return this.judgeState === _Note.STATE_JUDGED;
-  }
-  update() {
-    const currentTime = AudioPlayerV2.currentTime();
-    const endTime = currentTime + this.movementDuration;
-    if (this.startTime > endTime) {
-      return;
-    }
-    this.updateVertex();
-  }
-  updateVertex() {
-    const currentTime = AudioPlayerV2.currentTime();
-    const top = this.panel.height / 2;
-    const moveLength = this.panel.height * (this.judgementLinePosition / 100);
-    const bottom = top - moveLength;
-    const duration = this.movementDuration;
-    const endTime = currentTime + duration;
-    const noteStartTime = this.noteData.startTime;
-    const noteEndTime = this.noteData.endTime;
-    const noteHeight = this.noteHeight;
-    let topY = 0, bottomY = 0;
-    if (this.isHold()) {
-      const holdStartPosition = (noteStartTime - currentTime) / duration;
-      const holdEndPosition = (noteEndTime - currentTime) / duration;
-      if (noteEndTime >= endTime) {
-        topY = top;
-      } else {
-        topY = top - (1 - holdEndPosition) * moveLength - noteHeight;
-      }
-      if (noteStartTime <= currentTime) {
-        bottomY = bottom;
-      } else {
-        bottomY = top - (1 - holdStartPosition) * moveLength;
-      }
-    } else {
-      const noteStartPosition = (noteStartTime - currentTime) / duration;
-      topY = top - (1 - noteStartPosition) * moveLength - noteHeight;
-      bottomY = topY + noteHeight;
-    }
-    this.position.y = bottomY;
-    this.topLeft.y = topY;
-    this.bottomRight.y = this.position.y;
-  }
-  get startTime() {
-    return this.noteData.startTime;
-  }
-  copyTo(out, offset, stride) {
-    Shape2D.quadVector2(
-      this.topLeft,
-      this.bottomRight,
-      out,
-      offset,
-      stride
-    );
-    Shape2D.oneColor(this.color, out, offset + 2, stride);
-    return 36;
-  }
-};
-_Note.JUDGE_NONE = -1;
-_Note.JUDGE_MISS = 0;
-_Note.JUDGE_BAD = 1;
-_Note.JUDGE_GOOD = 2;
-_Note.JUDGE_PERFECT = 3;
-_Note.STATE_NO_JUDGE = 0;
-_Note.STATE_JUDGING = 1;
-_Note.STATE_JUDGED = 2;
-_Note.VERTEX_COUNT = 6;
-let Note = _Note;
-class SongProgress {
   constructor() {
-    this.topLeft = Vector2.newZero();
-    this.bottomRight = Vector2.newZero();
-    this.color = Color.fromHex(6737151);
-  }
-  update() {
-    const percent = AudioPlayerV2.currentTime() / AudioPlayerV2.duration();
-    this.topLeft.set(
-      -Coordinate$1.width / 2,
-      -Coordinate$1.height / 2 + 10
-    );
-    this.bottomRight.set(
-      -Coordinate$1.width / 2 + Coordinate$1.width * percent,
-      -Coordinate$1.height / 2
-    );
-  }
-  copyTo(out, offset, stride) {
-    Shape2D.quad(
-      this.topLeft.x,
-      this.topLeft.y,
-      this.bottomRight.x,
-      this.bottomRight.y,
-      out,
-      offset,
-      stride
-    );
-    const r = this.color.red;
-    const g = this.color.green;
-    const b = this.color.blue;
-    const a = this.color.alpha;
-    Shape2D.color(
-      r,
-      g,
-      b,
-      a,
-      r,
-      g,
-      b,
-      a,
-      r,
-      g,
-      b,
-      a,
-      r,
-      g,
-      b,
-      a,
-      out,
-      offset + 2,
-      stride
-    );
-    return 36;
-  }
-}
-var text = `osu file format v14
-
-[General]
-AudioFilename: audio.ogg
-AudioLeadIn: 0
-PreviewTime: 164959
-Countdown: 0
-SampleSet: None
-StackLeniency: 0.7
-Mode: 3
-LetterboxInBreaks: 0
-SpecialStyle: 0
-WidescreenStoryboard: 1
-
-[Editor]
-Bookmarks: 120516
-DistanceSpacing: 0.8
-BeatDivisor: 3
-GridSize: 32
-TimelineZoom: 1.800001
-
-[Metadata]
-Title:Idol
-TitleUnicode:アイドル
-Artist:YOASOBI
-ArtistUnicode:YOASOBI
-Creator:Akasha-
-Version:CS' Hard
-Source:【推しの子】
-Tags:【Oshi no Ko】Oshi no Ko her fans Their idol's children 星野 愛久愛海 瑠美衣 Hoshino Akuamarin Aquamarine Aqua アクア Ruby Rubii ai アイ Aidoru My Star 幾田りら ikuta lilas ikura ayase jpop j-pop pop rap anime japanese opening op Kuo Kyoka Critical_Star Mirsaaa
-BeatmapID:4147032
-BeatmapSetID:1982752
-
-[Difficulty]
-HPDrainRate:7.5
-CircleSize:4
-OverallDifficulty:7.5
-ApproachRate:5
-SliderMultiplier:1.4
-SliderTickRate:1
-
-[Events]
-//Background and Video events
-Video,-135,"video.mp4"
-0,0,"BG2.jpg",0,0
-//Break Periods
-//Storyboard Layer 0 (Background)
-//Storyboard Layer 1 (Fail)
-//Storyboard Layer 2 (Pass)
-//Storyboard Layer 3 (Foreground)
-//Storyboard Layer 4 (Overlay)
-//Storyboard Sound Samples
-Sample,40274,0,"Tom1.wav",40
-Sample,78045,0,"Tom2.wav",40
-
-[TimingPoints]
-335,361.44578313253,4,2,1,40,1,0
-55274,-100,4,2,1,40,0,1
-59973,-100,4,2,1,40,0,0
-60334,-100,4,2,1,40,0,1
-60425,-100,4,2,1,40,0,0
-60696,-100,4,2,1,40,0,1
-60786,-100,4,2,1,40,0,0
-61057,-100,4,2,1,40,0,1
-66479,-100,4,2,1,40,0,0
-66841,-100,4,2,1,40,0,1
-78407,-100,4,2,1,40,0,0
-101539,-100,4,2,1,40,0,1
-106238,-100,4,2,1,40,0,0
-106600,-100,4,2,1,40,0,1
-106690,-100,4,2,1,40,0,0
-106961,-100,4,2,1,40,0,1
-107051,-100,4,2,1,40,0,0
-107322,-100,4,2,1,40,0,1
-112563,-100,4,2,1,40,0,0
-113106,-100,4,2,1,40,0,1
-123949,400,4,2,1,40,1,1
-123949,-90.0900900900901,4,2,1,40,0,1
-124749,400,4,2,1,40,1,0
-124749,-90.0900900900901,4,2,1,40,0,0
-150349,379.746835443038,4,2,1,40,1,0
-150349,-95.2380952380952,4,2,1,40,0,0
-164779,361.44578313253,4,2,1,40,1,0
-165501,361.44578313253,4,2,1,40,1,0
-171284,-100,4,2,1,40,0,1
-176705,-100,4,2,1,40,0,0
-177067,-100,4,2,1,40,0,1
-188633,-100,4,2,1,40,0,0
-
-
-[HitObjects]
-64,192,335,128,2,696:0:0:0:0:
-192,192,335,1,0,0:0:0:0:
-448,192,335,1,0,0:0:0:0:
-448,192,515,1,0,0:0:0:0:
-320,192,696,1,0,0:0:0:0:
-192,192,786,1,0,0:0:0:0:
-448,192,877,1,0,0:0:0:0:
-320,192,967,1,0,0:0:0:0:
-64,192,1057,1,8,0:0:0:0:
-192,192,1057,1,0,0:0:0:0:
-320,192,1238,1,0,0:0:0:0:
-448,192,1419,1,0,0:0:0:0:
-192,192,1600,1,0,0:0:0:0:
-320,192,1690,1,0,0:0:0:0:
-64,192,1780,1,0,0:0:0:0:
-320,192,1961,1,0,0:0:0:0:
-64,192,2142,1,2,0:0:0:0:
-192,192,2142,1,0,0:0:0:0:
-448,192,2142,128,0,2503:0:0:0:0:
-64,192,2322,1,0,0:0:0:0:
-320,192,2503,1,8,0:0:0:0:
-64,192,2684,1,2,0:0:0:0:
-192,192,2684,128,0,3045:0:0:0:0:
-448,192,2684,1,0,0:0:0:0:
-448,192,2865,1,0,0:0:0:0:
-64,192,3045,1,0,0:0:0:0:
-64,192,3226,1,2,0:0:0:0:
-320,192,3226,1,0,0:0:0:0:
-448,192,3226,128,0,3588:0:0:0:0:
-64,192,3407,1,0,0:0:0:0:
-192,192,3588,1,0,0:0:0:0:
-320,192,3678,1,0,0:0:0:0:
-64,192,3768,1,0,0:0:0:0:
-192,192,3859,1,0,0:0:0:0:
-320,192,3949,1,8,0:0:0:0:
-448,192,3949,1,0,0:0:0:0:
-192,192,4130,1,0,0:0:0:0:
-64,192,4310,1,0,0:0:0:0:
-320,192,4491,1,0,0:0:0:0:
-192,192,4581,1,0,0:0:0:0:
-448,192,4672,1,0,0:0:0:0:
-192,192,4853,1,0,0:0:0:0:
-320,192,4943,1,0,0:0:0:0:
-64,192,5033,128,2,5395:0:0:0:0:
-448,192,5033,1,0,0:0:0:0:
-448,192,5214,1,0,0:0:0:0:
-192,192,5395,1,8,0:0:0:0:
-64,192,5575,1,2,0:0:0:0:
-320,192,5575,128,0,5937:0:0:0:0:
-448,192,5575,1,0,0:0:0:0:
-64,192,5756,1,0,0:0:0:0:
-448,192,5937,1,0,0:0:0:0:
-64,192,6118,128,2,6479:0:0:0:0:
-192,192,6118,1,0,0:0:0:0:
-320,192,6118,1,0,0:0:0:0:
-320,192,6298,1,0,0:0:0:0:
-448,192,6479,1,0,0:0:0:0:
-320,192,6569,1,0,0:0:0:0:
-64,192,6660,1,0,0:0:0:0:
-192,192,6750,1,0,0:0:0:0:
-320,192,6841,1,8,0:0:0:0:
-448,192,6841,1,0,0:0:0:0:
-64,192,7021,1,0,0:0:0:0:
-448,192,7202,1,0,0:0:0:0:
-320,192,7383,1,0,0:0:0:0:
-192,192,7473,1,0,0:0:0:0:
-64,192,7563,1,0,0:0:0:0:
-320,192,7744,1,0,0:0:0:0:
-64,192,7925,128,2,8286:0:0:0:0:
-192,192,7925,1,0,0:0:0:0:
-448,192,7925,1,0,0:0:0:0:
-448,192,8106,1,0,0:0:0:0:
-192,192,8286,1,8,0:0:0:0:
-64,192,8467,1,2,0:0:0:0:
-320,192,8467,128,0,8828:0:0:0:0:
-448,192,8467,1,0,0:0:0:0:
-64,192,8648,1,0,0:0:0:0:
-448,192,8828,1,0,0:0:0:0:
-192,192,9009,1,2,0:0:0:0:
-320,192,9009,1,0,0:0:0:0:
-448,192,9009,128,0,9371:0:0:0:0:
-192,192,9190,1,0,0:0:0:0:
-64,192,9371,1,0,0:0:0:0:
-192,192,9461,1,0,0:0:0:0:
-448,192,9551,1,0,0:0:0:0:
-320,192,9642,1,0,0:0:0:0:
-64,192,9732,1,8,0:0:0:0:
-192,192,9732,1,0,0:0:0:0:
-448,192,9913,1,0,0:0:0:0:
-64,192,10094,1,0,0:0:0:0:
-192,192,10274,1,0,0:0:0:0:
-320,192,10365,1,0,0:0:0:0:
-448,192,10455,1,0,0:0:0:0:
-320,192,10636,1,0,0:0:0:0:
-192,192,10726,1,0,0:0:0:0:
-64,192,10816,1,2,0:0:0:0:
-448,192,10816,128,0,11178:0:0:0:0:
-64,192,10997,1,0,0:0:0:0:
-320,192,11178,1,8,0:0:0:0:
-64,192,11359,1,2,0:0:0:0:
-192,192,11359,128,0,11720:0:0:0:0:
-448,192,11359,1,0,0:0:0:0:
-448,192,11539,1,0,0:0:0:0:
-64,192,11720,1,0,0:0:0:0:
-64,192,11901,1,2,0:0:0:0:
-320,192,11901,128,8,12081:0:0:0:0:
-448,192,11901,128,0,12443:0:0:0:0:
-192,192,12262,128,0,12443:0:0:0:0:
-64,192,12624,128,2,12985:0:0:0:0:
-320,192,12624,128,8,12804:0:0:0:0:
-448,192,12624,1,0,0:0:0:0:
-448,192,12985,128,0,13166:0:0:0:0:
-64,192,13166,1,2,0:0:0:0:
-192,192,13166,128,4,13437:0:0:0:0:
-320,192,13166,1,8,0:0:0:0:
-192,192,13527,1,2,0:0:0:0:
-320,192,13527,128,8,13798:0:0:0:0:
-448,192,13527,1,0,0:0:0:0:
-64,192,13889,1,2,0:0:0:0:
-192,192,13889,1,8,0:0:0:0:
-448,192,13889,1,0,0:0:0:0:
-64,192,14069,128,2,14431:0:0:0:0:
-320,192,14069,1,8,0:0:0:0:
-448,192,14069,128,0,14431:0:0:0:0:
-192,192,14431,1,0,0:0:0:0:
-320,192,14431,1,0,0:0:0:0:
-64,192,14792,128,2,14973:0:0:0:0:
-320,192,14792,1,4,0:0:0:0:
-448,192,14792,1,0,0:0:0:0:
-192,192,15154,128,0,15334:0:0:0:0:
-320,192,15515,128,0,15696:0:0:0:0:
-448,192,15877,128,0,16057:0:0:0:0:
-64,192,16238,128,2,16419:0:0:0:0:
-320,192,16600,128,0,16780:0:0:0:0:
-192,192,16961,128,0,17142:0:0:0:0:
-448,192,17322,128,0,17684:0:0:0:0:
-64,192,17684,1,2,0:0:0:0:
-192,192,17684,1,4,0:0:0:0:
-320,192,17865,1,0,0:0:0:0:
-64,192,18045,1,2,0:0:0:0:
-448,192,18045,1,8,0:0:0:0:
-192,192,18226,1,0,0:0:0:0:
-64,192,18407,1,2,0:0:0:0:
-320,192,18407,1,0,0:0:0:0:
-192,192,18768,1,2,0:0:0:0:
-448,192,18768,1,8,0:0:0:0:
-64,192,18949,1,0,0:0:0:0:
-320,192,19130,1,2,0:0:0:0:
-448,192,19130,1,0,0:0:0:0:
-192,192,19310,1,0,0:0:0:0:
-64,192,19491,1,2,0:0:0:0:
-448,192,19491,1,8,0:0:0:0:
-320,192,19672,1,0,0:0:0:0:
-64,192,19853,1,2,0:0:0:0:
-192,192,19853,1,0,0:0:0:0:
-64,192,20214,1,2,0:0:0:0:
-448,192,20214,1,8,0:0:0:0:
-320,192,20395,1,0,0:0:0:0:
-64,192,20575,1,2,0:0:0:0:
-192,192,20575,1,0,0:0:0:0:
-192,192,20756,1,0,0:0:0:0:
-64,192,20937,1,2,0:0:0:0:
-448,192,20937,1,8,0:0:0:0:
-448,192,21118,1,0,0:0:0:0:
-64,192,21298,1,2,0:0:0:0:
-320,192,21298,1,0,0:0:0:0:
-64,192,21479,1,0,0:0:0:0:
-192,192,21660,1,2,0:0:0:0:
-448,192,21660,1,8,0:0:0:0:
-448,192,21841,1,0,0:0:0:0:
-64,192,22021,1,2,0:0:0:0:
-192,192,22021,1,0,0:0:0:0:
-320,192,22202,1,0,0:0:0:0:
-64,192,22383,1,2,0:0:0:0:
-448,192,22383,1,8,0:0:0:0:
-192,192,22563,1,0,0:0:0:0:
-320,192,22744,1,2,0:0:0:0:
-448,192,22744,1,0,0:0:0:0:
-64,192,23106,1,2,0:0:0:0:
-320,192,23106,1,8,0:0:0:0:
-192,192,23286,1,0,0:0:0:0:
-64,192,23467,1,2,0:0:0:0:
-192,192,23467,1,0,0:0:0:0:
-448,192,23467,1,0,0:0:0:0:
-320,192,23648,1,0,0:0:0:0:
-64,192,23828,1,2,0:0:0:0:
-448,192,23828,1,8,0:0:0:0:
-192,192,24009,1,0,0:0:0:0:
-320,192,24190,1,2,0:0:0:0:
-448,192,24190,1,0,0:0:0:0:
-64,192,24551,1,2,0:0:0:0:
-320,192,24551,1,8,0:0:0:0:
-192,192,24732,1,0,0:0:0:0:
-64,192,24913,1,2,0:0:0:0:
-448,192,24913,1,0,0:0:0:0:
-320,192,25094,1,0,0:0:0:0:
-192,192,25274,1,2,0:0:0:0:
-448,192,25274,1,8,0:0:0:0:
-64,192,25455,1,0,0:0:0:0:
-320,192,25636,1,2,0:0:0:0:
-448,192,25636,1,0,0:0:0:0:
-64,192,25997,1,2,0:0:0:0:
-320,192,25997,1,8,0:0:0:0:
-448,192,26178,1,0,0:0:0:0:
-64,192,26359,1,2,0:0:0:0:
-192,192,26359,1,0,0:0:0:0:
-192,192,26539,1,0,0:0:0:0:
-64,192,26720,1,2,0:0:0:0:
-448,192,26720,1,8,0:0:0:0:
-448,192,26901,1,0,0:0:0:0:
-64,192,27081,1,2,0:0:0:0:
-320,192,27081,1,0,0:0:0:0:
-64,192,27262,1,0,0:0:0:0:
-192,192,27443,1,2,0:0:0:0:
-448,192,27443,1,8,0:0:0:0:
-192,192,27624,1,0,0:0:0:0:
-64,192,27804,1,2,0:0:0:0:
-448,192,27804,1,0,0:0:0:0:
-320,192,27985,1,0,0:0:0:0:
-64,192,28166,1,2,0:0:0:0:
-192,192,28166,1,8,0:0:0:0:
-320,192,28347,1,0,0:0:0:0:
-64,192,28527,1,2,0:0:0:0:
-448,192,28527,1,0,0:0:0:0:
-192,192,28708,1,0,0:0:0:0:
-320,192,28889,1,2,0:0:0:0:
-448,192,28889,128,8,29250:0:0:0:0:
-64,192,29250,128,2,29431:0:0:0:0:
-192,192,29250,128,4,29431:0:0:0:0:
-192,192,29521,128,0,29702:0:0:0:0:
-320,192,29521,128,0,29702:0:0:0:0:
-320,192,29792,128,0,29973:0:0:0:0:
-448,192,29792,128,0,29973:0:0:0:0:
-64,192,29973,128,2,30154:0:0:0:0:
-192,192,29973,1,0,0:0:0:0:
-448,192,30154,128,0,30334:0:0:0:0:
-192,192,30334,128,2,30515:0:0:0:0:
-320,192,30334,1,8,0:0:0:0:
-64,192,30515,128,0,30696:0:0:0:0:
-320,192,30696,128,2,30877:0:0:0:0:
-448,192,30696,128,0,30877:0:0:0:0:
-192,192,30967,128,0,31148:0:0:0:0:
-320,192,30967,128,0,31148:0:0:0:0:
-64,192,31238,128,0,31419:0:0:0:0:
-192,192,31238,128,0,31419:0:0:0:0:
-448,192,31419,1,2,0:0:0:0:
-320,192,31600,128,0,31780:0:0:0:0:
-64,192,31780,128,2,31961:0:0:0:0:
-448,192,31780,1,8,0:0:0:0:
-192,192,31961,128,0,32142:0:0:0:0:
-320,192,32142,1,2,0:0:0:0:
-448,192,32142,128,0,32322:0:0:0:0:
-64,192,32322,128,0,32684:0:0:0:0:
-320,192,32503,128,2,32684:0:0:0:0:
-448,192,32503,128,8,32684:0:0:0:0:
-64,192,32865,128,2,33045:0:0:0:0:
-192,192,32865,1,0,0:0:0:0:
-448,192,33045,128,0,33407:0:0:0:0:
-64,192,33226,128,2,33407:0:0:0:0:
-192,192,33226,128,8,33407:0:0:0:0:
-320,192,33588,128,2,33768:0:0:0:0:
-448,192,33588,1,0,0:0:0:0:
-64,192,33768,128,0,33949:0:0:0:0:
-320,192,33949,128,2,34130:0:0:0:0:
-448,192,33949,1,8,0:0:0:0:
-64,192,34130,1,0,0:0:0:0:
-64,192,34310,1,2,0:0:0:0:
-448,192,34310,1,0,0:0:0:0:
-448,192,34491,1,8,0:0:0:0:
-320,192,34581,1,8,0:0:0:0:
-64,192,34672,1,2,0:0:0:0:
-192,192,34672,1,0,0:0:0:0:
-192,192,34853,1,2,0:0:0:0:
-64,192,35033,1,2,0:0:0:0:
-320,192,35033,128,4,35214:0:0:0:0:
-448,192,35033,128,0,35214:0:0:0:0:
-192,192,35304,128,0,35485:0:0:0:0:
-320,192,35304,128,0,35485:0:0:0:0:
-64,192,35575,128,0,35756:0:0:0:30:Hat Open.wav
-192,192,35575,128,0,35756:0:0:0:0:
-320,192,35756,1,2,0:0:0:0:
-448,192,35756,128,0,35937:0:0:0:0:
-64,192,35937,128,0,36118:0:0:0:30:Hat Open.wav
-192,192,36118,1,2,0:0:0:0:
-320,192,36118,128,8,36298:0:0:0:0:
-448,192,36298,128,0,36479:0:0:0:30:Hat Open.wav
-64,192,36479,128,2,36660:0:0:0:0:
-192,192,36479,128,0,36660:0:0:0:0:
-192,192,36750,128,0,36931:0:0:0:0:
-320,192,36750,128,0,36931:0:0:0:0:
-320,192,37021,128,0,37202:0:0:0:30:Hat Open.wav
-448,192,37021,128,0,37202:0:0:0:0:
-64,192,37202,1,2,0:0:0:0:
-320,192,37383,1,0,0:0:0:30:Hat Open.wav
-192,192,37473,1,0,0:0:0:0:
-64,192,37563,1,2,0:0:0:0:
-448,192,37563,128,8,37744:0:0:0:0:
-320,192,37744,128,0,37925:0:0:0:30:Hat Open.wav
-64,192,37925,128,2,38106:0:0:0:0:
-192,192,37925,1,0,0:0:0:0:
-448,192,38106,128,0,38467:0:0:0:30:Hat Open.wav
-64,192,38286,128,2,38467:0:0:0:0:
-192,192,38286,128,8,38467:0:0:0:0:
-320,192,38648,1,2,0:0:0:0:
-448,192,38648,128,0,38828:0:0:0:0:
-64,192,38828,128,0,39190:0:0:0:30:Hat Open.wav
-320,192,39009,1,2,0:0:0:0:
-448,192,39009,128,8,39190:0:0:0:0:
-192,192,39190,128,0,39371:0:0:0:30:Hat Open.wav
-64,192,39371,1,2,0:0:0:0:
-448,192,39371,1,0,0:0:0:0:
-320,192,39551,1,0,0:0:0:30:Hat Open.wav
-192,192,39732,1,2,0:0:0:0:
-448,192,39732,1,8,0:0:0:0:
-64,192,39913,1,8,0:0:0:0:
-192,192,40003,1,8,0:0:0:0:
-320,192,40094,1,2,0:0:0:0:
-448,192,40094,1,0,0:0:0:0:
-64,192,40184,1,0,0:0:0:0:
-320,192,40274,1,2,0:0:0:0:
-192,192,40365,1,0,0:0:0:0:
-64,192,40455,1,8,0:0:0:0:
-448,192,40455,1,0,0:0:0:40:Tom2.wav
-320,192,40636,1,0,0:0:0:0:
-64,192,40816,1,2,0:0:0:0:
-192,192,40816,1,4,0:0:0:0:
-448,192,40816,128,0,41539:0:0:0:0:
-64,192,41359,1,2,0:0:0:0:
-64,192,41539,1,2,0:0:0:0:
-64,192,41901,1,8,0:0:0:0:
-192,192,41901,128,0,42081:0:0:0:0:
-448,192,41901,1,0,0:0:0:0:
-448,192,42081,1,2,0:0:0:0:
-448,192,42443,1,2,0:0:0:0:
-448,192,42804,1,2,0:0:0:0:
-64,192,42985,1,2,0:0:0:0:
-448,192,42985,1,0,0:0:0:0:
-192,192,43347,1,8,0:0:0:0:
-320,192,43347,128,0,43527:0:0:0:0:
-64,192,43708,128,2,44431:0:0:0:0:
-448,192,43708,1,0,0:0:0:0:
-448,192,44250,1,2,0:0:0:0:
-448,192,44431,1,2,0:0:0:0:
-64,192,44792,1,8,0:0:0:0:
-320,192,44792,128,0,44973:0:0:0:0:
-448,192,44792,1,0,0:0:0:0:
-192,192,45154,1,2,0:0:0:0:
-448,192,45154,128,0,45334:0:0:0:0:
-64,192,45515,128,2,45696:0:0:0:0:
-320,192,45515,1,0,0:0:0:0:
-448,192,45877,1,2,0:0:0:0:
-192,192,45967,1,2,0:0:0:0:
-320,192,46057,1,2,0:0:0:0:
-64,192,46148,1,2,0:0:0:0:
-192,192,46238,128,8,46419:0:0:0:0:
-448,192,46238,1,0,0:0:0:0:
-64,192,46600,1,2,0:0:0:0:
-448,192,46600,1,0,0:0:0:0:
-320,192,46780,1,0,0:0:0:30:Hat Open.wav
-64,192,46961,128,8,47142:0:0:0:0:
-192,192,46961,1,2,0:0:0:0:
-320,192,47142,1,0,0:0:0:30:Hat Open.wav
-64,192,47322,1,2,0:0:0:0:
-448,192,47322,1,0,0:0:0:0:
-192,192,47503,1,0,0:0:0:30:Hat Open.wav
-64,192,47684,128,8,47865:0:0:0:0:
-448,192,47684,1,2,0:0:0:0:
-320,192,47865,1,0,0:0:0:30:Hat Open.wav
-64,192,48045,1,2,0:0:0:0:
-192,192,48045,1,0,0:0:0:0:
-320,192,48226,1,0,0:0:0:30:Hat Open.wav
-64,192,48407,1,8,0:0:0:0:
-448,192,48407,128,2,48588:0:0:0:0:
-192,192,48588,1,0,0:0:0:30:Hat Open.wav
-320,192,48768,1,2,0:0:0:0:
-448,192,48768,1,0,0:0:0:0:
-192,192,48949,1,0,0:0:0:30:Hat Open.wav
-64,192,49130,1,8,0:0:0:0:
-448,192,49130,128,2,49310:0:0:0:0:
-320,192,49310,1,0,0:0:0:30:Hat Open.wav
-64,192,49491,1,2,0:0:0:0:
-192,192,49491,1,4,0:0:0:0:
-448,192,49491,1,0,0:0:0:0:
-64,192,49853,128,2,50033:0:0:0:0:
-320,192,49853,1,0,0:0:0:0:
-64,192,50214,1,2,0:0:0:0:
-448,192,50214,1,0,0:0:0:0:
-64,192,50575,128,2,50756:0:0:0:0:
-192,192,50575,1,0,0:0:0:0:
-64,192,50937,1,2,0:0:0:0:
-448,192,50937,1,0,0:0:0:0:
-320,192,51298,1,2,0:0:0:0:
-448,192,51298,128,0,51479:0:0:0:0:
-64,192,51660,1,2,0:0:0:0:
-448,192,51660,1,0,0:0:0:0:
-192,192,52021,1,2,0:0:0:0:
-448,192,52021,128,0,52202:0:0:0:0:
-64,192,52383,1,8,0:0:0:0:
-448,192,52383,1,2,0:0:0:0:
-192,192,52563,1,0,0:0:0:0:
-192,192,52744,1,0,0:0:0:0:
-320,192,52925,1,8,0:0:0:0:
-448,192,52925,1,2,0:0:0:0:
-64,192,53106,1,8,0:0:0:0:
-192,192,53106,1,2,0:0:0:0:
-320,192,53286,1,10,0:0:0:0:
-192,192,53377,1,0,0:0:0:40:Tom1.wav
-448,192,53467,1,0,0:0:0:40:Tom2.wav
-320,192,53557,1,0,0:0:0:40:Tom3.wav
-64,192,53648,1,8,0:0:0:0:
-192,192,53648,128,2,53919:0:0:0:0:
-320,192,54009,128,8,54280:0:0:0:0:
-448,192,54009,1,2,0:0:0:0:
-64,192,54371,1,8,0:0:0:0:
-192,192,54371,1,2,0:0:0:0:
-64,192,54551,128,8,54913:0:0:0:0:
-320,192,54551,1,2,0:0:0:0:
-448,192,54551,128,0,54913:0:0:0:0:
-64,192,55274,1,2,0:0:0:0:
-448,192,55274,128,4,55455:0:0:0:0:
-192,192,55455,1,0,0:0:0:0:
-64,192,55636,128,8,55816:0:0:0:0:
-320,192,55636,1,2,0:0:0:0:
-448,192,55636,1,0,0:0:0:0:
-192,192,55816,1,0,0:0:0:0:
-64,192,55997,1,2,0:0:0:0:
-320,192,55997,128,0,56178:0:0:0:0:
-192,192,56178,1,0,0:0:0:0:
-320,192,56359,1,2,0:0:0:0:
-448,192,56359,128,8,56539:0:0:0:0:
-64,192,56539,128,0,56720:0:0:0:0:
-320,192,56720,1,2,0:0:0:0:
-448,192,56720,1,0,0:0:0:0:
-192,192,56901,128,0,57081:0:0:0:0:
-64,192,57081,1,8,0:0:0:0:
-448,192,57081,128,2,57262:0:0:0:0:
-64,192,57262,128,0,57443:0:0:0:0:
-320,192,57443,128,2,57624:0:0:0:0:
-448,192,57443,1,0,0:0:0:0:
-192,192,57624,1,0,0:0:0:0:
-64,192,57804,1,2,0:0:0:0:
-448,192,57804,1,8,0:0:0:0:
-192,192,57985,1,0,0:0:0:0:
-320,192,57985,1,0,0:0:0:0:
-64,192,58166,128,2,58347:0:0:0:0:
-448,192,58166,1,0,0:0:0:0:
-320,192,58347,1,0,0:0:0:0:
-64,192,58527,1,8,0:0:0:0:
-192,192,58527,128,2,58708:0:0:0:0:
-448,192,58708,1,0,0:0:0:0:
-64,192,58889,1,2,0:0:0:0:
-320,192,58889,128,0,59069:0:0:0:0:
-192,192,59069,1,0,0:0:0:0:
-64,192,59250,1,2,0:0:0:0:
-448,192,59250,128,8,59431:0:0:0:0:
-192,192,59431,128,0,59612:0:0:0:0:
-64,192,59612,1,2,0:0:0:0:
-448,192,59612,1,0,0:0:0:0:
-320,192,59792,128,0,59883:0:0:0:0:
-192,192,59973,128,8,60063:0:0:0:0:
-448,192,59973,1,2,0:0:0:0:
-64,192,60154,128,8,60244:0:0:0:0:
-320,192,60334,1,2,0:0:0:0:
-448,192,60334,128,0,60515:0:0:0:0:
-192,192,60515,1,8,0:0:0:0:
-320,192,60606,1,8,0:0:0:0:
-64,192,60696,128,2,60877:0:0:0:0:
-448,192,60696,1,0,0:0:0:0:
-320,192,60877,1,8,0:0:0:0:
-192,192,60967,1,8,0:0:0:0:
-64,192,61057,1,2,0:0:0:0:
-448,192,61057,128,4,61238:0:0:0:0:
-192,192,61238,1,0,0:0:0:0:
-64,192,61419,1,2,0:0:0:0:
-320,192,61419,128,8,61600:0:0:0:0:
-448,192,61600,1,0,0:0:0:0:
-64,192,61780,128,2,61961:0:0:0:0:
-192,192,61780,1,0,0:0:0:0:
-448,192,61961,1,0,0:0:0:0:
-64,192,62142,1,8,0:0:0:0:
-320,192,62142,128,2,62322:0:0:0:0:
-448,192,62322,128,0,62503:0:0:0:0:
-64,192,62503,1,2,0:0:0:0:
-192,192,62503,1,0,0:0:0:0:
-320,192,62684,128,0,62865:0:0:0:0:
-64,192,62865,128,2,63045:0:0:0:0:
-192,192,62865,1,8,0:0:0:0:
-448,192,63045,128,0,63226:0:0:0:0:
-192,192,63226,128,2,63407:0:0:0:0:
-320,192,63226,1,0,0:0:0:0:
-64,192,63407,1,0,0:0:0:0:
-320,192,63588,1,8,0:0:0:0:
-448,192,63588,1,2,0:0:0:0:
-192,192,63768,1,0,0:0:0:0:
-320,192,63768,1,0,0:0:0:0:
-64,192,63949,128,2,64130:0:0:0:0:
-448,192,63949,1,0,0:0:0:0:
-192,192,64130,1,0,0:0:0:0:
-64,192,64310,1,2,0:0:0:0:
-448,192,64310,128,8,64491:0:0:0:0:
-320,192,64491,1,0,0:0:0:0:
-192,192,64672,128,2,64853:0:0:0:0:
-448,192,64672,1,0,0:0:0:0:
-320,192,64853,1,0,0:0:0:0:
-64,192,65033,128,8,65214:0:0:0:0:
-192,192,65033,1,2,0:0:0:0:
-448,192,65214,128,0,65395:0:0:0:0:
-64,192,65395,1,2,0:0:0:0:
-192,192,65395,1,0,0:0:0:0:
-320,192,65575,128,0,65756:0:0:0:0:
-64,192,65756,1,2,0:0:0:0:
-448,192,65756,1,8,0:0:0:0:
-192,192,65937,128,0,66118:0:0:0:0:
-64,192,66118,128,2,66298:0:0:0:0:
-448,192,66118,1,0,0:0:0:0:
-320,192,66298,1,8,0:0:0:0:
-192,192,66389,1,8,0:0:0:0:
-64,192,66479,1,2,0:0:0:0:
-448,192,66479,128,0,66660:0:0:0:0:
-192,192,66660,1,8,0:0:0:0:
-320,192,66750,1,8,0:0:0:0:
-64,192,66841,1,2,0:0:0:0:
-448,192,66841,1,4,0:0:0:0:
-64,192,67202,1,2,0:0:0:0:
-448,192,67202,1,8,0:0:0:0:
-64,192,67563,1,2,0:0:0:0:
-192,192,67563,1,0,0:0:0:0:
-448,192,67834,1,0,0:0:0:0:
-64,192,67925,1,8,0:0:0:0:
-192,192,67925,1,2,0:0:0:0:
-320,192,68106,1,0,0:0:0:0:
-64,192,68286,1,2,0:0:0:0:
-448,192,68286,1,0,0:0:0:0:
-192,192,68467,1,0,0:0:0:0:
-64,192,68648,1,2,0:0:0:0:
-448,192,68648,1,8,0:0:0:0:
-320,192,68828,1,0,0:0:0:0:
-64,192,69009,1,2,0:0:0:0:
-192,192,69009,1,0,0:0:0:0:
-320,192,69190,1,0,0:0:0:0:
-64,192,69371,1,8,0:0:0:0:
-448,192,69371,1,2,0:0:0:0:
-192,192,69551,1,0,0:0:0:0:
-320,192,69732,1,2,0:0:0:0:
-448,192,69732,1,0,0:0:0:0:
-320,192,70094,1,2,0:0:0:0:
-448,192,70094,1,8,0:0:0:0:
-64,192,70455,1,2,0:0:0:0:
-448,192,70455,1,0,0:0:0:0:
-448,192,70726,1,0,0:0:0:0:
-64,192,70816,1,8,0:0:0:0:
-192,192,70816,1,2,0:0:0:0:
-320,192,70997,1,0,0:0:0:0:
-64,192,71178,1,2,0:0:0:0:
-448,192,71178,1,0,0:0:0:0:
-448,192,71359,128,0,71539:0:0:0:0:
-192,192,71539,1,2,0:0:0:0:
-320,192,71539,1,8,0:0:0:0:
-320,192,71720,128,0,71901:0:0:0:0:
-64,192,71901,1,2,0:0:0:0:
-448,192,71901,1,0,0:0:0:0:
-64,192,72081,128,0,72262:0:0:0:0:
-192,192,72262,1,8,0:0:0:0:
-320,192,72262,1,2,0:0:0:0:
-192,192,72443,128,0,72624:0:0:0:0:
-64,192,72624,1,2,0:0:0:0:
-448,192,72624,1,0,0:0:0:0:
-64,192,72985,1,2,0:0:0:0:
-448,192,72985,1,8,0:0:0:0:
-320,192,73347,1,2,0:0:0:0:
-448,192,73347,1,0,0:0:0:0:
-64,192,73618,1,0,0:0:0:0:
-320,192,73708,1,8,0:0:0:0:
-448,192,73708,1,2,0:0:0:0:
-192,192,73889,1,0,0:0:0:0:
-64,192,74069,1,2,0:0:0:0:
-448,192,74069,1,0,0:0:0:0:
-320,192,74250,1,0,0:0:0:0:
-64,192,74431,1,2,0:0:0:0:
-448,192,74431,1,8,0:0:0:0:
-192,192,74612,1,0,0:0:0:0:
-320,192,74792,1,2,0:0:0:0:
-448,192,74792,1,0,0:0:0:0:
-192,192,74973,1,0,0:0:0:0:
-64,192,75154,1,8,0:0:0:0:
-448,192,75154,1,2,0:0:0:0:
-320,192,75334,1,0,0:0:0:0:
-64,192,75515,1,2,0:0:0:0:
-192,192,75515,1,0,0:0:0:0:
-192,192,75696,1,0,0:0:0:0:
-320,192,75877,1,2,0:0:0:0:
-448,192,75877,1,8,0:0:0:0:
-320,192,76057,1,0,0:0:0:0:
-64,192,76238,1,2,0:0:0:0:
-448,192,76238,1,0,0:0:0:0:
-192,192,76419,1,0,0:0:0:0:
-64,192,76509,1,0,0:0:0:0:
-320,192,76600,1,8,0:0:0:0:
-448,192,76600,1,2,0:0:0:0:
-64,192,76780,128,2,77503:0:0:0:0:
-192,192,76780,1,4,0:0:0:0:
-448,192,76780,1,0,0:0:0:0:
-448,192,77142,128,8,77503:0:0:0:0:
-192,192,77503,1,8,0:0:0:0:
-64,192,77684,1,2,0:0:0:0:
-320,192,77684,1,0,0:0:0:0:
-448,192,77684,128,0,78226:0:0:0:0:
-64,192,78045,1,2,0:0:0:0:
-64,192,78407,1,2,0:0:0:0:
-192,192,78407,128,0,78768:0:0:0:0:
-448,192,78407,1,0,0:0:0:0:
-448,192,78768,128,0,78949:0:0:0:0:
-64,192,79130,1,8,0:0:0:0:
-448,192,79130,128,0,79310:0:0:0:0:
-192,192,79491,128,0,79672:0:0:0:0:
-320,192,79853,1,0,0:0:0:0:
-192,192,80033,1,0,0:0:0:0:
-320,192,80214,128,0,80395:0:0:0:0:
-320,192,80575,128,8,80756:0:0:0:0:
-320,192,80937,1,0,0:0:0:0:
-64,192,81118,1,2,0:0:0:0:
-192,192,81118,1,0,0:0:0:0:
-64,192,81298,1,2,0:0:0:0:
-448,192,81298,1,0,0:0:0:0:
-448,192,81660,128,0,81841:0:0:0:0:
-64,192,81841,128,0,82021:0:0:0:0:
-320,192,82021,1,8,0:0:0:0:
-448,192,82021,128,0,82202:0:0:0:0:
-64,192,82202,128,0,82383:0:0:0:0:
-448,192,82383,1,0,0:0:0:0:
-320,192,82563,1,0,0:0:0:0:
-192,192,82744,1,0,0:0:0:0:
-320,192,82925,1,0,0:0:0:0:
-192,192,83106,128,0,83286:0:0:0:0:
-448,192,83467,1,8,0:0:0:0:
-64,192,83648,1,0,0:0:0:0:
-192,192,83828,128,0,84190:0:0:0:0:
-64,192,84190,1,2,0:0:0:0:
-320,192,84190,128,0,84551:0:0:0:0:
-448,192,84190,1,0,0:0:0:0:
-64,192,84551,1,0,0:0:0:0:
-192,192,84732,1,0,0:0:0:0:
-448,192,84913,1,8,0:0:0:0:
-64,192,85094,1,0,0:0:0:0:
-448,192,85274,128,0,85455:0:0:0:0:
-192,192,85636,1,0,0:0:0:0:
-320,192,85816,1,0,0:0:0:0:
-192,192,85997,128,0,86178:0:0:0:0:
-192,192,86359,128,8,86539:0:0:0:0:
-192,192,86720,1,0,0:0:0:0:
-320,192,86901,1,2,0:0:0:0:
-448,192,86901,1,0,0:0:0:0:
-64,192,87081,1,2,0:0:0:0:
-448,192,87081,1,0,0:0:0:0:
-64,192,87443,1,0,0:0:0:0:
-192,192,87624,1,0,0:0:0:0:
-448,192,87804,128,8,87985:0:0:0:0:
-448,192,88166,1,0,0:0:0:0:
-192,192,88347,1,0,0:0:0:0:
-320,192,88437,1,0,0:0:0:0:
-64,192,88527,1,0,0:0:0:0:
-320,192,88708,1,0,0:0:0:0:
-192,192,88798,1,0,0:0:0:0:
-448,192,88889,1,0,0:0:0:0:
-64,192,89069,1,0,0:0:0:0:
-320,192,89250,1,2,0:0:0:0:
-448,192,89250,1,0,0:0:0:0:
-320,192,89371,128,0,89491:0:0:0:0:
-64,192,89612,1,2,0:0:0:0:
-192,192,89612,1,0,0:0:0:0:
-192,192,89732,128,0,89853:0:0:0:0:
-64,192,89973,1,2,0:0:0:0:
-448,192,89973,128,0,90334:0:0:0:0:
-192,192,90334,1,0,0:0:0:0:
-64,192,90455,1,0,0:0:0:0:
-448,192,90575,1,0,0:0:0:0:
-320,192,90696,128,0,91057:0:0:0:0:
-448,192,91057,1,0,0:0:0:0:
-64,192,91178,1,0,0:0:0:0:
-320,192,91298,1,0,0:0:0:0:
-192,192,91419,1,0,0:0:0:0:
-448,192,91660,1,0,0:0:0:0:
-64,192,91780,128,2,92021:0:0:0:0:
-192,192,91780,1,0,0:0:0:0:
-320,192,92021,1,0,0:0:0:0:
-448,192,92142,128,0,92503:0:0:0:0:
-64,192,92322,128,2,92684:0:0:0:0:
-192,192,92322,1,0,0:0:0:0:
-320,192,92503,1,0,0:0:0:0:
-192,192,92684,1,0,0:0:0:0:
-320,192,92774,1,0,0:0:0:0:
-64,192,92865,1,2,0:0:0:0:
-448,192,92865,128,0,93226:0:0:0:0:
-64,192,93226,1,0,0:0:0:0:
-320,192,93347,1,0,0:0:0:0:
-192,192,93467,1,0,0:0:0:0:
-64,192,93588,1,0,0:0:0:0:
-448,192,93708,1,0,0:0:0:0:
-192,192,93828,1,0,0:0:0:0:
-448,192,93949,128,0,94190:0:0:0:0:
-64,192,94190,1,0,0:0:0:0:
-320,192,94310,1,0,0:0:0:0:
-192,192,94431,1,0,0:0:0:0:
-64,192,94551,1,0,0:0:0:0:
-320,192,94672,1,0,0:0:0:0:
-448,192,94792,1,0,0:0:0:0:
-192,192,94913,1,0,0:0:0:0:
-64,192,95033,1,2,0:0:0:0:
-320,192,95033,128,0,95214:0:0:0:0:
-64,192,95395,1,2,0:0:0:0:
-320,192,95395,128,0,95575:0:0:0:0:
-448,192,95756,1,0,0:0:0:0:
-192,192,95877,1,0,0:0:0:0:
-320,192,95997,1,0,0:0:0:0:
-64,192,96118,128,2,96479:0:0:0:0:
-448,192,96479,1,0,0:0:0:0:
-320,192,96600,1,0,0:0:0:0:
-192,192,96720,1,0,0:0:0:0:
-64,192,96841,1,2,0:0:0:0:
-448,192,96961,1,0,0:0:0:0:
-192,192,97081,1,0,0:0:0:0:
-320,192,97202,128,0,97443:0:0:0:0:
-64,192,97443,1,0,0:0:0:0:
-192,192,97563,1,2,0:0:0:0:
-320,192,97804,1,0,0:0:0:0:
-64,192,97925,1,0,0:0:0:0:
-448,192,98045,1,0,0:0:0:0:
-64,192,98166,1,0,0:0:0:0:
-192,192,98286,128,0,98648:0:0:0:0:
-448,192,98648,128,2,98889:0:0:0:0:
-64,192,98889,1,0,0:0:0:0:
-192,192,99009,128,0,99130:0:0:0:0:
-320,192,99130,128,0,99250:0:0:0:0:
-448,192,99250,128,0,99371:0:0:0:0:
-64,192,99371,128,2,99732:0:0:0:0:
-192,192,99371,1,0,0:0:0:0:
-448,192,99732,128,0,99853:0:0:0:0:
-320,192,99853,128,0,99973:0:0:0:0:
-192,192,99973,1,0,0:0:0:0:
-64,192,100094,1,2,0:0:0:0:
-448,192,100094,1,0,0:0:0:0:
-192,192,100274,1,0,0:0:0:0:
-448,192,100455,1,2,0:0:0:0:
-320,192,100545,1,8,0:0:0:0:
-64,192,100636,1,8,0:0:0:0:
-192,192,100726,1,8,0:0:0:0:
-320,192,100816,1,2,0:0:0:0:
-448,192,100816,1,0,0:0:0:0:
-64,192,100907,1,2,0:0:0:0:
-320,192,100997,1,2,0:0:0:0:
-448,192,100997,1,0,0:0:0:0:
-192,192,101088,1,2,0:0:0:0:
-64,192,101178,1,8,0:0:0:0:
-448,192,101178,1,0,0:0:0:0:
-320,192,101359,1,0,0:0:0:0:
-64,192,101539,1,2,0:0:0:0:
-192,192,101539,1,4,0:0:0:0:
-320,192,101630,1,0,0:0:0:0:
-448,192,101720,1,0,0:0:0:0:
-192,192,101810,1,0,0:0:0:0:
-64,192,101901,1,8,0:0:0:0:
-448,192,101901,1,2,0:0:0:0:
-320,192,101991,1,0,0:0:0:0:
-192,192,102081,1,0,0:0:0:0:
-64,192,102172,1,0,0:0:0:0:
-320,192,102262,1,2,0:0:0:0:
-448,192,102262,1,0,0:0:0:0:
-64,192,102353,1,0,0:0:0:0:
-192,192,102443,1,0,0:0:0:0:
-320,192,102533,1,0,0:0:0:0:
-64,192,102624,1,2,0:0:0:0:
-448,192,102624,128,8,102804:0:0:0:0:
-192,192,102804,128,0,102985:0:0:0:0:
-320,192,102985,1,2,0:0:0:0:
-448,192,102985,1,0,0:0:0:0:
-64,192,103166,128,0,103347:0:0:0:0:
-192,192,103347,1,8,0:0:0:0:
-448,192,103347,128,2,103527:0:0:0:0:
-320,192,103527,128,0,103708:0:0:0:0:
-64,192,103708,128,2,103889:0:0:0:0:
-448,192,103708,1,0,0:0:0:0:
-320,192,103889,1,0,0:0:0:0:
-64,192,104069,1,2,0:0:0:0:
-192,192,104069,128,8,104250:0:0:0:0:
-448,192,104250,128,0,104431:0:0:0:0:
-64,192,104431,1,2,0:0:0:0:
-320,192,104431,1,0,0:0:0:0:
-192,192,104521,1,0,0:0:0:0:
-448,192,104612,1,0,0:0:0:0:
-320,192,104702,1,0,0:0:0:0:
-64,192,104792,1,8,0:0:0:0:
-192,192,104792,1,2,0:0:0:0:
-320,192,104883,1,0,0:0:0:0:
-448,192,104973,1,0,0:0:0:0:
-192,192,105063,1,0,0:0:0:0:
-64,192,105154,1,2,0:0:0:0:
-448,192,105154,1,0,0:0:0:0:
-320,192,105244,1,0,0:0:0:0:
-192,192,105334,1,0,0:0:0:0:
-320,192,105425,1,0,0:0:0:0:
-64,192,105515,128,2,105696:0:0:0:0:
-448,192,105515,1,8,0:0:0:0:
-320,192,105696,128,0,105877:0:0:0:0:
-192,192,105877,1,2,0:0:0:0:
-448,192,105877,1,0,0:0:0:0:
-448,192,106057,128,0,106148:0:0:0:0:
-64,192,106238,128,8,106328:0:0:0:0:
-192,192,106238,1,2,0:0:0:0:
-320,192,106419,128,8,106509:0:0:0:0:
-64,192,106600,1,2,0:0:0:0:
-192,192,106600,1,0,0:0:0:0:
-448,192,106600,128,0,106871:0:0:0:0:
-192,192,106780,1,8,0:0:0:0:
-64,192,106961,128,2,107232:0:0:0:0:
-320,192,106961,1,0,0:0:0:0:
-448,192,106961,1,0,0:0:0:0:
-320,192,107142,1,8,0:0:0:0:
-64,192,107322,1,2,0:0:0:0:
-448,192,107322,1,4,0:0:0:0:
-192,192,107413,1,0,0:0:0:0:
-320,192,107503,1,0,0:0:0:0:
-448,192,107594,1,0,0:0:0:0:
-64,192,107684,1,2,0:0:0:0:
-192,192,107684,1,8,0:0:0:0:
-448,192,107774,1,0,0:0:0:0:
-320,192,107865,1,0,0:0:0:0:
-192,192,107955,1,0,0:0:0:0:
-64,192,108045,1,2,0:0:0:0:
-448,192,108045,1,0,0:0:0:0:
-320,192,108136,1,0,0:0:0:0:
-192,192,108226,1,0,0:0:0:0:
-320,192,108316,1,0,0:0:0:0:
-64,192,108407,128,8,108588:0:0:0:0:
-448,192,108407,1,2,0:0:0:0:
-320,192,108588,128,0,108768:0:0:0:0:
-64,192,108768,1,2,0:0:0:0:
-192,192,108768,1,0,0:0:0:0:
-448,192,108949,128,0,109130:0:0:0:0:
-64,192,109130,128,2,109310:0:0:0:0:
-320,192,109130,1,8,0:0:0:0:
-192,192,109310,128,0,109491:0:0:0:0:
-64,192,109491,1,2,0:0:0:0:
-448,192,109491,128,0,109672:0:0:0:0:
-192,192,109672,1,0,0:0:0:0:
-320,192,109853,128,8,110033:0:0:0:0:
-448,192,109853,1,2,0:0:0:0:
-64,192,110033,128,0,110214:0:0:0:0:
-192,192,110214,1,2,0:0:0:0:
-448,192,110214,1,0,0:0:0:0:
-320,192,110304,1,0,0:0:0:0:
-64,192,110395,1,0,0:0:0:0:
-192,192,110485,1,0,0:0:0:0:
-320,192,110575,1,2,0:0:0:0:
-448,192,110575,1,8,0:0:0:0:
-192,192,110666,1,0,0:0:0:0:
-64,192,110756,1,0,0:0:0:0:
-320,192,110847,1,0,0:0:0:0:
-192,192,110937,1,2,0:0:0:0:
-448,192,110937,128,0,111118:0:0:0:0:
-64,192,111208,128,2,111389:0:0:0:0:
-320,192,111208,1,0,0:0:0:0:
-64,192,111479,1,4,0:0:0:0:
-192,192,111479,1,2,0:0:0:0:
-448,192,111479,128,0,111841:0:0:0:0:
-64,192,111841,1,8,0:0:0:0:
-192,192,112021,1,2,0:0:0:0:
-448,192,112021,1,8,0:0:0:0:
-320,192,112202,1,8,0:0:0:0:
-64,192,112383,1,2,0:0:0:0:
-192,192,112383,1,0,0:0:0:0:
-320,192,112563,1,8,0:0:0:0:
-64,192,112744,1,2,0:0:0:0:
-448,192,112744,1,0,0:0:0:0:
-192,192,112834,1,8,0:0:0:0:
-320,192,112925,1,8,0:0:0:0:
-192,192,113015,1,8,0:0:0:0:
-64,192,113106,1,2,0:0:0:0:
-320,192,113106,1,4,0:0:0:0:
-448,192,113106,128,0,113377:0:0:0:0:
-64,192,113467,1,2,0:0:0:0:
-192,192,113467,128,8,113738:0:0:0:0:
-448,192,113467,1,0,0:0:0:0:
-64,192,113828,128,2,114100:0:0:0:0:
-320,192,113828,1,0,0:0:0:0:
-448,192,114009,1,0,0:0:0:0:
-320,192,114100,1,0,0:0:0:0:
-64,192,114190,1,8,0:0:0:0:
-192,192,114190,1,2,0:0:0:0:
-320,192,114371,128,0,114551:0:0:0:0:
-64,192,114551,1,2,0:0:0:0:
-448,192,114551,1,0,0:0:0:0:
-192,192,114732,128,0,114822:0:0:0:0:
-64,192,114913,1,2,0:0:0:0:
-320,192,114913,128,8,115003:0:0:0:0:
-448,192,115094,128,0,115184:0:0:0:0:
-64,192,115274,128,2,115455:0:0:0:0:
-192,192,115274,128,0,115455:0:0:0:0:
-320,192,115455,128,0,115636:0:0:0:0:
-448,192,115455,128,0,115636:0:0:0:0:
-64,192,115636,128,8,115816:0:0:0:0:
-192,192,115636,128,2,115816:0:0:0:0:
-320,192,115816,128,0,115997:0:0:0:0:
-448,192,115816,128,0,115997:0:0:0:0:
-64,192,115997,128,2,116268:0:0:0:0:
-192,192,115997,1,0,0:0:0:0:
-320,192,116359,1,2,0:0:0:0:
-448,192,116359,128,8,116630:0:0:0:0:
-64,192,116720,1,2,0:0:0:0:
-192,192,116720,128,0,116991:0:0:0:0:
-448,192,116901,1,0,0:0:0:0:
-320,192,116991,1,0,0:0:0:0:
-64,192,117081,1,8,0:0:0:0:
-192,192,117081,1,2,0:0:0:0:
-320,192,117262,128,0,117443:0:0:0:0:
-192,192,117443,1,2,0:0:0:0:
-448,192,117443,1,0,0:0:0:0:
-64,192,117624,128,0,117804:0:0:0:0:
-320,192,117804,1,2,0:0:0:0:
-448,192,117804,128,8,117985:0:0:0:0:
-192,192,117985,128,0,118166:0:0:0:0:
-64,192,118166,128,2,118347:0:0:0:0:
-448,192,118166,1,0,0:0:0:0:
-192,192,118347,128,0,118527:0:0:0:0:
-320,192,118347,1,0,0:0:0:0:
-64,192,118527,1,8,0:0:0:0:
-448,192,118527,128,2,118708:0:0:0:0:
-192,192,118708,1,0,0:0:0:0:
-320,192,118708,128,0,118889:0:0:0:0:
-64,192,118889,128,2,119160:0:0:0:0:
-448,192,118889,1,0,0:0:0:0:
-64,192,119250,1,2,0:0:0:0:
-320,192,119250,128,8,119521:0:0:0:0:
-448,192,119250,1,0,0:0:0:0:
-192,192,119612,1,2,0:0:0:0:
-448,192,119612,128,0,119883:0:0:0:0:
-64,192,119792,1,0,0:0:0:0:
-192,192,119883,1,0,0:0:0:0:
-320,192,119973,1,8,0:0:0:0:
-448,192,119973,1,2,0:0:0:0:
-192,192,120154,128,0,120334:0:0:0:0:
-64,192,120334,1,2,0:0:0:0:
-448,192,120334,1,0,0:0:0:0:
-320,192,120515,128,0,120606:0:0:0:0:
-192,192,120696,128,2,120786:0:0:0:0:
-448,192,120696,1,8,0:0:0:0:
-64,192,120877,128,0,120967:0:0:0:0:
-320,192,121057,128,2,121238:0:0:0:0:
-448,192,121057,128,0,121238:0:0:0:0:
-64,192,121238,128,0,121419:0:0:0:0:
-192,192,121238,128,0,121419:0:0:0:0:
-320,192,121419,128,8,121600:0:0:0:0:
-448,192,121419,128,2,121600:0:0:0:0:
-64,192,121600,128,0,121780:0:0:0:0:
-192,192,121600,128,0,121780:0:0:0:0:
-320,192,121780,1,2,0:0:0:0:
-448,192,121780,128,0,122051:0:0:0:0:
-64,192,122142,128,2,122413:0:0:0:0:
-192,192,122142,1,8,0:0:0:0:
-320,192,122503,128,2,122684:0:0:0:0:
-448,192,122503,1,0,0:0:0:0:
-192,192,122774,128,2,122955:0:0:0:0:
-320,192,122774,1,0,0:0:0:0:
-64,192,123045,1,2,0:0:0:0:
-320,192,123045,1,4,0:0:0:0:
-448,192,123045,128,0,123588:0:0:0:0:
-192,192,123407,1,8,0:0:0:0:
-64,192,123588,1,8,0:0:0:0:
-320,192,123588,1,0,0:0:0:0:
-192,192,123768,1,8,0:0:0:0:
-64,192,123949,128,2,124349:0:0:0:0:
-320,192,123949,1,0,0:0:0:0:
-448,192,123949,1,0,0:0:0:0:
-192,192,124349,1,2,0:0:0:0:
-448,192,124349,1,0,0:0:0:0:
-64,192,124749,1,4,0:0:0:0:
-320,192,124749,1,2,0:0:0:0:
-448,192,124749,1,0,0:0:0:0:
-64,192,125149,1,0,0:0:0:20:soft-hitclap.wav
-192,192,125349,1,0,0:0:0:0:
-448,192,125549,1,8,0:0:0:0:
-320,192,125749,1,0,0:0:0:0:
-64,192,125949,1,0,0:0:0:20:soft-hitclap.wav
-320,192,126149,1,0,0:0:0:0:
-448,192,126349,1,0,0:0:0:20:soft-hitclap.wav
-192,192,126549,1,0,0:0:0:0:
-320,192,126649,1,0,0:0:0:0:
-64,192,126749,1,0,0:0:0:20:soft-hitclap.wav
-192,192,126949,1,0,0:0:0:0:
-64,192,127149,1,2,0:0:0:0:
-320,192,127149,1,8,0:0:0:0:
-448,192,127149,128,0,127349:0:0:0:0:
-192,192,127349,128,0,127549:0:0:0:0:
-64,192,127549,128,2,127849:0:0:0:0:
-320,192,127549,1,0,0:0:0:20:soft-hitclap.wav
-448,192,127549,128,0,127849:0:0:0:0:
-64,192,127949,1,2,0:0:0:0:
-192,192,127949,1,0,0:0:0:20:soft-hitclap.wav
-448,192,127949,1,0,0:0:0:0:
-448,192,128349,1,0,0:0:0:20:soft-hitclap.wav
-320,192,128549,1,0,0:0:0:0:
-64,192,128749,1,8,0:0:0:0:
-192,192,128949,1,0,0:0:0:0:
-448,192,129149,1,0,0:0:0:20:soft-hitclap.wav
-192,192,129349,1,0,0:0:0:0:
-64,192,129549,1,0,0:0:0:20:soft-hitclap.wav
-320,192,129749,1,0,0:0:0:0:
-192,192,129949,1,0,0:0:0:20:soft-hitclap.wav
-320,192,130149,1,0,0:0:0:0:
-64,192,130349,128,2,130549:0:0:0:0:
-192,192,130349,1,8,0:0:0:0:
-448,192,130349,1,0,0:0:0:0:
-320,192,130549,128,0,130749:0:0:0:0:
-64,192,130749,128,2,131049:0:0:0:0:
-192,192,130749,1,0,0:0:0:20:soft-hitclap.wav
-448,192,130749,128,0,131049:0:0:0:0:
-64,192,131149,1,2,0:0:0:0:
-320,192,131149,1,4,0:0:0:0:
-448,192,131149,1,0,0:0:0:0:
-192,192,131349,1,0,0:0:0:0:
-448,192,131549,1,0,0:0:0:20:soft-hitclap.wav
-320,192,131749,1,0,0:0:0:0:
-64,192,131949,1,8,0:0:0:0:
-448,192,132349,1,0,0:0:0:20:soft-hitclap.wav
-320,192,132549,1,0,0:0:0:0:
-64,192,132749,1,0,0:0:0:20:soft-hitclap.wav
-320,192,132949,1,0,0:0:0:0:
-192,192,133149,1,0,0:0:0:20:soft-hitclap.wav
-448,192,133349,1,0,0:0:0:0:
-64,192,133549,128,2,133749:0:0:0:0:
-192,192,133549,1,8,0:0:0:0:
-320,192,133549,1,0,0:0:0:0:
-448,192,133749,128,0,133949:0:0:0:0:
-64,192,133949,128,2,134249:0:0:0:0:
-192,192,133949,128,0,134249:0:0:0:20:soft-hitclap.wav
-320,192,133949,1,0,0:0:0:0:
-64,192,134349,1,2,0:0:0:0:
-192,192,134349,1,0,0:0:0:20:soft-hitclap.wav
-448,192,134349,1,0,0:0:0:0:
-64,192,134749,1,0,0:0:0:20:soft-hitclap.wav
-320,192,134949,1,0,0:0:0:0:
-448,192,135149,1,8,0:0:0:0:
-192,192,135349,1,0,0:0:0:0:
-64,192,135549,1,0,0:0:0:20:soft-hitclap.wav
-192,192,135749,1,0,0:0:0:0:
-448,192,135949,1,0,0:0:0:20:soft-hitclap.wav
-192,192,136149,1,0,0:0:0:0:
-320,192,136349,1,0,0:0:0:20:soft-hitclap.wav
-64,192,136549,1,0,0:0:0:0:
-192,192,136749,1,2,0:0:0:0:
-320,192,136749,1,8,0:0:0:0:
-448,192,136749,128,0,136949:0:0:0:0:
-64,192,136949,128,0,137149:0:0:0:0:
-192,192,137149,1,2,0:0:0:0:
-320,192,137149,128,0,137449:0:0:0:20:soft-hitclap.wav
-448,192,137149,128,0,137449:0:0:0:0:
-64,192,137549,1,2,0:0:0:0:
-320,192,137549,1,4,0:0:0:0:
-448,192,137549,1,0,0:0:0:0:
-448,192,137949,1,0,0:0:0:20:soft-hitclap.wav
-192,192,138082,1,0,0:0:0:20:soft-hitclap.wav
-448,192,138215,1,0,0:0:0:20:soft-hitclap.wav
-64,192,138349,128,8,138482:0:0:0:0:
-320,192,138482,128,0,138615:0:0:0:0:
-192,192,138615,128,0,138749:0:0:0:0:
-448,192,138749,1,0,0:0:0:20:soft-hitclap.wav
-64,192,138882,1,0,0:0:0:20:soft-hitclap.wav
-448,192,139015,1,0,0:0:0:20:soft-hitclap.wav
-192,192,139149,128,0,139282:0:0:0:20:soft-hitclap.wav
-320,192,139282,128,0,139415:0:0:0:0:
-64,192,139415,128,0,139549:0:0:0:0:
-448,192,139549,1,0,0:0:0:20:soft-hitclap.wav
-192,192,139682,1,0,0:0:0:20:soft-hitclap.wav
-448,192,139815,1,0,0:0:0:20:soft-hitclap.wav
-64,192,139949,1,2,0:0:0:0:
-192,192,139949,1,8,0:0:0:0:
-320,192,140082,1,0,0:0:0:0:
-64,192,140215,1,0,0:0:0:0:
-320,192,140349,1,2,0:0:0:0:
-448,192,140349,1,0,0:0:0:20:soft-hitclap.wav
-192,192,140482,1,0,0:0:0:20:soft-hitclap.wav
-448,192,140615,1,0,0:0:0:20:soft-hitclap.wav
-64,192,140749,1,2,0:0:0:0:
-192,192,140749,1,0,0:0:0:20:soft-hitclap.wav
-64,192,141149,1,0,0:0:0:20:soft-hitclap.wav
-320,192,141282,1,0,0:0:0:20:soft-hitclap.wav
-64,192,141415,1,0,0:0:0:20:soft-hitclap.wav
-448,192,141549,128,8,141682:0:0:0:0:
-192,192,141682,128,0,141815:0:0:0:0:
-320,192,141815,128,0,141949:0:0:0:0:
-64,192,141949,1,0,0:0:0:20:soft-hitclap.wav
-448,192,142082,1,0,0:0:0:20:soft-hitclap.wav
-64,192,142215,1,0,0:0:0:20:soft-hitclap.wav
-320,192,142349,128,0,142482:0:0:0:20:soft-hitclap.wav
-192,192,142482,128,0,142615:0:0:0:0:
-448,192,142615,128,0,142749:0:0:0:0:
-64,192,142749,1,0,0:0:0:20:soft-hitclap.wav
-320,192,142882,1,0,0:0:0:20:soft-hitclap.wav
-64,192,143015,1,0,0:0:0:20:soft-hitclap.wav
-320,192,143149,1,2,0:0:0:0:
-448,192,143149,1,8,0:0:0:0:
-192,192,143282,1,0,0:0:0:0:
-448,192,143415,1,0,0:0:0:0:
-64,192,143549,1,2,0:0:0:0:
-192,192,143549,1,0,0:0:0:20:soft-hitclap.wav
-320,192,143682,1,0,0:0:0:20:soft-hitclap.wav
-64,192,143815,1,0,0:0:0:20:soft-hitclap.wav
-320,192,143949,1,2,0:0:0:0:
-448,192,143949,1,4,0:0:0:0:
-192,192,144349,1,0,0:0:0:20:soft-hitclap.wav
-448,192,144482,1,0,0:0:0:20:soft-hitclap.wav
-192,192,144615,1,0,0:0:0:20:soft-hitclap.wav
-320,192,144749,128,8,144882:0:0:0:0:
-64,192,144882,128,0,145015:0:0:0:0:
-192,192,145015,128,0,145149:0:0:0:0:
-448,192,145149,1,0,0:0:0:20:soft-hitclap.wav
-64,192,145282,1,0,0:0:0:20:soft-hitclap.wav
-448,192,145415,1,0,0:0:0:20:soft-hitclap.wav
-192,192,145549,128,0,145682:0:0:0:20:soft-hitclap.wav
-320,192,145682,128,0,145815:0:0:0:0:
-64,192,145815,128,0,145949:0:0:0:0:
-448,192,145949,1,0,0:0:0:20:soft-hitclap.wav
-192,192,146082,1,0,0:0:0:20:soft-hitclap.wav
-448,192,146215,1,0,0:0:0:20:soft-hitclap.wav
-64,192,146349,1,2,0:0:0:0:
-320,192,146349,1,8,0:0:0:0:
-192,192,146482,1,0,0:0:0:0:
-448,192,146615,1,0,0:0:0:0:
-64,192,146749,1,2,0:0:0:0:
-192,192,146749,1,0,0:0:0:20:soft-hitclap.wav
-448,192,146882,1,0,0:0:0:20:soft-hitclap.wav
-320,192,147015,1,0,0:0:0:20:soft-hitclap.wav
-64,192,147149,1,2,0:0:0:0:
-448,192,147149,1,0,0:0:0:20:soft-hitclap.wav
-320,192,147549,1,0,0:0:0:20:soft-hitclap.wav
-64,192,147682,1,0,0:0:0:20:soft-hitclap.wav
-320,192,147815,1,0,0:0:0:20:soft-hitclap.wav
-192,192,147949,128,8,148082:0:0:0:0:
-448,192,148082,128,0,148215:0:0:0:0:
-320,192,148215,128,0,148349:0:0:0:0:
-64,192,148349,1,0,0:0:0:20:soft-hitclap.wav
-448,192,148482,1,0,0:0:0:20:soft-hitclap.wav
-64,192,148615,1,0,0:0:0:20:soft-hitclap.wav
-320,192,148749,128,2,148882:0:0:0:0:
-448,192,148749,1,0,0:0:0:20:soft-hitclap.wav
-192,192,148882,128,0,149015:0:0:0:0:
-448,192,149015,128,0,149149:0:0:0:0:
-64,192,149149,128,2,149282:0:0:0:0:
-192,192,149149,1,0,0:0:0:20:soft-hitclap.wav
-320,192,149282,128,0,149415:0:0:0:20:soft-hitclap.wav
-64,192,149415,128,0,149549:0:0:0:20:soft-hitclap.wav
-192,192,149549,1,2,0:0:0:0:
-320,192,149549,1,0,0:0:0:20:soft-hitclap.wav
-448,192,149549,128,0,149949:0:0:0:0:
-64,192,150349,128,2,150602:0:0:0:0:
-448,192,150349,128,0,150475:0:0:0:0:
-320,192,150475,128,0,150602:0:0:0:0:
-192,192,150602,128,0,150728:0:0:0:0:
-64,192,150728,128,2,150855:0:0:0:0:
-448,192,150728,128,0,150981:0:0:0:0:
-192,192,150855,128,0,150981:0:0:0:0:
-320,192,150981,128,0,151108:0:0:0:0:
-64,192,151108,128,2,151488:0:0:0:0:
-448,192,151108,128,0,151488:0:0:0:0:
-192,192,151488,1,0,0:0:0:0:
-320,192,151678,1,0,0:0:0:0:
-64,192,151867,128,0,151962:0:0:0:0:
-448,192,151867,1,0,0:0:0:0:
-192,192,152247,128,0,152342:0:0:0:0:
-448,192,152437,128,0,152532:0:0:0:0:
-320,192,152817,128,0,152912:0:0:0:0:
-64,192,153197,128,0,153292:0:0:0:0:
-320,192,153576,128,0,153671:0:0:0:0:
-192,192,153766,128,0,153861:0:0:0:0:
-448,192,153956,128,0,154051:0:0:0:0:
-64,192,154146,128,0,154241:0:0:0:0:
-448,192,154526,128,0,154621:0:0:0:0:
-320,192,154716,128,0,154811:0:0:0:0:
-64,192,154905,128,0,155000:0:0:0:0:
-192,192,155285,128,0,155380:0:0:0:0:
-64,192,155475,128,0,155570:0:0:0:0:
-448,192,155665,128,0,155760:0:0:0:0:
-320,192,156045,128,0,156140:0:0:0:0:
-448,192,156235,128,0,156330:0:0:0:0:
-192,192,156424,128,0,156519:0:0:0:0:
-64,192,156614,128,0,156709:0:0:0:0:
-320,192,156804,128,0,156899:0:0:0:0:
-192,192,156994,128,0,157089:0:0:0:0:
-448,192,157184,128,0,157279:0:0:0:0:
-64,192,157564,128,0,157659:0:0:0:0:
-192,192,157754,128,0,157849:0:0:0:0:
-320,192,157943,128,0,158038:0:0:0:0:
-192,192,158323,128,0,158418:0:0:0:0:
-64,192,158513,128,0,158608:0:0:0:0:
-448,192,158893,128,0,158988:0:0:0:0:
-192,192,159273,128,0,159367:0:0:0:0:
-448,192,159652,128,0,159747:0:0:0:0:
-320,192,159842,128,0,159937:0:0:0:0:
-192,192,160032,128,0,160127:0:0:0:0:
-64,192,160222,128,0,160317:0:0:0:0:
-320,192,160602,128,0,160697:0:0:0:0:
-448,192,160792,128,0,160886:0:0:0:0:
-64,192,160981,128,0,161076:0:0:0:0:
-320,192,161361,128,0,161456:0:0:0:0:
-64,192,161551,128,0,161646:0:0:0:0:
-448,192,161741,128,0,161836:0:0:0:0:
-320,192,162121,128,0,162216:0:0:0:0:
-64,192,162311,128,0,162405:0:0:0:0:
-448,192,162690,128,0,162785:0:0:0:0:
-192,192,163070,128,0,163165:0:0:0:0:
-64,192,163260,128,0,163355:0:0:0:0:
-320,192,163830,128,0,164209:0:0:0:0:
-448,192,164209,1,0,0:0:0:0:
-320,192,164399,1,0,0:0:0:0:
-192,192,164589,1,0,0:0:0:0:
-64,192,164779,1,0,0:0:0:0:
-192,192,164959,128,0,165050:0:0:0:0:
-320,192,165140,128,0,165230:0:0:0:0:
-448,192,165321,128,0,165411:0:0:0:0:
-64,192,165501,1,2,0:0:0:0:
-192,192,165501,1,0,0:0:0:40:Hat Open.wav
-64,192,165862,1,2,0:0:0:0:
-192,192,165862,1,0,0:0:0:0:
-64,192,166223,1,2,0:0:0:0:
-320,192,166223,1,0,0:0:0:0:
-64,192,166585,1,2,0:0:0:0:
-320,192,166585,1,0,0:0:0:0:
-320,192,166946,1,2,0:0:0:0:
-448,192,166946,1,0,0:0:0:0:
-320,192,167308,1,2,0:0:0:0:
-448,192,167308,1,0,0:0:0:0:
-192,192,167669,1,2,0:0:0:0:
-448,192,167669,1,0,0:0:0:0:
-192,192,168031,1,2,0:0:0:0:
-448,192,168031,1,0,0:0:0:0:
-64,192,168392,1,2,0:0:0:0:
-192,192,168392,1,0,0:0:0:0:
-192,192,168754,1,2,0:0:0:0:
-320,192,168754,1,0,0:0:0:0:
-320,192,169115,1,2,0:0:0:0:
-448,192,169115,1,0,0:0:0:0:
-64,192,169476,1,2,0:0:0:0:
-448,192,169476,1,0,0:0:0:0:
-64,192,169657,1,4,0:0:0:0:
-320,192,169657,128,2,170019:0:0:0:0:
-448,192,169657,128,0,170019:0:0:0:0:
-64,192,170019,1,2,0:0:0:0:
-192,192,170019,1,0,0:0:0:0:
-192,192,170199,1,2,0:0:0:0:
-320,192,170199,1,0,0:0:0:0:
-320,192,170380,1,0,0:0:0:0:
-448,192,170380,1,0,0:0:0:0:
-64,192,170561,1,8,0:0:0:0:
-192,192,170561,128,2,170741:0:0:0:0:
-448,192,170561,1,0,0:0:0:0:
-64,192,170922,1,8,0:0:0:0:
-320,192,170922,128,2,171103:0:0:0:0:
-448,192,170922,1,0,0:0:0:0:
-320,192,171284,1,2,0:0:0:0:
-448,192,171284,1,4,0:0:0:0:
-192,192,171374,1,0,0:0:0:0:
-64,192,171464,1,0,0:0:0:0:
-320,192,171555,1,0,0:0:0:0:
-64,192,171645,1,8,0:0:0:0:
-448,192,171645,1,2,0:0:0:0:
-192,192,171735,1,0,0:0:0:0:
-320,192,171826,1,0,0:0:0:0:
-448,192,171916,1,0,0:0:0:0:
-64,192,172007,1,2,0:0:0:0:
-192,192,172007,1,0,0:0:0:0:
-448,192,172097,1,0,0:0:0:0:
-320,192,172187,1,0,0:0:0:0:
-192,192,172278,1,0,0:0:0:0:
-64,192,172368,128,2,172549:0:0:0:0:
-448,192,172368,1,8,0:0:0:0:
-320,192,172549,128,0,172729:0:0:0:0:
-64,192,172729,1,2,0:0:0:0:
-192,192,172729,1,0,0:0:0:0:
-448,192,172910,128,0,173091:0:0:0:0:
-64,192,173091,128,8,173272:0:0:0:0:
-320,192,173091,1,2,0:0:0:0:
-192,192,173272,128,0,173452:0:0:0:0:
-64,192,173452,1,2,0:0:0:0:
-448,192,173452,128,0,173633:0:0:0:0:
-192,192,173633,1,0,0:0:0:0:
-320,192,173814,128,2,173994:0:0:0:0:
-448,192,173814,1,8,0:0:0:0:
-64,192,173994,128,0,174175:0:0:0:0:
-192,192,174175,1,2,0:0:0:0:
-448,192,174175,1,0,0:0:0:0:
-320,192,174266,1,0,0:0:0:0:
-64,192,174356,1,0,0:0:0:0:
-192,192,174446,1,0,0:0:0:0:
-320,192,174537,1,8,0:0:0:0:
-448,192,174537,1,2,0:0:0:0:
-192,192,174627,1,0,0:0:0:0:
-64,192,174717,1,0,0:0:0:0:
-320,192,174808,1,0,0:0:0:0:
-64,192,174898,1,2,0:0:0:0:
-448,192,174898,1,0,0:0:0:0:
-192,192,174988,1,0,0:0:0:0:
-320,192,175079,1,0,0:0:0:0:
-192,192,175169,1,0,0:0:0:0:
-64,192,175260,1,2,0:0:0:0:
-448,192,175260,128,8,175440:0:0:0:0:
-192,192,175440,128,0,175621:0:0:0:0:
-64,192,175621,1,2,0:0:0:0:
-448,192,175621,1,0,0:0:0:0:
-320,192,175802,128,0,175982:0:0:0:0:
-64,192,175982,1,8,0:0:0:0:
-448,192,175982,1,2,0:0:0:0:
-192,192,176163,128,0,176344:0:0:0:0:
-64,192,176344,1,2,0:0:0:0:
-320,192,176344,1,0,0:0:0:0:
-448,192,176344,128,0,176525:0:0:0:0:
-320,192,176525,1,8,0:0:0:0:
-192,192,176615,1,8,0:0:0:0:
-64,192,176705,128,2,176886:0:0:0:0:
-448,192,176705,1,8,0:0:0:0:
-192,192,176886,1,8,0:0:0:0:
-320,192,176976,1,8,0:0:0:0:
-64,192,177067,1,2,0:0:0:0:
-448,192,177067,1,4,0:0:0:0:
-320,192,177157,1,0,0:0:0:0:
-192,192,177247,1,0,0:0:0:0:
-64,192,177338,1,0,0:0:0:0:
-320,192,177428,1,2,0:0:0:0:
-448,192,177428,1,8,0:0:0:0:
-64,192,177609,128,0,177790:0:0:0:0:
-320,192,177790,1,2,0:0:0:0:
-448,192,177790,128,0,177970:0:0:0:0:
-192,192,177970,128,0,178151:0:0:0:0:
-64,192,178151,128,8,178332:0:0:0:0:
-448,192,178151,1,2,0:0:0:0:
-320,192,178332,128,0,178513:0:0:0:0:
-64,192,178513,1,2,0:0:0:0:
-448,192,178513,1,0,0:0:0:0:
-192,192,178603,1,0,0:0:0:0:
-320,192,178693,1,0,0:0:0:0:
-448,192,178784,1,0,0:0:0:0:
-64,192,178874,1,2,0:0:0:0:
-192,192,178874,1,8,0:0:0:0:
-448,192,179055,128,0,179235:0:0:0:0:
-192,192,179235,128,2,179416:0:0:0:0:
-320,192,179235,1,0,0:0:0:0:
-64,192,179416,128,0,179597:0:0:0:0:
-320,192,179597,128,8,179778:0:0:0:0:
-448,192,179597,1,2,0:0:0:0:
-192,192,179778,128,0,179958:0:0:0:0:
-64,192,179958,1,2,0:0:0:0:
-448,192,179958,128,0,180139:0:0:0:0:
-320,192,180139,1,0,0:0:0:0:
-64,192,180320,128,2,180501:0:0:0:0:
-192,192,180320,1,8,0:0:0:0:
-448,192,180320,1,0,0:0:0:0:
-320,192,180501,1,0,0:0:0:0:
-64,192,180681,1,2,0:0:0:0:
-448,192,180681,128,0,180862:0:0:0:0:
-192,192,180862,128,0,181043:0:0:0:0:
-64,192,181043,128,8,181223:0:0:0:0:
-448,192,181043,1,2,0:0:0:0:
-320,192,181223,128,0,181404:0:0:0:0:
-64,192,181404,1,2,0:0:0:0:
-448,192,181404,128,0,181585:0:0:0:0:
-320,192,181585,128,0,181766:0:0:0:0:
-64,192,181766,128,2,181946:0:0:0:0:
-448,192,181766,1,8,0:0:0:0:
-192,192,181946,128,0,182127:0:0:0:0:
-64,192,182127,1,2,0:0:0:0:
-448,192,182127,128,0,182308:0:0:0:0:
-320,192,182308,128,0,182488:0:0:0:0:
-64,192,182488,128,8,182669:0:0:0:0:
-448,192,182488,128,2,182669:0:0:0:0:
-64,192,182850,1,2,0:0:0:0:
-448,192,182850,1,0,0:0:0:0:
-192,192,182940,1,0,0:0:0:0:
-320,192,183031,1,0,0:0:0:0:
-448,192,183121,1,0,0:0:0:0:
-64,192,183211,1,2,0:0:0:0:
-192,192,183211,1,8,0:0:0:0:
-448,192,183392,128,0,183573:0:0:0:0:
-64,192,183573,128,2,183754:0:0:0:0:
-192,192,183573,1,0,0:0:0:0:
-320,192,183754,128,0,183934:0:0:0:0:
-64,192,183934,1,8,0:0:0:0:
-448,192,183934,128,2,184115:0:0:0:0:
-192,192,184115,128,0,184296:0:0:0:0:
-64,192,184296,1,2,0:0:0:0:
-448,192,184296,1,0,0:0:0:0:
-320,192,184386,1,0,0:0:0:0:
-192,192,184476,1,0,0:0:0:0:
-64,192,184567,1,0,0:0:0:0:
-320,192,184657,1,2,0:0:0:0:
-448,192,184657,1,8,0:0:0:0:
-64,192,184838,1,0,0:0:0:0:
-192,192,184928,1,0,0:0:0:0:
-320,192,185019,128,2,185199:0:0:0:0:
-448,192,185019,1,0,0:0:0:0:
-64,192,185199,128,0,185380:0:0:0:0:
-192,192,185380,128,8,185561:0:0:0:0:
-448,192,185380,1,2,0:0:0:0:
-320,192,185561,128,0,185741:0:0:0:0:
-192,192,185741,1,2,0:0:0:0:
-448,192,185741,128,0,185922:0:0:0:0:
-64,192,185922,128,0,186103:0:0:0:0:
-192,192,186103,128,2,186284:0:0:0:0:
-320,192,186103,1,8,0:0:0:0:
-448,192,186284,128,0,186464:0:0:0:0:
-64,192,186464,1,2,0:0:0:0:
-320,192,186464,128,0,186645:0:0:0:0:
-192,192,186645,128,0,186826:0:0:0:0:
-64,192,186826,1,8,0:0:0:0:
-448,192,186826,1,0,0:0:0:0:
-320,192,187007,128,2,187368:0:0:0:0:
-448,192,187007,1,0,0:0:0:0:
-64,192,187368,1,8,0:0:0:0:
-320,192,187549,1,2,0:0:0:0:
-448,192,187549,128,8,187729:0:0:0:0:
-192,192,187729,1,8,0:0:0:0:
-320,192,187820,1,8,0:0:0:0:
-64,192,187910,1,8,0:0:0:0:
-448,192,187910,1,0,0:0:0:0:
-320,192,188091,1,0,0:0:0:40:Tom1.wav
-64,192,188272,128,2,188633:0:0:0:0:
-192,192,188272,1,0,0:0:0:40:Tom2.wav
-192,192,188633,1,2,0:0:0:0:
-448,192,188633,1,0,0:0:0:0:
-320,192,188814,1,0,0:0:0:0:
-64,192,188994,1,2,0:0:0:0:
-448,192,188994,1,0,0:0:0:0:
-320,192,189175,1,0,0:0:0:0:
-64,192,189356,1,2,0:0:0:0:
-448,192,189356,1,0,0:0:0:0:
-192,192,189537,1,0,0:0:0:0:
-64,192,189717,1,2,0:0:0:0:
-320,192,189717,1,0,0:0:0:0:
-192,192,189898,1,0,0:0:0:0:
-64,192,190079,1,2,0:0:0:0:
-448,192,190079,1,0,0:0:0:0:
-320,192,190260,1,0,0:0:0:0:
-64,192,190440,1,2,0:0:0:0:
-192,192,190440,1,0,0:0:0:0:
-320,192,190621,1,0,0:0:0:0:
-64,192,190802,1,2,0:0:0:0:
-448,192,190802,1,0,0:0:0:0:
-192,192,190982,1,0,0:0:0:0:
-320,192,191163,1,2,0:0:0:0:
-448,192,191163,1,0,0:0:0:0:
-192,192,191344,1,0,0:0:0:0:
-64,192,191525,1,2,0:0:0:0:
-448,192,191525,1,0,0:0:0:0:
-64,192,191886,1,2,0:0:0:0:
-320,192,191886,1,0,0:0:0:0:
-192,192,192067,1,0,0:0:0:0:
-64,192,192247,1,2,0:0:0:0:
-448,192,192247,1,0,0:0:0:0:
-320,192,192428,1,0,0:0:0:0:
-192,192,192609,1,2,0:0:0:0:
-448,192,192609,1,0,0:0:0:0:
-64,192,192790,1,8,0:0:0:0:
-320,192,192790,128,0,193061:0:0:0:0:
-192,192,193151,128,0,193422:0:0:0:0:
-64,192,193513,128,0,193693:0:0:0:0:
-320,192,193693,1,2,0:0:0:0:
-448,192,193693,1,0,0:0:0:0:
-64,192,193874,1,8,0:0:0:0:
-192,192,193874,1,0,0:0:0:0:
-320,192,193964,1,8,0:0:0:0:
-64,192,194055,1,2,0:0:0:0:
-448,192,194055,1,8,0:0:0:0:
-192,192,194145,1,8,0:0:0:0:
-320,192,194235,1,8,0:0:0:0:
-192,192,194326,1,8,0:0:0:0:
-64,192,194416,1,4,0:0:0:0:
-448,192,194416,128,2,194597:0:0:0:0:
-192,192,194597,128,0,194778:0:0:0:30:Hat Open.wav
-320,192,194778,1,2,0:0:0:0:
-448,192,194778,128,8,194958:0:0:0:0:
-64,192,194958,128,0,195139:0:0:0:30:Hat Open.wav
-320,192,195139,1,2,0:0:0:0:
-448,192,195139,1,0,0:0:0:0:
-64,192,195320,128,0,195501:0:0:0:30:Hat Open.wav
-192,192,195501,1,8,0:0:0:0:
-448,192,195501,1,2,0:0:0:0:
-64,192,195681,128,0,195862:0:0:0:30:Hat Open.wav
-192,192,195862,1,2,0:0:0:0:
-320,192,195862,128,0,196043:0:0:0:0:
-448,192,196043,128,0,196223:0:0:0:30:Hat Open.wav
-64,192,196223,1,8,0:0:0:0:
-192,192,196223,128,2,196404:0:0:0:0:
-320,192,196404,128,0,196585:0:0:0:30:Hat Open.wav
-64,192,196585,1,2,0:0:0:0:
-192,192,196585,1,0,0:0:0:0:
-448,192,196766,128,0,196946:0:0:0:30:Hat Open.wav
-192,192,196946,128,2,197127:0:0:0:0:
-320,192,196946,1,8,0:0:0:0:
-448,192,197127,128,0,197308:0:0:0:30:Hat Open.wav
-64,192,197308,128,2,197488:0:0:0:0:
-192,192,197308,1,0,0:0:0:0:
-320,192,197488,128,0,197669:0:0:0:30:Hat Open.wav
-64,192,197669,128,2,197850:0:0:0:0:
-192,192,197669,1,8,0:0:0:0:
-448,192,197850,128,0,198031:0:0:0:30:Hat Open.wav
-64,192,198031,1,2,0:0:0:0:
-192,192,198031,1,0,0:0:0:0:
-448,192,198211,128,0,198392:0:0:0:30:Hat Open.wav
-64,192,198392,1,8,0:0:0:0:
-320,192,198392,1,2,0:0:0:0:
-448,192,198573,128,0,198754:0:0:0:30:Hat Open.wav
-192,192,198754,128,2,198934:0:0:0:0:
-320,192,198754,1,0,0:0:0:0:
-64,192,198934,128,0,199115:0:0:0:30:Hat Open.wav
-320,192,199115,128,8,199296:0:0:0:0:
-448,192,199115,1,2,0:0:0:0:
-192,192,199296,128,0,199476:0:0:0:30:Hat Open.wav
-320,192,199476,1,2,0:0:0:0:
-448,192,199476,1,0,0:0:0:0:
-64,192,199657,128,0,199838:0:0:0:30:Hat Open.wav
-192,192,199838,1,2,0:0:0:0:
-448,192,199838,128,8,200019:0:0:0:0:
-64,192,200199,128,2,200380:0:0:0:0:
-448,192,200199,1,0,0:0:0:0:
-320,192,200380,128,0,200561:0:0:0:30:Hat Open.wav
-64,192,200561,128,2,200741:0:0:0:0:
-192,192,200561,1,8,0:0:0:0:
-448,192,200741,128,0,200922:0:0:0:30:Hat Open.wav
-64,192,200922,1,2,0:0:0:0:
-192,192,200922,1,0,0:0:0:0:
-448,192,201103,128,0,201284:0:0:0:30:Hat Open.wav
-64,192,201284,1,8,0:0:0:0:
-320,192,201284,1,2,0:0:0:0:
-448,192,201464,128,0,201645:0:0:0:30:Hat Open.wav
-192,192,201645,128,2,201826:0:0:0:0:
-320,192,201645,1,0,0:0:0:0:
-64,192,201826,128,0,202007:0:0:0:30:Hat Open.wav
-320,192,202007,128,8,202187:0:0:0:0:
-448,192,202007,1,2,0:0:0:0:
-192,192,202187,128,0,202368:0:0:0:30:Hat Open.wav
-320,192,202368,1,2,0:0:0:0:
-448,192,202368,1,0,0:0:0:0:
-64,192,202549,128,0,202729:0:0:0:30:Hat Open.wav
-192,192,202729,1,2,0:0:0:0:
-320,192,202729,128,8,202910:0:0:0:0:
-64,192,202910,128,0,203091:0:0:0:30:Hat Open.wav
-320,192,203091,1,2,0:0:0:0:
-448,192,203091,128,0,203272:0:0:0:0:
-192,192,203272,128,0,203452:0:0:0:30:Hat Open.wav
-320,192,203452,1,2,0:0:0:0:
-448,192,203452,128,8,203633:0:0:0:0:
-64,192,203633,128,0,203814:0:0:0:30:Hat Open.wav
-320,192,203814,1,2,0:0:0:0:
-448,192,203814,1,0,0:0:0:0:
-64,192,203994,128,0,204175:0:0:0:30:Hat Open.wav
-192,192,204175,1,8,0:0:0:0:
-448,192,204175,1,2,0:0:0:0:
-64,192,204356,128,0,204537:0:0:0:30:Hat Open.wav
-192,192,204537,1,2,0:0:0:0:
-320,192,204537,128,0,204717:0:0:0:0:
-448,192,204717,128,0,204898:0:0:0:30:Hat Open.wav
-64,192,204898,1,8,0:0:0:0:
-192,192,204898,128,2,205079:0:0:0:0:
-320,192,205079,128,0,205260:0:0:0:30:Hat Open.wav
-64,192,205260,1,2,0:0:0:0:
-192,192,205260,1,0,0:0:0:0:
-448,192,205440,128,0,205621:0:0:0:30:Hat Open.wav
-64,192,205621,128,2,205802:0:0:0:0:
-320,192,205621,1,8,0:0:0:0:
-192,192,205802,1,0,0:0:0:0:
-64,192,205982,1,4,0:0:0:0:
-448,192,205982,128,2,206163:0:0:0:0:
-64,192,206344,1,2,0:0:0:0:
-320,192,206344,128,0,206525:0:0:0:0:
-192,192,206705,128,2,206886:0:0:0:0:
-448,192,206705,1,0,0:0:0:0:
-64,192,207067,128,2,207247:0:0:0:0:
-448,192,207067,1,0,0:0:0:0:
-64,192,207428,1,2,0:0:0:0:
-192,192,207428,128,0,207609:0:0:0:0:
-64,192,207790,1,2,0:0:0:0:
-320,192,207790,128,0,207970:0:0:0:0:
-320,192,208151,1,2,0:0:0:0:
-448,192,208151,128,0,208332:0:0:0:0:
-64,192,208513,128,2,208693:0:0:0:0:
-320,192,208513,1,0,0:0:0:0:
-64,192,208874,1,2,0:0:0:0:
-448,192,208874,128,0,209055:0:0:0:0:
-64,192,209235,1,2,0:0:0:0:
-320,192,209235,128,0,209416:0:0:0:0:
-192,192,209597,128,2,209778:0:0:0:0:
-448,192,209597,1,0,0:0:0:0:
-64,192,209958,128,2,210139:0:0:0:0:
-448,192,209958,1,0,0:0:0:0:
-320,192,210320,1,2,0:0:0:0:
-448,192,210320,1,0,0:0:0:0:
-64,192,210410,1,0,0:0:0:0:
-192,192,210501,1,0,0:0:0:0:
-320,192,210591,1,2,0:0:0:0:
-448,192,210591,1,0,0:0:0:0:
-192,192,210681,1,0,0:0:0:0:
-64,192,210772,1,0,0:0:0:0:
-320,192,210862,1,2,0:0:0:0:
-448,192,210862,1,0,0:0:0:0:
-`;
-var osuFile = OSUParser.parse(text);
-class ManiaScreen extends Box {
-  constructor(gl) {
-    super(gl, {
+    super({
       size: ["fill-parent", "fill-parent"]
     });
-    resetJudge();
-    const trackWidth = new Array(4).fill(80);
-    const offsetLeft = 750;
-    const trackGap = 10;
-    let data;
-    if (OSUPlayer$1.maniaNoteData.value !== null) {
-      data = OSUPlayer$1.maniaNoteData.value;
-    } else {
-      data = osuFile.NoteData;
-      Toaster.show("Mania Note is Empty, use default");
-    }
-    console.log("mania key count", data);
-    const mania = new ManiaPanel(
-      gl,
-      offsetLeft,
-      trackWidth[0],
-      trackGap,
-      data
-    );
-    const mask = new ColorDrawable(gl, {
-      size: ["fill-parent", "fill-parent"],
-      color: Color.fromHex(0, 204)
+    const fadeLogo = new FadeLogo({
+      size: [180, 180],
+      anchor: Anchor.Center
     });
-    this.add(
-      mask,
-      mania
-    );
+    const logo2 = new LogoBounceBox$1({
+      size: [225, 225],
+      anchor: Anchor.BottomRight,
+      offset: [16, 34]
+    });
+    this.add(fadeLogo, logo2);
   }
 }
 class MovableBackground extends Drawable {
-  constructor(gl, textureUnit) {
-    super(gl, { size: ["fill-parent", "fill-parent"] });
-    this.textureUnit = textureUnit;
+  constructor() {
+    super({
+      size: ["fill-parent", "fill-parent"],
+      anchor: Anchor.Center
+    });
     this.imageDrawInfo = {
       drawHeight: 0,
       drawWidth: 0,
@@ -22504,14 +20947,9 @@ class MovableBackground extends Drawable {
       offsetLeft: 0,
       offsetTop: 0
     };
-    this.image = null;
-    this.needUpdateTexture = false;
-    this.vertex = new Float32Array(4 * 6);
     this.onFinish = null;
-    this.white = new Float32Array([1, 1, 1, 1]);
-    this.buffer = new VertexBuffer(gl);
-    this.texture = new Texture(gl, null);
-    this.shader = Shaders.Default;
+    this.white = Color.White.copy();
+    this.texture = TextureStore.create();
   }
   onUpdate() {
     var _a;
@@ -22541,9 +20979,8 @@ class MovableBackground extends Drawable {
         imageDrawInfo.offsetLeft = (imageWidth - imageDrawInfo.drawWidth) / 2;
       }
       imageDrawInfo.needToChange = false;
-      this.updateVertex();
     }
-    const scale = 1.01;
+    const scale = 1.02;
     const translate = this.translate;
     const scaledWidth = imageWidth * scale;
     const scaledHeight = imageHeight * scale;
@@ -22552,43 +20989,14 @@ class MovableBackground extends Drawable {
     const factor = shortOnViewport / shortOnImage;
     const widthDiffer = scaledWidth - imageWidth;
     const heightDiffer = scaledHeight - imageHeight;
-    const x = factor * widthDiffer / viewport.width * translate.x;
-    const y = factor * heightDiffer / viewport.height * translate.y;
-    this.scale = new Vector2(scale, scale);
+    const x = factor * widthDiffer / viewport.width * (translate.x - Coordinate$1.centerX);
+    const y = factor * heightDiffer / viewport.height * (translate.y - Coordinate$1.centerY);
+    this.scale = Vector(scale);
     this.translate = new Vector2(x, y);
   }
   setBackgroundImage(image) {
-    this.image = image;
-    this.texture.setTextureImage(this.image);
+    this.texture.setTextureImage(image);
     this.imageDrawInfo.needToChange = true;
-    this.needUpdateTexture = true;
-  }
-  updateVertex() {
-    const { x, y } = this.position;
-    const width = this.width;
-    const height = this.height;
-    const topLeft = new Vector2(x, y);
-    const bottomRight = new Vector2(x + width, y - height);
-    const info = this.imageDrawInfo;
-    const imageTopLeft = new Vector2(info.offsetLeft, info.offsetTop);
-    const imageBottomRight = new Vector2(info.offsetLeft + info.drawWidth, info.offsetTop + info.drawHeight);
-    const imageScale = TransformUtils.scale(1 / this.texture.imageWidth, 1 / this.texture.imageHeight);
-    TransformUtils.applyOrigin(imageTopLeft, imageScale);
-    TransformUtils.applyOrigin(imageBottomRight, imageScale);
-    Shape2D.quadVector2(
-      topLeft,
-      bottomRight,
-      this.vertex,
-      0,
-      4
-    );
-    Shape2D.quadVector2(
-      imageTopLeft,
-      imageBottomRight,
-      this.vertex,
-      2,
-      4
-    );
   }
   fadeOut(onFinish) {
     this.transform().fadeTo(0, 220);
@@ -22597,48 +21005,37 @@ class MovableBackground extends Drawable {
   onWindowResize() {
     super.onWindowResize();
     this.imageDrawInfo.needToChange = true;
-    this.updateVertex();
   }
-  unbind() {
-    this.texture.unbind();
-    this.buffer.unbind();
-    this.shader.unbind();
+  beforeCommit(node) {
+    const shader = node.shader;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    shader.sampler2D = 0;
+    this.white.alpha = this.appliedTransform.alpha;
+    shader.color = this.white;
   }
-  bind() {
-    this.texture.bind(this.textureUnit);
-    this.buffer.bind();
-    this.shader.bind();
-  }
-  onDraw() {
-    if (this.needUpdateTexture && this.image) {
-      console.log("background need change");
-      this.needUpdateTexture = false;
-    }
-    this.buffer.setBufferData(this.vertex);
-    const gl = this.gl;
-    const shader = this.shader.shader;
-    shader.setUniform1i(UNI_SAMPLER, this.textureUnit);
-    shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
-    this.white[3] = this.appliedTransform.alpha;
-    shader.setUniform4fv(UNI_COLOR, this.white);
-    shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
-    this.shader.use();
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  onDraw(node) {
+    const topLeft = this.position.copy();
+    const bottomRight = this.position.add(this.size);
+    const info = this.imageDrawInfo;
+    const imageTopLeft = new Vector2(info.offsetLeft, info.offsetTop);
+    const imageBottomRight = new Vector2(info.offsetLeft + info.drawWidth, info.offsetTop + info.drawHeight);
+    const imageScale = TransformUtils.scale(1 / this.texture.imageWidth, 1 / this.texture.imageHeight);
+    TransformUtils.applySelf(imageTopLeft, imageScale);
+    TransformUtils.applySelf(imageBottomRight, imageScale);
+    node.drawRect(topLeft, bottomRight);
+    node.drawTexture(this.texture, imageTopLeft, imageBottomRight);
   }
   dispose() {
     super.dispose();
     this.texture.dispose();
-    this.buffer.dispose();
   }
 }
 class Background extends Box {
-  constructor(gl, initImage) {
-    super(gl, { size: ["fill-parent", "fill-parent"] });
-    this.textureUnits = [2, 3];
-    this.textureUnitIndex = 0;
+  constructor(initImage) {
+    super({ size: ["fill-parent", "fill-parent"] });
     this.isFading = false;
-    const current = new MovableBackground(gl, this.nextTextureUnit());
-    const next = new MovableBackground(gl, this.nextTextureUnit());
+    const current = new MovableBackground();
+    const next = new MovableBackground();
     this.add(next, current);
     this.backImage.isVisible = false;
     this.frontImage.setBackgroundImage(initImage ? initImage : BackgroundLoader$1.getBackground());
@@ -22675,140 +21072,82 @@ class Background extends Box {
   get translate() {
     return Vector2.newZero();
   }
-  draw() {
+  draw(renderer2) {
     if (this.isVisible) {
-      this.backImage.draw();
-      this.frontImage.draw();
+      this.backImage.draw(renderer2);
+      this.frontImage.draw(renderer2);
     }
-  }
-  nextTextureUnit() {
-    this.textureUnitIndex = (this.textureUnitIndex + 1) % this.textureUnits.length;
-    return this.textureUnits[this.textureUnitIndex];
   }
 }
 class BackgroundBounce extends Box {
-  constructor(gl, backgroundImage) {
-    super(gl, {
+  constructor(backgroundImage) {
+    super({
       size: ["fill-parent", "fill-parent"]
     });
-    this.add(this.background = new Background(gl, backgroundImage));
+    this.add(this.background = new Background(backgroundImage));
   }
   in() {
-    const transition = this.transform();
-    transition.delay(300).scaleTo(new Vector2(0.98, 0.98), 500, easeOutQuint).delay(300).moveTo(new Vector2(0, -40), 500, easeOutQuint).delay(300).fadeTo(0.7, 500, easeOutQuint);
+    this.transform().delay(300).scaleTo(Vector(0.996), 500, easeOutQuint).delay(300).moveTo(Vector(0, 40), 500, easeOutQuint).delay(300).fadeTo(0.7, 500, easeOutQuint);
   }
   out() {
-    const transition = this.transform();
-    transition.scaleTo(new Vector2(1, 1), 500, easeOutQuint).moveTo(Vector2.newZero(), 500, easeOutQuint).fadeTo(1, 500, easeOutQuint);
+    this.transform().scaleTo(Vector(1), 500, easeOutQuint).moveTo(Vector2.newZero(), 500, easeOutQuint).fadeTo(1, 500, easeOutQuint);
   }
   updateBackground2(image) {
     this.background.updateBackground2(image);
   }
-  dispose() {
-    super.dispose();
-    console.log("background dispose");
-  }
 }
 class VideoBackground extends Drawable {
-  constructor(gl, video) {
-    super(gl, {
+  constructor(video) {
+    super({
       size: ["fill-parent", "fill-parent"]
     });
     this.video = video;
-    this.textureUnit = 4;
-    this.isVertexUpdate = true;
     this.videoSize = Vector();
-    this.white = new Float32Array([1, 1, 1, 1]);
-    this.textureUnit = 0;
-    this.buffer = new VertexBuffer(gl);
-    this.shader = Shaders.Default;
-    this.texture = new Texture(gl, video);
+    this.white = Color.White.copy();
+    this.texture = TextureStore.create();
   }
   setVideo(video) {
     this.video = video;
     this.videoSize.set(video.videoWidth, video.videoHeight);
-    this.isVertexUpdate = true;
-  }
-  createVertexArray() {
-    const width = this.width;
-    const height = this.height;
-    const { x, y } = this.position;
-    const topLeft = new Vector2(x, y);
-    const bottomRight = new Vector2(x + width, y - height);
-    const videoSize = this.videoSize;
-    if (!videoSize.isZero()) {
-      const targetWidth = height * videoSize.x / videoSize.y;
-      topLeft.set(
-        -targetWidth / 2,
-        y
-      );
-      bottomRight.set(
-        topLeft.x + targetWidth,
-        topLeft.y - height
-      );
-    }
-    const vertexData = [];
-    Shape2D.quadVector2(
-      topLeft,
-      bottomRight,
-      vertexData,
-      0,
-      4
-    );
-    Shape2D.quad(
-      0,
-      0,
-      1,
-      1,
-      vertexData,
-      2,
-      4
-    );
-    return new Float32Array(vertexData);
-  }
-  onWindowResize() {
-    super.onWindowResize();
-    this.isVertexUpdate = true;
   }
   onUpdate() {
     if (this.video) {
       this.texture.setTextureVideo(this.video);
     }
   }
-  unbind() {
-    this.buffer.unbind();
-    this.texture.unbind();
-    this.shader.unbind();
+  beforeCommit(node) {
+    const shader = node.shader;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    this.white.alpha = this.appliedTransform.alpha;
+    shader.color = this.white;
+    shader.sampler2D = 0;
   }
-  bind() {
-    this.texture.bind(this.textureUnit);
-    this.buffer.bind();
-    this.shader.bind();
-  }
-  onDraw() {
-    const gl = this.gl;
-    if (this.isVertexUpdate) {
-      this.buffer.setBufferData(this.createVertexArray());
-      this.isVertexUpdate = false;
+  onDraw(node) {
+    const topLeft = this.position.copy();
+    const bottomRight = this.position.add(this.size);
+    const videoSize = this.videoSize;
+    if (!videoSize.isZero()) {
+      const targetWidth = this.height * videoSize.x / videoSize.y;
+      topLeft.set(
+        (this.width - targetWidth) / 2,
+        this.position.y
+      );
+      bottomRight.set(
+        topLeft.x + targetWidth,
+        topLeft.y + this.height
+      );
     }
-    const shader = this.shader.shader;
-    shader.setUniform1i(UNI_SAMPLER, this.textureUnit);
-    shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
-    shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
-    this.white[3] = this.alpha;
-    shader.setUniform4fv(UNI_COLOR, this.white);
-    this.shader.use();
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    node.drawRect(topLeft, bottomRight);
+    node.drawTexture(this.texture);
   }
   dispose() {
     super.dispose();
     this.texture.dispose();
-    this.buffer.dispose();
   }
 }
 class BackgroundScreen extends Box {
-  constructor(gl) {
-    super(gl, {
+  constructor() {
+    super({
       size: ["fill-parent", "fill-parent"]
     });
     this.leftSideCollector = (value) => {
@@ -22823,8 +21162,8 @@ class BackgroundScreen extends Box {
       this.setupVideoBackground(bg);
       this.setupImageBackground(bg);
     };
-    this.background = new BackgroundBounce(gl, OSUPlayer$1.background.value.image);
-    this.videoBackground = new VideoBackground(gl, null);
+    this.background = new BackgroundBounce(OSUPlayer$1.background.value.image);
+    this.videoBackground = new VideoBackground(null);
     this.addDisposable(() => {
       return collectLatest(OSUPlayer$1.background, this.collector);
     });
@@ -22893,418 +21232,279 @@ class BackgroundScreen extends Box {
     onRightSide.removeCollect(this.rightSideCollector);
   }
 }
-class CircleBackground extends Drawable {
-  constructor(gl, config) {
-    super(gl, config);
-    this.radius = 240;
-    this.thickWidth = 0;
-    this.radiusTransition = new ObjectTransition(this, "radius");
-    this.thickWidthTransition = new ObjectTransition(this, "thickWidth");
-    this.vertex = new Float32Array([]);
-    this.uniCircle = new Float32Array([0, 0, 0]);
-    this.white = Color.fromHex(16777215);
-    this.gray = Color.fromHex(8421504, 128);
-    this.buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
-    this.shader = Shaders.RoundClip;
-    setTimeout(() => {
-      const ease = easeIn;
-      this.radiusBegin().transitionTo(260 * window.devicePixelRatio, 1e3, ease);
-      this.thickWidthBegin().transitionTo(520, 1e3, ease);
-      this.transform().rotateTo(-90, 1e3, ease);
-    });
-  }
-  radiusBegin(atTime = Time.currentTime) {
-    this.radiusTransition.setStartTime(atTime);
-    return this.radiusTransition;
-  }
-  thickWidthBegin(atTime = Time.currentTime) {
-    this.thickWidthTransition.setStartTime(atTime);
-    return this.thickWidthTransition;
-  }
-  onUpdate() {
-    super.onUpdate();
-    this.radiusTransition.update(Time.currentTime);
-    this.thickWidthTransition.update(Time.currentTime);
-    const data = [];
-    Shape2D.quad(
-      -500,
-      this.thickWidth / 2,
-      500,
-      -this.thickWidth / 2,
-      data,
-      0,
-      6
-    );
-    Shape2D.oneColor(this.gray, data, 2, 6);
-    Shape2D.quad(
-      -this.thickWidth / 2,
-      500,
-      this.thickWidth / 2,
-      -500,
-      data,
-      36,
-      6
-    );
-    Shape2D.oneColor(this.white, data, 38, 6);
-    this.vertex = new Float32Array(data);
-  }
-  onTransformApplied() {
-    super.onTransformApplied();
-    this.uniCircle[0] = Coordinate$1.width / 2 * window.devicePixelRatio;
-    this.uniCircle[1] = Coordinate$1.height / 2 * window.devicePixelRatio;
-    this.uniCircle[2] = this.radius;
-  }
-  unbind() {
-    this.buffer.unbind();
-    this.shader.unbind();
-  }
-  bind() {
-    this.buffer.bind();
-    this.shader.bind();
-  }
-  onDraw() {
-    const gl = this.gl;
-    this.buffer.setBufferData(this.vertex);
-    const shader = this.shader;
-    shader.transform = this.matrixArray;
-    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
-    shader.circle = this.uniCircle;
-    shader.use();
-    gl.drawArrays(gl.TRIANGLES, 0, 12);
-  }
-  dispose() {
-    this.buffer.dispose();
-  }
-}
-class ColoredImageDrawable extends Drawable {
-  constructor(gl, config) {
-    super(gl, config);
-    this.textureUnit = 0;
-    this.isVertexUpdate = true;
-    const buffer = new VertexBuffer(gl);
-    const shader = Shaders.Default;
-    const texture = new Texture(gl, config.image);
-    shader.bind();
-    shader.color = config.color;
-    shader.unbind();
-    this.buffer = buffer;
-    this.shader = shader;
-    this.texture = texture;
-  }
-  createVertexArray() {
-    const width = this.width;
-    const height = this.height;
-    const { x, y } = this.position;
-    const vertexData = [];
-    Shape2D.quad(
-      x,
-      y,
-      x + width,
-      y - height,
-      vertexData,
-      0,
-      4
-    );
-    Shape2D.quad(0, 0, 1, 1, vertexData, 2, 4);
-    return new Float32Array(vertexData);
-  }
-  onWindowResize() {
-    super.onWindowResize();
-    this.isVertexUpdate = true;
-  }
-  unbind() {
-    this.buffer.unbind();
-    this.texture.unbind();
-    this.shader.unbind();
-  }
-  bind() {
-    this.texture.bind(this.textureUnit);
-    this.buffer.bind();
-    this.shader.bind();
-  }
-  onDraw() {
-    const gl = this.gl;
-    if (this.isVertexUpdate) {
-      this.buffer.setBufferData(this.createVertexArray());
-      this.isVertexUpdate = false;
-    }
-    const shader = this.shader;
-    shader.sampler2D = this.textureUnit;
-    shader.transform = this.matrixArray;
-    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
-    this.config.color.alpha = this.appliedTransform.alpha;
-    shader.color = this.config.color;
-    shader.use();
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
-  }
-  dispose() {
-    this.texture.dispose();
-    this.buffer.dispose();
-  }
-}
 class TestScreen extends Box {
-  constructor(gl) {
-    super(gl, {
-      size: ["fill-parent", "fill-parent"]
-    });
-    const size2 = [470, 470];
-    this.red = new ColoredImageDrawable(gl, {
-      size: size2,
-      origin: Axis.X_RIGHT | Axis.Y_CENTER,
-      image: Images.WhiteRound,
-      color: Color.fromHex(16711680)
-    });
-    this.red.rotate = 180;
-    this.red.scale = Vector();
-    this.yellow = new ColoredImageDrawable(gl, {
-      size: size2,
-      origin: Axis.X_LEFT | Axis.Y_CENTER,
-      image: Images.WhiteRound,
-      color: Color.fromHex(16776960)
-    });
-    this.yellow.rotate = 180;
-    this.yellow.scale = Vector();
-    this.green = new ColoredImageDrawable(gl, {
-      size: size2,
-      origin: Axis.X_CENTER | Axis.Y_TOP,
-      image: Images.WhiteRound,
-      color: Color.fromHex(65280)
-    });
-    this.green.rotate = 180;
-    this.green.scale = Vector();
-    this.pink = new ColoredImageDrawable(gl, {
-      size: size2,
-      origin: Axis.X_CENTER | Axis.Y_BOTTOM,
-      image: Images.WhiteRound,
-      color: Color.fromHex(16743863)
-    });
-    this.pink.rotate = 180;
-    this.pink.scale = Vector();
-    this.add(
-      new CircleBackground(gl, {
-        size: ["fill-parent", "fill-parent"]
-      }),
-      this.red,
-      this.green,
-      this.yellow,
-      this.pink
-    );
-    setTimeout(() => {
-      const time = Time.currentTime;
-      const targetScale = Vector(1);
-      const targetDegree = 0;
-      const ease = easeIn;
-      const rounds = [this.red, this.green, this.yellow, this.pink];
-      const duration = 1e3;
-      rounds.forEach((item, i) => {
-        item.transform().delay(time + i * 50).rotateTo(targetDegree, duration - i * 50, ease);
-        item.transform().delay(time + i * 50).scaleTo(targetScale, duration - i * 50, ease);
-      });
-    }, 0);
-  }
-}
-class StaticTextureShader {
+  // constructor(gl: WebGL2RenderingContext) {
+  //   super(gl, {
+  //     size: ['fill-parent', 'fill-parent']
+  //   });
+  //   const size: [number | 'fill-parent', number | 'fill-parent'] = [470, 470]
+  //   this.red = new ColoredImageDrawable(gl, {
+  //     size,
+  //     origin: Axis.X_RIGHT | Axis.Y_CENTER,
+  //     image: Images.WhiteRound,
+  //     color: Color.fromHex(0xff0000)
+  //   })
+  //   this.red.rotate = 180
+  //   this.red.scale = Vector()
+  //   this.yellow = new ColoredImageDrawable(gl, {
+  //     size,
+  //     origin: Axis.X_LEFT | Axis.Y_CENTER,
+  //     image: Images.WhiteRound,
+  //     color: Color.fromHex(0xffff00)
+  //   })
+  //   this.yellow.rotate = 180
+  //   this.yellow.scale = Vector()
+  //   this.green = new ColoredImageDrawable(gl, {
+  //     size,
+  //     origin: Axis.X_CENTER | Axis.Y_TOP,
+  //     image: Images.WhiteRound,
+  //     color: Color.fromHex(0x00ff00)
+  //   })
+  //   this.green.rotate = 180
+  //   this.green.scale = Vector()
+  //   this.pink = new ColoredImageDrawable(gl, {
+  //     size,
+  //     origin: Axis.X_CENTER | Axis.Y_BOTTOM,
+  //     image: Images.WhiteRound,
+  //     color: Color.fromHex(0xff7db7)
+  //   })
+  //   this.pink.rotate = 180
+  //   this.pink.scale = Vector()
+  //   this.add(
+  //     new CircleBackground(gl, {
+  //       size: ['fill-parent', 'fill-parent']
+  //     }),
+  //     this.red, this.green, this.yellow, this.pink
+  //   )
+  //
+  //   setTimeout(() => {
+  //     const time = Time.currentTime
+  //     const targetScale = Vector(1)
+  //     const targetDegree = 0
+  //     const ease = easeIn
+  //     const rounds = [this.red, this.green, this.yellow, this.pink]
+  //     const duration = 1000
+  //     rounds.forEach((item, i) => {
+  //       item.transform()
+  //         .delay(time + (i * 50))
+  //         .rotateTo(targetDegree, duration - (i * 50), ease)
+  //       item.transform()
+  //         .delay(time + (i * 50))
+  //         .scaleTo(targetScale, duration - (i * 50), ease)
+  //     })
+  //   }, 0)
+  // }
   constructor() {
-    this.vertex = `
-        attribute vec2 ${ATTR_POSITION};
-        attribute vec2 ${ATTR_TEXCOORD};
-    
-        varying mediump vec2 v_tex_coord;
-        uniform mat4 ${UNI_ORTH};
-        uniform mat4 ${UNI_TRANSFORM};
-        void main() {
-            vec4 position = vec4(${ATTR_POSITION}, 0.0, 1.0) * ${UNI_TRANSFORM};
-            gl_Position = position * ${UNI_ORTH};
-            v_tex_coord = ${ATTR_TEXCOORD};
-        }
-    `;
-    this.fragment = `
-        varying mediump vec2 v_tex_coord;
-        uniform mediump float ${UNI_ALPHA};
-        uniform sampler2D ${UNI_SAMPLER};
-        uniform mediump float ${UNI_BRIGHTNESS};
-    
-        void main() {
-            mediump vec4 texelColor = texture2D(${UNI_SAMPLER}, v_tex_coord);
-            texelColor.rgb = min(texelColor.rgb * (1.0 + ${UNI_BRIGHTNESS}), 1.0);
-            texelColor.a = texelColor.a * ${UNI_ALPHA};
-            gl_FragColor = texelColor;
-        }
-    `;
-    this.shader = null;
-    this.layout = null;
+    super({
+      size: [640, "fill-parent"],
+      anchor: Anchor.Center
+    });
+    const a = new Box({ size: ["fill-parent", "fill-parent"] });
+    const rect = new Rect();
+    a.add(rect);
+    this.add(a);
+    rect.transform().delay(2e3).scaleTo(Vector(1.2), 500).scaleTo(Vector(1), 500).scaleTo(Vector(1.2), 500).scaleTo(Vector(1), 500).scaleTo(Vector(1.2), 500).scaleTo(Vector(1), 500).scaleTo(Vector(1.2), 500).scaleTo(Vector(1), 500).scaleTo(Vector(1.2), 500).scaleTo(Vector(1), 500);
   }
-  newShader(gl) {
-    return new Shader(gl, this.vertex, this.fragment);
-  }
-  getShader(gl) {
-    if (this.shader === null) {
-      const shader = new Shader(gl, this.vertex, this.fragment);
-      const layout = new VertexBufferLayout(gl);
-      shader.bind();
-      layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-      layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-      shader.unbind();
-      this.shader = shader;
-      this.layout = layout;
-    }
-    return this.shader;
-  }
-  getLayout() {
-    return this.layout;
-  }
-  dispose() {
-    var _a;
-    (_a = this.shader) == null ? void 0 : _a.dispose();
-    this.shader = null;
-    this.layout = null;
+  onLoad(renderer2) {
+    super.onLoad(renderer2);
+    console.log("size", this.size);
+    this.transform().delay(2e3).moveXTo(200, 5e3);
   }
 }
-const BrightnessTextureShader = new StaticTextureShader();
+class Rect extends Drawable {
+  constructor() {
+    super({
+      size: [100, 100],
+      origin: Anchor.Center,
+      anchor: Anchor.TopLeft
+    });
+  }
+  onLoad(renderer2) {
+    super.onLoad(renderer2);
+    console.log(this.origin);
+  }
+  beforeCommit(node) {
+    const shader = node.shader;
+    shader.color = node.color;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    shader.sampler2D = 0;
+  }
+  onDraw(node) {
+    node.drawRect(
+      this.position,
+      this.position.add(this.size)
+    );
+    node.drawTexture(TextureStore.get("LegacyLogo"));
+  }
+}
+const logo = "" + new URL("logo-76d27be1.png", import.meta.url).href;
+const cursor = "" + new URL("cursor-40b79df2.png", import.meta.url).href;
+const backIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAABsElEQVRYw+2XMW7CQBBFAdEgDAWUUCJOkMStTwFXwJzABYgoBZzAnMIdSIhjADcAyQ1ISQfdSxF7hbC9XjvyRpGYdv7+2Zn5O7tbKj3tHxhlTBw89vgA+OzxcDAp/568w4ITSXZiQSc/eQuXG2l2w6WVh37ABVW7MMhGXmX5sMstNhY9DAx6WNhsH7JbUlWlr7G6W+hjY8TiDOyg7T+2oqa2+7VYcmVKXYquM+Uq8GuFLO6K42MqZWze5bFMAw8FdKcuQDrsxLqhDNjmLHbfzSSLrsjiTDsZ5oram5llbYpeuMmJhsKb5DqYEyHq+OIyF+VJVA4zZhJFhWWax7krHAP3SEIPSEKMAoYjlbgahgk2pfQATgKiKYoc7SFO4Nqk0n/ykpjDJnELeIFrnEr/Kmn0OEB5UdchcFlS+i/epEqyAtwh6gqPWF9CH2MP2H543KIBwvY0stBHAjRCqfxBgMJLpNpkM2+TVWUqDSGTqfpBk4SQHbQso2KSZ1SoD7uPXMNOeVy/5xzXGi6cwq9MDZd+4c8WDQ8vDU/Hwh+/Gp7vGj4gWr5QGj6BWr6xT9Ng32riAijeSkHUAAAAAElFTkSuQmCC";
+const approachCircle = "" + new URL("approachcircle-0459bffe.png", import.meta.url).href;
+const star = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAV/SURBVHgB7d2Bdds2EAbg310gzgRlJqg9QZkJ6kxQZYK6E1SZoMkESSaIN7A7QbqB2AmUTnA5hNSzrIgKQYLQ8fB/7+HJ0fOLKQI84AgQAoiIiIiIiIiIiIiI/BKRlZYbUJm08u9DAZVHK/5KHtUo1E8o1+3ez+wGSqJXfCVPbbVcokClRoD64N+h8m9BZdCrfSPf24L861K/PjXIty7168OU0LMjg7/io0Bpg8D1gN9hSuhRd/VvB0SAolLCkiJAjTbd+xGmhB7J8dSvzwbkh1bojcSrQT5oZd5JPKaEHsiw1K9PBedKGASuMd4KtGwSN/g75D4ldB0BtPJW+lJhvFD5K9AyTbz6dzgYXCKtuFrSqeGU5y5ghXT+glMXcEja9C313bznFxcXX+CM1wiwRnou5we8RoBw9VdIK1z9L7xFAXcRQKanfn1CSuhurYDHLuAPzOd3kF2JU78iUkJvEWCF+c0ZYbJzMwicKfU7xtVg0FMEyDVAc7VkzFMEmCP16/NFI8BzOOAiAsyY+vW5FCcbS3jpAs6RnrkYDJrtAuRxOVaFx6s7vP588P4lhi33nkMYCDbd6678d+T9xuqgMVsDkHZlTSgVnlZoeO/Zkfc9OmwYRxsL2jFGlgYzugHsVeiuUvdfnx15n+I1eNow/t/7udn9jjaWBiNFNQCt9E/6coXzhl3q12h50PLn0AgS2wAqfQlLpCqQRY2WlzERISoL6P7jay13IGv+0XId2x1Ep4EhtGh5pT++A1nxTuukHjNwHH0fQP9YuB36BnRub7q6GGVyGtjdhXsPyi1c7WGw9wETJLkPoI0gZAYhQ6hAOTRaXmnl/4uJkt0IYoaQTYPIkf4pyeYCugN6qWVyq6Re4dxep6r8IOlkUDgwLSFNZIaQ3ke0V37SW8SzzAYyQ0gujPRXc8wPzDoZpOOC0BD+Bk0RRvpvMZPZZwO7hRMhTeTcQZxwtYeR/gNmlGU6mBlCtAYJR/qnZFkRtJchNKAfCSP9LJUfZFsSxomkQcKETrbKD7KuCdybSGKG8L3REzpTnGVRqH7INdgI9k2a0JnirItCOZGUZkJnirOvCi54IqlBogmdKUwsCy8wTWyQebDXx8SDIYVNJCWf0JnCzJNBhUwkzTKh4452CWvxZw0aTk/YrfhxlhRv8eT0d/wthenKt/50MGcQZ2a9AdRYvhqGmX08PJC8u37MxfRuImYjgLR3CCssX9hNpIJRlruAK/hRwyjLDaCGH7/CKMsN4Bf4UcMok4NAaXcf2cIXk983YDUC1PCnhkFsAPnUMMhqA/DU/++Y/ExWxwACn8yNA8xFAPH9rd3m7m1Y7AI83QA6xAYwwG/wy9xnMzcG0C4g5P9ep4HNTQyZigDdBJDnNQCX3Wc0w1oXkPPkfHsoQ8tr5H1otYYh1hrADfIIK49fhI0XuqdywpL0j8jD4z2ONCTN172f8nAqzQzz9hmOIccXWy1Pd/LnspWIxZnSrkjeyHwq0FN6Um5kHu+lnV2MPZ7QID/IPFYwwtIYoEZau502Xo+5/do9qbRCu6lFg7Q83+waR6+Kz5JGVLiPOL6U3cJn0CM9IZeSxicZEe4jjjNlt8BnHnZk+pc+byTjJJK045WNTFODWjL+YdAQ7tc4k+64tzLObJs/Lo6ejHuJF8J9hTOT8d3CPaglcVfRRgyGT4nvFrwteh1Hhvf/38K9GB88SVx3VqN0MmwfgHALt8JCyPBugfsG6Em4O3GCNku+SqTd32Bz4vNx19SeE7SIcD+U9HcLZY8D9ARcHTkpiwr3Q0l/t1ChVPJ0C5jNksP9UEe6hRVK1V0RrsL9UPLYLZS7Va5++Lclh8CuW1iDiIiIiIiIiIiIiIiIiIiIKKGvmG5znrTvqA4AAAAASUVORK5CYII=";
+const whiteRound = "" + new URL("white_round-9623cbb6.png", import.meta.url).href;
+const ripple = "" + new URL("ripple_new-d127df79.png", import.meta.url).href;
+const legacyLogo = "" + new URL("legacy_logo-21c56fce.png", import.meta.url).href;
+const stdNoteCircle = "" + new URL("hitcircleoverlay-8d1effa1.png", import.meta.url).href;
+const bar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAEACAYAAACphba6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADjSURBVHgB7dDRDYIwFEDRpxPoBm7iCDoKGzCKbsIouAEj1DYh0Q9FUPrluckjhIR3mkZMlFLa5WnzdHn69GgYvzV5DrG08tO4YG6X2dB4qiEtr/zTfFrept9rp06+Vs2rO//mWt5Vdh2egWtav67s3oxSH3Xab/PjHPVqCnCKeh3LFQ35ZRd1uhUgRcW2UTkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFE5AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPDnwB1NyOqG0K354gAAAABJRU5ErkJggg==";
+const borderBar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAEACAYAAACphba6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAEiSURBVHgB7dzRTcMwFAXQ107QERihGzACKzBCNghMAiswQdkkI2QE40iRCK5J3JaKn3OlVzWJ42O/5DsRK0kpHXL1uU65hvSdcT7X5XqISzPdNE/QmrdmaF7VmC7PdE+3NXmfbk+/tvJaPlPR6/z/mOs5/Xwuy3S1npdt2d7y7y0dlwuaBr1XBhyjMfOOSuS0XP36FtuQWosPtQtDXJl0/mq/7PP5p2Lca1yfj+L4MSq9a+59mUq7h930uxy0y4kbUs63jzsHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEDcOQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMC/Amcf1P7reAab+QIlDA12vUxxDgAAAABJRU5ErkJggg==";
+const square = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8A/////wn7A/2j0UkKAAAAAElFTkSuQmCC";
+const maniaNote1 = "" + new URL("mania-note1@2x-dfbf9db6.png", import.meta.url).href;
+const maniaKey2 = "" + new URL("mania-key2@2x-24e4d9fb.png", import.meta.url).href;
+const icons = "" + new URL("icons-326f4a54.png", import.meta.url).href;
+const ImageResourceMap = [
+  {
+    name: "Logo",
+    url: logo
+  },
+  {
+    name: "Ripple",
+    url: ripple
+  },
+  {
+    name: "LegacyLogo",
+    url: legacyLogo
+  },
+  {
+    name: "Cursor",
+    url: cursor
+  },
+  {
+    name: "ApproachCircle",
+    url: approachCircle
+  },
+  {
+    name: "StdNoteCircle",
+    url: stdNoteCircle
+  },
+  {
+    name: "BackIcon",
+    url: backIcon
+  },
+  {
+    name: "WhiteRound",
+    url: whiteRound
+  },
+  {
+    name: "Star",
+    url: star
+  },
+  {
+    name: "Bar",
+    url: bar
+  },
+  {
+    name: "BorderBar",
+    url: borderBar
+  },
+  {
+    name: "Square",
+    url: square
+  },
+  {
+    name: "ManiaNote1",
+    url: maniaNote1
+  },
+  {
+    name: "ManiaKey2",
+    url: maniaKey2
+  },
+  {
+    name: "Icons",
+    url: icons
+  }
+];
+const Images = {};
+async function loadImage() {
+  for (const imageSrc of ImageResourceMap) {
+    const image = new Image();
+    image.src = imageSrc.url;
+    await image.decode();
+    Images[imageSrc.name] = image;
+  }
+}
 class LegacyLogo extends Drawable {
-  constructor(gl, config) {
-    super(gl, config);
-    this.textureUnit = 0;
+  constructor(config) {
+    super(config);
     this.brightness = 0;
     this.brightnessTransition = new ObjectTransition(this, "brightness");
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const buffer = new VertexBuffer(gl);
-    const shader = BrightnessTextureShader.newShader(gl);
-    const layout = new VertexBufferLayout(gl);
-    const texture = new Texture(gl, Images.LegacyLogo);
-    buffer.bind();
-    shader.bind();
-    layout.pushFloat(shader.getAttributeLocation(ATTR_POSITION), 2);
-    layout.pushFloat(shader.getAttributeLocation(ATTR_TEXCOORD), 2);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    buffer.unbind();
-    shader.unbind();
-    this.vertexArray = vertexArray;
-    this.buffer = buffer;
-    this.layout = layout;
-    this.shader = shader;
-    this.texture = texture;
+    this.color = Color.White.copy();
   }
-  createVertexArray() {
-    const width = this.width;
-    const height = this.height;
-    const { x, y } = this.position;
-    const topLeft = new Vector2(x, y);
-    const bottomRight = new Vector2(x + width, y - height);
-    const vertexData = [];
-    Shape2D.quadVector2(
-      topLeft,
-      bottomRight,
-      vertexData,
-      0,
-      4
-    );
-    Shape2D.quad(
-      0,
-      0,
-      1,
-      1,
-      vertexData,
-      2,
-      4
-    );
-    console.log(vertexData);
-    return new Float32Array(vertexData);
-  }
+  // public createVertexArray() {
+  //   const width = this.width
+  //   const height = this.height
+  //   const { x, y } = this.position
+  //
+  //   const topLeft = new Vector2(x, y)
+  //   const bottomRight = new Vector2(x + width, y - height)
+  //   const vertexData: number[] = []
+  //   Shape2D.quadVector2(
+  //     topLeft, bottomRight,
+  //     vertexData, 0, 4
+  //   )
+  //   Shape2D.quad(
+  //     0, 0, 1, 1,
+  //     vertexData, 2, 4
+  //   )
+  //   console.log(vertexData);
+  //
+  //   return new Float32Array(vertexData)
+  // }
   brightnessBegin(atTime = Time.currentTime) {
     this.brightnessTransition.setStartTime(atTime);
     return this.brightnessTransition;
   }
-  onLoad() {
-    this.buffer.bind();
-    this.buffer.setBufferData(this.createVertexArray());
-    this.buffer.unbind();
-  }
-  onWindowResize() {
-    super.onWindowResize();
-    this.buffer.bind();
-    this.buffer.setBufferData(this.createVertexArray());
-    this.buffer.unbind();
-  }
-  unbind() {
-    this.buffer.unbind();
-    this.vertexArray.unbind();
-    this.texture.unbind();
-    this.shader.unbind();
-  }
+  // public onLoad(): void {
+  //   this.buffer.bind()
+  //   this.buffer.setBufferData(this.createVertexArray())
+  //   this.buffer.unbind()
+  // }
+  //
+  // public onWindowResize(): void {
+  //   super.onWindowResize()
+  //   this.buffer.bind()
+  //   this.buffer.setBufferData(this.createVertexArray())
+  //   this.buffer.unbind()
+  // }
+  //
+  // public unbind() {
+  //   this.buffer.unbind()
+  //   this.vertexArray.unbind()
+  //   this.texture.unbind()
+  //   this.shader.unbind()
+  // }
   onUpdate() {
     super.onUpdate();
     this.brightnessTransition.update(Time.currentTime);
   }
-  bind() {
-    this.texture.bind(this.textureUnit);
-    this.buffer.bind();
-    this.vertexArray.bind();
-    this.shader.bind();
+  beforeCommit(node) {
+    const shader = node.shader;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    shader.sampler2D = 0;
+    const color = this.color;
+    color.red = Math.min(1 - this.brightness, 1);
+    color.blue = Math.min(1 - this.brightness, 1);
+    color.green = Math.min(1 - this.brightness, 1);
+    color.alpha = this.appliedTransform.alpha;
+    shader.color = color;
   }
-  onDraw() {
-    const gl = this.gl;
-    this.shader.setUniform1i(UNI_SAMPLER, this.textureUnit);
-    this.shader.setUniformMatrix4fv(UNI_ORTH, Coordinate$1.orthographicProjectionMatrix4);
-    this.shader.setUniformMatrix4fv(UNI_TRANSFORM, this.matrixArray);
-    this.shader.setUniform1f(UNI_ALPHA, this.appliedTransform.alpha);
-    this.shader.setUniform1f(UNI_BRIGHTNESS, this.brightness);
-    this.vertexArray.addBuffer(this.layout);
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  onDraw(node) {
+    node.drawRect(this.position, this.position.add(this.size));
+    node.drawTexture(TextureStore.get("LegacyLogo"));
   }
-  dispose() {
-    this.texture.dispose();
-    this.vertexArray.dispose();
-    this.shader.dispose();
-    this.buffer.dispose();
-  }
+  // public dispose() {
+  //   this.texture.dispose()
+  //   this.vertexArray.dispose()
+  //   this.shader.dispose()
+  //   this.buffer.dispose()
+  // }
 }
-const vertexShader = `
-    attribute vec2 a_vertexPosition;
-    attribute vec2 a_tex_coord;
-    attribute float a_sampler_flag;
-    
-    varying lowp float v_sampler_flag;
-    varying mediump vec2 v_tex_coord;
-    
-    uniform mat4 u_orth;
-    uniform mat4 u_transform;
-    void main() {
-        vec4 coord = vec4(a_vertexPosition, 0.0, 1.0) * u_transform;
-        v_sampler_flag = a_sampler_flag;
-        v_tex_coord = a_tex_coord;
-        gl_Position = coord * u_orth;
-    }
-`;
-const fragmentShader = `
-    uniform lowp float u_alpha;
-    uniform sampler2D u_sampler_4;
-    uniform sampler2D u_sampler_5;
-    
-    varying mediump vec2 v_tex_coord;
-    varying lowp float v_sampler_flag;
-    
-    void main() {
-        mediump vec4 texelColor = vec4(0.0);
-        if (v_sampler_flag > 0.5) {
-            texelColor = texture2D(u_sampler_4, v_tex_coord);
-        } else {
-            texelColor = texture2D(u_sampler_5, v_tex_coord);
-        }
-        
-        texelColor.a = texelColor.a * u_alpha;
-//        gl_FragColor = vec4(1.0, 1.0, 1.0, u_alpha);
-        gl_FragColor = texelColor;
-    }
-`;
 class LegacyRoundVisualizer extends Drawable {
-  constructor(gl, config) {
-    super(gl, config);
-    this.vertexCount = 0;
+  constructor(config) {
+    super(config);
     this.innerRadius = 236;
-    this.vertexData = new Float32Array(0);
+    this.drawNode = new LegacyVisualizerDrawNode(this);
+    this.centerOfDrawable = Vector();
     this.simpleSpectrum = new Array(200);
     this.lastTime = 0;
     this.updateOffsetTime = 0;
@@ -23327,152 +21527,31 @@ class LegacyRoundVisualizer extends Drawable {
     if (config.innerRadius) {
       this.innerRadius = config.innerRadius;
     }
-    const vertexArray = new VertexArray(gl);
-    vertexArray.bind();
-    const shader = new Shader(gl, vertexShader, fragmentShader);
-    const buffer = new VertexBuffer(gl, null, gl.STREAM_DRAW);
-    const layout = new VertexBufferLayout(gl);
-    this.barTexture = new Texture(gl, Images.Bar);
-    this.borderBarTexture = new Texture(gl, Images.BorderBar);
-    const indexBuffer = new IndexBuffer(gl);
-    const index = [
-      0,
-      1,
-      2,
-      1,
-      2,
-      3
-    ];
-    const indexArray = new Array(index.length * 200 * 5 * 2);
-    for (let i = 0, j = 0; i < 200 * 5 * 2; i++, j += 6) {
-      const increment = i << 2;
-      indexArray[j] = index[0] + increment;
-      indexArray[j + 1] = index[1] + increment;
-      indexArray[j + 2] = index[2] + increment;
-      indexArray[j + 3] = index[3] + increment;
-      indexArray[j + 4] = index[4] + increment;
-      indexArray[j + 5] = index[5] + increment;
-    }
-    indexBuffer.bind();
-    indexBuffer.setIndexBuffer(new Uint32Array(indexArray));
-    buffer.bind();
-    shader.bind();
-    shader.setUniform1i("u_sampler_4", 5);
-    shader.setUniform1i("u_sampler_5", 6);
-    layout.pushFloat(shader.getAttributeLocation("a_vertexPosition"), 2);
-    layout.pushFloat(shader.getAttributeLocation("a_tex_coord"), 2);
-    layout.pushUInt(shader.getAttributeLocation("a_sampler_flag"), 1);
-    vertexArray.addBuffer(layout);
-    vertexArray.unbind();
-    buffer.unbind();
-    indexBuffer.unbind();
-    shader.unbind();
-    this.vertexArray = vertexArray;
-    this.buffer = buffer;
-    this.shader = shader;
-    this.layout = layout;
-    this.indexBuffer = indexBuffer;
+    this.barTexture = TextureStore.get("Bar");
+    this.borderBarTexture = TextureStore.get("BorderBar");
     this.visualizer = AudioPlayerV2.getVisualizer();
+  }
+  onLoad(renderer2) {
+    super.onLoad(renderer2);
+    const node = this.drawNode;
+    node.blend = Blend.Additive;
+    node.vertexBuffer = new QuadBuffer(renderer2, 200 * 5 * 2, renderer2.gl.STREAM_DRAW, 5);
+    node.shader = Shaders.LegacyVisualizer;
+    node.useTexture(
+      { texture: this.barTexture, unit: 5 },
+      { texture: this.borderBarTexture, unit: 6 }
+    );
+    node.apply();
+    this.centerOfDrawable = this.position.add(this.size.divValue(2));
+    this.scale = Vector(-1, 1);
+  }
+  onWindowResize() {
+    super.onWindowResize();
+    this.centerOfDrawable = this.position.add(this.size.divValue(2));
   }
   onUpdate() {
     super.onUpdate();
     this.getSpectrum(Time.currentTime, BeatState.isKiai ? 1 : 0.5);
-    this.updateVertex(this.targetSpectrum, 200);
-  }
-  updateVertex(spectrum, length = spectrum.length) {
-    const centerX = 0, centerY = 0;
-    if (this.vertexData.length !== length) {
-      this.vertexData = new Float32Array(length * 20 * 5 * 2);
-    }
-    const array = this.vertexData;
-    const innerRadius = this.innerRadius;
-    const lineWidth = innerRadius / 2 * Math.sin(
-      degreeToRadian(360 / length)
-    ) * 2;
-    const half = lineWidth / 2;
-    let k = 0;
-    for (let j = 0; j < 5; j++) {
-      for (let i = 0; i < length; i++) {
-        const degree = i / 200 * 360 + j * 360 / 5;
-        const radian = degreeToRadian(degree);
-        const value = innerRadius + spectrum[i] * 160;
-        const fromX = centerX;
-        const fromY = centerY + innerRadius;
-        const toX = centerX;
-        const toY = centerY + value;
-        let point1 = new Vector2(fromX - half, fromY);
-        let point2 = new Vector2(fromX + half, fromY);
-        let point3 = new Vector2(toX - half, toY);
-        let point4 = new Vector2(toX + half, toY);
-        const matrix3 = TransformUtils.rotate(radian);
-        point1 = TransformUtils.apply(point1, matrix3);
-        point2 = TransformUtils.apply(point2, matrix3);
-        point3 = TransformUtils.apply(point3, matrix3);
-        point4 = TransformUtils.apply(point4, matrix3);
-        this.updateAt(array, k, point1, 1, false);
-        this.updateAt(array, k + 5, point2, 2, false);
-        this.updateAt(array, k + 10, point3, 3, false);
-        this.updateAt(array, k + 15, point4, 4, false);
-        k += 20;
-      }
-    }
-    for (let j = 0; j < 5; j++) {
-      for (let i = 0; i < length; i++) {
-        const degree = i / 200 * 360 + j * 360 / 5 + 1.8;
-        const radian = degreeToRadian(degree);
-        const value = innerRadius + spectrum[i] * 80;
-        const fromX = centerX;
-        const fromY = centerY + innerRadius;
-        const toX = centerX;
-        const toY = centerY + value;
-        let point1 = new Vector2(fromX - half, fromY);
-        let point2 = new Vector2(fromX + half, fromY);
-        let point3 = new Vector2(toX - half, toY);
-        let point4 = new Vector2(toX + half, toY);
-        const matrix3 = TransformUtils.rotate(radian);
-        point1 = TransformUtils.apply(point1, matrix3);
-        point2 = TransformUtils.apply(point2, matrix3);
-        point3 = TransformUtils.apply(point3, matrix3);
-        point4 = TransformUtils.apply(point4, matrix3);
-        this.updateAt(array, k, point1, 1, true);
-        this.updateAt(array, k + 5, point2, 2, true);
-        this.updateAt(array, k + 10, point3, 3, true);
-        this.updateAt(array, k + 15, point4, 4, true);
-        k += 20;
-      }
-    }
-    this.vertexCount = length * 6 * 5 * 2;
-    this.buffer.bind();
-    this.buffer.setBufferData(array);
-    this.buffer.unbind();
-  }
-  /**
-   * 3   4
-   * 1   2
-   * @param array
-   * @param offset
-   * @param point
-   * @param pos
-   * @param isOod
-   * @private
-   */
-  updateAt(array, offset, point, pos, isOod) {
-    array[offset] = point.x;
-    array[offset + 1] = point.y;
-    if (pos === 1) {
-      array[offset + 2] = 1;
-      array[offset + 3] = 1;
-    } else if (pos === 2) {
-      array[offset + 2] = 1;
-      array[offset + 3] = 0;
-    } else if (pos === 3) {
-      array[offset + 2] = 0;
-      array[offset + 3] = 1;
-    } else {
-      array[offset + 2] = 0;
-      array[offset + 3] = 0;
-    }
-    array[offset + 4] = isOod ? 1 : 0;
   }
   getSpectrum(timestamp, barScale) {
     if (this.lastTime === 0 || this.updateOffsetTime === 0) {
@@ -23503,49 +21582,122 @@ class LegacyRoundVisualizer extends Drawable {
     }
     this.lastTime = timestamp;
   }
-  bind() {
-    this.borderBarTexture.bind(6);
-    this.barTexture.bind(5);
-    this.buffer.bind();
-    this.shader.bind();
-    this.vertexArray.bind();
+  beforeCommit(node) {
+    const shader = node.shader;
+    shader.orth = Coordinate$1.orthographicProjectionMatrix4;
+    shader.alpha = BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14;
+    shader.sampler2D1 = 5;
+    shader.sampler2D2 = 6;
   }
-  unbind() {
-    this.borderBarTexture.unbind();
-    this.barTexture.unbind();
-    this.shader.unbind();
-    this.buffer.unbind();
-    this.vertexArray.unbind();
-  }
-  onDraw() {
-    const gl = this.gl;
-    this.shader.setUniform1f("u_alpha", BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14);
-    this.shader.setUniformMatrix4fv("u_transform", this.matrixArray);
-    this.shader.setUniformMatrix4fv("u_orth", Coordinate$1.orthographicProjectionMatrix4);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-    this.vertexArray.addBuffer(this.layout);
-    gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_INT, 0);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  onDraw(node) {
+    const centerX = 0, centerY = 0;
+    const spectrum = this.targetSpectrum;
+    const length = 200;
+    const innerRadius = this.innerRadius;
+    const lineWidth = innerRadius / 2 * Math.sin(
+      degreeToRadian(360 / length)
+    ) * 2;
+    const half = lineWidth / 2;
+    let k = 0;
+    const barMatrix = Matrix3.newIdentify();
+    for (let j = 0; j < 5; j++) {
+      for (let i = 0; i < length; i++) {
+        const degree = i / 200 * 360 + j * 360 / 5;
+        const value = innerRadius + spectrum[i] * 160;
+        const fromX = centerX;
+        const fromY = centerY + innerRadius;
+        const toX = centerX;
+        const toY = centerY + value;
+        let point1 = new Vector2(fromX - half, fromY);
+        let point2 = new Vector2(fromX + half, fromY);
+        let point3 = new Vector2(toX - half, toY);
+        let point4 = new Vector2(toX + half, toY);
+        barMatrix.setFrom(Matrix3.identify);
+        TransformUtils2.rotateFromLeft(barMatrix, degree);
+        TransformUtils2.translateFromLeft(barMatrix, this.centerOfDrawable);
+        TransformUtils.applySelf(point1, barMatrix);
+        TransformUtils.applySelf(point2, barMatrix);
+        TransformUtils.applySelf(point3, barMatrix);
+        TransformUtils.applySelf(point4, barMatrix);
+        node.drawQuad(point1, point2, point3, point4, void 0, k);
+        node.drawTexture(this.barTexture, Vector(0, 1), Vector(1, 0), k);
+        node.drawOne(0, 4, 4, k);
+        k++;
+      }
+    }
+    for (let j = 0; j < 5; j++) {
+      for (let i = 0; i < length; i++) {
+        const degree = i / 200 * 360 + j * 360 / 5 + 1.8;
+        const value = innerRadius + spectrum[i] * 80;
+        const fromX = centerX;
+        const fromY = centerY + innerRadius;
+        const toX = centerX;
+        const toY = centerY + value;
+        let point1 = new Vector2(fromX - half, fromY);
+        let point2 = new Vector2(fromX + half, fromY);
+        let point3 = new Vector2(toX - half, toY);
+        let point4 = new Vector2(toX + half, toY);
+        barMatrix.setFrom(Matrix3.identify);
+        TransformUtils2.rotateFromLeft(barMatrix, degree);
+        TransformUtils2.translateFromLeft(barMatrix, this.centerOfDrawable);
+        TransformUtils.applySelf(point1, barMatrix);
+        TransformUtils.applySelf(point2, barMatrix);
+        TransformUtils.applySelf(point3, barMatrix);
+        TransformUtils.applySelf(point4, barMatrix);
+        node.drawQuad(point1, point2, point3, point4, void 0, k);
+        node.drawTexture(this.borderBarTexture, Vector(0, 1), Vector(1, 0), k);
+        node.drawOne(1, 4, 4, k);
+        k++;
+      }
+    }
   }
   dispose() {
-    this.vertexArray.dispose();
-    this.buffer.dispose();
-    this.shader.dispose();
-    this.indexBuffer.dispose();
-    this.barTexture.dispose();
-    this.borderBarTexture.dispose();
+    super.dispose();
+    this.drawNode.vertexBuffer.dispose();
   }
 }
-const logoSize = 610;
-class LegacyBeatLogo extends Box {
-  constructor(gl, config) {
-    super(gl, config);
-    const logo2 = new LegacyLogo(gl, {
-      size: [logoSize, logoSize]
+class LegacyVisualizerDrawNode extends DrawNode {
+  constructor() {
+    super(...arguments);
+    this.textures = [];
+  }
+  useTexture(...textures) {
+    this.textures.push(...textures);
+  }
+  draw(renderer2) {
+    this.source.onDraw(this, renderer2);
+    this.shader.bind();
+    const textures = this.textures;
+    for (let i = 0; i < textures.length; i++) {
+      const texture = textures[i];
+      renderer2.bindTexture(texture.texture, texture.unit);
+    }
+    this.vertexBuffer.bind();
+    const data = this.bufferData;
+    this.vertexBuffer.setVertex(
+      data instanceof Float32Array ? data : new Float32Array(data)
+    );
+    renderer2.setBlend(this.blend);
+    this.source.beforeCommit(this);
+    this.shader.use();
+    this.vertexBuffer.draw();
+    this.shader.unbind();
+    this.vertexBuffer.unbind();
+    for (let i = 0; i < textures.length; i++) {
+      const texture = textures[i];
+      renderer2.unbindTexture(texture.texture);
+    }
+  }
+}
+class LegacyBeatLogo extends BeatBox {
+  constructor(config) {
+    super(config);
+    const logo2 = new LegacyLogo({
+      size: config.size,
+      anchor: Anchor.Center
     });
     this.logo = logo2;
     this.add(logo2);
-    BeatDispatcher.register(this);
   }
   onNewBeat(isKiai, newBeatTimestamp, gap) {
     if (!BeatState.isAvailable) {
@@ -23560,21 +21712,17 @@ class LegacyBeatLogo extends Box {
       this.logo.brightnessBegin().transitionTo(0);
     }
   }
-  dispose() {
-    super.dispose();
-    BeatDispatcher.unregister(this);
-  }
 }
-class LegacyFadeBeatLogo extends Box {
-  constructor(gl, config) {
-    super(gl, config);
-    const logo2 = new LegacyLogo(gl, {
-      size: [logoSize, logoSize]
+class LegacyFadeBeatLogo extends BeatBox {
+  constructor(config) {
+    super(config);
+    const logo2 = new LegacyLogo({
+      size: config.size,
+      anchor: Anchor.Center
     });
     this.logo = logo2;
     this.logo.alpha = 0.08;
     this.add(logo2);
-    BeatDispatcher.register(this);
   }
   onNewBeat(isKiai, newBeatTimestamp, gap) {
     if (!BeatState.isAvailable) {
@@ -23584,15 +21732,11 @@ class LegacyFadeBeatLogo extends Box {
     const adjust = Math.min(volume, 1);
     this.logo.transform().scaleTo(Vector(1 + adjust * 0.02), 60, easeOut).scaleTo(Vector(1), gap * 2, easeOutQuint);
   }
-  dispose() {
-    super.dispose();
-    BeatDispatcher.unregister(this);
-  }
 }
 class LegacyLogoBeatBox extends Box {
-  constructor(gl, config) {
-    super(gl, config);
-    this.beatLogo = new LegacyBeatLogo(gl, config);
+  constructor(config) {
+    super(config);
+    this.beatLogo = new LegacyBeatLogo(config);
     this.add(this.beatLogo);
   }
   onUpdate() {
@@ -23607,9 +21751,9 @@ class LegacyLogoBeatBox extends Box {
   }
 }
 class LegacyFadeLogoBeatBox extends Box {
-  constructor(gl, config) {
-    super(gl, config);
-    this.beatLogo = new LegacyFadeBeatLogo(gl, config);
+  constructor(config) {
+    super(config);
+    this.beatLogo = new LegacyFadeBeatLogo(config);
     this.add(this.beatLogo);
   }
   onUpdate() {
@@ -23624,19 +21768,21 @@ class LegacyFadeLogoBeatBox extends Box {
   }
 }
 class LogoAmpBox2 extends BeatBox {
-  constructor(gl, config) {
-    super(gl, config);
+  constructor(config) {
+    super(config);
     this.logoHoverable = false;
     this.scope = effectScope();
-    this.visualizer = new LegacyRoundVisualizer(gl, {
-      size: ["fill-parent", "fill-parent"],
-      innerRadius: logoSize * 0.92 / 2
+    this.visualizer = new LegacyRoundVisualizer({
+      size: [config.size[0] * 0.96, config.size[1] * 0.96],
+      innerRadius: config.size[0] * 0.92 / 2,
+      anchor: Anchor.Center
     });
-    const ripple2 = new Ripples(gl, {
-      size: [600, 600]
+    const ripple2 = new Ripples({
+      size: [config.size[0] * 0.98, config.size[1] * 0.98],
+      anchor: Anchor.Center
     });
-    this.logoBeatBox = new LegacyLogoBeatBox(gl, config);
-    this.fadeLogoBeatBox = new LegacyFadeLogoBeatBox(gl, config);
+    this.logoBeatBox = new LegacyLogoBeatBox(config);
+    this.fadeLogoBeatBox = new LegacyFadeLogoBeatBox(config);
     this.add(this.visualizer, ripple2, this.logoBeatBox, this.fadeLogoBeatBox);
     this.scope.run(() => {
       watch(() => UIState.logoHover, (val) => this.logoHoverable = val, { immediate: true });
@@ -23665,51 +21811,10 @@ class LogoAmpBox2 extends BeatBox {
   }
 }
 class LogoBounceBox2 extends Box {
-  constructor(gl, config) {
-    super(gl, config);
-    this.isDraggable = true;
-    this.scope = effectScope();
-    this.flag = false;
-    this.startPosition = Vector2.newZero();
-    this.logoAmpBox = new LogoAmpBox2(gl, { size: config.size });
-    this.add(this.logoAmpBox);
-    this.scope.run(() => {
-      watch(() => UIState.logoDrag, (value) => {
-        this.isDraggable = value;
-      }, { immediate: true });
-    });
-  }
-  onDrag(which) {
-    if (!this.isDraggable) {
-      return true;
-    }
-    const position = MouseState.position;
-    if (!this.flag) {
-      this.flag = true;
-      this.startPosition.x = MouseState.position.x;
-      this.startPosition.y = MouseState.position.y;
-    }
-    this.translate = new Vector2((position.x - this.startPosition.x) * 0.05, (position.y - this.startPosition.y) * 0.05);
-    return true;
-  }
-  onDragLost(which) {
-    if (!this.isDraggable) {
-      return true;
-    }
-    this.flag = false;
-    this.transform().moveTo(new Vector2(0, 0), 600, easeOutElastic);
-    return true;
-  }
-  dispose() {
-    super.dispose();
-    this.scope.stop();
-  }
-}
-class LegacyBeatLogoBox extends Box {
-  constructor(gl, config) {
-    super(gl, config);
-    this.logoBounceBox = new LogoBounceBox2(gl, { size: config.size });
-    this.add(this.logoBounceBox);
+  // private readonly logoAmpBox: LogoAmpBox
+  constructor(config) {
+    super(config);
+    this.add(new LogoAmpBox2(config));
   }
   // private flag = true
   onClick(which) {
@@ -23717,39 +21822,45 @@ class LegacyBeatLogoBox extends Box {
   }
 }
 class LegacyScreen extends Box {
-  constructor(gl) {
-    super(gl, {
+  constructor() {
+    super({
       size: ["fill-parent", "fill-parent"]
     });
     this.add(
-      new LegacyBeatLogoBox(gl, {
-        size: [520, 520]
+      new LogoBounceBox2({
+        size: [500, 500],
+        anchor: Anchor.Center
       }),
-      new Flashlight(gl, {
-        size: ["fill-parent", "fill-parent"],
-        color: Color.fromHex(16777215)
-      }),
-      new HomeOverlay(gl)
+      new SideFlashlight(Color.fromHex(16777215)),
+      new HomeOverlay()
     );
   }
 }
 class HomeOverlay extends Box {
-  constructor(gl) {
-    super(gl, {
+  constructor() {
+    super({
       size: ["fill-parent", "fill-parent"]
     });
     this.lastPosition = Vector2.newZero();
-    this.top = new ColorDrawable(gl, {
+    const texture = TextureStore.get("Square");
+    this.top = new ImageDrawable(texture, {
       size: ["fill-parent", 100],
       anchor: Axis.Y_TOP | Axis.X_CENTER,
       color: Color.fromHex(0, 128)
     });
-    this.bottom = new ColorDrawable(gl, {
+    this.bottom = new ImageDrawable(texture, {
       size: ["fill-parent", 100],
       anchor: Axis.Y_BOTTOM | Axis.X_CENTER,
       color: Color.fromHex(0, 128)
     });
-    this.add(this.top, this.bottom);
+    this.add(
+      this.top,
+      this.bottom
+      // new PlayControls({
+      //   size: [Coordinate.width / 2, 20],
+      //   anchor: Anchor.TopRight
+      // })
+    );
     this.alpha = 0;
   }
   onMouseMove() {
@@ -24658,11 +22769,11 @@ class Sprite {
     bottomRight.set(this.originPosition.x + this.size.x, this.originPosition.y + this.size.y);
     this.color.alpha = transform.alpha;
   }
-  draw() {
+  draw(renderer2) {
     if (!this.shouldVisible()) {
       return;
     }
-    const shader = Shaders.Default, gl = this.gl;
+    const shader = Shaders.StoryDefault, gl = this.gl;
     this.vertexBuffer.bind();
     if (this.needUpdateVertex) {
       Shape2D.quadVector2(this.topLeft, this.bottomRight, this.buffer, 0, 4);
@@ -24675,14 +22786,11 @@ class Sprite {
     shader.use();
     StoryTextureManager$1.tryBind(this.path);
     if (this.additiveBlend) {
-      gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE);
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      renderer2.setBlend(Blend.Additive);
     } else {
-      gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      renderer2.setBlend(Blend.Normal);
     }
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
     this.vertexBuffer.unbind();
   }
   dispose() {
@@ -24725,7 +22833,7 @@ class Animation extends Sprite {
     }
     return frameNum % this.frameCount;
   }
-  draw() {
+  draw(renderer2) {
     if (!this.shouldVisible()) {
       return;
     }
@@ -24733,7 +22841,7 @@ class Animation extends Sprite {
     if (frameIndex < 0) {
       return;
     }
-    const shader = Shaders.Default, gl = this.gl;
+    const shader = Shaders.StoryDefault, gl = this.gl;
     this.vertexBuffer.bind();
     if (this.needUpdateVertex) {
       Shape2D.quadVector2(this.topLeft, this.bottomRight, this.buffer, 0, 4);
@@ -24746,43 +22854,155 @@ class Animation extends Sprite {
     shader.use();
     StoryTextureManager$1.tryBind(this.frames[frameIndex]);
     if (this.additiveBlend) {
-      gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE);
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      renderer2.setBlend(Blend.Additive);
     } else {
-      gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      renderer2.setBlend(Blend.Normal);
     }
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
     this.vertexBuffer.unbind();
+  }
+}
+class StoryboardLayer {
+  constructor() {
+    this.background = [];
+    this.fail = [];
+    this.pass = [];
+    this.foreground = [];
+    this.overlay = [];
+  }
+  onResize() {
+    const background = this.background;
+    const fail = this.fail;
+    const pass = this.pass;
+    const foreground = this.foreground;
+    const overlay = this.overlay;
+    for (let i = 0; i < background.length; i++) {
+      background[i].onResize();
+    }
+    for (let i = 0; i < fail.length; i++) {
+      fail[i].onResize();
+    }
+    for (let i = 0; i < pass.length; i++) {
+      pass[i].onResize();
+    }
+    for (let i = 0; i < foreground.length; i++) {
+      foreground[i].onResize();
+    }
+    for (let i = 0; i < overlay.length; i++) {
+      overlay[i].onResize();
+    }
+  }
+  update() {
+    const background = this.background;
+    const fail = this.fail;
+    const pass = this.pass;
+    const foreground = this.foreground;
+    const overlay = this.overlay;
+    for (let i = 0; i < background.length; i++) {
+      background[i].update();
+    }
+    for (let i = 0; i < fail.length; i++) {
+      fail[i].update();
+    }
+    for (let i = 0; i < pass.length; i++) {
+      pass[i].update();
+    }
+    for (let i = 0; i < foreground.length; i++) {
+      foreground[i].update();
+    }
+    for (let i = 0; i < overlay.length; i++) {
+      overlay[i].update();
+    }
+  }
+  draw(renderer2) {
+    const background = this.background;
+    const fail = this.fail;
+    const pass = this.pass;
+    const foreground = this.foreground;
+    const overlay = this.overlay;
+    for (let i = 0; i < background.length; i++) {
+      background[i].draw(renderer2);
+    }
+    for (let i = 0; i < fail.length; i++) {
+      fail[i].draw(renderer2);
+    }
+    for (let i = 0; i < pass.length; i++) {
+      pass[i].draw(renderer2);
+    }
+    for (let i = 0; i < foreground.length; i++) {
+      foreground[i].draw(renderer2);
+    }
+    for (let i = 0; i < overlay.length; i++) {
+      overlay[i].draw(renderer2);
+    }
+  }
+  dispose() {
+    const background = this.background;
+    const fail = this.fail;
+    const pass = this.pass;
+    const foreground = this.foreground;
+    const overlay = this.overlay;
+    for (let i = 0; i < background.length; i++) {
+      background[i].dispose();
+    }
+    for (let i = 0; i < fail.length; i++) {
+      fail[i].dispose();
+    }
+    for (let i = 0; i < pass.length; i++) {
+      pass[i].dispose();
+    }
+    for (let i = 0; i < foreground.length; i++) {
+      foreground[i].dispose();
+    }
+    for (let i = 0; i < overlay.length; i++) {
+      overlay[i].dispose();
+    }
   }
 }
 class StoryScreen extends Drawable {
   constructor(gl) {
     var _a;
-    super(gl, {
+    super({
       size: ["fill-parent", "fill-parent"]
     });
-    this.spriteList = [];
     this.orth = new Float32Array(16);
+    this.layers = new StoryboardLayer();
+    this.drawNode = new class extends DrawNode {
+      apply() {
+      }
+      draw(renderer2) {
+        this.source.onDraw(this, renderer2);
+      }
+    }(this);
     const osb = (_a = OSUPlayer$1.currentOSUFile.value.Events) == null ? void 0 : _a.storyboard;
     const osbSource = OSUPlayer$1.currentOSZFile.value.source.osb;
     if (osb) {
-      console.log(osb);
       for (let i = 0; i < osb.sprites.length; i++) {
         try {
-          const sprite = osb.sprites[i];
-          if (isAnimation(sprite)) {
-            this.spriteList.push(new Animation(gl, sprite, osbSource));
+          const osbSprite = osb.sprites[i];
+          let sprite;
+          if (isAnimation(osbSprite)) {
+            sprite = new Animation(gl, osbSprite, osbSource);
           } else {
-            this.spriteList.push(new Sprite(gl, sprite, osbSource));
+            sprite = new Sprite(gl, osbSprite, osbSource);
+          }
+          if (sprite.layer === "Background") {
+            this.layers.background.push(sprite);
+          } else if (sprite.layer === "Fail") {
+            this.layers.fail.push(sprite);
+          } else if (sprite.layer === "Pass") {
+            this.layers.pass.push(sprite);
+          } else if (sprite.layer === "Foreground") {
+            this.layers.foreground.push(sprite);
+          } else {
+            this.layers.overlay.push(sprite);
           }
         } catch (e) {
           console.log(e);
         }
       }
     }
-    const shader = Shaders.Default;
+    const shader = Shaders.StoryDefault;
     shader.bind();
     shader.sampler2D = 0;
     shader.unbind();
@@ -24811,39 +23031,32 @@ class StoryScreen extends Drawable {
       0,
       1
     );
-    for (let i = 0; i < this.spriteList.length; i++) {
-      this.spriteList[i].onResize();
-    }
+    this.layers.onResize();
   }
   onUpdate() {
     super.onUpdate();
-    for (let i = 0; i < this.spriteList.length; i++) {
-      this.spriteList[i].update();
-    }
+    this.layers.update();
   }
   bind() {
-    Shaders.Default.bind();
+    Shaders.StoryDefault.bind();
   }
-  onDraw() {
-    Shaders.Default.orth = this.orth;
-    const sprites = this.spriteList;
-    for (let i = 0; i < sprites.length; i++) {
-      sprites[i].draw(
-        /*this.vertexArray*/
-      );
-    }
-  }
-  unbind() {
+  onDraw(node, renderer2) {
+    this.bind();
+    Shaders.StoryDefault.orth = this.orth;
+    this.layers.draw(renderer2);
+    this.unbind();
   }
   dispose() {
     super.dispose();
     StoryTextureManager$1.dispose();
-    this.spriteList.forEach((v) => v.dispose());
+    this.layers.dispose();
+  }
+  unbind() {
   }
 }
 class LegacyPlayScreen extends BeatBox {
-  constructor(gl) {
-    super(gl, {
+  constructor() {
+    super({
       size: ["fill-parent", "fill-parent"]
     });
     this.activeScale = Vector(1.1);
@@ -24851,14 +23064,13 @@ class LegacyPlayScreen extends BeatBox {
     this.fadeLogoMaxScale = Vector(1.18);
     this.fade = 0.65;
     const config = {
-      size: [520, 520],
-      offset: [250 - 66, -250 + 36],
-      anchor: Axis.X_RIGHT | Axis.Y_BOTTOM
+      size: [225, 225],
+      offset: [36, 65],
+      anchor: Anchor.BottomRight
     };
-    this.logo = new LegacyLogo(gl, config);
-    this.fadeLogo = new LegacyLogo(gl, config);
+    this.logo = new LegacyLogo(config);
+    this.fadeLogo = new LegacyLogo(config);
     this.fadeLogo.alpha = this.fade;
-    this.scale = Vector(0.45);
     this.add(this.logo, this.fadeLogo);
   }
   onNewBeat(isKiai, newBeatTimestamp, gap) {
@@ -24866,6 +23078,15 @@ class LegacyPlayScreen extends BeatBox {
     this.fadeLogo.transform().delay(60).fadeTo(this.fade, 0).fadeTo(0, gap * 2, easeOutQuint).clear.delay(60).scaleTo(this.fadeLogoMinScale, 0).scaleTo(this.fadeLogoMaxScale, gap * 2, easeOutQuint);
   }
 }
+const canvas = new OffscreenCanvas(480, 480);
+const context = canvas.getContext("2d");
+function genTexture(gl, size2, draw) {
+  canvas.width = size2.x;
+  canvas.height = size2.y;
+  draw(context);
+  return new Texture(gl, canvas);
+}
+const iconsAtlas = "# icons.png\r\nicon-settings\r\n  x: 0\r\n  y: 0\r\n  width: 96\r\n  height: 96\r\nicon-note\r\n  x: 96\r\n  y: 0\r\n  width: 96\r\n  height: 96\r\nicon-folder\r\n  x: 192\r\n  y: 0\r\n  width: 96\r\n  height: 96\r\nicon-fullscreen\r\n  x: 288\r\n  y: 0\r\n  width: 96\r\n  height: 96\r\nicon-circle\r\n  x: 384\r\n  y: 0\r\n  width: 96\r\n  height: 96\r\nicon-notification\r\n  x: 480\r\n  y: 0\r\n  width: 96\r\n  height: 96\r\nicon-skip-next\r\n  x: 576\r\n  y: 0\r\n  width: 96\r\n  height: 96\r\nicon-skip-previous\r\n  x: 672\r\n  y: 0\r\n  width: 96\r\n  height: 96\r\nicon-play\r\n  x: 768\r\n  y: 0\r\n  width: 96\r\n  height: 96\r\nicon-pause\r\n  x: 864\r\n  y: 0\r\n  width: 96\r\n  height: 96\r\nicon-list\r\n  x: 0\r\n  y: 96\r\n  width: 96\r\n  height: 96\r\nicon-stop\r\n  x: 96\r\n  y: 96\r\n  width: 96\r\n  height: 96";
 const _hoisted_1$4 = {
   class: "fill-size",
   style: { "pointer-events": "none" }
@@ -24873,36 +23094,47 @@ const _hoisted_1$4 = {
 const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   __name: "Visualizer2",
   setup(__props) {
-    const canvas = ref(null);
+    const canvas2 = ref(null);
     let renderer2;
     const player = AudioPlayerV2;
+    const mousePosition = Vector();
+    function handleMousePosition(position) {
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const width = Coordinate$1.width;
+      const height = Coordinate$1.height;
+      const scaleX = width / windowWidth;
+      const scaleY = height / windowHeight;
+      position.x *= scaleX;
+      position.y *= scaleY;
+    }
     const mouseListener = {
       mousedown(e) {
-        const x = e.x - window.innerWidth / 2;
-        const y = window.innerHeight / 2 - e.y;
+        mousePosition.set(e.x, e.y);
+        handleMousePosition(mousePosition);
         let which = MOUSE_KEY_NONE;
         if (e.button === 0)
           which = MOUSE_KEY_LEFT;
         if (e.button === 2)
           which = MOUSE_KEY_RIGHT;
         if (which !== MOUSE_KEY_NONE)
-          MouseState.receiveMouseDown(which, x, y);
+          MouseState.receiveMouseDown(which, mousePosition.x, mousePosition.y);
       },
       mouseup(e) {
-        const x = e.x - window.innerWidth / 2;
-        const y = window.innerHeight / 2 - e.y;
+        mousePosition.set(e.x, e.y);
+        handleMousePosition(mousePosition);
         let which = MOUSE_KEY_NONE;
         if (e.button === 0)
           which = MOUSE_KEY_LEFT;
         if (e.button === 2)
           which = MOUSE_KEY_RIGHT;
         if (which !== MOUSE_KEY_NONE)
-          MouseState.receiveMouseUp(which, x, y);
+          MouseState.receiveMouseUp(which, mousePosition.x, mousePosition.y);
       },
       mousemove(e) {
-        const x = e.x - window.innerWidth / 2;
-        const y = window.innerHeight / 2 - e.y;
-        MouseState.receiveMouseMove(x, y);
+        mousePosition.set(e.x, e.y);
+        handleMousePosition(mousePosition);
+        MouseState.receiveMouseMove(mousePosition.x, mousePosition.y);
       }
     };
     onMounted(async () => {
@@ -24919,11 +23151,12 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
       window.addEventListener("mousedown", mouseListener.mousedown);
       window.addEventListener("mouseup", mouseListener.mouseup);
       window.addEventListener("mousemove", mouseListener.mousemove);
-      const c = canvas.value;
+      const c = canvas2.value;
       if (!c)
         return;
       const webgl = c.getContext("webgl2", {
-        alpha: false
+        alpha: false,
+        premultipliedAlpha: false
       });
       if (!webgl) {
         return;
@@ -24939,36 +23172,64 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
       }, true);
       await loadSoundEffect();
       ShaderManager$1.init(webgl);
-      Shaders.init(webgl);
       renderer2 = new WebGLRenderer(webgl);
+      Shaders.init(renderer2);
+      Buffers.init(renderer2);
+      for (const imagesKey in Images) {
+        TextureStore.add(webgl, imagesKey, Images[imagesKey]);
+      }
+      const gradiant = genTexture(webgl, Vector(40, 90), (context2) => {
+        context2.beginPath();
+        let canvasGradient = context2.createLinearGradient(0, 0, 40, 0);
+        canvasGradient.addColorStop(0, "#ffffff");
+        canvasGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+        context2.fillStyle = canvasGradient;
+        context2.fillRect(0, 0, 40, 90);
+        context2.fill();
+      });
+      TextureStore.addTexture("Gradiant", gradiant);
+      const verticalGradiant = genTexture(webgl, Vector(90, 40), (context2) => {
+        context2.beginPath();
+        let canvasGradient = context2.createLinearGradient(45, 0, 45, 40);
+        canvasGradient.addColorStop(0, "#ffffff");
+        canvasGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+        context2.fillStyle = canvasGradient;
+        context2.fillRect(0, 0, 90, 40);
+        context2.fill();
+      });
+      TextureStore.addTexture("VerticalGradiant", verticalGradiant);
+      await TextureStore.addTextureAtlas("Icons-Atlas", iconsAtlas, Images.Icons, false);
       window.onresize = () => {
         resizeCanvas();
       };
-      backgroundScreen = new BackgroundScreen(webgl);
+      backgroundScreen = new BackgroundScreen();
       renderer2.addDrawable(backgroundScreen);
       ScreenManager$1.init(renderer2);
       ScreenManager$1.addScreen("main", () => {
-        return new MainScreen(webgl);
+        return new MainScreen();
       });
       ScreenManager$1.addScreen("second", () => {
-        return new SongPlayScreen(webgl);
-      });
-      ScreenManager$1.addScreen("mania", () => {
-        return new ManiaScreen(webgl);
+        return new SongPlayScreen();
       });
       ScreenManager$1.addScreen("test", () => {
-        return new TestScreen(webgl);
+        return new TestScreen();
       });
       ScreenManager$1.addScreen("legacy", () => {
-        return new LegacyScreen(webgl);
+        return new LegacyScreen();
       });
       ScreenManager$1.addScreen("story", () => {
         return new StoryScreen(webgl);
       });
       ScreenManager$1.addScreen("legacyPlay", () => {
-        return new LegacyPlayScreen(webgl);
+        return new LegacyPlayScreen();
       });
       ScreenManager$1.activeScreen("main");
+      renderer2.onDispose = () => {
+        Shaders.dispose();
+        Buffers.dispose();
+        TextureStore.dispose();
+        QuadIndexBuffer$1.dispose();
+      };
       draw();
     });
     onUnmounted(() => {
@@ -24997,13 +23258,11 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
       renderer2.render();
     }
     function resizeCanvas() {
-      if (canvas.value) {
-        canvas.value.height = canvas.value.clientHeight * window.devicePixelRatio;
-        canvas.value.width = canvas.value.clientWidth * window.devicePixelRatio;
-        Coordinate$1.updateCoordinate(
-          canvas.value.clientWidth,
-          canvas.value.clientHeight
-        );
+      if (canvas2.value) {
+        canvas2.value.height = canvas2.value.clientHeight * window.devicePixelRatio;
+        canvas2.value.width = canvas2.value.clientWidth * window.devicePixelRatio;
+        const { clientWidth, clientHeight } = canvas2.value;
+        Coordinate$1.updateCoordinate(clientWidth, clientHeight);
       }
     }
     useKeyboard("up", (e) => {
@@ -25012,8 +23271,8 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
       }
     });
     function canvasFullscreen() {
-      if (canvas.value) {
-        canvas.value.requestFullscreen();
+      if (canvas2.value) {
+        canvas2.value.requestFullscreen();
       }
     }
     return (_ctx, _cache) => {
@@ -25021,7 +23280,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
         createBaseVNode("canvas", {
           style: { "width": "100vw", "height": "100vh" },
           ref_key: "canvas",
-          ref: canvas
+          ref: canvas2
         }, null, 512)
       ]);
     };
@@ -25047,12 +23306,12 @@ function useTransition(obj, property) {
 function useTransitionRef(value) {
   return useTransition(value, "value");
 }
-function useContext2D(canvas, drawCallback) {
+function useContext2D(canvas2, drawCallback) {
   let drawFun = ref(null);
   onMounted(() => {
-    if (canvas.value) {
-      const context = canvas.value.getContext("2d");
-      drawFun.value = () => drawCallback(context);
+    if (canvas2.value) {
+      const context2 = canvas2.value.getContext("2d");
+      drawFun.value = () => drawCallback(context2);
     }
   });
   return drawFun;
@@ -25060,15 +23319,15 @@ function useContext2D(canvas, drawCallback) {
 const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   __name: "VolumeAdjuster",
   setup(__props) {
-    const canvas = ref(null);
+    const canvas2 = ref(null);
     const player = AudioPlayerV2;
     let isShow = false;
     let opacity = ref(0);
     const opacityBegin = useTransitionRef(opacity);
-    const drawVolume = useContext2D(canvas, (context) => {
+    const drawVolume = useContext2D(canvas2, (context2) => {
       const volume = player.volume.value;
-      const ctx = context;
-      const bound = resizeCanvas(canvas.value);
+      const ctx = context2;
+      const bound = resizeCanvas(canvas2.value);
       ctx.beginPath();
       ctx.fillStyle = "#23131d";
       ctx.ellipse(
@@ -25106,11 +23365,11 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
       );
       ctx.fill();
     });
-    function resizeCanvas(canvas2) {
+    function resizeCanvas(canvas22) {
       let width = 0, height = 0;
-      if (canvas2) {
-        canvas2.width = width = canvas2.parentElement.offsetWidth;
-        canvas2.height = height = canvas2.parentElement.offsetHeight;
+      if (canvas22) {
+        canvas22.width = width = canvas22.parentElement.offsetWidth;
+        canvas22.height = height = canvas22.parentElement.offsetHeight;
       }
       return { width, height };
     }
@@ -25137,7 +23396,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
       }, [
         createBaseVNode("canvas", {
           ref_key: "canvas",
-          ref: canvas
+          ref: canvas2
         }, null, 512)
       ], 36);
     };
@@ -25389,10 +23648,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         name: "Background Preview",
         id: "second"
       },
-      // {
-      //   name: "Mania4K Preview",
-      //   id: "mania"
-      // },
       {
         name: "Test",
         id: "test"
@@ -25441,8 +23696,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ScreenSelector_vue_vue_type_style_index_0_scoped_4b3d218e_lang = "";
-const ScreenSelector = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-4b3d218e"]]);
+const ScreenSelector_vue_vue_type_style_index_0_scoped_3ae1c242_lang = "";
+const ScreenSelector = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-3ae1c242"]]);
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "SideButton",
   emits: ["sideClick"],
@@ -25460,12 +23715,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const ui = reactive({
       list: false,
-      settings: false,
       bpmCalculator: false,
       showUI: false,
-      miniPlayer: false,
-      beatmapList: false,
-      notify: false,
       screenSelector: false
     });
     const screenId = ref("main");
@@ -25479,9 +23730,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       ui.list = true;
     });
     provide$1("openMiniPlayer", () => {
-      ui.miniPlayer = true;
+      VueUI.miniPlayer = true;
     });
-    watch(() => ui.settings, (value) => {
+    watch(() => VueUI.settings, (value) => {
       if (value) {
         playSound(Sound.OverlayBigPopIn);
       } else {
@@ -25489,7 +23740,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }
       onLeftSide.emit(value);
     });
-    watch(() => ui.notify, (value) => {
+    watch(() => VueUI.notification, (value) => {
       if (value) {
         playSound(Sound.OverlayBigPopIn);
       } else {
@@ -25497,8 +23748,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }
       onRightSide.emit(value);
     });
-    watch(() => ui.miniPlayer, (value) => playSound(value ? Sound.NowPlayingPopIn : Sound.NowPlayingPopOut));
-    watch(() => ui.beatmapList, (value) => playSound(value ? Sound.WavePopIn : Sound.WavePopOut));
+    watch(() => VueUI.miniPlayer, (value) => playSound(value ? Sound.NowPlayingPopIn : Sound.NowPlayingPopOut));
+    watch(() => VueUI.selectBeatmapDirectory, (value) => playSound(value ? Sound.WavePopIn : Sound.WavePopOut));
     useKeyboard("up", (evt) => {
       if (evt.code === "KeyO") {
         ui.showUI = true;
@@ -25511,7 +23762,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         Toaster.show("停止");
       }
       if (evt.code === "KeyM") {
-        ui.miniPlayer = !ui.miniPlayer;
+        VueUI.miniPlayer = !VueUI.miniPlayer;
       }
       if (ui.bpmCalculator) {
         return;
@@ -25529,17 +23780,20 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     onEnterMenu.collect((value) => {
       ui.showUI = value;
     });
-    const hasSomeUIShow = computed(() => ui.list || ui.settings || ui.miniPlayer || ui.beatmapList || ui.notify || ui.screenSelector);
-    function hideUI() {
-      ui.showUI = false;
-      Toaster.show(`按“O“显示`);
-    }
+    const hasSomeUIShow = computed(() => ui.list || VueUI.settings || VueUI.miniPlayer || VueUI.selectBeatmapDirectory || VueUI.notification || ui.screenSelector);
+    watch(hasSomeUIShow, (value) => {
+      if (value) {
+        MouseEventFire.pause();
+      } else {
+        MouseEventFire.resume();
+      }
+    }, { immediate: true });
     function closeAll() {
-      ui.settings = false;
+      VueUI.settings = false;
       ui.list = false;
-      ui.miniPlayer = false;
-      ui.beatmapList = false;
-      ui.notify = false;
+      VueUI.miniPlayer = false;
+      VueUI.selectBeatmapDirectory = false;
+      VueUI.notification = false;
     }
     const stateText = ref("");
     collect(AudioPlayerV2.onEnd, () => {
@@ -25606,28 +23860,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         onDragover: handleDrop
       }, [
         createVNode(_sfc_main$8, { class: "absolute" }),
-        createVNode(Transition$1, { name: "top-bar" }, {
-          default: withCtx(() => [
-            withDirectives(createVNode(TopBar, {
-              style: { "position": "absolute", "top": "0" },
-              stateText: stateText.value,
-              onSettingsClick: _cache[0] || (_cache[0] = ($event) => ui.settings = !ui.settings),
-              onBpmCalcClick: _cache[1] || (_cache[1] = ($event) => ui.bpmCalculator = !ui.bpmCalculator),
-              onBeatmapListClick: _cache[2] || (_cache[2] = ($event) => ui.beatmapList = !ui.beatmapList),
-              onNotifyClick: _cache[3] || (_cache[3] = ($event) => ui.notify = !ui.notify),
-              onHideUI: _cache[4] || (_cache[4] = ($event) => hideUI())
-            }, null, 8, ["stateText"]), [
-              [vShow, ui.showUI]
-            ])
-          ]),
-          _: 1
-        }),
         createVNode(Transition$1, { name: "mask" }, {
           default: withCtx(() => [
             hasSomeUIShow.value ? (openBlock(), createElementBlock("div", {
               key: 0,
               class: "max-size mask absolute",
-              onClick: _cache[5] || (_cache[5] = ($event) => closeAll())
+              onClick: _cache[0] || (_cache[0] = ($event) => closeAll())
             })) : createCommentVNode("", true)
           ]),
           _: 1
@@ -25644,7 +23882,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }),
         createVNode(Transition$1, { name: "settings" }, {
           default: withCtx(() => [
-            ui.settings ? (openBlock(), createBlock(SettingsPanel, {
+            unref(VueUI).settings ? (openBlock(), createBlock(SettingsPanel, {
               key: 0,
               class: "absolute left-0"
             })) : createCommentVNode("", true)
@@ -25652,20 +23890,20 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           _: 1
         }),
         createVNode(_sfc_main$1, {
-          onSideClick: _cache[6] || (_cache[6] = ($event) => ui.screenSelector = true)
+          onSideClick: _cache[1] || (_cache[1] = ($event) => ui.screenSelector = true)
         }),
         createVNode(Transition$1, { name: "settings" }, {
           default: withCtx(() => [
             ui.screenSelector ? (openBlock(), createBlock(ScreenSelector, {
               key: 0,
-              onClose: _cache[7] || (_cache[7] = ($event) => ui.screenSelector = false)
+              onClose: _cache[2] || (_cache[2] = ($event) => ui.screenSelector = false)
             })) : createCommentVNode("", true)
           ]),
           _: 1
         }),
         createVNode(Transition$1, { name: "player" }, {
           default: withCtx(() => [
-            ui.miniPlayer ? (openBlock(), createBlock(MiniPlayer, {
+            unref(VueUI).miniPlayer ? (openBlock(), createBlock(MiniPlayer, {
               key: 0,
               style: { "position": "absolute", "top": "var(--top-bar-height)", "right": "80px" }
             })) : createCommentVNode("", true)
@@ -25674,7 +23912,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }),
         createVNode(Transition$1, { name: "list" }, {
           default: withCtx(() => [
-            ui.notify ? (openBlock(), createBlock(Notification, {
+            unref(VueUI).notification ? (openBlock(), createBlock(Notification, {
               key: 0,
               class: "absolute right-0"
             })) : createCommentVNode("", true)
@@ -25684,19 +23922,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         ui.bpmCalculator ? (openBlock(), createBlock(BpmCalculator, {
           key: 0,
           class: "absolute",
-          onClose: _cache[8] || (_cache[8] = ($event) => ui.bpmCalculator = false)
+          onClose: _cache[3] || (_cache[3] = ($event) => ui.bpmCalculator = false)
         })) : createCommentVNode("", true),
         createVNode(Transition$1, { name: "popup" }, {
           default: withCtx(() => [
-            ui.beatmapList ? (openBlock(), createBlock(OSUBeatmapList, {
+            unref(VueUI).selectBeatmapDirectory ? (openBlock(), createBlock(OSUBeatmapList, {
               key: 0,
               class: "absolute",
-              onClose: _cache[9] || (_cache[9] = ($event) => ui.beatmapList = false)
+              onClose: _cache[4] || (_cache[4] = ($event) => unref(VueUI).selectBeatmapDirectory = false)
             })) : createCommentVNode("", true)
           ]),
           _: 1
         }),
-        !ui.notify ? (openBlock(), createBlock(FloatNotification, {
+        !unref(VueUI).notification ? (openBlock(), createBlock(FloatNotification, {
           key: 1,
           class: "absolute right-0"
         })) : createCommentVNode("", true),
@@ -25709,8 +23947,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const App_vue_vue_type_style_index_0_scoped_c607ba8b_lang = "";
-const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-c607ba8b"]]);
+const App_vue_vue_type_style_index_0_scoped_842683f8_lang = "";
+const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-842683f8"]]);
 const app = createApp(App);
 const buttonHoverSound = () => playSound(Sound.ButtonHover);
 const buttonSelectSound = () => playSound(Sound.ButtonSelect);

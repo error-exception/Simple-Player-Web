@@ -73,7 +73,6 @@ import MiniPlayer from "./components/MiniPlayer.vue";
 import Playlist from "./components/Playlist.vue";
 import SettingsPanel from "./components/SettingsPanel.vue";
 import Toast from "./components/Toast.vue";
-import TopBar from "./components/TopBar.vue";
 import Visualizer2 from "./components/Visualizer2.vue";
 import VolumeAdjuster from "./components/VolumeAdjuster.vue";
 import AudioPlayerV2 from "./ts/player/AudioPlayer";
@@ -179,11 +178,6 @@ watch(hasSomeUIShow, (value) => {
     MouseEventFire.resume()
   }
 }, { immediate: true })
-
-function hideUI() {
-  ui.showUI = false
-  Toaster.show(`按“O“显示`)
-}
 
 function closeAll() {
   VueUI.settings = false

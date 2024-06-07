@@ -1,6 +1,6 @@
-import { OSZ } from "../osu/OSZ"
-import { createMutableSharedFlow } from "../util/flow"
-import {reactive, ref} from "vue";
+import {OSZ} from "../osu/OSZ"
+import {createMutableSharedFlow} from "../util/flow"
+import {reactive} from "vue";
 
 interface GlobalState {
     beatmapFileList: File[]

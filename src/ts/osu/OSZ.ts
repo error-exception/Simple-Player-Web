@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import {OSUParser} from "./OSUParser";
 import {isAnimation, OSBFile, OSUFile} from "./OSUFile";
-import {NoteData} from "../webgl/screen/mania/ManiaPanel";
+// import {NoteData} from "../webgl/screen/mania/ManiaPanel";
 import OSUPlayer from "../player/OSUPlayer";
 import {Nullable} from "../type";
 import {OSBParser} from "./OSBParser";
@@ -10,7 +10,6 @@ export class OSZ {
 
   public osuFile: OSUFile | null = null
   public osuFileList: OSUFile[] = []
-  public maniaNoteData: NoteData[][] | null = null
 
   public oszSource: OSZSource
 
@@ -139,9 +138,6 @@ export class OSZ {
           this.oszSource.video = video
         }
       }
-    }
-    if (!this.maniaNoteData && osuFile.NoteData) {
-      this.maniaNoteData = osuFile.NoteData
     }
     return osuFile
   }

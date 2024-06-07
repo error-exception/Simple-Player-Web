@@ -1,5 +1,3 @@
-import {NoteData} from "./webgl/screen/mania/ManiaPanel"
-
 /**
  * 音乐标题
  * 音乐艺术家
@@ -38,7 +36,6 @@ export interface Bullet {
     metadata: BulletMetadata
     timingPoints: BulletTimingPoints
     events: BulletEvents
-    noteData?: NoteData[][]
     available: boolean
 }
 

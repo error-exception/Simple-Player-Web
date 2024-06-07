@@ -1,10 +1,8 @@
-import {NoteData} from '../webgl/screen/mania/ManiaPanel';
 import {OSUFile, OSUFileGeneral, OSUFileMetadata, OSUFileTimingPoints} from "./OSUFile";
 import {OSBParser} from "./OSBParser";
 
 export class OSUParser {
 
-  private static readonly hitObject = "[HitObjects]"
   private static readonly general = "[General]"
   private static readonly metadata = "[Metadata]"
   private static readonly timingPoints = "[TimingPoints]"
@@ -15,11 +13,7 @@ export class OSUParser {
     const lines = textContent.split("\n").map(v => v.trimEnd())
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]
-      if (line === this.hitObject && osuFile.General) {
-        if (osuFile.General.Mode === 3) {
-          this.parseMania(lines, i + 1, osuFile)
-        }
-      } else if (line === this.general) {
+      if (line === this.general) {
         this.parseGeneral(lines, i + 1, osuFile)
       } else if (line === this.metadata) {
         this.parseMetadata(lines, i + 1, osuFile)
@@ -69,44 +63,6 @@ export class OSUParser {
       }
     }
     out.Events.storyboard = OSBParser.parse(storyLines.join('\n'))
-  }
-
-  // track, none, startTime, none, none, endTime
-  private static parseMania(lines: string[], index: number, out: OSUFile) {
-    let i = index
-    const tracks: NoteData[][] = []
-    while (lines[i] && lines[i].length > 0 && lines[i].charAt(0) !== '[') {
-      const line = lines[i++]
-      const [track, _1, startTime, _2, _3, endTime] = line.split(",")
-      const trackNumber = parseInt(track)
-      const startTimeNumber = parseInt(startTime)
-      const endTimeNumber = parseInt(endTime)
-      let trackIndex = 0
-      if (trackNumber === 64)
-        trackIndex = 0
-      else if (trackNumber === 192)
-        trackIndex = 1
-      else if (trackNumber === 320)
-        trackIndex = 2
-      else if (trackNumber === 448)
-        trackIndex = 3
-      let list = tracks[trackIndex]
-      if (!list) {
-        list = []
-        tracks[trackIndex] = list
-      }
-      list.push({
-        noteIndex: 0,
-        startTime: startTimeNumber,
-        endTime: endTimeNumber
-      })
-    }
-    for (let j = 0; j < tracks.length; j++) {
-      for (let k = 0; k < tracks[j].length; k++) {
-        tracks[j][k].noteIndex = k
-      }
-    }
-    out.NoteData = tracks
   }
 
   private static parseGeneral(lines: string[], index: number, out: OSUFile) {
