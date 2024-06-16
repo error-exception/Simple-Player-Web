@@ -8,8 +8,6 @@ import CheckBox from "./common/CheckBox.vue";
 import AudioPlayer from "../ts/player/AudioPlayer";
 import {TestBeater} from "../ts/TestBeater";
 import {ArrayUtils} from "../ts/util/ArrayUtils";
-import TimingManager from "../ts/global/TimingManager";
-import PlayManager from "../ts/player/PlayManager";
 import {TimingItem} from "../ts/type";
 import {PlayerState} from "../ts/player/PlayerState";
 import {useAnimationFrame} from "../ts/use/useAnimationFrame";
@@ -556,19 +554,19 @@ watch(() => state.playbackRateIndex, (value) => {
   player.speed(playbackRate.value[value])
 })
 
-const currentMusic = PlayManager.currentMusic;
-TimingManager.getTiming(currentMusic.metadata.id).then((res) => {
-  res = res || TimingManager.defaultTiming
-  bpmInfo.bpm = res.bpm
-  bpmInfo.offset = res.offset
-  timing.list = res.timingList
-  beater.setBpm(res.bpm)
-  beater.setOffset(res.offset)
-  beater.setTimingList(res.timingList)
-  if (player.isPlaying()) {
-    drawFlag.value = true
-  }
-})
+// const currentMusic = PlayManager.currentMusic;
+// TimingManager.getTiming(currentMusic.metadata.id).then((res) => {
+//   res = res || TimingManager.defaultTiming
+//   bpmInfo.bpm = res.bpm
+//   bpmInfo.offset = res.offset
+//   timing.list = res.timingList
+//   beater.setBpm(res.bpm)
+//   beater.setOffset(res.offset)
+//   beater.setTimingList(res.timingList)
+//   if (player.isPlaying()) {
+//     drawFlag.value = true
+//   }
+// })
 useKeyboard('down', (evt) => {
   if (evt.code === 'ArrowRight') {
     changeProgressByBeatGap(true)

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Row from "../common/Row.vue";
 import {ref} from "vue";
-import ExpandMenu from "./ExpandMenu.vue";
+import ExpandMenu from "../common/ExpandMenu.vue";
 import {Icon} from "../../ts/icon/Icon";
 import Column from "../common/Column.vue";
 

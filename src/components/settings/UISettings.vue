@@ -3,10 +3,12 @@ import Column from "../common/Column.vue";
 import Row from "../common/Row.vue";
 import CheckBox from "../common/CheckBox.vue";
 import {UIState} from "../../ts/global/UISettings";
-import ExpandMenu from "../timing/ExpandMenu.vue";
+import ExpandMenu from "../common/ExpandMenu.vue";
 import {ref, watch} from "vue";
 import BackgroundManager from "../../ts/global/BackgroundManager";
 import OSUButton from "../common/OSUButton.vue";
+import {OSZConfig} from "../../ts/global/GlobalState";
+import LocalBackgroundLoader from "../../ts/global/LocalBackgroundLoader";
 
 
 const backgroundType = [
@@ -32,9 +34,14 @@ watch(item, (value, oldValue) => {
 function refreshCustomBackground() {
   BackgroundManager.changeCustomBackground()
 }
+
+function reloadCustomBackground() {
+  LocalBackgroundLoader.forceInit()
+}
 </script>
 <template>
-  <Column class="w-full h-full text-white p-4" :gap="16">
+  <Column class="w-full h-full text-white p-6" :gap="16">
+    <h1 class="text-3xl mb-4 mt-2">界面</h1>
     <Row class="w-full" center-vertical>
       <span>Logo Drag</span>
       <CheckBox class="ml-auto" v-model="UIState.logoDrag"/>
@@ -43,12 +50,8 @@ function refreshCustomBackground() {
       <span class="flex-row">Logo Hover</span>
       <CheckBox class="ml-auto" v-model="UIState.logoHover"/>
     </Row>
-    <Row class="w-full" center-vertical>
-      <span class="flex-row">Star Smoke</span>
-      <CheckBox class="ml-auto" v-model="UIState.starSmoke"/>
-    </Row>
     <Column class="w-full" center-vertical :gap="8">
-      <span>Background</span>
+      <span>背景</span>
       <ExpandMenu :items="backgroundType" v-model="item" class="w-full"/>
     </Column>
     <Row class="w-full" center>
@@ -57,8 +60,17 @@ function refreshCustomBackground() {
           fill
           @click="refreshCustomBackground()"
       >
-        Change Custom Background
+        切换自定义背景
       </OSUButton>
+    </Row>
+    <Row class="w-full" center>
+      <OSUButton v-osu-button fill @click="reloadCustomBackground()">
+        修改自定义背景文件夹
+      </OSUButton>
+    </Row>
+    <Row class="w-full" center>
+      <span>加载视频</span>
+      <CheckBox class="ml-auto" v-model="OSZConfig.loadVideo"/>
     </Row>
   </Column>
 </template>

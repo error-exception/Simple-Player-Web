@@ -1,14 +1,11 @@
-import {createMutableSharedFlow} from "../util/flow";
+import {SingleEvent} from "../util/SingleEvent";
 
 export class Toaster {
 
-    // public static onToast: ((message: string) => void) | null = null
-
-    public static toast = createMutableSharedFlow<string>()
+    public static onToast = new SingleEvent<string>()
 
     public static show(message: string) {
-        // Toaster.onToast?.(message)
-        this.toast.emit(message)
+        this.onToast.fire(message)
     }
 
 }

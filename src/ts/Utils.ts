@@ -84,10 +84,6 @@ export function sleep(m: number) {
   })
 }
 
-export function isFloatZero(f: number): boolean {
-  return Math.abs(f) < 0.00001
-}
-
 export function shallowCopy<T extends object>(source: T): T {
   const result = {}
   const keys = Object.getOwnPropertyNames(source)
@@ -97,4 +93,18 @@ export function shallowCopy<T extends object>(source: T): T {
     result[key] = source[key]
   }
   return result as T
+}
+
+export function TODO(reason: string) {
+  throw new Error(reason)
+}
+
+export function debounce(callback: () => void, delay: number) {
+  let timeout: any
+  return () => {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+    timeout = setTimeout(callback, delay)
+  }
 }

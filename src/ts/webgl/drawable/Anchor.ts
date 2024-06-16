@@ -11,5 +11,6 @@ export class Anchor {
   static BottomLeft = Axis.X_LEFT | Axis.Y_BOTTOM
   static BottomCenter  = Axis.X_CENTER | Axis.Y_BOTTOM
   static BottomRight = Axis.X_RIGHT | Axis.Y_BOTTOM
+  static Custom = -1
 
 }

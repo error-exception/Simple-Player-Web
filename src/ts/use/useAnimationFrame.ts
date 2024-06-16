@@ -20,3 +20,19 @@ export function useAnimationFrame(key: Nullable<Ref<boolean>>, callback: (timest
     handle !== undefined && cancelAnimationFrame(handle)
   })
 }
+
+export function useAnimationFrame2(callback: (timestamp: number) => void) {
+
+  let handle: number | undefined, isStop = ref(false)
+  const animationCallback = (timestamp: number) => {
+    callback(timestamp)
+    if (!isStop.value) {
+      handle = requestAnimationFrame(animationCallback)
+    }
+  }
+  handle = requestAnimationFrame(animationCallback)
+  onUnmounted(() => {
+    handle !== undefined && cancelAnimationFrame(handle)
+    isStop.value = true
+  })
+}

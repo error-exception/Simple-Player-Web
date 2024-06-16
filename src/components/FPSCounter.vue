@@ -17,7 +17,7 @@ const frameTime = ref(16.6667)
 let lastUpdate = currentMilliseconds()
 update()
 
-watch(() => frameTime.value, () => {
+watch(frameTime, () => {
   update()
 })
 

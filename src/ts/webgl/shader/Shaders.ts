@@ -6,6 +6,7 @@ import {AlphaTextureShaderWrapper} from "./AlphaTextureShaderWrapper";
 import type {WebGLRenderer} from "../WebGLRenderer";
 import {LegacyVisualizerShaderWrapper} from "./LegacyVisualizerShaderWrapper";
 import {StoryShaderWrapper} from "./StoryShaderWrapper";
+import {BrightnessTextureShaderWrapper} from "./BrightnessTextureShaderWrapper";
 
 export class Shaders {
 
@@ -16,6 +17,7 @@ export class Shaders {
   public static AlphaTexture: AlphaTextureShaderWrapper
   public static LegacyVisualizer: LegacyVisualizerShaderWrapper
   public static StoryDefault: StoryShaderWrapper
+  public static BrightnessTexture: BrightnessTextureShaderWrapper
 
   public static init(renderer: WebGLRenderer) {
     this.Default = new DefaultShaderWrapper(renderer)
@@ -25,6 +27,7 @@ export class Shaders {
     this.AlphaTexture = new AlphaTextureShaderWrapper(renderer)
     this.LegacyVisualizer = new LegacyVisualizerShaderWrapper(renderer)
     this.StoryDefault = new StoryShaderWrapper(renderer)
+    this.BrightnessTexture = new BrightnessTextureShaderWrapper(renderer)
   }
 
   public static dispose() {
@@ -35,6 +38,7 @@ export class Shaders {
     this.AlphaTexture.dispose()
     this.LegacyVisualizer.dispose()
     this.StoryDefault.dispose()
+    this.BrightnessTexture.dispose()
   }
 
 }

@@ -1,6 +1,14 @@
 import {Texture} from "../core/Texture";
 import {TextureAtlasParser} from "./TextureAtlasParser";
 import type {TextureAtlas} from "./TextureAtlas";
+import type {ImageName} from "../util/ImageResourceMap";
+
+export type TextureKey = ImageName |
+  "Gradiant" |
+  "VerticalGradiant"
+
+export type TextureAtlasKey = string |
+  "Icon-Atlas"
 
 export class TextureStore {
 
@@ -12,15 +20,15 @@ export class TextureStore {
     this.map.set(name, texture)
   }
 
-  public static addTexture(name: string, texture: Texture) {
+  public static addTexture(name: TextureKey, texture: Texture) {
     this.map.set(name, texture)
   }
 
-  public static get(name: string): Texture {
+  public static get(name: TextureKey): Texture {
     return this.map.get(name) as Texture
   }
 
-  public static getAtlas(name: string): TextureAtlas {
+  public static getAtlas(name: TextureAtlasKey): TextureAtlas {
     return this.map.get(name) as TextureAtlas
   }
 
@@ -28,7 +36,7 @@ export class TextureStore {
     return new Texture(this.gl, image)
   }
 
-  public static async addTextureAtlas(name: string, atlasUrl: string, image: TexImageSource, isUrl: boolean = true) {
+  public static async addTextureAtlas(name: TextureAtlasKey, atlasUrl: string, image: TexImageSource, isUrl: boolean = true) {
     let text: string
     if (isUrl) {
       const response = await fetch(atlasUrl)

@@ -14,6 +14,7 @@ class LocalBackgroundLoader {
     try {
       //@ts-ignore
       const handle = await window.showDirectoryPicker()
+      this.backgroundFiles.length = 0
       for await (const entry of handle.values()) {
         if (entry.kind === 'file' && this.isAccept(entry.name)) {
           const file = await entry.getFile()
@@ -32,6 +33,11 @@ class LocalBackgroundLoader {
     } catch (_) {
       return false
     }
+  }
+
+  public async forceInit() {
+    this.isInit = false
+    await this.init()
   }
 
   private currentBackgroundFile: Nullable<File> = null

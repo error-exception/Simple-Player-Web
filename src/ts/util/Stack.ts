@@ -9,6 +9,9 @@ export class Stack<T> {
   }
 
   public pop(): Nullable<T> {
+    if (this.arr.length === 0) {
+      return null
+    }
     return this.arr.pop() ?? null
   }
 
@@ -21,5 +24,4 @@ export class Stack<T> {
   public size() {
     return this.arr.length
   }
-
 }

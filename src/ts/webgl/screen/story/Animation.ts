@@ -1,6 +1,6 @@
 import {LoopType} from "./StoryType";
 import {OSBAnimation} from "../../../osu/OSUFile";
-import {OSBSource} from "../../../osu/OSZ";
+import {OSZ} from "../../../osu/OSZ";
 import {isUndef} from "../../core/Utils";
 import StoryTextureManager from "./StoryTextureManager";
 import {Shape2D} from "../../util/Shape2D";
@@ -29,7 +29,7 @@ export class Animation extends Sprite {
   // @ts-ignore
   private loopedCount
 
-  protected loadTexture(sprite: OSBAnimation, source: OSBSource) {
+  protected loadTexture(sprite: OSBAnimation, source: OSZ) {
     this.frameDelay = sprite.frameDelay
     this.frameCount = sprite.frameCount
     this.loopType = sprite.loopType
@@ -41,7 +41,7 @@ export class Animation extends Sprite {
     // console.log(this.frameDelay, this.frameCount, this.loopType)
     for (let i = 0; i < this.frameCount; i++) {
       const newName = `${name}${i}${suffix}`
-      const image = source.get(newName)
+      const image = source.getImageBitmap(newName)
       if (isUndef(image)) {
         console.error("no image found")
         throw new Error("sprite texture cannot be undefined or null " + newName)
@@ -53,8 +53,7 @@ export class Animation extends Sprite {
       this.frames.push(newName)
       this.size.set(image.width, image.height)
       StoryTextureManager.addIf(this.gl, newName, image, format)
-    }``
-    // console.log(this, sprite)
+    }
   }
 
   private getFrameIndex(): number {

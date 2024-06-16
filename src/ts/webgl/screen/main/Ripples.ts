@@ -1,4 +1,3 @@
-import {Shape2D} from "../../util/Shape2D";
 import {BeatDrawable} from "../../drawable/BeatDrawable";
 import {ObjectTransition} from "../../transition/Transition";
 import {Time} from "../../../global/Time";
@@ -8,13 +7,20 @@ import {DrawNode} from "../../drawable/DrawNode";
 import type {WebGLRenderer} from "../../WebGLRenderer";
 import {DynamicQuadBuffer} from "../../buffer/DynamicQuadBuffer";
 import {TextureStore} from "../../texture/TextureStore";
-import {Vector} from "../../core/Vector2";
 import {Shaders} from "../../shader/Shaders";
 import type {AlphaTextureShaderWrapper} from "../../shader/AlphaTextureShaderWrapper";
 import Coordinate from "../../base/Coordinate";
 import {Blend} from "../../drawable/Blend";
+import {Vector2Utils} from "../../core/Vector2Utils";
+import type {BaseDrawableConfig} from "../../drawable/Drawable";
 
-export class Ripples extends BeatDrawable {
+export interface RippleConfig extends BaseDrawableConfig {
+    maxThickWidth?: number
+    duration?: number
+    defaultRippleAlpha?: number
+}
+
+export class Ripples extends BeatDrawable<RippleConfig> {
 
     private ripples: Ripple[] = []
 
@@ -56,7 +62,7 @@ export class Ripples extends BeatDrawable {
         ripple.start()
     }
 
-    protected onUpdate() {
+    public onUpdate() {
         super.onUpdate();
         const ripples = this.ripples
         if (ripples.length === 0) {
@@ -80,7 +86,7 @@ export class Ripples extends BeatDrawable {
             return
         }
         const texture = TextureStore.get('Ripple')
-        const center = Vector(this.position.x + this.width / 2, this.position.y + this.height / 2)
+        const center = Vector2Utils.middle(this.initRectangle.topLeft, this.initRectangle.bottomRight)//. Vector(this.position.x + this.width / 2, this.position.y + this.height / 2)
         let ripple: Ripple
         for (let i = 0; i < ripples.length; i++) {
             ripple = ripples[i]
@@ -92,7 +98,12 @@ export class Ripples extends BeatDrawable {
               i
             )
             node.drawTexture(texture, undefined, undefined, i)
-            node.drawOne(ripple.alpha, DrawNode.VERTEX_PER_QUAD, 4, i)
+            node.drawOne(
+              this.computeColor(ripple.alpha).alpha,
+              DrawNode.VERTEX_PER_QUAD,
+              4,
+              i
+            )
         }
     }
 
@@ -108,16 +119,19 @@ class Ripple {
     private readonly maxThickWidth: number
     public readonly innerRadius: number
     public currentThickWidth: number = 1
-    private readonly defaultAlpha = 0.045
+    private readonly defaultAlpha: number = 0.045
     private transition: ObjectTransition = new ObjectTransition(this, 'currentThickWidth')
     public alpha = this.defaultAlpha
     private alphaTransition: ObjectTransition = new ObjectTransition(this, 'alpha')
+    private readonly movementDuration: number = 1000
 
     constructor(
       parent: Ripples
     ) {
-        this.innerRadius = parent.width / 2
-        this.maxThickWidth = this.innerRadius * 0.6
+        this.innerRadius = parent.getWidth() / 2
+        this.maxThickWidth = parent.config.maxThickWidth ?? this.innerRadius * 0.6
+        this.movementDuration = parent.config.duration ?? 1000
+        this.defaultAlpha = parent.config.defaultRippleAlpha ?? 0.045
         this.currentThickWidth = 0
     }
 
@@ -128,9 +142,9 @@ class Ripple {
 
     public start() {
         this.startTransition()
-          .transitionTo(this.maxThickWidth, 1000, easeOut)
+          .transitionTo(this.maxThickWidth, this.movementDuration, easeOut)
         this.alphaBegin()
-          .transitionTo(0, 1000, easeInQuart)
+          .transitionTo(0, this.movementDuration, easeInQuart)
     }
 
     public isEnd() {
@@ -152,19 +166,4 @@ class Ripple {
         return this.alphaTransition
     }
 
-    public copyTo(out: Float32Array | number[], offset: number) {
-
-        const value = (this.innerRadius + this.currentThickWidth)
-
-        Shape2D.quad(
-          -value, value,
-          value, -value,
-          out, offset, 5
-        )
-        Shape2D.quad(0, 0, 1, 1, out, offset + 2, 5)
-
-        Shape2D.one(this.alpha, out, offset + 4, 5, 6)
-
-        return 5 * 6
-    }
 }

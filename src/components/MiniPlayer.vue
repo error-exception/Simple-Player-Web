@@ -4,15 +4,15 @@ import {ref, shallowRef, watch} from "vue";
 import {Icon} from "../ts/icon/Icon";
 import AudioPlayer from "../ts/player/AudioPlayer";
 import OSUPlayer, {OSUBackground} from "../ts/player/OSUPlayer";
-import PlayManager from "../ts/player/PlayManager";
 import Column from "./common/Column.vue";
 import ProgressBar from "./ProgressBar.vue";
-import Row from "./common/Row.vue";
-import {PLAYER} from "../ts/build";
 import TempOSUPlayManager from "../ts/player/TempOSUPlayManager";
 import {PlayerState} from "../ts/player/PlayerState";
 import {collectLatest} from "../ts/util/eventRef";
 import {Nullable} from "../ts/type";
+import BasicButton from "./common/BasicButton.vue";
+import {Color} from "../ts/webgl/base/Color";
+import Row from "./common/Row.vue";
 
 const img = ref<HTMLImageElement | null>(null)
 
@@ -20,12 +20,6 @@ const title = OSUPlayer.title
 const artist = OSUPlayer.artist
 
 const playState = AudioPlayer.playState
-
-// useCollect(OSUPlayer.onChanged, bullet => {
-//   if (bullet.general.from === 'default') {
-//     image.value = url("/artwork?id=" + bullet.metadata.id)
-//   }
-// })
 
 const image = shallowRef<string>()
 
@@ -39,17 +33,11 @@ collectLatest(OSUPlayer.background, (bg: OSUBackground) => {
 })
 
 const next = () => {
-  if (PLAYER)
-    PlayManager.next()
-  else
-    TempOSUPlayManager.next()
+  TempOSUPlayManager.next()
 }
 
 const previous = () => {
-  if (PLAYER)
-    PlayManager.previous()
-  else
-    TempOSUPlayManager.prev()
+  TempOSUPlayManager.prev()
 }
 
 const stop = () => {
@@ -91,41 +79,97 @@ watch(listContainer, () => {
 </script>
 <template>
   <Column class="w-fit mini-player gap-y-2">
-    <div style="position: relative" class="mini-player-box">
-      <img ref="img" :src="image" alt="" width="500" height="240" style="position: absolute">
-      <Column class="fill-size" style="position: absolute; background-color: #00000040">
-        <Column class="fill-width flex-grow" center :gap="8">
-          <span class="player-title">{{ title }}</span>
-          <span class="player-artist">{{ artist }}</span>
-        </Column>
-        <Row class="fill-width" style="background-color: #00000080; height: 56px;" center :gap="8">
-          <button v-osu-button class="control-btn ma" @click="previous()">{{ Icon.SkipPrevious }}</button>
-          <button v-osu-button class="control-btn ma" @click="play()">{{ playState === PlayerState.STATE_PLAYING ? Icon.Pause : Icon.PlayArrow }}</button>
-          <button v-osu-button class="control-btn ma" @click="stop()">{{ Icon.Stop }}</button>
-          <button v-osu-button class="control-btn ma" @click="next()">{{ Icon.SkipNext }}</button>
-          <button v-osu-button class="control-btn ma" @click="list = !list">{{ Icon.List }}</button>
+    <Column class="mini-player-box relative">
+      <div class="player-controls">
+        <div class="w-1/5"></div>
+        <Row class="w-3/5" center :gap="8">
+          <BasicButton
+              :color="Color.fromHex(0x302e38)"
+              class="ma text-white rounded-md"
+              :apply-scale="false"
+              style="font-size: 36px"
+              @click="previous()"
+              v-osu-button
+          >
+            {{ Icon.SkipPrevious }}
+          </BasicButton>
+          <BasicButton
+              :color="Color.fromHex(0x302e38)"
+              class="ma text-white rounded-md"
+              :apply-scale="false"
+              style="font-size: 36px"
+              @click="play()"
+              v-osu-button
+          >
+            {{ playState === PlayerState.STATE_PLAYING ? Icon.Pause : Icon.PlayArrow }}
+          </BasicButton>
+          <BasicButton
+              :color="Color.fromHex(0x302e38)"
+              class="ma text-white rounded-md"
+              :apply-scale="false"
+              style="font-size: 36px"
+              @click="stop()"
+              v-osu-button
+          >
+            {{ Icon.Stop }}
+          </BasicButton>
+          <BasicButton
+              :color="Color.fromHex(0x302e38)"
+              class="ma text-white rounded-md"
+              :apply-scale="false"
+              style="font-size: 36px"
+              @click="next()"
+              v-osu-button
+          >
+            {{ Icon.SkipNext }}
+          </BasicButton>
         </Row>
-      </Column>
-      <ProgressBar style="width: 100%; position: absolute; bottom: 0;"/>
-    </div>
+        <Row class="w-1/5" center>
+          <BasicButton
+              :color="Color.fromHex(0x302e38)"
+              class="ma text-white rounded-md"
+              :apply-scale="false"
+              style="font-size: 36px"
+              @click="list = !list"
+              v-osu-button
+          >
+            {{ Icon.List }}
+          </BasicButton>
+        </Row>
+      </div>
+      <div class="player-info">
+        <img
+            ref="img"
+            :src="image"
+            alt=""
+            class="object-cover w-full h-full absolute song-cover"
+        >
+        <Column class="w-full h-full flex-grow absolute bg-black bg-opacity-10" center :gap="8">
+          <span>{{ title }}</span>
+          <span>{{ artist }}</span>
+        </Column>
+      </div>
+      <ProgressBar style="width: 100%; " class="absolute bottom-0 progress-bar"/>
+    </Column>
     <Transition name="mini-list">
-      <div
-        class="flex flex-col rounded-md bg-[--bpm-color-3] origin-top w-[420px] overflow-y-scroll no-scroller p-1"
+      <Column
+        class="mini-playlist no-scroller"
         v-if="list"
         style="height: calc(100vh - var(--top-bar-height) - 16px - 160px)"
-        ref="listContainer"
       >
-      <span
-        v-osu-button
-        v-for="(item, i) in playlist"
-        class="rounded-md text-white w-full hover:bg-[--bpm-color-4] p-2 text-sm"
-        :class="{
-          'bg-[--bpm-color-11]': playIndex === i,
-          'bg-transparent': playIndex !== i
+        <div ref="listContainer">
+          <span
+              v-osu-default
+              v-for="(item, i) in playlist"
+              class="rounded-md w-full hover:text-yellow-500 p-2 text-sm cursor-pointer"
+              :class="{
+          'text-yellow-500': playIndex === i,
+          'text-white': playIndex !== i
         }"
-        @click="playAt(i)"
-      >{{item.name}}</span>
-      </div>
+              @click="playAt(i)"
+          >{{item.name}}</span>
+        </div>
+      </Column>
     </Transition>
   </Column>
 </template>
@@ -147,56 +191,72 @@ watch(listContainer, () => {
 }
 .mini-player-box {
   width: 420px;
-  height: 160px;
+  height: 10rem;
   overflow: hidden;
-  border-radius: 8px;
-  background-color: black;
+  border-radius: 0.5rem;
+  background-color: #302e38;
 }
-
-img {
-  object-fit: cover;
+.mini-player-box > .player-info {
+  transition: height 400ms var(--ease-out-quint);
 }
-
-.player-title {
-  width: 100%;
-  color: white;
+.song-cover {
+  transform: scale(1.04);
+  transition: transform 400ms var(--ease-out-quint);
+}
+.progress-bar {
+  transform: scaleY(.3);
+  transform-origin: bottom;
+  transition: transform 400ms var(--ease-out-quint);
+}
+.mini-player-box:hover > .player-info {
+  height: calc(10rem - 8px/* progress bar height */ - 3rem);
+}
+.mini-player-box:hover > .player-controls {
+  transform: translateY(0);
+}
+.mini-player-box:hover .song-cover {
+  transform: scale(1);
+}
+.mini-player-box:hover .progress-bar {
+  transform: scaleY(1);
+}
+.player-controls {
+  @apply w-full flex justify-center items-center absolute bottom-1.5 h-12;
+  transition: transform 400ms var(--ease-out-quint);
+  transform: translateY(16px);
+}
+.player-info {
+  @apply w-full h-full absolute rounded-lg overflow-hidden flex
+    flex-col text-white justify-center items-center text-center
+  ;
+}
+.player-info > span:first-child {
   text-align: center;
   font-size: 18px;
 }
-
-.player-artist {
-  width: 100%;
-  color: white;
+.player-info > span:last-child {
   font-size: 14px;
   text-align: center;
 }
-
-.control-btn {
-  width: 36px;
-  height: 36px;
-  font-size: 36px;
-  color: white;
-  border-radius: 8px;
-  transition: all 220ms ease-in-out;
+.mini-playlist > div {
+  @apply w-full h-fit flex flex-col;
 }
-
-.control-btn:hover {
-  background-color: #FFD70080;
-}
-
-.control-btn:active {
-  transform: scale(.96);
-  background-color: #FFD700FF;
+.mini-playlist {
+  @apply rounded-md p-1 grid;
+  background-color: #302e38;
+  transform-origin: top;
+  width: 420px;
+  overflow-y: scroll;
 }
 .mini-list-leave-active, .mini-list-enter-active {
-  transition: all 220ms ease-out;
+  transition: all 400ms var(--ease-out-quint);
 }
 .mini-list-leave-from, .mini-enter-to {
-  transform: scaleY(1);
   opacity: 1;
+  grid-template-rows: 1fr;
 }
 .mini-list-leave-to, .mini-list-enter-from {
-  transform: scaleY(0);
   opacity: 0;
+  grid-template-rows: 0;
 }
 </style>

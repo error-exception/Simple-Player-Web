@@ -10,7 +10,6 @@ import {Shaders} from "../../shader/Shaders";
 import {BasicVertexBuffer} from "../../buffer/BasicVertexBuffer";
 import {type DrawNode} from "../../drawable/DrawNode";
 import {type WebGLRenderer} from "../../WebGLRenderer";
-import {TransformUtils} from "../../core/TransformUtils";
 
 export class LogoTriangles extends Drawable {
 
@@ -46,10 +45,11 @@ export class LogoTriangles extends Drawable {
 
     private circleInfo = new Float32Array(3)
 
-    protected onUpdate() {
+    public onUpdate() {
         super.onUpdate();
         this.lightTransition.update(Time.currentTime)
         this.velocityTransition.update(Time.currentTime)
+        this.initParticles()
         this.updateParticles()
     }
 
@@ -62,24 +62,24 @@ export class LogoTriangles extends Drawable {
             const triangle = this.particles[i]
             if (triangle.isFinish()) {
                 triangle.size = Interpolation.valueAt(Math.random(), this.MIN_SIZE, this.MAX_SIZE)
-                const { x, y } = this.position
+                const { x, y } = this.initRectangle.topLeft
                 triangle.position = new Vector2(
-                    Interpolation.valueAt(Math.random(), x, x + this.width),
-                    y + this.height + triangle.size
+                    Interpolation.valueAt(Math.random(), x, x + this.getWidth()),
+                    y + this.getHeight() + triangle.size
                 )
                 triangle.color = Interpolation.colorAt(Math.random(), this.startColor, this.endColor)
             } else {
                 const size = triangle.size
-                triangle.position.y -= 0.2 + size / 400 + this.velocityIncrement * (size / 400)
+                triangle.position.y -= (3.33333334 / Time.elapsed) + size / 400 + this.velocityIncrement * (size / 400)
             }
-            triangle.updateVertex()
+            triangle.update()
         }
     }
 
     public onLoad(renderer: WebGLRenderer): void {
         super.onLoad(renderer)
-        this.initParticles()
-        this.MAX_SIZE = this.size.x * 0.7
+        // this.initParticles()
+        this.MAX_SIZE = this.initRectangle.getWidth() * 0.7
         this.MIN_SIZE = this.MAX_SIZE * 0.066667
         const node = this.drawNode
         node.shader = Shaders.RoundClip
@@ -100,22 +100,21 @@ export class LogoTriangles extends Drawable {
         for (let i = 0; i < this.particles.length; i++) {
             const triangle = this.particles[i]
             triangle.size = Interpolation.valueAt(Math.random(), this.MIN_SIZE, this.MAX_SIZE);
-            const { x, y } = this.position
+            const { x, y } = this.initRectangle.topLeft
             triangle.position.set(
-                Interpolation.valueAt(Math.random(), x, x + this.width),
-                Interpolation.valueAt(Math.random(), y, y + this.height)
+                Interpolation.valueAt(Math.random(), x, x + this.getWidth()),
+                Interpolation.valueAt(Math.random(), y, y + this.getHeight())
             )
             triangle.color = Interpolation.colorAt(Math.random(), this.startColor, this.endColor)
-            triangle.updateVertex()
+            triangle.update()
         }
     }
 
-    protected onTransformApplied() {
+    onTransformApplied() {
         super.onTransformApplied();
 
-        const matrix = this.drawNode.matrix
-        const topLeft = TransformUtils.apply(this.position, matrix)
-        const bottomRight = TransformUtils.apply(this.position.add(this.size), matrix)
+        const topLeft = this.rectangle.topLeft
+        const bottomRight = this.rectangle.bottomRight
         const size = bottomRight.minus(topLeft)
         const radius = Math.min(size.x, size.y) / 2
         const center = topLeft.add(size.divValue(2))
@@ -126,7 +125,7 @@ export class LogoTriangles extends Drawable {
         this.circleInfo[1] = center.y / minLength
         this.circleInfo[2] = radius / minLength
 
-        const alpha = this.appliedTransform.alpha
+        const alpha = this.appliedColor.alpha
         const particles = this.particles
         for (let i = 0; i < particles.length; i++) {
             particles[i].color.alpha = alpha
@@ -143,19 +142,19 @@ export class LogoTriangles extends Drawable {
 
     public onDraw(node: DrawNode): void {
         const startColor = this.startColor
-        startColor.alpha = this.appliedTransform.alpha
-        const position = this.position
+        startColor.alpha = this.appliedColor.alpha
+        const position = this.initRectangle.topLeft
         node.drawTriangle(
           position,
-          Vector(position.x, position.y + this.height),
-          position.add(this.size),
+          Vector(position.x, position.y + this.getHeight()),
+          this.initRectangle.bottomRight,
           startColor,
           0
         )
         node.drawTriangle(
           position,
-          Vector(position.x + this.width, position.y),
-          position.add(this.size),
+          Vector(position.x + this.getWidth(), position.y),
+          this.initRectangle.bottomRight,
           startColor,
           1
         )
@@ -194,10 +193,10 @@ class TriangleParticle {
     private sin30 = 0.5
 
     public isFinish(): boolean {
-        return this.bottomLeft.y <= this.parent.position.y
+        return this.bottomLeft.y <= this.parent.initRectangle.topLeft.y
     }
 
-    public updateVertex() {
+    public update() {
         const position = this.position
         const size = this.size
         this.top.set(

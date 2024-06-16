@@ -16,6 +16,7 @@ import {TextureStore} from "../../texture/TextureStore";
 import {Color} from "../../base/Color";
 import type {DefaultShaderWrapper} from "../../shader/DefaultShaderWrapper";
 import {QuadBuffer} from "../../buffer/QuadBuffer";
+import {Vector2Utils} from "../../core/Vector2Utils";
 
 export interface RoundVisualizerConfig extends BaseDrawableConfig {
     innerRadius?: number
@@ -38,6 +39,7 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
         }
         this.visualizer = AudioPlayerV2.getVisualizer()
         this.maxSpectrumHeight = this.innerRadius * this.scaleFactor
+        this.setColor(Color.White)
     }
 
     private centerOfDrawable = Vector()
@@ -46,16 +48,15 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
         node.vertexBuffer = new QuadBuffer(renderer, this.barCountPerRound * 5, renderer.gl.STREAM_DRAW)
         node.blend = Blend.Additive
         node.apply()
-        this.centerOfDrawable = this.position.add(this.size.divValue(2))
-        this.scale = Vector(-1, 1)
+        this.centerOfDrawable = Vector2Utils.middle(this.initRectangle.topLeft, this.initRectangle.bottomRight)
+        this.setScaleX(-1)
     }
 
-    public onWindowResize() {
-        super.onWindowResize();
-        this.centerOfDrawable = this.position.add(this.size.divValue(2))
+    public onInvalidate() {
+        this.centerOfDrawable = Vector2Utils.middle(this.initRectangle.topLeft, this.initRectangle.bottomRight)
     }
 
-    protected onUpdate() {
+    public onUpdate() {
         super.onUpdate();
         this.getSpectrum(Time.currentTime, BeatState.isKiai ? 1 : 0.5)
     }
@@ -108,13 +109,11 @@ export class RoundVisualizer extends Drawable<RoundVisualizerConfig> {
         this.lastTime = timestamp
     }
 
-    private color = Color.White.copy()
     public beforeCommit(node: DrawNode) {
 
         const shader = node.shader as DefaultShaderWrapper
         shader.orth = Coordinate.orthographicProjectionMatrix4
-        this.color.alpha = BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14
-        shader.color = this.color
+        shader.color = this.computeColor(BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14)
         shader.sampler2D = 0
     }
 

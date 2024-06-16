@@ -13,6 +13,9 @@ import {RowBox} from "../../box/RowBox";
 import {easeOutQuint} from "../../../util/Easing";
 import {playSound, Sound} from "../../../player/SoundEffect";
 import {VueUI} from "../../../global/GlobalState";
+import {Size} from "../../drawable/Size";
+import {OSUPanelStack} from "../../../osu/OSUPanelStack";
+import type {IconAtlas} from "../../texture/IconAtlas";
 
 export class TopBar extends Box {
 
@@ -20,16 +23,52 @@ export class TopBar extends Box {
 
   constructor() {
     super({
-      size: ['fill-parent', 36]
+      size: Size.of(Size.FillParent, 36)
     });
+    this.enableMouseEvent()
     this.shadow = new TopBarShadow()
-    this.shadow.alpha = 0
+    this.shadow.setAlpha(0)
+    const atlas = TextureStore.getAtlas('Icons-Atlas')
     this.add(
       new ImageDrawable(TextureStore.get('Square'), {
-        size: ['fill-parent', 36],
+        size: Size.of(Size.FillParent, 36),
         color: Color.fromHex(0x191919)
       }),
-      new TopBarButtons(),
+      new RowBox({
+        size: Size.of(Size.FillParent, 36),
+        children: [
+          new TopBarButton(atlas.getRegin<IconAtlas>('Icon-Settings'), Anchor.TopLeft)
+            .setOnClick(() => {
+              VueUI.settings = true
+            }),
+          new TopBarButton(atlas.getRegin<IconAtlas>('Icon-Help'), Anchor.TopLeft)
+            .setOnClick(() => {
+              OSUPanelStack.push({ name: 'help' })
+            }),
+          new TopBarButton(atlas.getRegin<IconAtlas>('Icon-Help'), Anchor.TopLeft)
+            .setOnClick(() => {
+              OSUPanelStack.push({ name: 'test' })
+            }),
+          new TopBarButton(atlas.getRegin<IconAtlas>('Icon-MusicNote'), Anchor.TopRight)
+            .setOnClick(() => {
+              VueUI.miniPlayer = true
+            }),
+          new TopBarButton(atlas.getRegin<IconAtlas>('Icon-Folder'), Anchor.TopRight)
+            .setOnClick(() => {
+              // VueUI.selectBeatmapDirectory = true
+              OSUPanelStack.push({ name: 'beatmapList' })
+            }),
+          new TopBarButton(atlas.getRegin<IconAtlas>('Icon-Fullscreen'), Anchor.TopRight),
+          new TopBarButton(atlas.getRegin<IconAtlas>('Icon-RadioButtonUnchecked'), Anchor.TopRight)
+            .setOnClick(() => {
+              OSUPanelStack.push({ name: 'beatmapDetails' })
+            }),
+          new TopBarButton(atlas.getRegin<IconAtlas>('Icon-Notifications'), Anchor.TopRight)
+            .setOnClick(() => {
+              VueUI.notification = true
+            }),
+        ]
+      }),
       this.shadow
     )
   }
@@ -48,60 +87,20 @@ export class TopBar extends Box {
 
 }
 
-export class TopBarButtons extends RowBox {
-
-  constructor() {
-    super({
-      size: ['fill-parent', 36]
-    });
-    const atlas = TextureStore.getAtlas('Icons-Atlas')
-    this.add(
-      new TopBarButton(atlas.getRegin('icon-settings'), Anchor.TopLeft).setOnClickListener(() => {
-        VueUI.settings = true
-      }),
-      new TopBarButton(atlas.getRegin('icon-note'), Anchor.TopRight).setOnClickListener(() => {
-        VueUI.miniPlayer = true
-      }),
-      new TopBarButton(atlas.getRegin('icon-folder'), Anchor.TopRight).setOnClickListener(() => {
-        VueUI.selectBeatmapDirectory = true
-      }),
-      new TopBarButton(atlas.getRegin('icon-fullscreen'), Anchor.TopRight),
-      new TopBarButton(atlas.getRegin('icon-circle'), Anchor.TopRight),
-      new TopBarButton(atlas.getRegin('icon-notification'), Anchor.TopRight).setOnClickListener(() => {
-        VueUI.notification = true
-      }),
-    )
-  }
-
-}
-
 class TopBarButton extends Box {
   constructor(textureRegin: TextureRegin, anchor: number) {
     super({
-      size: [36, 36], anchor
+      size: Size.of(36), anchor
     });
     this.enableMouseEvent()
     this.add(
       new ButtonBackground(),
       new ImageDrawable(textureRegin, {
-        size: [20, 20],
+        size: Size.of(20),
         anchor: Anchor.Center,
         color: Color.White.copy()
       })
     )
-  }
-
-  private _onClickListener = () => {}
-
-  public setOnClickListener(l: () => void) {
-    this._onClickListener = l
-    return this
-  }
-
-
-  onClick(which: number): boolean {
-    this._onClickListener()
-    return true
   }
 
 }
@@ -110,11 +109,11 @@ class ButtonBackground extends ImageDrawable {
 
   constructor() {
     super(TextureStore.get('Square'), {
-      size: [36, 36],
+      size: Size.of(36),
       color: Color.White.copy()
     });
     this.enableMouseEvent()
-    this.alpha = 0
+    this.setAlpha(0)
   }
 
   onMouseDown(which: number): boolean {
@@ -150,23 +149,26 @@ class TopBarShadow extends Drawable {
 
   constructor() {
     super({
-      size: ['fill-parent', 120],
+      size: Size.of(Size.FillParent, 120),
       anchor: Anchor.TopCenter,
-      offset: [0, 36]
+      offset: Vector(0, 36)
     });
+    this.setColor(Color.Black)
   }
 
-  private color = Color.Black.copy()
+
   public beforeCommit(node: DrawNode) {
     const shader = node.shader as DefaultShaderWrapper
     shader.orth = Coordinate.orthographicProjectionMatrix4
     shader.sampler2D = 0
-    this.color.alpha = this.appliedTransform.alpha
-    shader.color = this.color
+    shader.color = this.computeColor()
   }
 
   onDraw(node: DrawNode) {
-    node.drawRect(this.position, this.position.add(this.size))
+    node.drawRect(
+      this.initRectangle.topLeft,
+      this.initRectangle.bottomRight
+    )
     node.drawTexture(
       TextureStore.get('VerticalGradiant'),
       Vector(0, 0),

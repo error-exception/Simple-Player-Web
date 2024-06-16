@@ -1,4 +1,4 @@
-import {Box} from "../box/Box";
+import {Box, type BoxConfig} from "../box/Box";
 import {Color} from "../base/Color";
 import {easeInCubic, easeOut, easeOutBack, easeOutCubic, easeOutElastic, easeOutQuint} from "../../util/Easing";
 import {Vector, Vector2} from "../core/Vector2";
@@ -12,123 +12,167 @@ import {type WebGLRenderer} from "../WebGLRenderer";
 import {ImageDrawable} from "../drawable/ImageDrawable";
 import {playSound, Sound} from "../../player/SoundEffect";
 import {VueUI} from "../../global/GlobalState";
-import {inject} from "../util/DependencyInject";
+import {BeatBox} from "../box/BeatBox";
+import {Size} from "../drawable/Size";
+import {Axes} from "../drawable/Axes";
+import {RowBox} from "../box/RowBox";
 import ScreenManager from "../util/ScreenManager";
-import type {MainScreen} from "../screen/main/MainScreen";
+import type {IconAtlas} from "../texture/IconAtlas";
 
 export class Menu extends Box {
 
-  private readonly menuBackground: MenuBackground
+  private leftButtonGroup: Box
+  private rightButtonGroup: Box
 
   constructor() {
     super({
-      size: ['fill-parent', 'fill-parent']
-    });
-    this.menuBackground = new MenuBackground({
-      size: ['fill-parent', 96],
-      anchor: Anchor.CenterLeft
-    })
-    const settings = new MenuButton({
-      size: [120, 96],
-      anchor: Anchor.CenterLeft,
-      origin: Anchor.CenterRight,
-      color: Color.fromHex(0x555555),
-      icon: 'icon-settings',
-      sound: Sound.ButtonSelect,
-      onClick() {
-        VueUI.settings = true
-      }
-    })
-    settings.translate = Vector(190, 0)
-    const background = new MenuButton({
-      size: [120, 96],
+      size: Size.of(Size.FillParent, 96),
       anchor: Anchor.Center,
-      origin: Anchor.CenterLeft,
-      color: Color.fromHex(0x6644cc),
-      icon: 'icon-play',
-      sound: Sound.DefaultSelect,
-      onClick() {
-        const mainScreen = inject<MainScreen>('MainScreen')
-        mainScreen.transform()
-          .moveXTo(-800, 500, easeOut)
-          .scaleTo(Vector(0.8), 500, easeOut)
-          .fadeTo(0, 500, easeOut)
-        setTimeout(() => {
-          ScreenManager.activeScreen('second')
-        }, 500)
-      }
-    })
-    background.translate = Vector(-80, 0)
+    });
     this.add(
-      this.menuBackground,
-      settings,
-      // background
+      new ImageDrawable(TextureStore.get('Square') ,{
+        size: Size.FillParentSize,
+        color: Color.fromHex(0x323232)
+      }),
+      this.leftButtonGroup = new Box({
+        size: Size.of(304, Size.FillParent),
+        anchor: Anchor.CenterLeft,
+        children: [
+          new MenuButton({
+            size: Size.of(120, 96),
+            backgroundAnchor: Anchor.CenterRight,
+            backgroundOrigin: Anchor.CenterRight,
+            anchor: Anchor.CenterRight,
+            color: Color.fromHex(0x555555),
+            icon: 'Icon-Settings',
+            sound: Sound.ButtonSelect,
+            onClick() {
+              VueUI.settings = true
+            }
+          })
+        ]
+      }),
+      new Box({
+        size: Size.of(784, Size.FillParent),
+        anchor: Anchor.CenterRight,
+        children: [
+          this.rightButtonGroup = new RowBox({
+            size: Size.FillParentSize,
+            anchor: Anchor.CenterLeft,
+            autoSize: Axes.X,
+            children: [
+              new MenuButton({
+                size: Size.of(120, 96),
+                backgroundAnchor: Anchor.CenterLeft,
+                backgroundOrigin: Anchor.CenterLeft,
+                color: Color.fromHex(0x6644cc),
+                icon: 'Icon-PlayArrow',
+                sound: Sound.DefaultSelect,
+                onClick() {
+                  ScreenManager.activeScreen('second')
+                }
+              }),
+              new MenuButton({
+                size: Size.of(120, 96),
+                backgroundAnchor: Anchor.CenterLeft,
+                backgroundOrigin: Anchor.CenterLeft,
+                color: Color.fromHex(0x64ad69),
+                icon: 'Icon-RadioButtonUnchecked',
+                sound: Sound.DefaultSelect,
+                onClick() {
+                  ScreenManager.activeScreen('story')
+                }
+              }),
+            ]
+          }),
+        ]
+      })
     )
-    this.alpha = 0
-    this.scale = new Vector2(1, 0)
+    this.setAlpha(0)
+    this.setScale(new Vector2(1, 0))
     this.isVisible = false
-  }
-
-  onLoad(renderer: WebGLRenderer) {
-    super.onLoad(renderer);
-    console.log("menu", this.alpha)
   }
 
   public show() {
     this.isVisible = true
-    this.transform().delay(300).fadeTo(1, 220, easeInCubic)
-      .delay(300).scaleTo(new Vector2(1, 1), 400, easeOutBack)
+    this.transform()
+      .delay(300).fadeTo(1, 220, easeInCubic)
+      .delay(300).scaleYTo(1, 400, easeOutBack)
   }
 
   public hide() {
     this.transform().fadeTo(0, 220, easeOutCubic)
-      .scaleTo(new Vector2(1, 0), 220, easeOutCubic)
+      .scaleYTo(0, 220, easeOutCubic)
     setTimeout(() => {
       this.isVisible = false
     }, 220)
   }
 
-}
-
-class MenuBackground extends Drawable {
-
-  private color = Color.fromHex(0x323232)
-  public beforeCommit(node: DrawNode) {
-    const shader = node.shader as DefaultShaderWrapper
-    shader.orth = Coordinate.orthographicProjectionMatrix4
-    this.color.alpha = this.appliedTransform.alpha
-    shader.color = this.color
-    shader.sampler2D = 0
+  onLogoHover() {
+    if (this.isVisible) {
+      this.leftButtonGroup.transform()
+        .moveXTo(-12, 500, easeOutElastic)
+      this.rightButtonGroup.transform()
+        .moveXTo(12, 500, easeOutElastic)
+    }
   }
 
-  public onDraw(node: DrawNode) {
-    node.drawRect(this.position, this.position.add(this.size))
-    node.drawTexture(TextureStore.get('Square'))
+  onLogoHoverLost() {
+    if (this.isVisible) {
+      this.leftButtonGroup.transform()
+        .moveXTo(0, 500, easeOutElastic)
+      this.rightButtonGroup.transform()
+        .moveXTo(0, 500, easeOutElastic)
+    }
+  }
+
+  onLogoPress() {
+    if (this.isVisible) {
+      this.leftButtonGroup.transform()
+        .moveXTo(12, 1000, easeOut)
+      this.rightButtonGroup.transform()
+        .moveXTo(-12, 1000, easeOut)
+    }
+  }
+
+  onLogoRelease() {
+    if (this.isVisible) {
+      this.leftButtonGroup.transform()
+        .moveXTo(0, 500, easeOutElastic)
+      this.rightButtonGroup.transform()
+        .moveXTo(0, 500, easeOutElastic)
+    }
   }
 
 }
 
-interface MenuButtonConfig extends BaseDrawableConfig {
-  icon: string,
-  color: Color,
+interface MenuButtonConfig extends BoxConfig {
+  icon: IconAtlas
+  color: Color
   sound: AudioBuffer
+  backgroundOrigin: number
+  backgroundAnchor: number
   onClick: () => void
 }
 
-class MenuButton extends Box<MenuButtonConfig> {
+class MenuButton extends BeatBox<MenuButtonConfig> {
+
+  private icon: ImageDrawable
+
   constructor(config: MenuButtonConfig) {
-    super(config);
-    const bg = new MenuButtonBackground(config.color, config.sound, {
-      size: config.size,
-      origin: config.origin
-    })
-    bg.transform()
-      .skewXTo(-.2, 0)
+    super({
+      ...config,
+      autoSize: Axes.X
+    });
     const atlas = TextureStore.getAtlas('Icons-Atlas')
     this.add(
-      bg,
-      new ImageDrawable(atlas.getRegin(config.icon), {
-        size: [36, 36],
+      new MenuButtonBackground(config.color, config.sound, {
+        size: config.size,
+        origin: config.backgroundOrigin,
+        anchor: config.backgroundAnchor,
+      }),
+      this.icon = new ImageDrawable(atlas.getRegin(config.icon), {
+        size: Size.of(36),
         anchor: Anchor.Center
       })
     )
@@ -144,13 +188,34 @@ class MenuButton extends Box<MenuButtonConfig> {
     console.log(this)
     return true
   }
+
+  private isBeat = false
+  onHover(): boolean {
+    this.isBeat = true
+    return true
+  }
+
+  onHoverLost(): boolean {
+    this.isBeat = false
+    return true
+  }
+
+  onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {
+    if (this.isPresent && this.isBeat) {
+      this.icon.transform()
+        .scaleTo(Vector(0.9), 60, easeOutCubic)
+        .scaleTo(Vector(1), gap * 2, easeOutQuint)
+    }
+  }
+
 }
 
 class MenuButtonBackground extends Drawable {
-  constructor(private color: Color, private sound: AudioBuffer, config: BaseDrawableConfig) {
+  constructor(private originColor: Color, private sound: AudioBuffer, config: BaseDrawableConfig) {
     super(config);
     this.transform()
-      .colorTo(color, 0)
+      .colorTo(originColor, 0)
+      .skewXTo(-.2, 0)
   }
 
   onLoad(renderer: WebGLRenderer) {
@@ -159,16 +224,16 @@ class MenuButtonBackground extends Drawable {
   }
 
   private pressColor = new Color(
-    Math.min(this.color.red * (1.2), 1),
-    Math.min(this.color.green * (1.2), 1),
-    Math.min(this.color.blue * (1.2), 1),
+    Math.min(this.originColor.red * (1.2), 1),
+    Math.min(this.originColor.green * (1.2), 1),
+    Math.min(this.originColor.blue * (1.2), 1),
     1
   )
 
   private activeColor = new Color(
-    Math.min(this.color.red * (2), 1),
-    Math.min(this.color.green * (2), 1),
-    Math.min(this.color.blue * (2), 1),
+    Math.min(this.originColor.red * (2), 1),
+    Math.min(this.originColor.green * (2), 1),
+    Math.min(this.originColor.blue * (2), 1),
     1
   )
 
@@ -181,14 +246,14 @@ class MenuButtonBackground extends Drawable {
   onMouseUp(which: number): boolean {
     this.transform()
       .colorTo(this.activeColor, 30)
-      .colorTo(this.color, 400, easeOutQuint)
+      .colorTo(this.originColor, 400, easeOutQuint)
     playSound(this.sound)
     return true
   }
 
   onHover(): boolean {
     this.transform()
-      .scaleXTo(1.2, 500, easeOutElastic)
+      .scaleXTo(1.4, 500, easeOutElastic)
     playSound(Sound.ButtonHover)
     return true
   }
@@ -202,12 +267,12 @@ class MenuButtonBackground extends Drawable {
   beforeCommit(node: DrawNode) {
     const shader = node.shader as DefaultShaderWrapper
     shader.orth = Coordinate.orthographicProjectionMatrix4
-    shader.color = this.selfTransform.color
+    shader.color = this.appliedColor
     shader.sampler2D = 0
   }
 
   onDraw(node: DrawNode, renderer: WebGLRenderer) {
-    node.drawRect(this.position, this.position.add(this.size))
+    node.drawRect(this.initRectangle.topLeft, this.initRectangle.bottomRight)
     node.drawTexture(TextureStore.get('Square'))
   }
 }

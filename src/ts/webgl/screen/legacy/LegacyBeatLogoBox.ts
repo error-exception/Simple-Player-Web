@@ -4,7 +4,7 @@ import {BaseDrawableConfig} from "../../drawable/Drawable";
 import {easeOut, easeOutElastic, easeOutQuint} from "../../../util/Easing";
 import AudioPlayerV2 from "../../../player/AudioPlayer";
 import {Time} from "../../../global/Time";
-import {Vector} from "../../core/Vector2";
+import {Vector, Vector2} from "../../core/Vector2";
 import {Interpolation} from "../../util/Interpolation";
 import {effectScope, watch} from "vue";
 import {UIState} from "../../../global/UISettings";
@@ -14,6 +14,7 @@ import {BeatBox} from "../../box/BeatBox";
 import {LegacyRoundVisualizer} from "./LegacyRoundVisualizer";
 import AudioChannel from "../../../player/AudioChannel";
 import {Anchor} from "../../drawable/Anchor";
+import {Size} from "../../drawable/Size";
 
 class LegacyBeatLogo extends BeatBox<LegacyLogoConfig> {
 
@@ -29,7 +30,6 @@ class LegacyBeatLogo extends BeatBox<LegacyLogoConfig> {
     })
     this.logo = logo
     this.add(logo)
-
   }
 
   public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {
@@ -67,7 +67,7 @@ class LegacyFadeBeatLogo extends BeatBox<LegacyLogoConfig> {
       anchor: Anchor.Center
     })
     this.logo = logo
-    this.logo.alpha = .08
+    this.logo.setAlpha(.08)
     this.add(logo)
   }
 
@@ -96,14 +96,15 @@ class LegacyLogoBeatBox extends Box<LegacyLogoConfig> {
     this.add(this.beatLogo)
   }
 
-  protected onUpdate() {
+  public onUpdate() {
+    super.onUpdate()
     if (AudioPlayerV2.isPlaying()) {
-      const scale = this.scale
+      const scale = this.getScale()
       const adjust = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() - 0.4 : 0
       const a = Interpolation.damp(scale.x, 1 - Math.max(0, adjust) * 0.04, 0.94, Time.elapsed)
       scale.x = a
       scale.y = a
-      this.scale = scale
+      this.setScale(scale)
     }
   }
 
@@ -120,16 +121,15 @@ class LegacyFadeLogoBeatBox extends Box<LegacyLogoConfig> {
     this.add(this.beatLogo)
   }
 
-  protected onUpdate() {
+  public onUpdate() {
+    super.onUpdate()
     if (AudioPlayerV2.isPlaying()) {
-      const scale = this.scale
+      const scale = this.getScale()
       const adjust = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() - 0.4 : 0
       const a = Interpolation.damp(2 - scale.x, 1 - Math.max(0, adjust) * 0.04, 0.94, Time.elapsed)
-      // console.log(scale.x, a)
       scale.x = (2 - a) * 0.99
       scale.y = (2 - a) * 0.99
-
-      this.scale = scale
+      this.setScale(scale)
     }
   }
 
@@ -147,12 +147,12 @@ class LogoAmpBox extends BeatBox<LegacyLogoConfig> {
     super(config);
 
     this.visualizer = new LegacyRoundVisualizer({
-      size: [config.size[0] * 0.96, config.size[1] * 0.96],
-      innerRadius: config.size[0] * 0.92 / 2,
+      size: Size.of(config.size.x * 0.96, config.size.y * 0.96),
+      innerRadius: config.size.x * 0.92 / 2,
       anchor: Anchor.Center
     })
     const ripple = new Ripples({
-      size: [config.size[0] * 0.98, config.size[1] * 0.98],
+      size: Size.of(config.size.x * 0.98, config.size.y * 0.98),
       anchor: Anchor.Center
     })
     this.logoBeatBox = new LegacyLogoBeatBox(config)
@@ -192,7 +192,7 @@ class LogoAmpBox extends BeatBox<LegacyLogoConfig> {
 }
 
 interface LegacyLogoConfig extends BaseDrawableConfig {
-  size: [number, number]
+  size: Vector2
 }
 
 export class LogoBounceBox extends Box<LegacyLogoConfig> {

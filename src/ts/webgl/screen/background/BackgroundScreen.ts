@@ -3,7 +3,6 @@ import {BackgroundBounce} from "../main/MovableBackground";
 import {VideoBackground} from "../songPlay/VideoBackground";
 import OSUPlayer, {OSUBackground} from "../../../player/OSUPlayer";
 import BackgroundLoader from "../../../global/BackgroundLoader";
-import {MouseState} from "../../../global/MouseState";
 import ScreenManager from "../../util/ScreenManager";
 import {Vector2} from "../../core/Vector2";
 import {easeOutCubic} from "../../../util/Easing";
@@ -12,6 +11,7 @@ import {UIState} from "../../../global/UISettings";
 import {effectScope, watch} from "vue";
 import {collectLatest} from "../../../util/eventRef";
 import BackgroundManager from "../../../global/BackgroundManager";
+import {Size} from "../../drawable/Size";
 
 export class BackgroundScreen extends Box {
 
@@ -52,11 +52,10 @@ export class BackgroundScreen extends Box {
 
   constructor() {
     super({
-      size: ['fill-parent', 'fill-parent']
+      size: Size.FillParentSize
     });
     this.background = new BackgroundBounce(OSUPlayer.background.value.image)
     this.videoBackground = new VideoBackground(null)
-    // OSUPlayer.background.collect(this.collector)
     this.addDisposable(() => {
       return collectLatest(OSUPlayer.background, this.collector)
     })
@@ -93,20 +92,6 @@ export class BackgroundScreen extends Box {
             this.background.updateBackground2(BackgroundManager.getBackground())
           })
         })
-        // watch(() => UIState.beatmapBackground, value => {
-        //   if (!value) {
-        //     this.videoBackground.isVisible = false
-        //     this.background.updateBackground2(BackgroundLoader.getBackground())
-        //   } else {
-        //     const bg = OSUPlayer.background.value
-        //     if (bg.video && !['main', 'legacy'].includes(ScreenManager.currentId.value)) {
-        //       this.videoBackground.isVisible = true
-        //       this.videoBackground.setVideo(bg.video)
-        //     }
-        //     this.background.updateBackground2(bg.image ?? BackgroundLoader.getBackground())
-        //   }
-        // })
-
       })
       return scope.stop
     })
@@ -114,11 +99,6 @@ export class BackgroundScreen extends Box {
 
   public get isVideoVisible() {
     return this.videoBackground.isVisible
-  }
-
-  protected onUpdate() {
-    super.onUpdate();
-    this.background.background.translate = MouseState.position.copy()
   }
 
   public dispose() {

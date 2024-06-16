@@ -12,7 +12,6 @@ import borderBar from '../../../assets/border_bar.png'
 import square from '../../../assets/square.png'
 import maniaNote1 from '../../../assets/game/osu_mania/mania-note1@2x.png'
 import maniaKey2 from '../../../assets/game/osu_mania/mania-key2@2x.png'
-import icons from '../../../assets/icons.png'
 
 export type ImageName = string |
   'Logo' |
@@ -28,8 +27,7 @@ export type ImageName = string |
   'BorderBar' |
   'Square' |
   'ManiaNote1' |
-  'ManiaKey2' |
-  'Icons'
+  'ManiaKey2'
 
 interface ImageSrc {
   name: ImageName,
@@ -92,9 +90,5 @@ export const ImageResourceMap: ImageSrc[] = [
   {
     name: "ManiaKey2",
     url: maniaKey2
-  },
-  {
-    name: 'Icons',
-    url: icons
   }
 ]

@@ -10,6 +10,7 @@ import {Shaders} from "../../shader/Shaders";
 import {DrawNode} from "../../drawable/DrawNode";
 import type {WebGLRenderer} from "../../WebGLRenderer";
 import {StoryboardLayer} from "./StoryboardLayer";
+import {Size} from "../../drawable/Size";
 
 export class StoryScreen extends Drawable {
 
@@ -26,20 +27,22 @@ export class StoryScreen extends Drawable {
 
   constructor(gl: WebGL2RenderingContext) {
     super({
-      size: ['fill-parent', 'fill-parent']
+      size: Size.FillParentSize
     });
-
-    const osb = OSUPlayer.currentOSUFile.value.Events?.storyboard
-    const osbSource = OSUPlayer.currentOSZFile.value.source.osb
-    if (osb) {
-      for (let i = 0; i < osb.sprites.length; i++) {
+    const osz = OSUPlayer.currentOSZFile.value
+    const sprites = [...osz.osbFile.sprites]
+    sprites.push(...(OSUPlayer.currentOSUFile.value.Events?.storyboard?.sprites ?? []))
+    // const osb = OSUPlayer.currentOSZFile.value.osbFile
+    // const osbSource = OSUPlayer.currentOSZFile.value
+    if (sprites.length) {
+      for (let i = 0; i < sprites.length; i++) {
         try {
-          const osbSprite = osb.sprites[i]
+          const osbSprite = sprites[i]
           let sprite: Sprite
           if (isAnimation(osbSprite)) {
-            sprite = new Animation(gl, osbSprite, osbSource)
+            sprite = new Animation(gl, osbSprite, osz)
           } else {
-            sprite = new Sprite(gl, osbSprite, osbSource)
+            sprite = new Sprite(gl, osbSprite, osz)
           }
           if (sprite.layer === 'Background') {
             this.layers.background.push(sprite)
@@ -53,10 +56,7 @@ export class StoryScreen extends Drawable {
             this.layers.overlay.push(sprite)
           }
         } catch (e: any) {
-          // if (e instanceof Error) {
-            console.log(e)
-            // notifyMessage(e.message)
-          // }
+          console.log(e)
         }
       }
     }
@@ -87,7 +87,7 @@ export class StoryScreen extends Drawable {
     // }
   }
 
-  protected onUpdate() {
+  public onUpdate() {
     super.onUpdate();
     this.layers.update()
     // for (let i = 0; i < this.spriteList.length; i++) {

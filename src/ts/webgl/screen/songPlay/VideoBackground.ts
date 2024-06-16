@@ -6,6 +6,7 @@ import {TextureStore} from "../../texture/TextureStore";
 import {Color} from "../../base/Color";
 import type {DrawNode} from "../../drawable/DrawNode";
 import type {DefaultShaderWrapper} from "../../shader/DefaultShaderWrapper";
+import {Size} from "../../drawable/Size";
 
 export class VideoBackground extends Drawable {
 
@@ -15,9 +16,10 @@ export class VideoBackground extends Drawable {
         private video: HTMLVideoElement | null
     ) {
         super({
-            size: ['fill-parent', 'fill-parent']
+            size: Size.FillParentSize
         });
         this.texture = TextureStore.create();
+        this.setColor(Color.White)
     }
 
     private videoSize = Vector()
@@ -27,35 +29,32 @@ export class VideoBackground extends Drawable {
         // this.isVertexUpdate = true
     }
 
-    protected onUpdate(): void {
+    public onUpdate(): void {
         if (this.video) {
             this.texture.setTextureVideo(this.video)
         }
     }
 
-    private white = Color.White.copy()
-
     public beforeCommit(node: DrawNode) {
         const shader = node.shader as DefaultShaderWrapper
         shader.orth = Coordinate.orthographicProjectionMatrix4
-        this.white.alpha = this.appliedTransform.alpha
-        shader.color = this.white
+        shader.color = this.computeColor()
         shader.sampler2D = 0
     }
 
     public onDraw(node: DrawNode) {
-        const topLeft = this.position.copy()
-        const bottomRight = this.position.add(this.size)
+        const topLeft = this.initRectangle.topLeft.copy()
+        const bottomRight = this.initRectangle.bottomRight.copy()
         const videoSize = this.videoSize
         if (!videoSize.isZero()) {
-            const targetWidth = (this.height * videoSize.x) / videoSize.y
+            const targetWidth = (this.getHeight() * videoSize.x) / videoSize.y
             topLeft.set(
-              (this.width - targetWidth) / 2,
-              this.position.y
+              (this.getWidth() - targetWidth) / 2,
+              this.getPosition().y
             )
             bottomRight.set(
               topLeft.x + targetWidth,
-              topLeft.y + this.height
+              topLeft.y + this.getHeight()
             )
         }
         node.drawRect(topLeft, bottomRight)

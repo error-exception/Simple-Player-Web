@@ -21,7 +21,7 @@ class TempOSUPlayManager {
     // })
   }
 
-  public playAt(index: number, preview = true) {
+  public async playAt(index: number, preview = true) {
     loadOSZ(this.list.value[index], preview)
     this.currentIndex.value = index
   }

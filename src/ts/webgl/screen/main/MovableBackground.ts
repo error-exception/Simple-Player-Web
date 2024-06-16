@@ -12,6 +12,8 @@ import type {WebGLRenderer} from "../../WebGLRenderer";
 import {TextureStore} from "../../texture/TextureStore";
 import type {DrawNode} from "../../drawable/DrawNode";
 import {Anchor} from "../../drawable/Anchor";
+import {Size} from "../../drawable/Size";
+import {MouseState} from "../../../global/MouseState";
 
 // const vertexShader = `
 //     attribute vec4 a_position;
@@ -69,27 +71,26 @@ export class MovableBackground extends Drawable {
 
   constructor() {
     super({
-      size: ['fill-parent', 'fill-parent'],
+      size: Size.FillParentSize,
       anchor: Anchor.Center
     })
     this.texture = TextureStore.create()
+    this.setColor(Color.White)
   }
 
-  protected onUpdate() {
-    super.onUpdate();
+  public onUpdate() {
     if (this.transition.transitionAlpha.isEnd) {
       this.onFinish?.()
       this.onFinish = null
     }
-
     const min = Math.min
     const viewport = Coordinate;
     const {imageWidth, imageHeight} = this.texture
 
     const imageDrawInfo = this.imageDrawInfo
     if (imageDrawInfo.needToChange) {
-      const rawWidth = this.width
-      const rawHeight = this.height
+      const rawWidth = this.getWidth()
+      const rawHeight = this.getHeight()
       const rawRatio = rawWidth / rawHeight
       const imageRatio = imageWidth / imageHeight
       if (rawRatio > imageRatio) {
@@ -107,7 +108,7 @@ export class MovableBackground extends Drawable {
     }
 
     const scale = 1.02
-    const translate = this.translate
+    const translate = this.getTranslate()
 
     const scaledWidth = imageWidth * scale
     const scaledHeight = imageHeight * scale
@@ -121,8 +122,8 @@ export class MovableBackground extends Drawable {
     const x = (factor * widthDiffer / viewport.width) * (translate.x - Coordinate.centerX)
     const y = (factor * heightDiffer / viewport.height) * (translate.y - Coordinate.centerY)
 
-    this.scale = Vector(scale)
-    this.translate = new Vector2(x, y)
+    this.setScale(Vector(scale))
+    this.setTranslate(new Vector2(x, y))
   }
 
   public setBackgroundImage(image: ImageBitmap) {
@@ -142,19 +143,16 @@ export class MovableBackground extends Drawable {
     this.imageDrawInfo.needToChange = true
   }
 
-  private white = Color.White.copy()
-
   public beforeCommit(node: DrawNode) {
     const shader = node.shader as DefaultShaderWrapper
     shader.orth = Coordinate.orthographicProjectionMatrix4
     shader.sampler2D = 0
-    this.white.alpha = this.appliedTransform.alpha
-    shader.color = this.white
+    shader.color = this.computeColor()
   }
 
   public onDraw(node: DrawNode) {
-    const topLeft = this.position.copy()
-    const bottomRight = this.position.add(this.size)
+    // const topLeft = this.position.copy()
+    // const bottomRight = this.position.add(this.size)
 
     const info = this.imageDrawInfo
     const imageTopLeft = new Vector2(info.offsetLeft, info.offsetTop)
@@ -163,8 +161,7 @@ export class MovableBackground extends Drawable {
     const imageScale = TransformUtils.scale(1 / this.texture.imageWidth, 1 / this.texture.imageHeight)
     TransformUtils.applySelf(imageTopLeft, imageScale)
     TransformUtils.applySelf(imageBottomRight, imageScale)
-
-    node.drawRect(topLeft, bottomRight)
+    node.drawRect(this.initRectangle.topLeft, this.initRectangle.bottomRight)
     node.drawTexture(this.texture, imageTopLeft, imageBottomRight)
   }
 
@@ -177,7 +174,7 @@ export class MovableBackground extends Drawable {
 export class Background extends Box {
 
   constructor(initImage?: ImageBitmap) {
-    super({size: ['fill-parent', 'fill-parent']});
+    super({size: Size.FillParentSize});
     const current = new MovableBackground()
     const next = new MovableBackground()
     this.add(next, current)
@@ -207,7 +204,7 @@ export class Background extends Box {
 
     this.backImage.setBackgroundImage(image)
     this.backImage.isVisible = true
-    this.backImage.alpha = 1
+    this.backImage.setAlpha(1)
     this.frontImage.fadeOut(() => {
       this.frontImage.isVisible = false
       this.isFading = false
@@ -215,14 +212,20 @@ export class Background extends Box {
     })
   }
 
-  set translate(v: Vector2) {
+  setTranslate(t: Vector2) {
+    // super.setTranslate(t);
     for (let i = 0; i < this.childrenList.length; i++) {
-      this.childrenList[i].translate = v
+      this.childrenList[i].setTranslate(t)
     }
   }
 
-  get translate(): Vector2 {
+  getTranslate(): Vector2 {
     return Vector2.newZero()
+  }
+
+  onUpdate() {
+    this.setTranslate(MouseState.position)
+    super.onUpdate();
   }
 
   public draw(renderer: WebGLRenderer) {
@@ -240,7 +243,7 @@ export class BackgroundBounce extends Box {
 
   constructor(backgroundImage: ImageBitmap | undefined) {
     super( {
-      size: ['fill-parent', 'fill-parent']
+      size: Size.FillParentSize
     });
 
     this.add((this.background = new Background(backgroundImage)))
@@ -249,7 +252,7 @@ export class BackgroundBounce extends Box {
   public in() {
     this.transform()
       .delay(300).scaleTo(Vector(0.996), 500, easeOutQuint)
-      .delay(300).moveTo(Vector(0, 40), 500, easeOutQuint)
+      .delay(300).moveTo(Vector(0, 35), 500, easeOutQuint)
       .delay(300).fadeTo(0.7, 500, easeOutQuint)
   }
 

@@ -4,9 +4,11 @@ import {Ease, EventType, LoopType, StoryLayer, StoryOrigin} from "../webgl/scree
 import {Color} from "../webgl/base/Color";
 
 export interface OSUFile {
+    name: string
     General?: OSUFileGeneral
     Metadata?: OSUFileMetadata
     TimingPoints?: OSUFileTimingPoints
+    Difficulty?: OSUFileDifficulty
     // NoteData?: NoteData[][]
     Events?: OSUEvent
     // HitObjects?: OSUFileHitObjects
@@ -14,8 +16,16 @@ export interface OSUFile {
 
 export interface OSUFileGeneral {
     AudioFilename: string
+    AudioLeadIn: number
     Mode: number
     PreviewTime: number
+    Countdown: number
+    SampleSet: string
+    StackLeniency: number
+    EpilepsyWarning: boolean
+    WidescreenStoryboard: boolean
+    LetterboxInBreaks: boolean
+    SpecialStyle: boolean
 }
 
 export interface OSUFileMetadata {
@@ -23,8 +33,21 @@ export interface OSUFileMetadata {
     TitleUnicode: string
     Artist: string
     ArtistUnicode: string
+    Creator: string
     Version: string
+    Source: string
     BeatmapID: string
+    Tags: string
+    BeatmapSetID: string
+}
+
+export interface OSUFileDifficulty {
+    HPDrainRate: number
+    CircleSize: number
+    OverallDifficulty: number
+    ApproachRate: number
+    SliderMultiplier: number
+    SliderTickRate: number
 }
 
 export interface OSUFileTimingPoints {
@@ -40,6 +63,14 @@ export interface OSUFileTimingPointsItem {
 export interface OSUEvent {
     imageBackground?: string
     videoBackground?: string
+    /**
+     * @deprecated
+     */
+    imageSource?: Blob
+    /**
+     * @deprecated
+     */
+    videoSource?: Blob
     videoOffset?: number
     storyboard?: OSBFile
 }

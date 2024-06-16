@@ -17,7 +17,7 @@ export class TextureAtlas implements Disposable {
     regin.parent = this
   }
 
-  public getRegin(name: string) {
+  public getRegin<T = string>(name: T) {
     const list = this.textureReginList
     for (let i = 0; i < list.length; i++) {
       if (name === list[i].name) {
@@ -62,6 +62,5 @@ export class TextureRegin {
   public get texture() {
     return this.parent!.texture
   }
-
 
 }

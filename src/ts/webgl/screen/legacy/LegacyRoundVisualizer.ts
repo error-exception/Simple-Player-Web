@@ -17,6 +17,7 @@ import {DrawNode} from "../../drawable/DrawNode";
 import type {LegacyVisualizerShaderWrapper} from "../../shader/LegacyVisualizerShaderWrapper";
 import {Matrix3} from "../../core/Matrix3";
 import {TransformUtils2} from "../../core/TransformUtils2";
+import {Vector2Utils} from "../../core/Vector2Utils";
 
 export interface LegacyRoundVisualizerConfig extends BaseDrawableConfig {
   innerRadius?: number
@@ -57,16 +58,10 @@ export class LegacyRoundVisualizer extends Drawable<LegacyRoundVisualizerConfig>
       {texture: this.borderBarTexture, unit: 6 }
     )
     node.apply()
-    this.centerOfDrawable = this.position.add(this.size.divValue(2))
-    this.scale = Vector(-1, 1)
+    this.setScale(Vector(-1, 1))
   }
 
-  public onWindowResize() {
-    super.onWindowResize();
-    this.centerOfDrawable = this.position.add(this.size.divValue(2))
-  }
-
-  protected onUpdate() {
+  public onUpdate() {
     super.onUpdate();
     this.getSpectrum(Time.currentTime, BeatState.isKiai ? 1 : 0.5)
   }
@@ -121,13 +116,13 @@ export class LegacyRoundVisualizer extends Drawable<LegacyRoundVisualizerConfig>
   public beforeCommit(node: DrawNode) {
     const shader = node.shader as LegacyVisualizerShaderWrapper
     shader.orth = Coordinate.orthographicProjectionMatrix4
-    shader.alpha = BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14
+    shader.alpha = this.computeColor(BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14).alpha
     shader.sampler2D1 = 5
     shader.sampler2D2 = 6
   }
 
   public onDraw(node: DrawNode) {
-
+    Vector2Utils.middleTo(this.initRectangle.topLeft, this.initRectangle.bottomRight, this.centerOfDrawable)
     const centerX = 0, centerY = 0
     const spectrum = this.targetSpectrum
     const length = 200

@@ -24,14 +24,7 @@ const progress = computed(() => {
 const changeProgress = (ev: MouseEvent) => {
   const progress = ev.offsetX / state.width
   OSUPlayer.seek(duration.value * progress)
-  // state.current = player.currentTime()
 }
-// useEvent({
-//   onSongChanged(id: number) {
-//     state.duration = player.duration.value
-//     state.current = player.currentTime
-//   }
-// })
 
 onMounted(() => {
   if (progressBar.value) {

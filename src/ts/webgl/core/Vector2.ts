@@ -38,6 +38,7 @@ export class Vector2 {
     public increment(v: Vector2) {
         this.x += v.x;
         this.y += v.y;
+        return this
     }
 
     public minus(vec2: Vector2): Vector2 {

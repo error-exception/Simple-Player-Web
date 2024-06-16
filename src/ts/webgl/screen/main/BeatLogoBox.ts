@@ -22,9 +22,10 @@ import {ImageDrawable} from "../../drawable/ImageDrawable";
 import {TextureStore} from "../../texture/TextureStore";
 import {Ripples} from "./Ripples";
 import type {TopBar} from "./TopBar";
+import {Size} from "../../drawable/Size";
 
 interface LogoConfig extends BaseDrawableConfig {
-  size: [number, number]
+  size: Vector2
 }
 
 class BeatLogo extends BeatBox<LogoConfig> {
@@ -41,7 +42,7 @@ class BeatLogo extends BeatBox<LogoConfig> {
       anchor: Anchor.Center
     })
     const triangles = new LogoTriangles({
-      size: [config.size[0] * 0.9, config.size[1] * 0.9],
+      size: Size.of(config.size.x * 0.9, config.size.y * 0.9),
       anchor: Anchor.Center
     })
     this.logo = logo
@@ -84,10 +85,11 @@ class LogoBeatBox extends Box<LogoConfig> {
     this.add(this.beatLogo)
   }
 
-  protected onUpdate() {
+  public onUpdate() {
+    super.onUpdate()
     if (AudioPlayerV2.isPlaying()) {
       // if (BeatState.isAvailable) {
-      const scale = this.scale
+      const scale = this.getScale()
       const adjust = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() - 0.4 : 0
       const a = Interpolation.damp(
         scale.x,
@@ -97,7 +99,7 @@ class LogoBeatBox extends Box<LogoConfig> {
       )
       scale.x = a
       scale.y = a
-      this.scale = scale
+      this.setScale(scale)
       // }
     }
   }
@@ -115,13 +117,16 @@ class LogoAmpBox extends Box<LogoConfig> {
     super(config);
     this.enableMouseEvent()
     this.visualizer = new RoundVisualizer({
-      size: ['fill-parent', 'fill-parent'],
-      innerRadius: Math.min(config.size[0], config.size[1]) / 2 * 0.9,
+      size: Size.FillParentSize,
+      innerRadius: Math.min(config.size.x, config.size.y) / 2 * 0.9,
       anchor: Anchor.Center
     })
     const ripple = new Ripples({
-      size: [config.size[0] * 0.98, config.size[1] * 0.98],
-      anchor: Anchor.Center
+      size: Size.of(config.size.x * 0.98, config.size.y * 0.98),
+      anchor: Anchor.Center,
+      maxThickWidth: 5,
+      duration: 180,
+      defaultRippleAlpha: 0.06
     })
     this.logoBeatBox = new LogoBeatBox({
       size: config.size,
@@ -143,6 +148,8 @@ class LogoAmpBox extends Box<LogoConfig> {
       return true
     }
     this.transform().scaleTo(new Vector2(1.1, 1.1), 500, easeOutElastic)
+    const menu = inject<Menu>('Menu')
+    menu.onLogoHover()
     return true
   }
 
@@ -151,16 +158,22 @@ class LogoAmpBox extends Box<LogoConfig> {
       return true
     }
     this.transform().scaleTo(Vector2.one, 500, easeOutElastic)
+    const menu = inject<Menu>('Menu')
+    menu.onLogoHoverLost()
     return true
   }
 
   public onMouseDown(which: number): boolean {
     this.transform().scaleTo(Vector(.9), 1000, easeOut)
+    const menu = inject<Menu>('Menu')
+    menu.onLogoPress()
     return true
   }
 
   public onMouseUp(which: number): boolean {
     this.transform().scaleTo(Vector(1), 500, easeOutElastic)
+    const menu = inject<Menu>('Menu')
+    menu.onLogoRelease()
     return true
   }
 
@@ -204,7 +217,7 @@ export class LogoBounceBox extends Box<LogoConfig> {
     let translateY = position.y - this.startPosition.y
     translateX = Math.sqrt(Math.abs(translateX)) * (translateX < 0 ? -1 : 1)
     translateY = Math.sqrt(Math.abs(translateY)) * (translateY < 0 ? -1 : 1)
-    this.translate = Vector(translateX, translateY)
+    this.setTranslate(Vector(translateX, translateY))
     return true
   }
 

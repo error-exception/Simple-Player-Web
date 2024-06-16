@@ -20,10 +20,8 @@ export class ImageDrawable extends Drawable<ImageDrawableConfig> {
     config: ImageDrawableConfig
   ) {
     super(config)
-    if (config.color) {
-      this.color = config.color
-    }
-    this.alpha = this.color.alpha
+    this.setColor(config.color ?? Color.White)
+    this.setAlpha(config.color?.alpha ?? 1)
   }
 
   public onLoad(renderer: WebGLRenderer) {
@@ -31,17 +29,15 @@ export class ImageDrawable extends Drawable<ImageDrawableConfig> {
     this.drawNode.blend = this.config.blend ?? Blend.Normal
   }
 
-  protected color = Color.fromHex(0xffffff)
   beforeCommit(node: DrawNode) {
     const shader = node.shader as DefaultShaderWrapper
     shader.orth = Coordinate.orthographicProjectionMatrix4
-    this.color.alpha = this.appliedTransform.alpha
-    shader.color = this.color
+    shader.color = this.computeColor()
     shader.sampler2D = 0
   }
 
   public onDraw(node: DrawNode) {
-    node.drawRect(this.position, this.position.add(this.size))
+    node.drawRect(this.initRectangle.topLeft, this.initRectangle.bottomRight)
     if (this.texture instanceof Texture) {
       node.drawTexture(this.texture)
     } else {

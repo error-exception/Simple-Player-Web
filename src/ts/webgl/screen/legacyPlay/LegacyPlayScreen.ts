@@ -2,8 +2,8 @@ import {LegacyLogo} from "../legacy/LegacyLogo";
 import {BeatBox} from "../../box/BeatBox";
 import {Vector} from "../../core/Vector2";
 import {easeOut, easeOutQuint} from "../../../util/Easing";
-import type {BaseDrawableConfig} from "../../drawable/Drawable";
 import {Anchor} from "../../drawable/Anchor";
+import {Size} from "../../drawable/Size";
 
 export class LegacyPlayScreen extends BeatBox {
 
@@ -17,17 +17,22 @@ export class LegacyPlayScreen extends BeatBox {
 
   constructor() {
     super({
-      size: ['fill-parent', 'fill-parent']
+      size: Size.FillParentSize,
     });
-    const config: BaseDrawableConfig = {
-      size: [225, 225],
-      offset: [36, 65],
-      anchor: Anchor.BottomRight,
-    }
-    this.logo = new LegacyLogo(config)
-    this.fadeLogo = new LegacyLogo(config)
-    this.fadeLogo.alpha = this.fade
-    this.add(this.logo, this.fadeLogo)
+    this.add(
+      this.logo = new LegacyLogo({
+        size: Size.of(200),
+        offset: Vector(36, 65),
+        anchor: Anchor.BottomRight,
+      }),
+      this.fadeLogo = new LegacyLogo({
+        size: Size.of(200),
+        offset: Vector(36, 65),
+        anchor: Anchor.BottomRight,
+      }).apply(fadeLogo => {
+        fadeLogo.setAlpha(this.fade)
+      })
+    )
   }
 
   public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {

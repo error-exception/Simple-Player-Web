@@ -6,7 +6,7 @@ import {Shape2D} from "../../util/Shape2D";
 import {Color} from "../../base/Color";
 import StoryTextureManager from "./StoryTextureManager";
 import {VertexBuffer} from "../../core/VertexBuffer";
-import {OSBSource} from "../../../osu/OSZ";
+import {OSZ} from "../../../osu/OSZ";
 import {Disposable} from "../../core/Disposable";
 import AudioPlayer from "../../../player/AudioPlayer";
 import {isUndef} from "../../core/Utils";
@@ -67,7 +67,7 @@ export class Sprite implements Disposable {
 
   protected eventsGroup: StoryEventGroup
 
-  constructor(protected gl: WebGL2RenderingContext, sprite: OSBSprite, source: OSBSource) {
+  constructor(protected gl: WebGL2RenderingContext, sprite: OSBSprite, source: OSZ) {
     this.layer = sprite.layer
     this.origin = sprite.origin
     this.x = sprite.x
@@ -82,13 +82,13 @@ export class Sprite implements Disposable {
     this.setupBound()
   }
 
-  protected loadTexture(sprite: OSBSprite, source: OSBSource) {
+  protected loadTexture(sprite: OSBSprite, source: OSZ) {
 
     const format =
       (sprite.filePath.endsWith(".jpg") || sprite.filePath.endsWith(".jpeg"))
         ? ImageFormat.JPEG
         : ImageFormat.PNG
-    const image = source.get(sprite.filePath)
+    const image = source.getImageBitmap(sprite.filePath)
     if (isUndef(image)) {
       throw new Error("sprite texture cannot be undefined or null " + sprite.filePath)
     }

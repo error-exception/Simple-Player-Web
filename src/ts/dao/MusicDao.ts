@@ -2,7 +2,7 @@ import {url} from "../Utils";
 import AudioPlayerV2 from "../player/AudioPlayer";
 import {PlayerState} from "../player/PlayerState";
 import {Music, ResponseResult, TimingInfo} from "../type";
-import axios, {AxiosResponse} from "axios";
+
 
 class MusicDao {
 
@@ -19,14 +19,15 @@ class MusicDao {
     }
 
     async uploadTimingInfo(timingInfo: TimingInfo) {
-        const response: AxiosResponse<ResponseResult> = await axios.post(url(`uploadTiming`), timingInfo)
-        if (!response.data || response.data.code != 0) {
-            console.error("request error", response.data.code, response.data.message)
-            return false
-        } else {
-            console.log("upload timing info success! id=", timingInfo.id)
-            return true
-        }
+        return true
+        // const response: AxiosResponse<ResponseResult> = await axios.post(url(`uploadTiming`), timingInfo)
+        // if (!response.data || response.data.code != 0) {
+        //     console.error("request error", response.data.code, response.data.message)
+        //     return false
+        // } else {
+        //     console.log("upload timing info success! id=", timingInfo.id)
+        //     return true
+        // }
     }
 
     async getAllTimingList() {

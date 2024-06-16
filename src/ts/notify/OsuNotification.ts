@@ -58,7 +58,7 @@ export class RunningTask {
 
   public id = nextId()
   public text = ref("")
-  public icon = ref<Icon>(Icon.Check)
+  public icon = ref<string>(Icon.Check)
   public progress = ref(0)
   public state = RunningTask.STATE_WAIT
   public always = false
@@ -67,7 +67,7 @@ export class RunningTask {
     return scope(this)
   }
 
-  public finish(text: string, icon: Icon = Icon.Info) {
+  public finish(text: string, icon: string = Icon.Info) {
     this.always = false
     OsuNotification.removeFrom(OsuNotification.runningTasks, this)
     OsuNotification.removeFrom(OsuNotification.tempQueue, this)
@@ -79,7 +79,7 @@ export class RunningTask {
   }
 }
 
-export function notifyMessage(text: string, icon: Icon = Icon.Info) {
+export function notifyMessage(text: string, icon: string = Icon.Info) {
   const task = new RunningTask()
   task.text.value = text
   task.icon.value = icon

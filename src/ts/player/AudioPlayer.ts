@@ -1,4 +1,4 @@
-import {TimePlayer} from "../TimePlayer";
+import {TimePlayer} from "./TimePlayer";
 import {ref} from "vue";
 import {clamp, int} from "../Utils";
 import {VisualizerV2} from "../VisualizerV2";

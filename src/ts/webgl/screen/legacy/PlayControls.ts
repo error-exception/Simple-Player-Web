@@ -1,23 +1,41 @@
-import {RowBox} from "../../box/RowBox";
+import {RowBox, RowBoxConfig} from "../../box/RowBox";
 import {ImageDrawable} from "../../drawable/ImageDrawable";
 import type {Texture} from "../../core/Texture";
 import type {TextureRegin} from "../../texture/TextureAtlas";
 import {Vector, Vector2} from "../../core/Vector2";
-import type {BaseDrawableConfig} from "../../drawable/Drawable";
 import {TextureStore} from "../../texture/TextureStore";
 import {Anchor} from "../../drawable/Anchor";
+import {Size} from "../../drawable/Size";
+import TempOSUPlayManager from "../../../player/TempOSUPlayManager";
+import OSUPlayer from "../../../player/OSUPlayer";
+import type {IconAtlas} from "../../texture/IconAtlas";
 
 export class PlayControls extends RowBox {
-  constructor(config: BaseDrawableConfig) {
+  constructor(config: RowBoxConfig) {
     super(config);
 
     const atlas = TextureStore.getAtlas('Icons-Atlas')
     this.add(
-      new ControlButton(atlas.getRegin('icon-skip-previous')),
-      new ControlButton(atlas.getRegin('icon-play')),
-      new ControlButton(atlas.getRegin('icon-pause')),
-      new ControlButton(atlas.getRegin('icon-stop')),
-      new ControlButton(atlas.getRegin('icon-skip-next'))
+      new ControlButton(atlas.getRegin<IconAtlas>('Icon-SkipPrevious'))
+        .setOnClick(() => {
+          TempOSUPlayManager.prev()
+        }),
+      new ControlButton(atlas.getRegin<IconAtlas>('Icon-PlayArrow'))
+        .setOnClick(() => {
+          OSUPlayer.play()
+        }),
+      new ControlButton(atlas.getRegin<IconAtlas>('Icon-Pause'))
+        .setOnClick(() => {
+          OSUPlayer.pause()
+        }),
+      new ControlButton(atlas.getRegin<IconAtlas>('Icon-Stop'))
+        .setOnClick(() => {
+          OSUPlayer.stop()
+        }),
+      new ControlButton(atlas.getRegin<IconAtlas>('Icon-SkipNext'))
+        .setOnClick(() => {
+          TempOSUPlayManager.next()
+        })
     )
 
   }
@@ -27,19 +45,10 @@ class ControlButton extends ImageDrawable {
 
   constructor(texture: Texture | TextureRegin, anchor: number = Anchor.TopLeft) {
     super(texture, {
-      size: [24, 24]
+      size: Size.of(28),
+      anchor: Anchor.CenterRight
     });
-  }
-
-  private _onClick = () => {}
-  public setOnClickListener(l: () => void) {
-    this._onClick = l
-    return this
-  }
-
-  onClick(which: number): boolean {
-    this._onClick()
-    return true
+    this.enableMouseEvent()
   }
 
   onHover(): boolean {

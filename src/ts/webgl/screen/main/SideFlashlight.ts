@@ -3,12 +3,12 @@ import {ImageDrawable} from "../../drawable/ImageDrawable";
 import {TextureStore} from "../../texture/TextureStore";
 import Coordinate from "../../base/Coordinate";
 import {Anchor} from "../../drawable/Anchor";
-import {Vector} from "../../core/Vector2";
 import {BeatState} from "../../../global/Beater";
 import AudioChannel from "../../../player/AudioChannel";
 import {easeInQuad} from "../../../util/Easing";
 import {Blend} from "../../drawable/Blend";
 import type {Color} from "../../base/Color";
+import {Size} from "../../drawable/Size";
 
 export class SideFlashlight extends BeatBox {
 
@@ -17,25 +17,25 @@ export class SideFlashlight extends BeatBox {
 
   constructor(color: Color, width?: number) {
     super({
-      size: ['fill-parent', 'fill-parent'],
+      size: Size.FillParentSize,
     });
     const w = width ?? Coordinate.width * 0.2
     const texture = TextureStore.get('Gradiant')
     const left = new ImageDrawable(texture, {
-      size: [w, 'fill-parent'],
+      size: Size.of(w, Size.FillParent),
       anchor: Anchor.TopLeft,
       blend: Blend.Additive,
       color
     })
     const right = new ImageDrawable(texture, {
-      size: [w, 'fill-parent'],
+      size: Size.of(w, Size.FillParent),
       anchor: Anchor.TopRight,
       blend: Blend.Additive,
       color
     })
-    right.scale = Vector(-1, 1)
-    left.alpha = 0
-    right.alpha = 0
+    right.setScaleX(-1)
+    left.setAlpha(0)
+    right.setAlpha(0)
     this.add(left, right)
     this.left = left
     this.right = right

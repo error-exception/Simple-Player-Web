@@ -7,25 +7,8 @@
     @dragover="handleDrop"
   >
     <Visualizer2 class="absolute"/>
-<!--    <Transition name="top-bar">-->
-<!--      <TopBar-->
-<!--        style="position: absolute; top: 0"-->
-<!--        :stateText="stateText"-->
-<!--        @settingsClick="VueUI.settings = !VueUI.settings"-->
-<!--        @bpmCalcClick="ui.bpmCalculator = !ui.bpmCalculator"-->
-<!--        @beatmapListClick="VueUI.selectBeatmapDirectory = !VueUI.selectBeatmapDirectory"-->
-<!--        @notifyClick="VueUI.notification = !VueUI.notification"-->
-<!--        @hideUI="hideUI()"-->
-<!--        v-show="ui.showUI"-->
-<!--      />-->
-<!--    </Transition>-->
     <Transition name="mask">
       <div class="max-size mask absolute" v-if="hasSomeUIShow" @click="closeAll()"></div>
-    </Transition>
-    <VolumeAdjuster class="absolute right-0 bottom-0"/>
-    
-    <Transition name="list">
-      <Playlist class="absolute right-0" v-if="ui.list"/>
     </Transition>
     
     <Transition name="settings">
@@ -43,7 +26,6 @@
         @close="ui.screenSelector = false"
       />
     </Transition>
-    
     <Transition name="player">
       <MiniPlayer v-if="VueUI.miniPlayer" style="position: absolute; top: var(--top-bar-height); right: 80px"/>
     </Transition>
@@ -55,12 +37,10 @@
       class="absolute"
       @close="ui.bpmCalculator = false"
     />
-    <Transition name="popup">
-      <OSUBeatmapList class="absolute" v-if="VueUI.selectBeatmapDirectory" @close="VueUI.selectBeatmapDirectory = false"/>
-    </Transition>
     <FloatNotification v-if="!VueUI.notification" class="absolute right-0"/>
     <Toast class="absolute" style="position: absolute"/>
     <DevelopTip class="absolute right-0 bottom-0"/>
+    <Overlay/>
   </div>
 </template>
 <script setup lang="ts">
@@ -70,19 +50,15 @@ import '../public/Material_Icon/material-icons.css';
 import BpmCalculator from "./components/BpmCalculator.vue";
 import DevelopTip from "./components/DevelopTip.vue";
 import MiniPlayer from "./components/MiniPlayer.vue";
-import Playlist from "./components/Playlist.vue";
-import SettingsPanel from "./components/SettingsPanel.vue";
+import SettingsPanel from "./components/settings/SettingsPanel.vue";
 import Toast from "./components/Toast.vue";
 import Visualizer2 from "./components/Visualizer2.vue";
-import VolumeAdjuster from "./components/VolumeAdjuster.vue";
 import AudioPlayerV2 from "./ts/player/AudioPlayer";
 import {Toaster} from "./ts/global/Toaster";
 import {scope, useKeyboard} from './ts/Utils';
 import OSUPlayer from "./ts/player/OSUPlayer";
-import PlayManager from "./ts/player/PlayManager";
 import {PlayerState} from "./ts/player/PlayerState";
 import {loadOSZ} from './ts/osu/OSZ';
-import OSUBeatmapList from './components/OSUBeatmapList.vue';
 import {onEnterMenu, onLeftSide, onRightSide, VueUI} from './ts/global/GlobalState';
 import ScreenManager from "./ts/webgl/util/ScreenManager";
 import {useCollect} from "./ts/util/use";
@@ -96,6 +72,8 @@ import {collect, collectLatest} from "./ts/util/eventRef";
 import ScreenSelector from "./components/ScreenSelector.vue";
 import SideButton from "./components/SideButton.vue";
 import {MouseEventFire} from "./ts/webgl/event/MouseEventFire";
+import {DrawableRecorder} from "./ts/webgl/drawable/DrawableRecorder";
+import Overlay from "./components/PanelOverlay.vue";
 
 const ui = reactive({
   list: false,
@@ -136,7 +114,6 @@ watch(() => VueUI.notification, value => {
   onRightSide.emit(value)
 })
 watch(() => VueUI.miniPlayer, value => playSound(value ? Sound.NowPlayingPopIn : Sound.NowPlayingPopOut))
-watch(() => VueUI.selectBeatmapDirectory, value => playSound(value ? Sound.WavePopIn : Sound.WavePopOut))
 useKeyboard('up', (evt) => {
   if (evt.code === 'KeyO') {
     ui.showUI = true
@@ -163,6 +140,10 @@ useKeyboard('up', (evt) => {
   } else if (evt.code === 'Space') {
     play()
   }
+  if (evt.code === 'KeyU') {
+    const drawables = DrawableRecorder.drawables
+    drawables.forEach(v => console.log(v))
+  }
 })
 
 onEnterMenu.collect((value) => {
@@ -183,7 +164,6 @@ function closeAll() {
   VueUI.settings = false
   ui.list = false
   VueUI.miniPlayer = false
-  VueUI.selectBeatmapDirectory = false
   VueUI.notification = false
 }
 
@@ -220,11 +200,7 @@ onMounted(() => init())
 notifyMessage("Welcome!")
 
 async function init() {
-  if (PLAYER) {
-    await PlayManager.loadMusicList()
-    await PlayManager.playAt(0)
-    OSUPlayer.pause()
-  }
+
 }
 
 function play() {
@@ -241,17 +217,11 @@ function play() {
 }
 
 function nextSong() {
-  if (PLAYER)
-    PlayManager.next()
-  else
-    TempOSUPlayManager.next()
+  TempOSUPlayManager.next()
 }
 
 function prevSong() {
-  if (PLAYER)
-    PlayManager.previous()
-  else
-    TempOSUPlayManager.prev()
+  TempOSUPlayManager.prev()
 }
 
 function handleDrop(e: DragEvent) {
@@ -287,11 +257,11 @@ function handleFile(e: DragEvent) {
 }
 
 .player-enter-active {
-  transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 400ms var(--ease-out-back);
 }
 
 .player-leave-active {
-  transition: all 200ms ease-out;
+  transition: all 800ms var(--ease-out-quint);
 }
 
 .list-enter-from, .list-leave-to {
@@ -313,7 +283,7 @@ function handleFile(e: DragEvent) {
 .player-enter-from, .player-leave-to {
   transform-origin: top center;
   opacity: 0;
-  transform: scale(0.8);
+  transform: scale(0.6);
 }
 
 .player-enter-to, .player-leave-from {
@@ -332,86 +302,5 @@ function handleFile(e: DragEvent) {
 
 .mask {
   background-color: #00000080;
-}
-
-.top-bar-enter-from, .top-bar-leave-to {
-  transform: translateY(-100%);
-}
-
-.top-bar-enter-to, .top-bar-leave-from {
-  transform: translateY(0);
-}
-
-.top-bar-enter-active, .top-bar-leave-active {
-  transition-property: transform;
-  transition-duration: 500ms;
-  transition-delay: 300ms;
-  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-}
-.top-bar-leave-active {
-  transition-delay: 0s;
-}
-
-.popup-enter-active, .popup-leave-active {
-  transition: all .5s ease;
-}
-.popup-enter-from, .popup-leave-to {
-  transform: translateY(100%);
-}
-.popup-enter-to, .popup-leave-from {
-  transform: translateY(0);
-}
-
-@keyframes player-enter-animation {
-  0% {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  
-  16% {
-    opacity: 1;
-    transform: scale(1.06);
-  }
-  
-  28% {
-    opacity: 0.87;
-    transform: scale(0.97);
-  }
-  
-  44% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  
-  59% {
-    opacity: 0.98;
-    transform: scale(0.99);
-  }
-  
-  73% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  
-  88% {
-    opacity: 1;
-    transform: scale(0.99);
-  }
-  
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes player-leave-animation {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.8);
-  }
 }
 </style>

@@ -1,11 +1,11 @@
 import {OSUFile} from "../osu/OSUFile";
-// import {createMutableStateFlow} from "../util/flow";
-// import {NoteData} from "../webgl/screen/mania/ManiaPanel";
 import AudioPlayerV2 from "./AudioPlayer";
 import VideoPlayer from "./VideoPlayer";
 import {ref, shallowRef} from "vue";
-import {OSZFile} from "../osu/OSZ";
+import {OSZ} from "../osu/OSZ";
 import {eventRef} from "../util/eventRef";
+import {Interpolation} from "../webgl/util/Interpolation";
+import type {Nullable} from "../type";
 
 export interface OSUBackground {
   image?: ImageBitmap
@@ -20,55 +20,71 @@ class OSUPlayer {
   public background = shallowRef<OSUBackground>({})
   public currentTime = ref(0)
   public duration = ref(0)
-  public onChanged = eventRef<[OSUFile, OSZFile]>()
+  public onChanged = eventRef<[OSUFile, OSZ]>()
 
-  public static readonly EMPTY_OSU: OSUFile = {}
-  // @ts-ignore
-  public static readonly EMPTY_OSZ: OSZFile = {}
+  public static readonly EMPTY_OSU: OSUFile = { name: '' }
+  public static readonly EMPTY_OSZ: OSZ = new OSZ()
 
   public currentOSUFile = shallowRef<OSUFile>(OSUPlayer.EMPTY_OSU)
-  public currentOSZFile = shallowRef<OSZFile>(OSUPlayer.EMPTY_OSZ)
+  public currentOSZFile = shallowRef<OSZ>(OSUPlayer.EMPTY_OSZ)
 
   private isVideoAvailable = false
 
-  constructor() {
-
-  }
-
-  public async setSource(osu: OSUFile, src: OSZFile) {
+  public async setSource(osz: OSZ, osuFile: Nullable<OSUFile> = null) {
+    const oldOSZ = this.currentOSZFile.value
+    if (oldOSZ !== osz) {
+      oldOSZ.dispose()
+    }
     this.isVideoAvailable = false
-    const { Events, Metadata } = osu
-    const { audio, image, video } = src.source
+    const index = ~~Interpolation.valueAt(
+      Math.random(), 0, osz.osuFileList.length - 1
+    )
+    const osu = osz.osuFileList[index]
+    this.title.value = osu.Metadata?.TitleUnicode ?? osu.Metadata?.Title ?? 'None'
+    this.artist.value = osu.Metadata?.ArtistUnicode ?? osu.Metadata?.Artist ?? 'None'
+
+    const audio = osu.General?.AudioFilename
     if (!audio) {
       console.warn("audio is null")
-      return
+      return null
     }
-    await AudioPlayerV2.setSource(audio)
-    this.title.value = Metadata?.TitleUnicode ?? "None"
-    this.artist.value = Metadata?.ArtistUnicode ?? "None"
-    this.duration.value = AudioPlayerV2.duration()
+    await this.setAudioSource(osz, audio)
     const background: OSUBackground = {}
+    const videoPath = osu.Events?.videoBackground
+    const video = videoPath ? osz.getVideo(videoPath) : undefined
     if (video) {
-      try {
-        VideoPlayer.baseOffset = Events?.videoOffset ?? 0
-        await VideoPlayer.setSource(video)
-        this.isVideoAvailable = true
-        background.video = VideoPlayer.getVideoElement()
-      } catch (_) {
-        console.log(_)
-        this.isVideoAvailable = false
-        background.video = undefined
-      }
+      await this.setVideoSource(osu, video, background)
     }
+    const imagePath = osu.Events?.imageBackground
+    const image = imagePath ? osz.getImageBitmap(imagePath) : undefined
     if (image) {
-      background.imageBlob = image
-      background.image = await createImageBitmap(image)
+      background.image = image
+      background.imageBlob = osz.getImageBlob(imagePath!)
     }
-    // this.maniaNoteData.value = isUndef(src.noteData) ? null : src.noteData
     this.background.value = background
-    this.onChanged.emit([osu, src])
+    this.onChanged.emit([osu, osz])
     this.currentOSUFile.value = osu
-    this.currentOSZFile.value = src
+    this.currentOSZFile.value = osz
+    return osu
+  }
+
+  private async setVideoSource(osu: OSUFile, video: string, background: OSUBackground) {
+    try {
+      VideoPlayer.baseOffset = osu.Events?.videoOffset ?? 0
+      await VideoPlayer.setSource(video)
+      this.isVideoAvailable = true
+      background.video = VideoPlayer.getVideoElement()
+    } catch (_) {
+      console.log(_)
+      this.isVideoAvailable = false
+      background.video = undefined
+    }
+  }
+
+  private async setAudioSource(osz: OSZ, audio: string) {
+    const audioArrayBuffer = osz.getAudio(audio)!
+    await AudioPlayerV2.setSource(audioArrayBuffer)
+    this.duration.value = AudioPlayerV2.duration()
   }
 
   public async play() {

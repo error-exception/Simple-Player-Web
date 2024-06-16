@@ -1,7 +1,7 @@
 <template>
-  <div class="toast-box" :style="`opacity: ${ state.opacity };`">
+  <div class="toast-box" :style="`opacity: ${ opacity };`">
     <Row center>
-      {{ state.message }}
+      {{ toastMessage }}
     </Row>
   </div>
 </template>
@@ -9,24 +9,36 @@
 <script setup lang="ts">
 import Row from "./common/Row.vue";
 import {Toaster} from "../ts/global/Toaster";
-import {reactive} from "vue";
+import {ref} from "vue";
+import {useSingleEvent} from "../ts/util/SingleEvent";
+import {useTransitionRef} from "../ts/use/useTransitionRef";
+import {debounce} from "../ts/Utils";
+import {easeOut, easeOutQuint} from "../ts/util/Easing";
 
-const state = reactive({
-  opacity: 0,
-  message: ""
+const toastMessage = ref('')
+const opacity = ref(0)
+const opacityTo = useTransitionRef(opacity)
+
+const clearMessage = debounce(() => {
+  toastMessage.value = ''
+}, 3200)
+
+useSingleEvent(Toaster.onToast, message => {
+  opacityTo(1, 200, easeOut)
+  opacityTo(0, 500, easeOutQuint, 2500)
+  toastMessage.value = message
+  clearMessage()
 })
 
-let timeoutId: any = undefined
-
-Toaster.toast.collect(message => {
-    clearTimeout(timeoutId)
-    state.opacity = 1
-    state.message = message
-    timeoutId = setTimeout(() => {
-        state.opacity = 0
-        state.message = ""
-    }, 3000)
-})
+// Toaster.toast.collect(message => {
+//     clearTimeout(timeoutId)
+//     state.opacity = 1
+//     state.message = message
+//     timeoutId = setTimeout(() => {
+//         state.opacity = 0
+//         state.message = ""
+//     }, 3000)
+// })
 
 </script>
 
@@ -45,5 +57,6 @@ Toaster.toast.collect(message => {
   font-size: 32px;
   padding: 32px 64px;
   border-radius: 12px;
+  font-weight: lighter;
 }
 </style>

@@ -1,9 +1,9 @@
 import {linear, TimeFunction} from "../../util/Easing";
 import {Vector2} from "../core/Vector2";
-import {ObjectTransition} from "./Transition";
+import {GetAndSetTransition} from "./Transition";
 import {Time} from "../../global/Time";
-import {Transform} from "../base/Transform";
 import type {Color} from "../base/Color";
+import type {Transformable} from "../drawable/Transformable";
 
 const M = 0, MX = 1, MY = 2,
   F = 3, R = 4,
@@ -15,42 +15,57 @@ const M = 0, MX = 1, MY = 2,
  */
 export class DrawableTransition {
 
-  // public x: number = 0
-  // public y: number = 0
-  // public scaleX: number = 1
-  // public scaleY: number = 1
-  // public alpha: number = 1
-  // public rotate: number = 0
+  protected transitionX: GetAndSetTransition
+  protected transitionY: GetAndSetTransition
+  protected transitionScaleX: GetAndSetTransition
+  protected transitionScaleY: GetAndSetTransition
+  transitionAlpha: GetAndSetTransition
+  protected transitionRotate: GetAndSetTransition
+  protected transitionSkewX: GetAndSetTransition
+  protected transitionSkewY: GetAndSetTransition
 
-  protected transitionX: ObjectTransition
-  protected transitionY: ObjectTransition
-  protected transitionScaleX: ObjectTransition
-  protected transitionScaleY: ObjectTransition
-  transitionAlpha: ObjectTransition
-  protected transitionRotate: ObjectTransition
-  protected transitionSkewX: ObjectTransition
-  protected transitionSkewY: ObjectTransition
-
-  protected transitionColorR: ObjectTransition
-  protected transitionColorG: ObjectTransition
-  protected transitionColorB: ObjectTransition
+  protected transitionColorR: GetAndSetTransition
+  protected transitionColorG: GetAndSetTransition
+  protected transitionColorB: GetAndSetTransition
 
   private transitionDelay = 0
   private transformType = -1
 
-  constructor(public transform: Transform) {
-    this.transitionX = new ObjectTransition(transform.translate, 'x')
-    this.transitionY = new ObjectTransition(transform.translate, 'y')
-    this.transitionScaleX = new ObjectTransition(transform.scale, 'x')
-    this.transitionScaleY = new ObjectTransition(transform.scale, 'y')
-    this.transitionAlpha = new ObjectTransition(transform, 'alpha')
-    this.transitionRotate = new ObjectTransition(transform, 'rotate')
-    this.transitionSkewX = new ObjectTransition(transform.skew, 'x')
-    this.transitionSkewY = new ObjectTransition(transform.skew, 'y')
+  constructor(public transform: Transformable) {
+    this.transitionX = new GetAndSetTransition(
+      () => transform.getTranslateX(), x => transform.setTranslateX(x)
+    )
+    this.transitionY = new GetAndSetTransition(
+      () => transform.getTranslateY(), y => transform.setTranslateY(y)
+    )
+    this.transitionScaleX = new GetAndSetTransition(
+      () => transform.getScaleX(), x => transform.setScaleX(x)
+    )
+    this.transitionScaleY = new GetAndSetTransition(
+      () => transform.getScaleY(), y => transform.setScaleY(y)
+    )
+    this.transitionAlpha = new GetAndSetTransition(
+      () => transform.getAlpha(), a => transform.setAlpha(a)
+    )
+    this.transitionRotate = new GetAndSetTransition(
+      () => transform.getRotate(), r => transform.setRotate(r)
+    )
+    this.transitionSkewX = new GetAndSetTransition(
+      () => transform.getSkewX(), x => transform.setSkewX(x)
+    )
+    this.transitionSkewY = new GetAndSetTransition(
+      () => transform.getSkewY(), y => transform.setSkewY(y)
+    )
 
-    this.transitionColorR = new ObjectTransition(transform.color, 'red')
-    this.transitionColorG = new ObjectTransition(transform.color, 'green')
-    this.transitionColorB = new ObjectTransition(transform.color, 'blue')
+    this.transitionColorR = new GetAndSetTransition(
+      () => transform.getColorR(), r => transform.setColorR(r)
+    )
+    this.transitionColorG = new GetAndSetTransition(
+      () => transform.getColorG(), g => transform.setColorG(g)
+    )
+    this.transitionColorB = new GetAndSetTransition(
+      () => transform.getColorB(), b => transform.setColorB(b)
+    )
   }
 
   /**
@@ -202,13 +217,6 @@ export class DrawableTransition {
     this.transitionColorG.transitionTo(color.green, duration, ease)
     this.transitionColorB.transitionTo(color.blue, duration, ease)
     return this
-  }
-
-  public update(transform: Transform) {
-    // transform.translate.set(this.x, this.y)
-    // transform.scale.set(this.scaleX, this.scaleY)
-    // transform.alpha = this.alpha
-    // transform.rotate = this.rotate
   }
 
   public updateTransform() {

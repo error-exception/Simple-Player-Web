@@ -11,7 +11,7 @@ withDefaults(defineProps<{
 })
 </script>
 <template>
-  <Column class="w-full relative h-16 bg-[--item-bg-color] rounded overflow-hidden">
+  <Column class="w-full relative h-16 bg-[--item-bg-color] rounded-md overflow-hidden">
     <Row class="absolute w-full h-full">
       <button class="bg-[--item-icon-bg-color] h-full aspect-square text-[--item-progress-color] ma">
         {{ Icon.RadioButtonUnchecked }}

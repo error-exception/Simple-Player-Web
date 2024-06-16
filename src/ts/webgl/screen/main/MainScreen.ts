@@ -10,6 +10,7 @@ import {SideFlashlight} from "./SideFlashlight";
 import {Color} from "../../base/Color";
 import {TopBar} from "./TopBar";
 import Coordinate from "../../base/Coordinate";
+import {Size} from "../../drawable/Size";
 
 export class MainScreen extends Box {
 
@@ -27,11 +28,11 @@ export class MainScreen extends Box {
 
   constructor() {
     super({
-      size: ['fill-parent', 'fill-parent'],
+      size: Size.FillParentSize,
     });
     const menu = new Menu()
     const beatLogo = new BeatLogoBox({
-      size: [460, 460],
+      size: Size.of(460),
       anchor: Anchor.Center
     })
     const flashlight = new SideFlashlight(
@@ -39,7 +40,7 @@ export class MainScreen extends Box {
       Coordinate.width / 5
     )
     const topBar = new TopBar()
-    topBar.translate = Vector(0, -36)
+    topBar.setTranslate(Vector(0, -36))
     // let smoke = new StarSmoke(gl)
     this.add(
       menu,
@@ -50,12 +51,6 @@ export class MainScreen extends Box {
     )
     onLeftSide.collect(this.leftSideCollector)
     onRightSide.collect(this.rightSideCollector)
-    // this.scope.run(() => {
-    //   watch(() => UIState.starSmoke, value => {
-    //     smoke.isVisible = value
-    //   }, {immediate: true})
-    //
-    // })
   }
 
   public dispose(): void {

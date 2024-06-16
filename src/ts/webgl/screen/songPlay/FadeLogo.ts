@@ -4,18 +4,19 @@ import {ImageDrawable} from "../../drawable/ImageDrawable";
 import {easeOut, easeOutQuint} from "../../../util/Easing";
 import {TextureStore} from "../../texture/TextureStore";
 import {Blend} from "../../drawable/Blend";
+import {Size} from "../../drawable/Size";
 
 export class FadeLogo extends BeatBox {
 
-    private logo: ImageDrawable
+    private readonly logo: ImageDrawable
 
     constructor(config: BaseDrawableConfig) {
-        super({ size: ['fill-parent', 'fill-parent'] });
+        super({ size: Size.FillParentSize });
         this.logo = new ImageDrawable(TextureStore.get('Logo'), {
             ...config,
             blend: Blend.Additive
         })
-        this.logo.alpha = 0.3
+        this.logo.setAlpha(0.3)
         this.add(this.logo)
     }
 

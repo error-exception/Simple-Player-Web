@@ -27,4 +27,21 @@ export class Color {
         return new Color(this.red, this.green, this.blue, this.alpha)
     }
 
+    public setFrom(c: Color) {
+        this.red = c.red
+        this.green = c.green
+        this.blue = c.blue
+        this.alpha = c.alpha
+    }
+
+    public set(red: number, green: number, blue: number, alpha: number) {
+        this.red = red
+        this.green = green
+        this.blue = blue
+        this.alpha = alpha
+    }
+
+    public static fromRGB(red: number, green: number, blue: number) {
+        return new Color(red / 255, green / 255, blue / 255, 1)
+    }
 }

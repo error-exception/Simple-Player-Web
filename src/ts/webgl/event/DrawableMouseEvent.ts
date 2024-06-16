@@ -12,7 +12,7 @@ interface MouseEvent {
   which: number
 }
 
-type EventCall = (event: MouseEvent) => void
+export type MouseEventCall = (event: MouseEvent) => void
 
 /**
  * todo: 默认情况下，Drawable 不具备鼠标事件，只有显式声明才可
@@ -24,14 +24,15 @@ export class DrawableMouseEvent implements Disposable {
   }
 
   public inBound(position: Vector2) {
-    const source = this.source
-    const drawTopLeft = source.drawTopLeft;
-    const drawBottomRight = source.drawBottomRight;
-    const { x, y } = position
-    return (
-      x > drawTopLeft.x && x <= drawBottomRight.x &&
-        y > drawTopLeft.y && y <= drawBottomRight.y
-    )
+    return this.source.drawQuad.inBound(position)
+    // const source = this.source
+    // const drawTopLeft = source.position;
+    // const drawBottomRight = source.bottomRight;
+    // const { x, y } = position
+    // return (
+    //   x > drawTopLeft.x && x <= drawBottomRight.x &&
+    //     y > drawTopLeft.y && y <= drawBottomRight.y
+    // )
   }
 
   protected get isAvailable() {
@@ -125,7 +126,7 @@ export class DrawableMouseEvent implements Disposable {
       //@ts-ignore
       this.source.onMouseDown()
     }
-    return !!this.onMouseDown?.(event)
+    this.onMouseDown?.(event)
   }
 
   public triggerMouseMove(which: number, position: Vector2) {
@@ -136,7 +137,7 @@ export class DrawableMouseEvent implements Disposable {
       //@ts-ignore
       this.source.onMouseMove()
     }
-    return !!this.onMouseMove?.(event)
+    this.onMouseMove?.(event)
   }
 
   public triggerMouseUp(which: number, position: Vector2) {
@@ -147,7 +148,7 @@ export class DrawableMouseEvent implements Disposable {
       //@ts-ignore
       this.source.onMouseUp()
     }
-    return !!this.onMouseUp?.(event)
+    this.onMouseUp?.(event)
   }
 
   public triggerClick(which: number, position: Vector2) {
@@ -158,7 +159,7 @@ export class DrawableMouseEvent implements Disposable {
       //@ts-ignore
       this.source.onClick()
     }
-    return !!this.onClick?.(event)
+    this.onClick?.(event)
   }
 
   public triggerHover(which: number, position: Vector2) {
@@ -169,7 +170,7 @@ export class DrawableMouseEvent implements Disposable {
       //@ts-ignore
       this.source.onHover()
     }
-    return !!this.onHover?.(event)
+    this.onHover?.(event)
   }
 
   public triggerHoverLost(which: number, position: Vector2) {
@@ -180,7 +181,7 @@ export class DrawableMouseEvent implements Disposable {
       //@ts-ignore
       this.source.onHoverLost()
     }
-    return !!this.onHoverLost?.(event)
+    this.onHoverLost?.(event)
   }
 
   public triggerDrag(which: number, position: Vector2) {
@@ -191,7 +192,7 @@ export class DrawableMouseEvent implements Disposable {
       //@ts-ignore
       this.source.onDrag()
     }
-    return !!this.onDrag?.(event)
+    this.onDrag?.(event)
   }
 
   public triggerDragLost(which: number, position: Vector2) {
@@ -202,24 +203,24 @@ export class DrawableMouseEvent implements Disposable {
       //@ts-ignore
       this.source.onDragLost()
     }
-    return !!this.onDragLost?.(event)
+    this.onDragLost?.(event)
   }
 
-  public onMouseDown: Nullable<EventCall> = null
+  public onMouseDown: Nullable<MouseEventCall> = null
 
-  public onMouseMove: Nullable<EventCall> = null
+  public onMouseMove: Nullable<MouseEventCall> = null
 
-  public onMouseUp: Nullable<EventCall> = null
+  public onMouseUp: Nullable<MouseEventCall> = null
 
-  public onClick: Nullable<EventCall> = null
+  public onClick: Nullable<MouseEventCall> = null
 
-  public onHover: Nullable<EventCall> = null
+  public onHover: Nullable<MouseEventCall> = null
 
-  public onHoverLost: Nullable<EventCall> = null
+  public onHoverLost: Nullable<MouseEventCall> = null
 
-  public onDrag: Nullable<EventCall> = null
+  public onDrag: Nullable<MouseEventCall> = null
 
-  public onDragLost: Nullable<EventCall> = null
+  public onDragLost: Nullable<MouseEventCall> = null
 
   public dispose() {
     this.onMouseDown = null

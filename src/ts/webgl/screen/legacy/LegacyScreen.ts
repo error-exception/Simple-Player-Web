@@ -3,21 +3,24 @@ import {LogoBounceBox} from "./LegacyBeatLogoBox";
 import {Color} from "../../base/Color";
 import {Axis} from "../../drawable/Axis";
 import {MouseState} from "../../../global/MouseState";
-import {Vector2} from "../../core/Vector2";
+import {Vector, Vector2} from "../../core/Vector2";
 import {Anchor} from "../../drawable/Anchor";
 import {SideFlashlight} from "../main/SideFlashlight";
 import {ImageDrawable} from "../../drawable/ImageDrawable";
 import {TextureStore} from "../../texture/TextureStore";
+import {Size} from "../../drawable/Size";
+import {PlayControls} from "./PlayControls";
+import {ProgressBar} from "./ProgressBar";
 
 export class LegacyScreen extends Box {
 
   constructor() {
     super({
-      size: ['fill-parent', 'fill-parent']
+      size: Size.FillParentSize
     });
     this.add(
       new LogoBounceBox({
-        size: [500, 500],
+        size: Size.of(500),
         anchor: Anchor.Center
       }),
       new SideFlashlight(Color.fromHex(0xffffff)),
@@ -33,27 +36,35 @@ class HomeOverlay extends Box {
 
   constructor() {
     super({
-      size: ['fill-parent', 'fill-parent'],
+      size: Size.FillParentSize,
     });
     const texture = TextureStore.get('Square')
     this.top = new ImageDrawable(texture,{
-      size: ['fill-parent', 100],
+      size: Size.of(Size.FillParent, 100),
       anchor: Axis.Y_TOP | Axis.X_CENTER,
       color: Color.fromHex(0x0, 128)
     })
     this.bottom = new ImageDrawable(texture, {
-      size: ['fill-parent', 100],
+      size: Size.of(Size.FillParent, 100),
       anchor: Axis.Y_BOTTOM | Axis.X_CENTER,
       color: Color.fromHex(0x0, 128)
     })
     this.add(
       this.top, this.bottom,
-      // new PlayControls({
-      //   size: [Coordinate.width / 2, 20],
-      //   anchor: Anchor.TopRight
-      // })
+      new PlayControls({
+        size: Size.of(Size.FillParent, 36),
+        anchor: Anchor.TopRight,
+        space: 8,
+        offset: Vector(-8, 8)
+      }),
+      new ProgressBar({
+        size: Size.of(168, 4),
+        anchor: Anchor.TopRight,
+        offset: Vector(-8, 36 + 16)
+      })
     )
-    this.alpha = 0
+    this.setAlpha(0)
+    this.enableMouseEvent()
   }
 
   private lastPosition = Vector2.newZero()
@@ -69,10 +80,10 @@ class HomeOverlay extends Box {
         .fadeTo(1, 250)
         .fadeTo(0, 10000)
     } else {
-      this.alpha = Math.min(this.alpha + distance / 500, 1)
+      this.setAlpha(Math.min(this.getAlpha() + distance / 500, 1))
       this.transform()
-        .fadeTo(this.alpha, 0)
-        .fadeTo(0, this.alpha * 10000)
+        .fadeTo(this.getAlpha(), 0)
+        .fadeTo(0, this.getAlpha() * 10000)
     }
     return true
   }

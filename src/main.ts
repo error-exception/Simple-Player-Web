@@ -29,4 +29,18 @@ app.directive("osuTopBarBtn", {
     el.removeEventListener('click', topBarButtonSelectSound)
   }
 })
+
+const defaultHoverSound = () => playSound(Sound.DefaultHover)
+const defaultSelectSound = () => playSound(Sound.DefaultSelect)
+app.directive('osu-default', {
+  mounted(el: HTMLElement) {
+    el.addEventListener('mouseenter', defaultHoverSound)
+    el.addEventListener('click', defaultSelectSound)
+  },
+  unmounted(el: HTMLElement) {
+    el.removeEventListener('mouseenter', defaultHoverSound)
+    el.removeEventListener('click', defaultSelectSound)
+  }
+})
+
 app.mount('#app');

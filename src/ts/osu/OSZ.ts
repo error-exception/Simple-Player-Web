@@ -1,177 +1,20 @@
 import JSZip from "jszip";
 import {OSUParser} from "./OSUParser";
-import {isAnimation, OSBFile, OSUFile} from "./OSUFile";
-// import {NoteData} from "../webgl/screen/mania/ManiaPanel";
+import {isAnimation, OSBFile, type OSBSprite, OSUFile} from "./OSUFile";
 import OSUPlayer from "../player/OSUPlayer";
-import {Nullable} from "../type";
 import {OSBParser} from "./OSBParser";
+import type {Disposable} from "../webgl/core/Disposable";
+import {OSZConfig} from "../global/GlobalState";
 
-export class OSZ {
-
-  public osuFile: OSUFile | null = null
-  public osuFileList: OSUFile[] = []
-
-  public oszSource: OSZSource
-
-  private constructor(private oszFile: File) {
-    this.oszSource = {
-      image: null,
-      video: null,
-      audio: null,
-      osb: new Map()
-    }
-  }
-
-  private async decompress() {
-    const textDecoder = new TextDecoder()
-    const zip = await JSZip.loadAsync(this.oszFile, {
-      decodeFileName(a) {
-        // if (a instanceof Uint8Array) {
-        if (Array.isArray(a)) {
-          return a.join("").toLowerCase()
-        } else {
-          return textDecoder.decode(a).toLowerCase()
-        }
-        // }
-      }
-    })
-    const filenames = Object.getOwnPropertyNames(zip.files)
-    const osuFilenames = filenames.filter(filename => filename.endsWith('.osu'))
-    if (osuFilenames) {
-      const list: Promise<OSUFile | null>[] = []
-      for (let i = 0; i < osuFilenames.length; i++) {
-        const name = osuFilenames[i]
-        list.push(this.decompressOSUFile(zip, name))
-      }
-      const osuFileList = await Promise.all(list)
-      // @ts-ignore
-      this.osuFileList = osuFileList.filter(v => v !== null)
-    }
-
-    // will remove below
-    const osuFilename = filenames.find(name => name.endsWith('.osu'))
-    if (!osuFilename) return
-    this.osuFile = await this.decompressOSUFile(zip, osuFilename)
-
-    const osbFilename = filenames.find(filename => filename.endsWith(".osb"))
-    if (osbFilename) {
-      const osb = await this.decompressOSBFile(zip, osbFilename, this.osuFile)
-      if (this.osuFile && this.osuFile.Events && osb) {
-        this.osuFile.Events.storyboard = osb
-      }
-      this.osuFileList?.forEach(item => {
-        if (item.Events && osb) {
-          item.Events.storyboard = osb
-        }
-      })
-    }
-  }
-
-  private async decompressOSBFile(zip: JSZip, osbFilename: string, osuFile: Nullable<OSUFile>) {
-    const osbFileContent = await zip.file(osbFilename)?.async("string")
-    if (!osbFileContent) return null
-    const osbFile = OSBParser.parse(osbFileContent)
-    if (osuFile && osuFile.Events && osuFile.Events.storyboard)
-      osbFile.sprites.push(...osuFile.Events.storyboard.sprites)
-    for (let i = 0; i < osbFile.sprites.length; i++) {
-      const sprite = osbFile.sprites[i]
-
-      if (isAnimation(sprite)) {
-        const path = sprite.filePath, dotIndex = path.lastIndexOf(".")
-        const name = path.substring(0, dotIndex)
-        const suffix = path.substring(dotIndex)
-        for (let i = 0; i < sprite.frameCount; i++) {
-          const newName = `${name}${i}${suffix}`
-          if (this.oszSource.osb.has(newName)) {
-            continue
-          }
-          try {
-            this.oszSource.osb.set(
-              newName,
-              await createImageBitmap(await zip.file(newName)!.async("blob"))
-            )
-          } catch (e) {
-            console.error("load error", newName, e)
-          }
-        }
-      } else {
-        if (this.oszSource.osb.has(sprite.filePath)) {
-          continue
-        }
-        try {
-          this.oszSource.osb.set(
-            sprite.filePath,
-            await createImageBitmap(await zip.file(sprite.filePath)!.async("blob"))
-          )
-        } catch (e) {
-          console.error("load error", sprite.filePath, e)
-        }
-      }
-    }
-    return osbFile
-  }
-
-  private async decompressOSUFile(zip: JSZip, osuFilename: string) {
-    const osuFileContent = await zip.file(osuFilename)?.async("string")
-    if (!osuFileContent) return null
-    const osuFile = OSUParser.parse(osuFileContent)
-    if (this.hasEmptySource()) {
-      if (osuFile.General && osuFile.General.AudioFilename) {
-        const audio = await zip.file(osuFile.General.AudioFilename)?.async("arraybuffer")
-        if (audio) {
-          // this.audio = audio
-          this.oszSource.audio = audio
-        }
-      }
-      if (osuFile.Events && osuFile.Events.imageBackground) {
-        const background = await zip.file(osuFile.Events.imageBackground)?.async('blob')
-        if (background) {
-          // this.backgroundImage = background
-          this.oszSource.image = background
-        }
-      }
-      if (osuFile.Events && osuFile.Events.videoBackground) {
-        const path = osuFile.Events.videoBackground
-        const video = await zip.file(path)?.async("blob")
-        if (video) {
-          // this.backgroundVideo = video
-          this.oszSource.video = video
-        }
-      }
-    }
-    return osuFile
-  }
-
-  private hasEmptySource() {
-    const { video, audio, image } = this.oszSource
-    return video === null || audio !== null || image !== null
-  }
-
-  public getOSZFile(): OSZFile {
-    let osb = this.osuFileList.length && this.osuFileList[0].Events ? this.osuFileList[0].Events.storyboard : undefined
-    return {
-      source: this.oszSource,
-      osu: this.osuFileList,
-      osb: osb ?? null
-    }
-  }
-
-  public static async newOSZ(file: File): Promise<OSZ> {
-    const osz = new OSZ(file)
-    await osz.decompress()
-    return osz
-  }
-
-}
 
 export function loadOSZ(file: File, preview = true) {
-  OSZ.newOSZ(file).then(osz => {
-    load(osz.getOSZFile(), preview)
-  }).catch(console.log)
+  OSZParser.parse(file)
+    .then(osz => load(osz, preview))
+    .catch(console.log)
 }
-async function load(osz: OSZFile, preview = true) {
-  const osu = osz.osu[0]
-  await OSUPlayer.setSource(osu, osz)
+async function load(osz: OSZ, preview = true) {
+  const osu = await OSUPlayer.setSource(osz)
+  if (!osu) return
   if (preview) {
     const time = osu.General?.PreviewTime
     await OSUPlayer.seek(time && time >= 0 ? time : 0)
@@ -181,21 +24,246 @@ async function load(osz: OSZFile, preview = true) {
   await OSUPlayer.play()
 }
 
-export interface OSZFile {
-  source: OSZSource
-  osu: OSUFile[]
-  osb: Nullable<OSBFile>
+export class OSZ implements Disposable {
+  /**
+   * .osu 文件
+   */
+  public osuFileList: OSUFile[] = []
+  /**
+   * .osb 文件
+   */
+  public osbFile: OSBFile = { sprites: [] }
+  /**
+   * 存储图片 ImageBitmap，key 为相对于 osz 的路径
+   */
+  public imageBitmaps = new Map<string, ImageBitmap>()
+  /**
+   * 存储图片 Blob，key 为相对于 osz 的路径
+   */
+  public imageBlobs = new Map<string, Blob>()
+  /**
+   * 存储视频文件，key 为相对于 osz 的路径, value 为 objectUrl
+   */
+  public videos = new Map<string, string>()
+  /**
+   * 存储音乐文件，key 为相对于 osz 的路径
+   */
+  public audios = new Map<string, ArrayBuffer>()
+  /**
+   * 存储声音文件，key 为相对于 osz 的路径
+   */
+  public sounds = new Map<string, ArrayBuffer>()
+
+  public addOSUFile(...osu: OSUFile[]) {
+    this.osuFileList.push(...osu)
+  }
+
+  public setOSBFile(osb: OSBFile) {
+    this.osbFile = osb
+  }
+
+  public async addImage(path: string, imageBlob: Blob) {
+    if (!this.imageBlobs.has(path)) {
+      this.imageBlobs.set(path, imageBlob)
+      this.imageBitmaps.set(path, await createImageBitmap(imageBlob))
+    }
+  }
+
+  public addAudio(path: string, audio: ArrayBuffer) {
+    if (!this.audios.has(path)) {
+      this.audios.set(path, audio)
+    }
+  }
+
+  public addSounds(path: string, sound: ArrayBuffer) {
+    if (!this.sounds.has(path)) {
+      this.sounds.set(path, sound)
+    }
+  }
+
+  public addVideo(path: string, video: Blob) {
+    if (!this.videos.has(path)) {
+      const objectUrl = URL.createObjectURL(video)
+      this.videos.set(path, objectUrl)
+    }
+  }
+
+  public getImageBlob(path: string) {
+    return this.imageBlobs.get(path)
+  }
+
+  public getImageBitmap(path: string) {
+    return this.imageBitmaps.get(path)
+  }
+
+  public getAudio(path: string) {
+    return this.audios.get(path)
+  }
+
+  public getSound(path: string) {
+    return this.sounds.get(path)
+  }
+
+  public getVideo(path: string) {
+    return this.videos.get(path)
+  }
+
+  public hasVideo() {
+    return this.videos.size !== 0
+  }
+
+  public hasAudio() {
+    return this.audios.size !== 0
+  }
+
+  public hasImage(path: string) {
+    return this.imageBitmaps.has(path)
+  }
+
+  public dispose() {
+    this.osuFileList.length = 0
+    this.osbFile = { sprites: [] }
+    this.imageBitmaps.forEach(image => image.close())
+    this.imageBitmaps.clear()
+    this.audios.clear()
+    this.sounds.clear()
+    this.videos.forEach(url => URL.revokeObjectURL(url))
+    this.videos.clear()
+  }
+
 }
 
-export interface OSZSource {
-  audio: Nullable<ArrayBuffer>
-  video: Nullable<Blob>
-  image: Nullable<Blob>
-  osb: Map<string, ImageBitmap>
-}
+export class OSZParser {
 
-export type OSBSource = Map<string, ImageBitmap>
+  public static async parse(oszFile: File): Promise<OSZ> {
+    const osz = new OSZ()
+    const textDecoder = new TextDecoder()
+    const zip = await JSZip.loadAsync(oszFile, {
+      decodeFileName(a) {
+        if (Array.isArray(a)) {
+          return a.join("").toLowerCase()
+        } else {
+          return textDecoder.decode(a).toLowerCase()
+        }
+      }
+    })
+    await this.decompressOSU(zip, osz)
+    await this.decompressOSB(zip, osz)
+    await this.decompressAudio(zip, osz)
+    await this.decompressImage(zip, osz)
+    if (OSZConfig.loadVideo) {
+      await this.decompressVideo(zip, osz)
+    }
+    return osz
+  }
 
-export function releaseOSZ(osz: OSZFile) {
+  public static async decompressOSU(zip: JSZip, osz: OSZ) {
+    const filenames = Object.getOwnPropertyNames(zip.files)
+    const osuFilenames = filenames.filter(name => name.endsWith('.osu'))
+    for (const osuFilename of osuFilenames) {
+      const osuContent = await zip.file(osuFilename)?.async('string')
+      if (!osuContent) continue
+      const osuFile = OSUParser.parse(osuContent, osuFilename)
+      osz.addOSUFile(osuFile)
+    }
+  }
+
+  public static async decompressOSB(zip: JSZip, osz: OSZ) {
+    const filenames = Object.getOwnPropertyNames(zip.files)
+    const osbFilenames = filenames.filter(name => name.endsWith('.osb'))
+    for (const osbFilename of osbFilenames) {
+      const osbContent = await zip.file(osbFilename)?.async('string')
+      if (!osbContent) continue
+      osz.osbFile = OSBParser.parse(osbContent)
+    }
+  }
+
+  private static async addSpriteImage(zip: JSZip, osz: OSZ, sprite: OSBSprite) {
+    if (isAnimation(sprite)) {
+      const path = sprite.filePath, dotIndex = path.lastIndexOf(".")
+      const name = path.substring(0, dotIndex)
+      const suffix = path.substring(dotIndex)
+      for (let i = 0; i < sprite.frameCount; i++) {
+        const newName = `${name}${i}${suffix}`
+        if (osz.hasImage(newName)) continue
+        try {
+          osz.addImage(newName, await zip.file(newName)!.async("blob"))
+        } catch (e) {
+          console.error("load error", newName, e)
+        }
+      }
+    } else {
+      if (osz.hasImage(sprite.filePath)) return
+      try {
+        osz.addImage(
+          sprite.filePath,
+          await zip.file(sprite.filePath)!.async("blob")
+        )
+      } catch (e) {
+        console.error("load error", sprite.filePath, e)
+      }
+    }
+  }
+
+  public static async decompressAudio(zip: JSZip, osz: OSZ) {
+    if (osz.osuFileList.length <= 0) {
+      return
+    }
+    const osuFileList = osz.osuFileList
+    for (const osuFile of osuFileList) {
+      if (osuFile.General?.AudioFilename && !osz.hasAudio()) {
+        const audio = await zip.file(osuFile.General.AudioFilename)?.async('arraybuffer')
+        if (audio) {
+          osz.addAudio(osuFile.General.AudioFilename, audio)
+        }
+      }
+    }
+  }
+
+  public static async decompressImage(zip: JSZip, osz: OSZ) {
+    const osuFileList = osz.osuFileList
+    const osbFile = osz.osbFile
+    for (const osuFile of osuFileList) {
+      const events = osuFile.Events
+      if (events?.imageBackground && !osz.hasImage(events.imageBackground)) {
+        const image = await zip.file(events.imageBackground)?.async('blob')
+        if (image) {
+          osz.addImage(events.imageBackground, image)
+        }
+      }
+      if (events?.storyboard) {
+        const sprites = events.storyboard.sprites
+        for (const sprite of sprites) {
+          await this.addSpriteImage(zip, osz, sprite)
+        }
+      }
+    }
+    const sprites = osbFile.sprites
+    for (const sprite of sprites) {
+      await this.addSpriteImage(zip, osz, sprite)
+      // if (osz.hasImage(sprite.filePath)) continue
+      // const image = await zip.file(sprite.filePath)?.async('blob')
+      // if (image) {
+      //   osz.addImage(sprite.filePath, await createImageBitmap(image))
+      // }
+    }
+  }
+
+  public static async decompressVideo(zip: JSZip, osz: OSZ) {
+    const osuFieList = osz.osuFileList
+    for (const osuFile of osuFieList) {
+      const videoPath = osuFile.Events?.videoBackground
+      if (videoPath && !osz.hasVideo()) {
+        const video = await zip.file(videoPath)?.async('blob')
+        if (video) {
+          osz.addVideo(videoPath, video)
+        }
+      }
+    }
+  }
+
+  public static async decompressSound(zip: JSZip, osz: OSZ) {
+    // do nothing
+  }
 
 }
