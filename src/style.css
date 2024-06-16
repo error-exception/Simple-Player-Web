@@ -6,7 +6,7 @@
   margin: 0;
   box-sizing: border-box;
   user-select: none;
-  font-family: 'HarmonyOS Sans SC', serif;
+  font-family: 'HarmonyOS_Regular', '微软雅黑', serif, sans-serif;
 }
 :root {
   --settings-selector-bar-bg: #24222a;
