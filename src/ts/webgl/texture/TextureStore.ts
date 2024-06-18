@@ -8,7 +8,11 @@ export type TextureKey = ImageName |
   "VerticalGradiant"
 
 export type TextureAtlasKey = string |
-  "Icon-Atlas"
+  "Icon-Atlas" |
+  "Ascii-Normal-Text-Atlas" |
+  "Ascii-Bold-Text-Atlas" |
+  "Ascii-Italic-Text-Atlas" |
+  "Ascii-Light-Text-Atlas"
 
 export class TextureStore {
 

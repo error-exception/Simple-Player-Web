@@ -5,8 +5,9 @@ export class Invalidation {
   public static Size = 1 << 1
   public static Layout = 1 << 2
   public static ParentAutoSize = 1 << 3
+  public static Text = 1 << 4
 
-  public static All = this.Size | this.Layout | this.ParentAutoSize
+  public static All = this.Size | this.Layout | this.ParentAutoSize | this.Text
 }
 
 /**

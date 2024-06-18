@@ -18,6 +18,7 @@ import {LegacyScreen} from "./webgl/screen/legacy/LegacyScreen";
 import {StoryScreen} from "./webgl/screen/story/StoryScreen";
 import {LegacyPlayScreen} from "./webgl/screen/legacyPlay/LegacyPlayScreen";
 import {loadIconsAtlas} from "./webgl/texture/IconAtlas";
+import {loadAsciiTextAtlas} from "./webgl/texture/TextAtlas";
 
 export class ApplicationLoader {
 
@@ -60,6 +61,7 @@ export class ApplicationLoader {
     // await TextureStore.addTextureAtlas('Icons-Atlas', iconsAtlas, Images.Icons, false)
     // generate icons atlas
     await loadIconsAtlas()
+    await loadAsciiTextAtlas()
   }
 
   public static async loadImages() {

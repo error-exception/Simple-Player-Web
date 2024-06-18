@@ -40,6 +40,22 @@ export class TextureAtlas implements Disposable {
   }
 }
 
+export interface TexRegin {
+  name: string
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+export function toTexReginString(regin: TexRegin) {
+  return `${regin.name}\n`
+    + `  x: ${regin.x}\n`
+    + `  y: ${regin.y}\n`
+    + `  width: ${regin.width}\n`
+    + `  height: ${regin.height}\n`
+}
+
 export class TextureRegin {
 
   public parent: Nullable<TextureAtlas> = null

@@ -16,6 +16,7 @@ import {VueUI} from "../../../global/GlobalState";
 import {Size} from "../../drawable/Size";
 import {OSUPanelStack} from "../../../osu/OSUPanelStack";
 import type {IconAtlas} from "../../texture/IconAtlas";
+import {TextDrawable} from "../../drawable/TextDrawable";
 
 export class TopBar extends Box {
 
@@ -63,6 +64,35 @@ export class TopBar extends Box {
             .setOnClick(() => {
               OSUPanelStack.push({ name: 'beatmapDetails' })
             }),
+          new Box({
+            size: Size.of(140, 36),
+            anchor: Anchor.TopRight,
+            children: [
+              new TextDrawable({
+                size: Size.of(70, 22),
+                text: '00:00',
+                anchor: Anchor.Center,
+                fontSize: 16,
+              }).apply(it => {
+                it.addDisposable(() => {
+                  const id = setInterval(() => {
+                    const date = new Date()
+                    const hour = date.getHours()
+                    const minute = date.getMinutes()
+                    const seconds = date.getSeconds()
+                    it.setText(`${
+                      hour < 10 ? '0' + hour : hour
+                    }:${
+                      minute < 10 ? '0' + minute : minute
+                    }:${
+                      seconds < 10 ? '0' + seconds : seconds
+                    }`)
+                  }, 1000)
+                  return () => clearInterval(id)
+                })
+              })
+            ]
+          }),
           new TopBarButton(atlas.getRegin<IconAtlas>('Icon-Notifications'), Anchor.TopRight)
             .setOnClick(() => {
               VueUI.notification = true

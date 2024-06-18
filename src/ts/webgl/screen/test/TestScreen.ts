@@ -4,6 +4,8 @@ import {Size} from "../../drawable/Size";
 import {ImageDrawable} from "../../drawable/ImageDrawable";
 import {Color} from "../../base/Color";
 import {Vector} from "../../core/Vector2";
+import {TextDrawable} from "../../drawable/TextDrawable";
+import {Anchor} from "../../drawable/Anchor";
 
 export class TestScreen extends Box {
 
@@ -22,6 +24,14 @@ export class TestScreen extends Box {
         }),
         new StdNote().apply(it => {
           it.setTranslate(Vector(340, 100))
+        }),
+        new TextDrawable({
+          size: Size.of(Size.FillParent, 500),
+          text: "Next",
+          fontStyle: 'light',
+          fontSize: 36,
+          anchor: Anchor.Center,
+          fontColor: Color.fromHex(0xff00ff)
         })
       ]
     });
