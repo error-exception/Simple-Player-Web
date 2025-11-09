@@ -1,0 +1,1 @@
+export const hasFlag = (source: number, flag: number): boolean => (source & flag) === flag

@@ -2,15 +2,15 @@ import {Sprite} from "./Sprite";
 import {Drawable} from "../../drawable/Drawable";
 import StoryTextureManager from "./StoryTextureManager";
 import OSUPlayer from "../../../player/OSUPlayer";
-import Coordinate from "../../base/Coordinate";
-import {TransformUtils} from "../../core/TransformUtils";
+import {TransformUtils} from "../../graphic/core/TransformUtils";
 import {isAnimation} from "../../../osu/OSUFile";
 import {Animation} from "./Animation";
-import {Shaders} from "../../shader/Shaders";
+import {Shaders} from "../../graphic/shader/Shaders";
 import {DrawNode} from "../../drawable/DrawNode";
 import type {WebGLRenderer} from "../../WebGLRenderer";
 import {StoryboardLayer} from "./StoryboardLayer";
 import {Size} from "../../drawable/Size";
+import {Coordinate2} from "../../base/Coordinate2";
 
 export class StoryScreen extends Drawable {
 
@@ -64,20 +64,19 @@ export class StoryScreen extends Drawable {
     shader.bind()
     shader.sampler2D = 0
     shader.unbind()
-    const scale = 480 / Coordinate.height
-    const scaledWidth = Coordinate.width * scale
+    const scale = 480 / Coordinate2.height
+    const scaledWidth = Coordinate2.width * scale
     const s = scaledWidth - 640 < 0 ? 0 : scaledWidth - 640
     this.orth = TransformUtils.orth(
       -s / 2, 640 + s / 2, 480, 0, 0, 1
     )
-    // console.log("story size", 0, Coordinate.width * scale, 480, 0)
   }
 
   public onWindowResize() {
     super.onWindowResize();
-    const scale = 480 / Coordinate.height
+    const scale = 480 / Coordinate2.height
     const scaledWidth = 640 / scale
-    const s = Coordinate.width - scaledWidth
+    const s = Coordinate2.width - scaledWidth
     this.orth = TransformUtils.orth(
       -s / 2, scaledWidth + s / 2, 480, 0, 0, 1
     )

@@ -9,9 +9,9 @@ import {
   OSBSprite
 } from "./OSUFile";
 import {Ease, EventType, LoopType, StoryLayer, StoryOrigin} from "../webgl/screen/story/StoryType";
-import {Vector} from "../webgl/core/Vector2";
+import {Vector} from "../webgl/graphic/core/Vector2";
 import {Color} from "../webgl/base/Color";
-import {isUndef} from "../webgl/core/Utils";
+import {isUndef} from "../webgl/graphic/core/Utils";
 
 export class OSBParser {
 

@@ -2,7 +2,7 @@ import {BeatBox} from "../../box/BeatBox";
 import {BaseDrawableConfig} from "../../drawable/Drawable";
 import {ImageDrawable} from "../../drawable/ImageDrawable";
 import {easeOut, easeOutQuint} from "../../../util/Easing";
-import {TextureStore} from "../../texture/TextureStore";
+import {TextureStore} from "../../graphic/texture/TextureStore";
 import {Blend} from "../../drawable/Blend";
 import {Size} from "../../drawable/Size";
 
@@ -12,7 +12,7 @@ export class FadeLogo extends BeatBox {
 
     constructor(config: BaseDrawableConfig) {
         super({ size: Size.FillParentSize });
-        this.logo = new ImageDrawable(TextureStore.get('Logo'), {
+        this.logo = new ImageDrawable(TextureStore.getTexture('Logo'), {
             ...config,
             blend: Blend.Additive
         })

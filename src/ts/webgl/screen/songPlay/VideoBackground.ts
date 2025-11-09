@@ -1,12 +1,12 @@
-import Coordinate from "../../base/Coordinate";
 import {Drawable} from "../../drawable/Drawable";
-import {Texture} from "../../core/Texture";
-import {Vector} from "../../core/Vector2";
-import {TextureStore} from "../../texture/TextureStore";
+import {Texture} from "../../graphic/core/Texture";
+import {Vector} from "../../graphic/core/Vector2";
+import {TextureStore} from "../../graphic/texture/TextureStore";
 import {Color} from "../../base/Color";
 import type {DrawNode} from "../../drawable/DrawNode";
-import type {DefaultShaderWrapper} from "../../shader/DefaultShaderWrapper";
+import type {DefaultShaderWrapper} from "../../graphic/shader/DefaultShaderWrapper";
 import {Size} from "../../drawable/Size";
+import {Coordinate2} from "../../base/Coordinate2";
 
 export class VideoBackground extends Drawable {
 
@@ -37,7 +37,7 @@ export class VideoBackground extends Drawable {
 
     public beforeCommit(node: DrawNode) {
         const shader = node.shader as DefaultShaderWrapper
-        shader.orth = Coordinate.orthographicProjectionMatrix4
+        shader.orth = Coordinate2.orthographicProjectionMatrix4
         shader.color = this.computeColor()
         shader.sampler2D = 0
     }

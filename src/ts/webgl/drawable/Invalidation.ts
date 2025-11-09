@@ -3,11 +3,13 @@ export class Invalidation {
   public static None = 0
   // public static Position = 1
   public static Size = 1 << 1
-  public static Layout = 1 << 2
-  public static ParentAutoSize = 1 << 3
-  public static Text = 1 << 4
+  public static Position = 1 << 2
+  public static Draw = 1 << 4
+  // position and size of parent is not depend on child's position and size.
+  // But if child's position or size is changed, other children's position and size should be invalidated.
+  public static ChildLayout = 1 << 5
 
-  public static All = this.Size | this.Layout | this.ParentAutoSize | this.Text
+  public static All = this.Size | this.Position | this.Draw
 }
 
 /**

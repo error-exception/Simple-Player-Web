@@ -1,0 +1,105 @@
+import {Drawable} from "../../drawable/Drawable";
+import StoryTextureManager from "./StoryTextureManager";
+import OSUPlayer from "../../../player/OSUPlayer";
+import {TransformUtils} from "../../graphic/core/TransformUtils";
+import {isAnimation} from "../../../osu/OSUFile";
+import {Animation} from "./Animation";
+import {Shaders} from "../../graphic/shader/Shaders";
+import {DrawNode} from "../../drawable/DrawNode";
+import type {WebGLRenderer} from "../../WebGLRenderer";
+import {StoryboardLayer} from "./StoryboardLayer";
+import {Size} from "../../drawable/Size";
+import {SpriteV2} from "./SpriteV2";
+import {Coordinate2} from "../../base/Coordinate2";
+
+export class StoryScreen2 extends Drawable {
+
+  private orth: Float32Array = new Float32Array(16)
+  private layers: StoryboardLayer = new StoryboardLayer()
+
+  public drawNode: DrawNode = new class extends DrawNode {
+    apply() {}
+    draw(renderer: WebGLRenderer) {
+      this.source.onDraw(this, renderer)
+    }
+  }(this)
+
+  constructor(gl: WebGL2RenderingContext) {
+    super({
+      size: Size.FillParentSize
+    });
+    const osz = OSUPlayer.currentOSZFile.value
+    const sprites = [...osz.osbFile.sprites]
+    sprites.push(...(OSUPlayer.currentOSUFile.value.Events?.storyboard?.sprites ?? []))
+    if (sprites.length) {
+      for (let i = 0; i < sprites.length; i++) {
+        try {
+          const osbSprite = sprites[i]
+          let sprite: SpriteV2
+          if (isAnimation(osbSprite)) {
+            sprite = new Animation(gl, osbSprite, osz)
+          } else {
+            sprite = new SpriteV2(gl, osbSprite, osz)
+          }
+          if (sprite.layer === 'Background') {
+            this.layers.background.push(sprite)
+          } else if (sprite.layer === 'Fail') {
+            this.layers.fail.push(sprite)
+          } else if (sprite.layer === 'Pass') {
+            this.layers.pass.push(sprite)
+          } else if (sprite.layer === 'Foreground') {
+            this.layers.foreground.push(sprite)
+          } else {
+            this.layers.overlay.push(sprite)
+          }
+        } catch (e: any) {
+          console.log(e)
+        }
+      }
+    }
+    const shader = Shaders.Default
+    shader.bind()
+    shader.sampler2D = 0
+    shader.unbind()
+    const scale = 480 / Coordinate2.height
+    const scaledWidth = Coordinate2.width * scale
+    const s = scaledWidth - 640 < 0 ? 0 : scaledWidth - 640
+    this.orth = TransformUtils.orth(
+      -s / 2, 640 + s / 2, 480, 0, 0, 1
+    )
+    console.log(-s / 2, 640 + s / 2)
+  }
+
+  public onWindowResize() {
+    super.onWindowResize();
+    const scale = 480 / Coordinate2.height
+    const scaledWidth = 640 / scale
+    const s = Coordinate2.width - scaledWidth
+    this.orth = TransformUtils.orth(
+      -s / 2, scaledWidth + s / 2, 480, 0, 0, 1
+    )
+    this.layers.onResize()
+  }
+
+  public onUpdate() {
+    super.onUpdate();
+    this.layers.update()
+  }
+
+  public bind() {
+    Shaders.Default.bind()
+  }
+
+  public onDraw(node: DrawNode, renderer: WebGLRenderer) {
+    this.bind()
+    Shaders.Default.orth = this.orth
+    this.layers.draw(renderer)
+  }
+
+  public dispose() {
+    super.dispose();
+    StoryTextureManager.dispose()
+    this.layers.dispose()
+  }
+
+}

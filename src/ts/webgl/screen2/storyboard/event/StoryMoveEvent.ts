@@ -1,0 +1,119 @@
+import { isValueEvent, isVectorEvent, OSBValueEvent, OSBVectorEvent } from "../../../../osu/OSUFile";
+import { Vector, Vector2 } from "../../../graphic/core/Vector2";
+import { Transition } from "../../../transition/Transition";
+import type { StorySprite } from "../Sprite2";
+import { easeFunction } from "../StoryEvent2";
+import { TransitionQueue } from "../TransitionQueue";
+import { TransitionEvent } from "./TransitionEvent";
+
+export class StoryMoveEvent extends TransitionEvent<OSBValueEvent | OSBVectorEvent, Vector2> {
+  private transitionXQueue = new TransitionQueue()
+  private transitionYQueue = new TransitionQueue()
+
+  private transitionXList: Transition[] = []
+  private transitionYList: Transition[] = []
+
+  protected eventCount = 0
+
+  constructor(sprite: StorySprite) {
+    super(sprite);
+  }
+
+  public addEvent(event: OSBValueEvent | OSBVectorEvent) {
+    if (isValueEvent(event)) {
+      if (event.type === "MX") {
+        const { startTime, endTime, ease, from, to } = event
+        const transitionX = new Transition(
+          startTime, endTime, easeFunction[ease], to, from
+        )
+        this.transitionXList.push(transitionX)
+      }
+      if (event.type === "MY") {
+        const { startTime, endTime, ease, from, to } = event
+        const transitionY = new Transition(
+          startTime, endTime, easeFunction[ease], to, from
+        )
+        this.transitionYList.push(transitionY)
+      }
+      this.eventCount++
+    } else if (isVectorEvent(event)) {
+      const { startTime, endTime, ease, from, to } = event
+      const transitionX = new Transition(
+        startTime, endTime, easeFunction[ease], to.x, from.x
+      )
+      const transitionY = new Transition(
+        startTime, endTime, easeFunction[ease], to.y, from.y
+      )
+      this.transitionXList.push(transitionX)
+      this.transitionYList.push(transitionY)
+      this.eventCount++
+    }
+  }
+
+  public commit() {
+    this.transitionXList.sort(this.transitionSortCompare)
+    this.transitionYList.sort(this.transitionSortCompare)
+    for (const transitionX of this.transitionXList) {
+      this.transitionXQueue.add(transitionX)
+    }
+    for (const transitionY of this.transitionYList) {
+      this.transitionYQueue.add(transitionY)
+    }
+  }
+
+  public update(timestamp: number) {
+    if (this.eventCount === 0) {
+      return
+    }
+    const x = this.transitionXQueue.update(timestamp)
+    const y = this.transitionYQueue.update(timestamp)
+    const sprite = this.sprite
+    if (x !== null) {
+      sprite._translate[0] = x
+    }
+    if (y !== null) {
+      sprite._translate[1] = y
+    }
+  }
+
+  public hasEvent() {
+    return this.eventCount > 0
+  }
+
+  public startTime() {
+    let startTime = Number.MAX_SAFE_INTEGER
+    if (this.transitionXQueue.first !== null) {
+      startTime = Math.min(startTime, this.transitionXQueue.startTime)
+    }
+    if (this.transitionYQueue.first !== null) {
+      startTime = Math.min(startTime, this.transitionYQueue.startTime)
+    }
+    return startTime
+  }
+
+  public endTime() {
+    let endTime = -1
+    if (this.transitionXQueue.first !== null) {
+      endTime = Math.max(endTime, this.transitionXQueue.endTime)
+    }
+    if (this.transitionYQueue.first !== null) {
+      endTime = Math.max(endTime, this.transitionYQueue.endTime)
+    }
+    return endTime
+  }
+
+  public startValue(): Vector2 {
+    return Vector(
+      this.transitionXQueue.startValue,
+      this.transitionYQueue.startValue
+    )
+  }
+
+  public endValue(): Vector2 {
+    return Vector(
+      this.transitionXQueue.endValue,
+      this.transitionYQueue.endValue
+    )
+  }
+
+}

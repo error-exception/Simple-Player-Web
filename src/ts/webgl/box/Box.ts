@@ -4,6 +4,7 @@ import {type WebGLRenderer} from "../WebGLRenderer";
 import {DrawNode} from "../drawable/DrawNode";
 import {Invalidation, InvalidationSource} from "../drawable/Invalidation";
 import {Axes} from "../drawable/Axes";
+import {LayoutMember} from "../layout/LayoutValue";
 
 export interface BoxConfig extends BaseDrawableConfig {
   autoSize?: number,
@@ -17,41 +18,41 @@ export class Box<T extends BoxConfig = BoxConfig> extends Drawable<T> {
 
   //////////////////////////////////////////////////////////
 
+  constructor(config: T) {
+    super(config);
+    // this.addLayout(this.autoSize)
+    this.addLayout(this.layout)
+    this.layout.tag = 'Layout'
+  }
+
   public add(...children: Drawable[]) {
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
       child.setParent(this)
       this.childrenList.push(child)
     }
+    this.invalidateLayout()
   }
 
   public removeChild(child: Drawable) {
     const index = this.childrenList.indexOf(child)
     if (index >= 0) {
-      console.log("child found, and can be removed, index", index)
       this.childrenList.splice(index, 1)
       child.dispose()
-      console.log("has", this.childrenList.length, "child now")
     }
+    this.invalidateLayout()
   }
 
-  public removeAllChildren() {
+  public removeAll() {
     for (let i = 0; i < this.childrenList.length; i++) {
       this.childrenList[i].dispose()
     }
     this.childrenList.length = 0
-  }
-
-  public get firstChild() {
-    return this.childrenList[0]
+    this.invalidateLayout()
   }
 
   public getFirstChild() {
     return this.childrenList[0]
-  }
-
-  public get lastChild() {
-    return this.childrenList[this.childrenList.length - 1]
   }
 
   public getLastChild() {
@@ -71,14 +72,11 @@ export class Box<T extends BoxConfig = BoxConfig> extends Drawable<T> {
 
   ////////////////////////////////////////////
 
-  public load(renderer: WebGLRenderer): void {
-    super.load(renderer)
+  onLoad(renderer: WebGLRenderer) {
+    super.onLoad(renderer);
     const config = this.config
     if (config.children) {
       this.add(...config.children)
-    }
-    for (let i = 0; i < this.childrenList.length; i++) {
-      this.childrenList[i].load(renderer)
     }
   }
 
@@ -89,124 +87,79 @@ export class Box<T extends BoxConfig = BoxConfig> extends Drawable<T> {
     }
   }
 
-  public invalidateSelf() {
-    super.invalidateSelf();
-    for (let i = 0; i < this.childrenList.length; i++) {
-      this.childrenList[i].invalidateSelf()
-    }
+  public layout = new LayoutMember(Invalidation.Size | Invalidation.ParentAutoSize | Invalidation.Layout)
+
+  protected invalidateLayout() {
+    this.layout.invalidate()
   }
 
-  public updateTransition() {
-    super.updateTransition();
-    for (let i = 0; i < this.childrenList.length; i++) {
-      this.childrenList[i].updateTransition()
+  updateTransform() {
+    if (!this.layout.isValid()) {
+      this.updateLayout()
+      this.layout.validate()
     }
-  }
-
-  public doPreTask() {
-    super.doPreTask();
-    for (let i = 0; i < this.childrenList.length; i++) {
-      this.childrenList[i].doPreTask()
-    }
-  }
-
-  public doPostTask() {
-    super.doPostTask();
-    for (let i = 0; i < this.childrenList.length; i++) {
-      this.childrenList[i].doPostTask()
-    }
-  }
-
-  updateTransform3() {
-    super.updateTransform3();
-    for (let i = 0; i < this.childrenList.length; i++) {
-      this.childrenList[i].updateTransform3()
-    }
-  }
-
-  invalidate(value: number = Invalidation.All, source: number = InvalidationSource.Self) {
-    super.invalidate(value, source);
-    if (this.childrenList) {
-      for (let i = 0; i < this.childrenList.length; i++) {
-        this.childrenList[i].invalidate(value, source)
-      }
-    }
-  }
-
-  public invalidateLayout() {
-    if ((this.invalidationValue & Invalidation.ParentAutoSize) > 0) {
-      this.updateSizeByChildren(true)
-    }
-    super.invalidateLayout();
-    for (let i = 0; i < this.childrenList.length; i++) {
-      this.childrenList[i].invalidateLayout()
-    }
-  }
-
-  public doOnInvalidate() {
-    super.doOnInvalidate();
-    for (let i = 0; i < this.childrenList.length; i++) {
-      this.childrenList[i].doOnInvalidate()
-    }
-  }
-
-  public onUpdate() {
-    super.onUpdate();
-    for (let i = 0; i < this.childrenList.length; i++) {
-      this.childrenList[i].onUpdate()
-    }
-  }
-
-  onTransformApplied() {
-    super.onTransformApplied();
-    for (let i = 0; i < this.childrenList.length; i++) {
-      this.childrenList[i].onTransformApplied()
-    }
+    super.updateTransform();
   }
 
   public updateLayout() {
     const children = this.childrenList
-    let child, anchor, childWidth, childHeight
+    let child: Drawable, anchor, childWidth, childHeight
     const width = this.getWidth()
     const height = this.getHeight()
-    const topLeft = this.getPosition()
     for (let i = 0; i < children.length; i++) {
       child = children[i]
       anchor = child.anchor
       childWidth = child.getWidth()
       childHeight = child.getHeight()
-      child.initRectangle.setTopLeft(
-        width * anchor.x - childWidth * anchor.x + topLeft.x + child.anchorOffset.x,
-        height * anchor.y - childHeight * anchor.y + topLeft.y + child.anchorOffset.y
+      child.setPosition(
+        width * anchor.x - childWidth * anchor.x + child.anchorOffset.x,
+        height * anchor.y - childHeight * anchor.y + child.anchorOffset.y
       )
-      child.invalidate(Invalidation.Layout, InvalidationSource.Parent)
     }
   }
 
-  public updateSizeByChildren(toParent: boolean = false): boolean {
+  public autoSize = new LayoutMember(Invalidation.ParentAutoSize | Invalidation.Size)
+
+  public updateAutoSize(toParent: boolean = false) {
     const autoSize = this.config.autoSize
     if (!autoSize) {
-      return false
+      return
     }
     const children = this.childrenList
     let maxWidth = -1, maxHeight = -1
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
-      maxWidth = Math.max(child.rectangle.getWidth(), maxWidth)
-      maxHeight = Math.max(child.rectangle.getHeight(), maxHeight)
+      maxWidth = Math.max(child.getWidth(), maxWidth)
+      maxHeight = Math.max(child.getHeight(), maxHeight)
     }
     if (Axes.hasX(autoSize))
       this.setWidth(maxWidth)
     if (Axes.hasY(autoSize))
       this.setHeight(maxHeight)
-    toParent && this.parent?.updateSizeByChildren()
-    this.parent?.invalidate(Invalidation.Layout, InvalidationSource.Child)
-    this.invalidate(Invalidation.Layout)
-    // this.updatePosition()
-    // for (let i = 0; i < children.length; i++) {
-    //   children[i].invalidate(Invalidation.Layout, InvalidationSource.Parent)
-    // }
-    return true
+    toParent && this.parent?.updateAutoSize()
+  }
+
+  protected onInvalidate(value: number, source: number) {
+    super.onInvalidate(value, source);
+
+    value &= ~(Invalidation.Draw)
+    const children = this.childrenList
+    if (!children) {
+      return
+    }
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i]
+      child.invalidate(value, InvalidationSource.Parent)
+    }
+  }
+
+  protected updateChildren(renderer: WebGLRenderer) {
+    super.updateChildren(renderer);
+    const children = this.childrenList
+    for (let i = 0; i < children.length; i++) {
+      children[i].update(renderer)
+    }
+    this.updateAutoSize(true)
   }
 
   public dispose(): void {
@@ -225,7 +178,9 @@ export class Box<T extends BoxConfig = BoxConfig> extends Drawable<T> {
     }
   }
 
-  public onDraw() {}
+  public onDraw(node:DrawNode, renderer:WebGLRenderer) {
+    throw new Error('box cannot be draw')
+  }
 
 }
 

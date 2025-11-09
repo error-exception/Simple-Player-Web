@@ -8719,7 +8719,7 @@ function useSingleEvent(event, callback) {
 }
 class Toaster {
   static show(message) {
-    this.onToast.fire(message);
+    this.onToast.invoke(message);
   }
 }
 Toaster.onToast = new SingleEvent();
@@ -18061,7 +18061,7 @@ class Box extends Drawable {
       this.setWidth(maxWidth);
     if (Axes.hasY(autoSize))
       this.setHeight(maxHeight);
-    toParent && ((_a2 = this.parent) == null ? void 0 : _a2.updateSizeByChildren());
+    toParent && ((_a2 = this.parent) == null ? void 0 : _a2.updateAutoSize());
     (_b = this.parent) == null ? void 0 : _b.invalidate(Invalidation.Layout, InvalidationSource.Child);
     this.invalidate(Invalidation.Layout);
     return true;
@@ -19778,7 +19778,7 @@ class RowBox extends Box {
       this.setWidth(width);
     if (Axes.hasY(autoSize))
       this.setHeight(maxHeight);
-    toParent && ((_a2 = this.parent) == null ? void 0 : _a2.updateSizeByChildren());
+    toParent && ((_a2 = this.parent) == null ? void 0 : _a2.updateAutoSize());
     (_b = this.parent) == null ? void 0 : _b.invalidate(Invalidation.Layout, InvalidationSource.Child);
     this.invalidate(Invalidation.Layout);
     return true;
@@ -20062,7 +20062,7 @@ class OSUPanelStack {
   static push(panel) {
     this.stack.push(panel);
     playSound(Sound.WavePopIn);
-    this.onPanelPushed.fire(panel);
+    this.onPanelPushed.invoke(panel);
     this.panelZIndex.value++;
   }
   static pop() {
@@ -20070,11 +20070,11 @@ class OSUPanelStack {
     const panel = stack.pop();
     if (panel) {
       playSound(Sound.WavePopOut);
-      this.onPanelPopped.fire(panel);
+      this.onPanelPopped.invoke(panel);
       this.panelZIndex.value--;
     }
     if (stack.size() === 0) {
-      this.onAllPanelsPopped.fire();
+      this.onAllPanelsPopped.invoke();
     }
   }
 }
@@ -28863,7 +28863,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       dialogOpacityTo(0, 800, easeOutQuint);
       setTimeout(() => {
         mask.value = false;
-        dialog.onDataReturned.fire(data);
+        dialog.onDataReturned.invoke(data);
       }, 800);
     }
     const dialog = OSUDialog.getDialog(props.dialogId);

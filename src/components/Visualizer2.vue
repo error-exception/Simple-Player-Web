@@ -1,97 +1,26 @@
 <template>
-  <div class="fill-size" style="pointer-events: none;">
+  <div class="fill-size">
     <canvas style="width: 100vw; height: 100vh;" ref="canvas"></canvas>
   </div>
 </template>
 
 <script setup lang="ts">
 
-import {onMounted, onUnmounted, ref} from "vue";
-import BeatBooster from "../ts/global/BeatBooster";
-import {BeatState} from "../ts/global/Beater";
-import {MOUSE_KEY_LEFT, MOUSE_KEY_NONE, MOUSE_KEY_RIGHT, MouseState} from "../ts/global/MouseState";
-import {Time} from "../ts/global/Time";
+import { onMounted, onUnmounted, ref } from "vue";
 import AudioPlayerV2 from "../ts/player/AudioPlayer";
 import OSUPlayer from "../ts/player/OSUPlayer";
-import {easeOut, easeOutQuint} from "../ts/util/Easing";
-// import {MainScreen} from "../ts/webgl/screen/main/MainScreen";
-// import ScreenManager from "../ts/webgl/util/ScreenManager";
-// import ShaderManager from "../ts/webgl/util/ShaderManager";
-import {WebGLRenderer} from "../ts/webgl/WebGLRenderer";
-import Coordinate from '../ts/webgl/base/Coordinate'
-// import {SongPlayScreen} from "../ts/webgl/screen/songPlay/SongPlayScreen";
-import {BackgroundScreen} from "../ts/webgl/screen/background/BackgroundScreen";
-// import {runTask} from "../ts/notify/OsuNotification";
-// import {Icon} from "../ts/icon/Icon";
-// import {loadSoundEffect} from "../ts/player/SoundEffect";
-// import {TestScreen} from "../ts/webgl/screen/test/TestScreen";
-// import {Images, loadImage} from "../ts/webgl/util/ImageResource";
-// import {LegacyScreen} from "../ts/webgl/screen/legacy/LegacyScreen";
-import AudioChannel from "../ts/player/AudioChannel";
-// import {StoryScreen} from "../ts/webgl/screen/story/StoryScreen";
-import {useKeyboard} from "../ts/Utils";
+import { BackgroundScreen } from "../ts/webgl/screen/background/BackgroundScreen";
+import { useKeyboard } from "../ts/Utils";
+import type { Nullable } from "../ts/type";
 import VideoPlayer from "../ts/player/VideoPlayer";
-import type {Nullable} from "../ts/type";
-// import {LegacyPlayScreen} from "../ts/webgl/screen/legacyPlay/LegacyPlayScreen";
-import {Shaders} from "../ts/webgl/shader/Shaders";
-// import BackgroundManager from "../ts/global/BackgroundManager";
-import {Vector, Vector2} from "../ts/webgl/core/Vector2";
-import {Buffers} from "../ts/webgl/buffer/Buffers";
-import {TextureStore} from "../ts/webgl/texture/TextureStore";
-// import {genTexture} from "../ts/webgl/util/GenTexture";
-import QuadIndexBuffer from "../ts/webgl/buffer/QuadIndexBuffer";
-import {ApplicationLoader} from "../ts/ApplicationLoader";
+import { OSUApplication } from "../ts/OSUApplication";
 
 const canvas = ref<HTMLCanvasElement | null>(null)
-let renderer: WebGLRenderer
 
-const player = AudioPlayerV2
-
-const mousePosition = Vector()
-
-function handleMousePosition(position: Vector2) {
-  const windowWidth = window.innerWidth
-  const windowHeight = window.innerHeight
-
-  const width = Coordinate.width
-  const height = Coordinate.height
-  const scaleX = width / windowWidth
-  const scaleY = height / windowHeight
-  position.x *= scaleX
-  position.y *= scaleY
-}
-
-const mouseListener = {
-  mousedown(e: MouseEvent) {
-    mousePosition.set(e.x, e.y)
-    handleMousePosition(mousePosition)
-    let which: number = MOUSE_KEY_NONE
-    if (e.button === 0)
-      which = MOUSE_KEY_LEFT
-    if (e.button === 2)
-      which = MOUSE_KEY_RIGHT
-    if (which !== MOUSE_KEY_NONE)
-      MouseState.receiveMouseDown(which, mousePosition.x, mousePosition.y)
-  },
-  mouseup(e: MouseEvent) {
-    mousePosition.set(e.x, e.y)
-    handleMousePosition(mousePosition)
-    let which: number = MOUSE_KEY_NONE
-    if (e.button === 0)
-      which = MOUSE_KEY_LEFT
-    if (e.button === 2)
-      which = MOUSE_KEY_RIGHT
-    if (which !== MOUSE_KEY_NONE)
-      MouseState.receiveMouseUp(which, mousePosition.x, mousePosition.y)
-  },
-  mousemove(e: MouseEvent) {
-    mousePosition.set(e.x, e.y)
-    handleMousePosition(mousePosition)
-    MouseState.receiveMouseMove(mousePosition.x, mousePosition.y)
-  }
-}
+let application: OSUApplication
 
 onMounted(async () => {
+  // test()
   let backgroundScreen: Nullable<BackgroundScreen> = null
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
@@ -103,135 +32,147 @@ onMounted(async () => {
       }
     }
   })
-  window.addEventListener("mousedown", mouseListener.mousedown)
-  window.addEventListener("mouseup", mouseListener.mouseup)
-  window.addEventListener("mousemove", mouseListener.mousemove)
   const c = canvas.value
   if (!c) return
-  const webgl = c.getContext("webgl2", {
-    alpha: false,
-    premultipliedAlpha: false
-  })
-  if (!webgl) {
-    return;
+  try {
+    await OSUApplication.setup(c)
+    OSUApplication.render()
+  } catch (e) {
+    console.error(e)
   }
-  resizeCanvas()
-  await ApplicationLoader.loadImages()
-  await ApplicationLoader.loadSounds()
-  // await runTask("Downloading images...", async task => {
-  //   task.progress.value = 0
-  //   await loadImage()
-  //   task.progress.value = .5
-  //   await BackgroundManager.changeLoader(BackgroundManager.Default)
-  //   task.progress.value = 1
-  //   task.finish("Images downloaded", Icon.Check)
-  // }, true)
-  // await loadSoundEffect()
-  renderer = await ApplicationLoader.loadWebGL(webgl)
-  // ShaderManager.init(webgl)
-  // renderer = new WebGLRenderer(webgl)
-  // Shaders.init(renderer)
-  // Buffers.init(renderer)
-  // for (const imagesKey in Images) {
-  //   TextureStore.add(webgl, imagesKey, Images[imagesKey])
+
+
+  //
+  // renderer.updateViewport()
+  //
+  // myCanvas = new Canvas(renderer)
+
+  // console.log('start add background screen')
+  // backgroundScreen = new BackgroundScreen()
+  // renderer.addDrawable(backgroundScreen)
+  // console.log('start load screen')
+  // await ApplicationLoader.loadScreen(renderer)
+  //
+  // renderer.root.contentView = new ImageView({
+  //   size: Vector(200, 200)
+  // })
+  //
+  // renderer.onDispose = () => {
+  //   Shaders.dispose()
+  //   Buffers.dispose()
+  //   TextureStore.dispose()
+  //   QuadIndexBuffer.dispose()
   // }
-  // const gradiant = genTexture(webgl, Vector(40, 90), context => {
-  //   context.beginPath()
-  //   let canvasGradient = context.createLinearGradient(0, 0, 40, 0);
-  //   canvasGradient.addColorStop(0, '#ffffff')
-  //   canvasGradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
-  //   context.fillStyle = canvasGradient
-  //   context.fillRect(0, 0, 40, 90)
-  //   context.fill()
-  // })
-  // TextureStore.addTexture('Gradiant', gradiant)
-  // const verticalGradiant = genTexture(webgl, Vector(90, 40), context => {
-  //   context.beginPath()
-  //   let canvasGradient = context.createLinearGradient(45, 0, 45, 40);
-  //   canvasGradient.addColorStop(0, '#ffffff')
-  //   canvasGradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
-  //   context.fillStyle = canvasGradient
-  //   context.fillRect(0, 0, 90, 40)
-  //   context.fill()
-  // })
-  // TextureStore.addTexture('VerticalGradiant', verticalGradiant)
-  // await TextureStore.addTextureAtlas('Icons-Atlas', iconsAtlas, Images.Icons, false)
-  window.onresize = () => {
-    resizeCanvas()
-  }
-  backgroundScreen = new BackgroundScreen()
-  renderer.addDrawable(backgroundScreen)
-  await ApplicationLoader.loadScreen(renderer)
-  // ScreenManager.init(renderer)
-  // ScreenManager.addScreen("main", () => {
-  //   return new MainScreen()
-  // })
-  // ScreenManager.addScreen("second", () => {
-  //   return new SongPlayScreen()
-  // })
-  // ScreenManager.addScreen('test', () => {
-  //   return new TestScreen()
-  // })
-  // ScreenManager.addScreen('legacy', () => {
-  //   return new LegacyScreen()
-  // })
-  // ScreenManager.addScreen("story", () => {
-  //   return new StoryScreen(webgl)
-  // })
-  // ScreenManager.addScreen("legacyPlay", () => {
-  //   return new LegacyPlayScreen()
-  // })
-  // ScreenManager.activeScreen("main")
-  renderer.onDispose = () => {
-    Shaders.dispose()
-    Buffers.dispose()
-    TextureStore.dispose()
-    QuadIndexBuffer.dispose()
-  }
-  draw()
 })
+
+function test() {
+  const c = canvas.value;
+  const gl = c.getContext("webgl", { stencil: true });
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+  // 创建一个顶点着色器
+  gl.shaderSource(
+    vertexShader,
+    `
+  attribute vec4 a_position;
+
+  void main() {
+    gl_Position = a_position; // 设置顶点位置
+  }
+`,
+  ); // 编写顶点着色器代码
+  gl.compileShader(vertexShader); // 编译着色器代码
+
+  const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+  // 创建一个片元着色器
+  gl.shaderSource(
+    fragmentShader,
+    `
+  precision mediump float;
+  uniform vec4 u_color;
+
+  void main() {
+    gl_FragColor = u_color; // 设置片元颜色
+  }
+`,
+  ); // 编写片元着色器代码
+  gl.compileShader(fragmentShader); // 编译着色器代码
+
+  const program = gl.createProgram(); // 创建一个程序
+  gl.attachShader(program, vertexShader); // 添加顶点着色器
+  gl.attachShader(program, fragmentShader); // 添加片元着色器
+  gl.linkProgram(program); // 连接 program 中的着色器
+
+  gl.useProgram(program); // 告诉 webgl 用这个 program 进行渲染
+
+  const colorLocation = gl.getUniformLocation(program, "u_color");
+  // 获取 u_color 变量位置
+  gl.uniform4f(colorLocation, 0.93, 0, 0.56, 1); // 设置它的值
+
+  const positionLocation = gl.getAttribLocation(program, "a_position");
+  // 获取 a_position 位置
+  const positionBuffer = gl.createBuffer();
+  // 创建一个顶点缓冲对象，返回其 ID，用来放三角形顶点数据，
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  // 将这个顶点缓冲对象绑定到 gl.ARRAY_BUFFER
+  // 后续对 gl.ARRAY_BUFFER 的操作都会映射到这个缓存
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([0, 0.5, 0.5, 0, -0.5, -0.5]), // 三角形的三个顶点
+    // 因为会将数据发送到 GPU，为了省去数据解析，这里使用 Float32Array 直接传送数据
+    gl.STATIC_DRAW, // 表示缓冲区的内容不会经常更改
+  );
+  // 将顶点数据加入的刚刚创建的缓存对象
+
+  gl.vertexAttribPointer(
+    // 告诉 OpenGL 如何从 Buffer 中获取数据
+    positionLocation, // 顶点属性的索引
+    2, // 组成数量，必须是1，2，3或4。我们只提供了 x 和 y
+    gl.FLOAT, // 每个元素的数据类型
+    false, // 是否归一化到特定的范围，对 FLOAT 类型数据设置无效
+    0, // stride 步长 数组中一行长度，0 表示数据是紧密的没有空隙，让OpenGL决定具体步长
+    0, // offset 字节偏移量，必须是类型的字节长度的倍数。
+  );
+  gl.enableVertexAttribArray(positionLocation);
+  // 开启 attribute 变量额，使顶点着色器能够访问缓冲区数据
+
+  gl.clearColor(0, 1, 1, 1); // 设置清空颜色缓冲时的颜色值
+  gl.clear(gl.COLOR_BUFFER_BIT); // 清空颜色缓冲区，也就是清空画布
+  gl.enable(gl.STENCIL_TEST);
+  gl.colorMask(false, false, false, false);
+  gl.stencilFunc(gl.ALWAYS, 1, 255);
+  // gl.stencilOp(gl.REPLACE, gl.REPLACE, gl.REPLACE);
+  gl?.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE)
+
+  gl.drawArrays(
+    // 从数组中绘制图元
+    gl.TRIANGLES, // 画三角形
+    0, // 从哪个点开始画
+    3, // 需要用到多少个点
+  );
+  gl.colorMask(true, true, true, true);
+  gl.stencilFunc(gl.EQUAL, 1, 255);
+  // gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([-1.0, 0.0, 0.0, -1.0, 1., 0.0]), // 三角形的三个顶点
+    // 因为会将数据发送到 GPU，为了省去数据解析，这里使用 Float32Array 直接传送数据
+    gl.STATIC_DRAW, // 表示缓冲区的内容不会经常更改
+  );
+  gl.drawArrays(
+    // 从数组中绘制图元
+    gl.TRIANGLES, // 画三角形
+    0, // 从哪个点开始画
+    3, // 需要用到多少个点
+  );
+
+}
 
 onUnmounted(() => {
-  window.removeEventListener("mousedown", mouseListener.mousedown)
-  window.removeEventListener("mouseup", mouseListener.mouseup)
-  window.removeEventListener("mousemove", mouseListener.mousemove)
-  renderer.dispose()
+  // application.dispose()
+  OSUApplication.dispose()
 })
-let prevTimestamp = -1
-
-function draw(timestamp: number = 0) {
-  
-  requestAnimationFrame(draw)
-  if (prevTimestamp < 0) {
-    prevTimestamp = timestamp
-  }
-  const elapsed = timestamp - prevTimestamp
-  prevTimestamp = timestamp
-  
-  OSUPlayer.update()
-  const time = player.currentTime()
-  
-  Time.currentTime = timestamp
-  Time.elapsed = elapsed
-  
-  AudioChannel.update(time)
-  
-  BeatState.isKiai = BeatBooster.isKiai(time)
-  BeatState.beatIndex = BeatBooster.getCurrentBeatCount() + 1
-  BeatState.currentBeat = BeatBooster.updateBeat(time, easeOut, easeOutQuint)
-  BeatState.isAvailable = BeatBooster.isAvailable
-
-  renderer.render()
-}
-
-function resizeCanvas() {
-  if (canvas.value) {
-    canvas.value.height = canvas.value.clientHeight * window.devicePixelRatio
-    canvas.value.width = canvas.value.clientWidth * window.devicePixelRatio
-    const { clientWidth, clientHeight } = canvas.value
-    Coordinate.updateCoordinate(clientWidth, clientHeight)
-  }
-}
 
 useKeyboard("up", e => {
   if (e.code === "KeyF") {
@@ -244,4 +185,5 @@ function canvasFullscreen() {
     canvas.value.requestFullscreen()
   }
 }
+
 </script>

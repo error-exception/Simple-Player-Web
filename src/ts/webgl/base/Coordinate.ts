@@ -1,6 +1,9 @@
-import {TransformUtils} from "../core/TransformUtils"
-import {Vector, type Vector2} from "../core/Vector2";
+import {TransformUtils} from "../graphic/core/TransformUtils"
+import {Vector, type Vector2} from "../graphic/core/Vector2";
 
+/**
+ * @deprecated
+ */
 class Coordinate {
 
     public static readonly MAX_WIDTH = 1280
@@ -21,6 +24,7 @@ class Coordinate {
     public ratio = 1
     public updateCoordinate(width: number, height: number) {
         console.log("window resize", width, height);
+
         this.nativeSize.set(width, height)
 
         this.ratio = Coordinate.MAX_WIDTH / width
@@ -31,7 +35,8 @@ class Coordinate {
         this.orthographicProjectionMatrix4 = TransformUtils.orth(
             0, this.size.x, this.size.y, 0, 0, 1
         )
-        this.center.set(this.size.x / 2, this.size.y / 2)
+        this.center.set(
+          this.size.x / 2, this.size.y / 2)
         this.resolution.set(width * window.devicePixelRatio, height * window.devicePixelRatio)
         this.onWindowResize?.();
     }
@@ -44,28 +49,16 @@ class Coordinate {
         return this.size.y;
     }
 
-    public get left() {
-        return 0
-    }
-
-    public get right() {
-        return this.size.x
-    }
-
-    public get top() {
-        return 0
-    }
-
-    public get bottom() {
-        return this.size.y
-    }
-
     public get nativeWidth() {
         return this.nativeSize.x
     }
 
     public get nativeHeight() {
         return this.nativeSize.y
+    }
+
+    public getDeviceLength(length: number): number {
+        return length / this.ratio * window.devicePixelRatio
     }
 
     public get centerX() {

@@ -1,4 +1,4 @@
-import {Vector2} from "../webgl/core/Vector2";
+import {Vector2} from "../webgl/graphic/core/Vector2";
 // import {NoteData} from "../webgl/screen/mania/ManiaPanel";
 import {Ease, EventType, LoopType, StoryLayer, StoryOrigin} from "../webgl/screen/story/StoryType";
 import {Color} from "../webgl/base/Color";
@@ -11,7 +11,7 @@ export interface OSUFile {
     Difficulty?: OSUFileDifficulty
     // NoteData?: NoteData[][]
     Events?: OSUEvent
-    // HitObjects?: OSUFileHitObjects
+    HitObjects?: OSUFileHitObjects
 }
 
 export interface OSUFileGeneral {
@@ -76,7 +76,38 @@ export interface OSUEvent {
 }
 
 export interface OSUFileHitObjects {
+    x: number
+    y: number
+    time: number
+    type: number
+    soundType: number
+    objectParam: OSUFileStdSlideParam | OSUFileStdSpinnerParam | OSUFileManiaHoldParam
+    soundsGroup: OSUFileHitSoundsGroup
+}
 
+export interface OSUFileStdSlideParam {
+    curveType: string
+    points: Vector2
+    slideCount: number
+    length: number
+    HeadAndTailSounds: number[]
+    HeadAndTailSoundsGroup: Vector2
+}
+
+export interface OSUFileStdSpinnerParam {
+    endTime: number
+}
+
+export interface OSUFileManiaHoldParam {
+    endTime: number
+}
+
+export interface OSUFileHitSoundsGroup {
+    normal: number
+    extra: number
+    no: number
+    volume: number
+    path: string
 }
 
 export interface OSBFile {

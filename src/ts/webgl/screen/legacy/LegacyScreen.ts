@@ -3,14 +3,17 @@ import {LogoBounceBox} from "./LegacyBeatLogoBox";
 import {Color} from "../../base/Color";
 import {Axis} from "../../drawable/Axis";
 import {MouseState} from "../../../global/MouseState";
-import {Vector, Vector2} from "../../core/Vector2";
+import {Vector, Vector2} from "../../graphic/core/Vector2";
 import {Anchor} from "../../drawable/Anchor";
 import {SideFlashlight} from "../main/SideFlashlight";
 import {ImageDrawable} from "../../drawable/ImageDrawable";
-import {TextureStore} from "../../texture/TextureStore";
+import {TextureStore} from "../../graphic/texture/TextureStore";
 import {Size} from "../../drawable/Size";
 import {PlayControls} from "./PlayControls";
 import {ProgressBar} from "./ProgressBar";
+import {TextDrawable} from "../../drawable/TextDrawable";
+import {easeOutElastic, easeOutQuint} from "../../../util/Easing";
+import {LegacyToast} from "./LegacyToast";
 
 export class LegacyScreen extends Box {
 
@@ -24,8 +27,11 @@ export class LegacyScreen extends Box {
         anchor: Anchor.Center
       }),
       new SideFlashlight(Color.fromHex(0xffffff)),
-      new HomeOverlay()
+      new HomeOverlay(),
     )
+    if (__DEV__) {
+      this.add(new LegacyToast())
+    }
   }
 }
 
@@ -38,7 +44,7 @@ class HomeOverlay extends Box {
     super({
       size: Size.FillParentSize,
     });
-    const texture = TextureStore.get('Square')
+    const texture = TextureStore.getTexture('Square')
     this.top = new ImageDrawable(texture,{
       size: Size.of(Size.FillParent, 100),
       anchor: Axis.Y_TOP | Axis.X_CENTER,
@@ -61,7 +67,29 @@ class HomeOverlay extends Box {
         size: Size.of(168, 4),
         anchor: Anchor.TopRight,
         offset: Vector(-8, 36 + 16)
-      })
+      }),
+      new TextDrawable({
+        size: Size.of(40),
+        text: 'OSU!Stable',
+        fontSize: 36,
+        fitSize: true,
+        fontColor: Color.White,
+        anchor: Anchor.BottomLeft,
+        origin: Anchor.BottomLeft,
+        offset: Vector(16, -16)
+      }).apply(it => {
+        it.enableMouseEvent()
+        it.setOnHover(() => {
+          it.transform()
+            .scaleTo(Vector(1.2), 800, easeOutElastic)
+            .colorTo(Color.fromHex(0xffff00), 800, easeOutQuint)
+        })
+        it.setOnHoverLost(() => {
+          it.transform()
+            .scaleTo(Vector2.one, 500, easeOutQuint)
+            .colorTo(Color.White, 500, easeOutQuint)
+        })
+      }),
     )
     this.setAlpha(0)
     this.enableMouseEvent()

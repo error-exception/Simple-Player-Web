@@ -1,6 +1,6 @@
 import { degreeToRadian } from "../../Utils"
 import { Color } from "../base/Color"
-import { Vector2 } from "../core/Vector2"
+import { Vector2 } from "../graphic/core/Vector2"
 
 export class Shape2D {
 

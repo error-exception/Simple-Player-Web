@@ -5,13 +5,13 @@ import {RoundVisualizer} from "./RoundVisualizer";
 import {easeInCubic, easeOut, easeOutCubic, easeOutElastic, easeOutQuint} from "../../../util/Easing";
 import AudioPlayerV2 from "../../../player/AudioPlayer";
 import {Time} from "../../../global/Time";
-import {Vector, Vector2} from "../../core/Vector2";
+import {Vector, Vector2} from "../../graphic/core/Vector2";
 import {LogoTriangles} from "./LogoTriangles";
 import {MouseState} from "../../../global/MouseState";
 import {Interpolation} from "../../util/Interpolation";
 import {onEnterMenu} from "../../../global/GlobalState";
 import {inject} from "../../util/DependencyInject";
-import {Menu} from "../../menu/Menu";
+import {Menu} from "./Menu";
 import {BackgroundBounce} from "./MovableBackground";
 import {effectScope, watch} from "vue";
 import {UIState} from "../../../global/UISettings";
@@ -19,7 +19,7 @@ import AudioChannel from "../../../player/AudioChannel";
 import {BeatBox} from "../../box/BeatBox";
 import {Anchor} from "../../drawable/Anchor";
 import {ImageDrawable} from "../../drawable/ImageDrawable";
-import {TextureStore} from "../../texture/TextureStore";
+import {TextureStore} from "../../graphic/texture/TextureStore";
 import {Ripples} from "./Ripples";
 import type {TopBar} from "./TopBar";
 import {Size} from "../../drawable/Size";
@@ -37,7 +37,7 @@ class BeatLogo extends BeatBox<LogoConfig> {
   constructor(config: LogoConfig) {
     super(config);
 
-    const logo = new ImageDrawable(TextureStore.get('Logo'), {
+    const logo = new ImageDrawable(TextureStore.getTexture('Logo'), {
       size: config.size,
       anchor: Anchor.Center
     })
@@ -68,7 +68,7 @@ class BeatLogo extends BeatBox<LogoConfig> {
 
     if (BeatState.isKiai) {
       this.triangles.lightBegin()
-        .transitionTo(0.2, 60, easeOut)
+        .transitionTo(0.16, 60, easeOut)
         .transitionTo(0, gap * 2, easeOutQuint)
     }
   }

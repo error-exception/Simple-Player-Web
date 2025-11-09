@@ -1,6 +1,6 @@
 import {LegacyLogo} from "../legacy/LegacyLogo";
 import {BeatBox} from "../../box/BeatBox";
-import {Vector} from "../../core/Vector2";
+import {Vector} from "../../graphic/core/Vector2";
 import {easeOut, easeOutQuint} from "../../../util/Easing";
 import {Anchor} from "../../drawable/Anchor";
 import {Size} from "../../drawable/Size";

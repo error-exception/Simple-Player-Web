@@ -1,13 +1,13 @@
 import {LoopType} from "./StoryType";
 import {OSBAnimation} from "../../../osu/OSUFile";
 import {OSZ} from "../../../osu/OSZ";
-import {isUndef} from "../../core/Utils";
+import {isUndef} from "../../graphic/core/Utils";
 import StoryTextureManager from "./StoryTextureManager";
 import {Shape2D} from "../../util/Shape2D";
 import {Sprite} from "./Sprite";
 import AudioPlayer from "../../../player/AudioPlayer";
-import {ImageFormat} from "../../core/Texture";
-import {Shaders} from "../../shader/Shaders";
+import {ImageFormat} from "../../graphic/core/Texture";
+import {Shaders} from "../../graphic/shader/Shaders";
 import type {WebGLRenderer} from "../../WebGLRenderer";
 import {Blend} from "../../drawable/Blend";
 

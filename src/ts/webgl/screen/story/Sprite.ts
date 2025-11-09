@@ -1,23 +1,23 @@
 import {StoryLayer, StoryOrigin} from "./StoryType";
 import {OSBSprite} from "../../../osu/OSUFile";
 import {Transform} from "../../base/Transform";
-import {Vector} from "../../core/Vector2";
+import {Vector} from "../../graphic/core/Vector2";
 import {Shape2D} from "../../util/Shape2D";
 import {Color} from "../../base/Color";
 import StoryTextureManager from "./StoryTextureManager";
-import {VertexBuffer} from "../../core/VertexBuffer";
+import {VertexBuffer} from "../../graphic/core/VertexBuffer";
 import {OSZ} from "../../../osu/OSZ";
-import {Disposable} from "../../core/Disposable";
+import {Disposable} from "../../graphic/core/Disposable";
 import AudioPlayer from "../../../player/AudioPlayer";
-import {isUndef} from "../../core/Utils";
+import {isUndef} from "../../graphic/core/Utils";
 import {StoryEventGroup} from "./event/StoryEventGroup";
 import {Axis} from "../../drawable/Axis";
-import {ImageFormat} from "../../core/Texture";
-import {Shaders} from "../../shader/Shaders";
+import {ImageFormat} from "../../graphic/core/Texture";
+import {Shaders} from "../../graphic/shader/Shaders";
 import type {WebGLRenderer} from "../../WebGLRenderer";
 import {Blend} from "../../drawable/Blend";
 
-const originMap: Record<StoryOrigin, number> = {
+export const originMap: Record<StoryOrigin, number> = {
   TopLeft: Axis.Y_TOP | Axis.X_LEFT,
   TopCentre: Axis.Y_TOP | Axis.X_CENTER,
   TopRight: Axis.Y_TOP | Axis.X_RIGHT,
@@ -197,17 +197,7 @@ export class Sprite implements Disposable {
     StoryTextureManager.tryBind(this.path)
     if (this.additiveBlend) {
       renderer.setBlend(Blend.Additive)
-      // gl.blendFunc(gl.ONE, gl.ONE)
-
-      // gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD)
-      // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE)
-      // gl.drawArrays(gl.TRIANGLES, 0, 6)
     } else {
-      // gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-      // gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD)
-      //gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE)
-
-      // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE)
       renderer.setBlend(Blend.Normal)
     }
     gl.drawArrays(gl.TRIANGLES, 0, 6)

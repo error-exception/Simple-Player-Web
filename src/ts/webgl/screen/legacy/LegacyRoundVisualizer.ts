@@ -1,23 +1,24 @@
 import {BaseDrawableConfig, Drawable} from "../../drawable/Drawable";
 import {degreeToRadian} from "../../../Utils";
-import {TransformUtils} from "../../core/TransformUtils";
-import {Vector, Vector2} from "../../core/Vector2";
+import {Vector} from "../../graphic/core/Vector2";
 import AudioPlayerV2 from "../../../player/AudioPlayer";
 import {VisualizerV2} from "../../../VisualizerV2";
 import {Time} from "../../../global/Time";
 import {BeatState} from "../../../global/Beater";
-import Coordinate from "../../base/Coordinate";
-import {Texture} from "../../core/Texture";
+import {Texture} from "../../graphic/core/Texture";
 import {WebGLRenderer} from "../../WebGLRenderer";
 import {Blend} from "../../drawable/Blend";
-import {QuadBuffer} from "../../buffer/QuadBuffer";
-import {TextureStore} from "../../texture/TextureStore";
-import {Shaders} from "../../shader/Shaders";
+import {QuadBuffer} from "../../graphic/buffer/QuadBuffer";
+import {TextureStore} from "../../graphic/texture/TextureStore";
+import {Shaders} from "../../graphic/shader/Shaders";
 import {DrawNode} from "../../drawable/DrawNode";
-import type {LegacyVisualizerShaderWrapper} from "../../shader/LegacyVisualizerShaderWrapper";
-import {Matrix3} from "../../core/Matrix3";
-import {TransformUtils2} from "../../core/TransformUtils2";
-import {Vector2Utils} from "../../core/Vector2Utils";
+import type {LegacyVisualizerShaderWrapper} from "../../graphic/shader/LegacyVisualizerShaderWrapper";
+import {Matrix3} from "../../graphic/core/Matrix3";
+import {TransformUtils2} from "../../graphic/core/TransformUtils2";
+import {Vector2Utils} from "../../graphic/core/Vector2Utils";
+import {Coordinate2} from "../../base/Coordinate2";
+import {Quad} from "../../graphic/shape/Quad";
+import {QuadUtils} from "../../graphic/shape/QuadUtils";
 
 export interface LegacyRoundVisualizerConfig extends BaseDrawableConfig {
   innerRadius?: number
@@ -38,8 +39,8 @@ export class LegacyRoundVisualizer extends Drawable<LegacyRoundVisualizerConfig>
     if (config.innerRadius) {
       this.innerRadius = config.innerRadius
     }
-    this.barTexture = TextureStore.get('Bar')
-    this.borderBarTexture = TextureStore.get('BorderBar')
+    this.barTexture = TextureStore.getTexture('Bar')
+    this.borderBarTexture = TextureStore.getTexture('BorderBar')
 
     this.visualizer = AudioPlayerV2.getVisualizer()
   }
@@ -115,7 +116,7 @@ export class LegacyRoundVisualizer extends Drawable<LegacyRoundVisualizerConfig>
 
   public beforeCommit(node: DrawNode) {
     const shader = node.shader as LegacyVisualizerShaderWrapper
-    shader.orth = Coordinate.orthographicProjectionMatrix4
+    shader.orth = Coordinate2.orthographicProjectionMatrix4
     shader.alpha = this.computeColor(BeatState.isKiai ? 0.14 + BeatState.currentBeat * 0.1 : 0.14).alpha
     shader.sampler2D1 = 5
     shader.sampler2D2 = 6
@@ -136,6 +137,7 @@ export class LegacyRoundVisualizer extends Drawable<LegacyRoundVisualizerConfig>
     let k = 0;
     const barMatrix = Matrix3.newIdentify()
 
+    const quad = new Quad()
     for (let j = 0; j < 5; j++) {
       for (let i = 0; i < length; i++) {
 
@@ -147,21 +149,18 @@ export class LegacyRoundVisualizer extends Drawable<LegacyRoundVisualizerConfig>
         const toX = centerX
         const toY = centerY + value
 
-        let point1 = new Vector2(fromX - half, fromY)
-        let point2 = new Vector2(fromX + half, fromY)
-        let point3 = new Vector2(toX - half, toY)
-        let point4 = new Vector2(toX + half, toY)
+        quad.topLeft.set(fromX - half, fromY)
+        quad.topRight.set(fromX + half, fromY)
+        quad.bottomLeft.set(toX - half, toY)
+        quad.bottomRight.set(toX + half, toY)
 
         barMatrix.setFrom(Matrix3.identify)
         TransformUtils2.rotateFromLeft(barMatrix, degree)
         TransformUtils2.translateFromLeft(barMatrix, this.centerOfDrawable)
 
-        TransformUtils.applySelf(point1, barMatrix)
-        TransformUtils.applySelf(point2, barMatrix)
-        TransformUtils.applySelf(point3, barMatrix)
-        TransformUtils.applySelf(point4, barMatrix)
+        QuadUtils.applySelf(quad, barMatrix)
 
-        node.drawQuad(point1, point2, point3, point4, undefined, k)
+        node.drawQuad(quad, undefined, k)
         node.drawTexture(this.barTexture, Vector(0, 1), Vector(1, 0), k)
         node.drawOne(0, 4, 4, k)
         k++
@@ -180,21 +179,18 @@ export class LegacyRoundVisualizer extends Drawable<LegacyRoundVisualizerConfig>
         const toX = centerX
         const toY = centerY + value
 
-        let point1 = new Vector2(fromX - half, fromY)
-        let point2 = new Vector2(fromX + half, fromY)
-        let point3 = new Vector2(toX - half, toY)
-        let point4 = new Vector2(toX + half, toY)
+        quad.topLeft.set(fromX - half, fromY)
+        quad.topRight.set(fromX + half, fromY)
+        quad.bottomLeft.set(toX - half, toY)
+        quad.bottomRight.set(toX + half, toY)
 
         barMatrix.setFrom(Matrix3.identify)
         TransformUtils2.rotateFromLeft(barMatrix, degree)
         TransformUtils2.translateFromLeft(barMatrix, this.centerOfDrawable)
 
-        TransformUtils.applySelf(point1, barMatrix)
-        TransformUtils.applySelf(point2, barMatrix)
-        TransformUtils.applySelf(point3, barMatrix)
-        TransformUtils.applySelf(point4, barMatrix)
+        QuadUtils.applySelf(quad, barMatrix)
 
-        node.drawQuad(point1, point2, point3, point4, undefined, k)
+        node.drawQuad(quad, undefined, k)
         node.drawTexture(this.borderBarTexture, Vector(0, 1), Vector(1, 0), k)
         node.drawOne(1, 4, 4, k)
         k++

@@ -1,26 +1,41 @@
-import {Drawable} from "./drawable/Drawable";
-import {Disposable} from "./core/Disposable";
+import type { Nullable } from "../type";
+import { ArrayStack } from "../util/Stack";
+import { RenderScheduler } from "./RenderScheduler";
 import Coordinate from "./base/Coordinate";
-import type {VertexBuffer} from "./core/VertexBuffer";
-import type {Texture} from "./core/Texture";
-import {Blend} from "./drawable/Blend";
-import type {IndexBuffer} from "./core/IndexBuffer";
-import type {VertexArray} from "./core/VertexArray";
-import type {Shader} from "./core/Shader";
-import type {Nullable} from "../type";
+import { Coordinate2 } from "./base/Coordinate2";
+import { Canvas } from "./canvas/Canvas";
+import { Blend } from "./drawable/Blend";
+import type { Bindable } from "./graphic/core/Bindable";
+import { Disposable } from "./graphic/core/Disposable";
+import type { FrameBuffer } from "./graphic/core/FrameBuffer";
+import type { IndexBuffer } from "./graphic/core/IndexBuffer";
+import type { Shader } from "./graphic/core/Shader";
+import type { Texture } from "./graphic/core/Texture";
+import { isUndef } from "./graphic/core/Utils";
+import type { VertexArray } from "./graphic/core/VertexArray";
+import type { VertexBuffer } from "./graphic/core/VertexBuffer";
+import { TextureStore } from "./graphic/texture/TextureStore";
+import { RootView } from "./view/RootView";
+import { SizeMode } from "./view/View";
+import { LegacyLogo } from './screen/legacy/LegacyLogo';
+import { Shaders } from "./graphic/shader/Shaders";
+import { color } from "./base/Color";
 
 export class WebGLRenderer implements Disposable {
 
-  private currentBoundedShader: Nullable<Shader> = null
-  private currentBoundedVertexBuffer: Nullable<VertexBuffer> = null
-  private currentBoundedIndexBuffer: Nullable<IndexBuffer> = null
-  private currentBoundedVertexArray: Nullable<VertexArray> = null
+  private shaderStack = new ArrayStack<Shader>()
+  private vertexArrayStack = new ArrayStack<VertexArray>()
+  private indexBufferStack = new ArrayStack<IndexBuffer>()
+  private vertexBufferStack = new ArrayStack<VertexBuffer>()
+  private frameBufferStack = new ArrayStack<FrameBuffer>()
+  private orthStack = new ArrayStack<Float32Array>()
+
   private currentBoundedTexture: Nullable<Texture> = null
 
-  private readonly drawables: Drawable[] = []
-  private readonly disposables: Disposable[] = []
-  private isViewportChanged: boolean = false
-  // private isEventReady: boolean = false
+  private currentBoundedTextureMap: Map<Texture, number> = new Map()
+  private readonly textureUnits: Nullable<Texture>[]
+
+  private isViewportChanged: boolean = true
 
   public onDispose: Nullable<() => void> = null
 
@@ -28,10 +43,8 @@ export class WebGLRenderer implements Disposable {
 
   constructor(gl: WebGL2RenderingContext) {
     this.gl = gl
-    console.log(Coordinate.resolution)
-    console.log(Coordinate.nativeWidth * window.devicePixelRatio, Coordinate.nativeHeight * window.devicePixelRatio)
-    gl.viewport(0, 0, Coordinate.nativeWidth * window.devicePixelRatio, Coordinate.nativeHeight * window.devicePixelRatio)
     gl.enable(gl.BLEND);
+    gl.disable(gl.DEPTH_TEST)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.clearColor(0, 0, 0, 0);
 
@@ -41,16 +54,16 @@ export class WebGLRenderer implements Disposable {
     const maxVertexUniformVectors = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
     console.log("Max vertex uniform vectors: " + maxVertexUniformVectors);
 
-
     const maxVertexAttribStride = gl.getParameter(gl.MAX_ELEMENTS_VERTICES);
     console.log("Max elements vertices : " + maxVertexAttribStride);
 
+    const maxTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS)
+    console.log('Max texture units: ' + maxTextureUnits);
+    this.textureUnits = new Array<Nullable<Texture>>(maxTextureUnits)
 
-    // MouseState.onClick = this.onClick.bind(this)
-    // MouseState.onMouseMove = this.onMouseMove.bind(this)
-    // MouseState.onMouseDown = this.onMouseDown.bind(this)
-    // MouseState.onMouseUp = this.onMouseUp.bind(this)
-
+    Coordinate2.onWindowResize.add(() => {
+      this.isViewportChanged = true
+    })
     Coordinate.onWindowResize = () => {
       this.isViewportChanged = true
     }
@@ -70,163 +83,166 @@ export class WebGLRenderer implements Disposable {
     this.currentBlend = blend
   }
 
-  public bindShader(shader: Shader) {
-    if (this.currentBoundedShader !== shader) {
-      // console.log("bind shader", shader)
-      shader.bind()
-      this.currentBoundedShader = shader
+  private pushBindable(stack: ArrayStack<Bindable & Disposable>, bindable: Bindable & Disposable) {
+    const previous = stack.peek()
+    stack.push(bindable)
+    if (previous !== bindable) {
+      bindable.bind()
     }
   }
 
-  public unbindShader(shader: Shader) {
-    if (this.currentBoundedShader === shader) {
-      shader.unbind()
-      this.currentBoundedShader = null
+  private popBindable(stack: ArrayStack<Bindable>) {
+    const current = stack.pop()
+    const previous = stack.peek()
+    if (current !== previous) {
+      previous?.bind()
+    }
+    if (stack.size === 0) {
+      current?.unbind()
     }
   }
 
-  public bindVertexArray(va: VertexArray) {
-    if (this.currentBoundedVertexArray !== va) {
-      // console.log("bind va", va)
-      va.bind()
-      this.currentBoundedVertexArray = va
-    }
+  public pushShader(shader: Shader): void {
+    this.pushBindable(this.shaderStack, shader)
   }
 
-  public unbindVertexArray(va: VertexArray) {
-    if (this.currentBoundedVertexArray === va) {
-      va.unbind()
-      this.currentBoundedVertexArray = null
-    }
+  public popShader() {
+    this.popBindable(this.shaderStack)
   }
 
-  public bindVertexBuffer(vb: VertexBuffer) {
-    if (this.currentBoundedVertexBuffer !== vb) {
-      // console.log("bind vb", vb)
-      vb.bind()
-      this.currentBoundedVertexBuffer = vb
-    }
+  public pushVertexArray(va: VertexArray) {
+    this.pushBindable(this.vertexArrayStack, va)
   }
 
-  public unbindVertexBuffer(vb: VertexBuffer) {
-    if (this.currentBoundedVertexBuffer === vb) {
-      vb.unbind()
-      this.currentBoundedVertexBuffer = null
-    }
+  public popVertexArray() {
+    this.popBindable(this.vertexArrayStack)
   }
 
+  public pushVertexBuffer(vb: VertexBuffer) {
+    this.pushBindable(this.vertexBufferStack, vb)
+  }
+
+  public popVertexBuffer() {
+    this.popBindable(this.vertexArrayStack)
+  }
+
+  // TODO: use texture unit to bind texture, to support multi-texture and batch rendering
   public bindTexture(texture: Texture, unit: number = 0) {
-    if (this.currentBoundedTexture !== texture) {
-      // console.log("bind texture", texture)
+    const textureUnits = this.textureUnits
+    if (textureUnits[unit] !== texture) {
       texture.bind(unit)
-      this.currentBoundedTexture = texture
+      textureUnits[unit] = texture
+      this.currentBoundedTextureMap.set(texture, unit)
     }
   }
 
   public unbindTexture(texture: Texture) {
-    if (this.currentBoundedTexture === texture) {
-      texture.unbind()
-      this.currentBoundedTexture = null
-    }
+    const unit = this.currentBoundedTextureMap.get(texture)
+    if (isUndef(unit)) return
+    texture.unbind()
+    this.textureUnits[unit] = null
+    this.currentBoundedTextureMap.delete(texture)
   }
 
-  public bindIndexBuffer(ib: IndexBuffer) {
-    if (this.currentBoundedIndexBuffer !== ib) {
-      // console.log("bind ib", ib)
-      ib.bind()
-      this.currentBoundedIndexBuffer = ib
-    }
+  public pushIndexBuffer(ib: IndexBuffer) {
+    this.pushBindable(this.indexBufferStack, ib)
   }
 
-  public unbindIndexBuffer(ib: IndexBuffer) {
-    if (this.currentBoundedIndexBuffer === ib) {
-      ib.unbind()
-      this.currentBoundedIndexBuffer = null
-    }
+  public popIndexBuffer() {
+    this.popBindable(this.indexBufferStack)
+  }
+
+  public pushFrameBuffer(fb: FrameBuffer) {
+    this.pushBindable(this.frameBufferStack, fb)
+  }
+
+  public popFrameBuffer() {
+    this.popBindable(this.frameBufferStack)
+  }
+
+  public pushOrth(orth: Float32Array) {
+    this.orthStack.push(orth)
+  }
+
+  public popOrth() {
+    this.orthStack.pop()
+  }
+
+  public currentOrth(): Float32Array {
+    return this.orthStack.peek() ?? Coordinate2.orthographicProjectionMatrix4
   }
 
   public disposeBounded() {
     this.currentBoundedTexture?.unbind()
-    this.currentBoundedShader?.dispose()
-    this.currentBoundedShader?.unbind()
-    this.currentBoundedShader?.dispose()
-    this.currentBoundedVertexArray?.unbind()
-    this.currentBoundedVertexArray?.dispose()
-    this.currentBoundedVertexBuffer?.unbind()
-    this.currentBoundedVertexBuffer?.dispose()
-    this.currentBoundedIndexBuffer?.unbind()
-    this.currentBoundedIndexBuffer?.dispose()
+    this.currentBoundedTexture?.dispose()
+    this.textureUnits.forEach(v => v?.dispose())
+    this.currentBoundedTextureMap.clear()
   }
 
-  // private onClick(which: number) {
-  //   if (!this.isEventReady) return
-  //   for (let i = 0; i < this.drawables.length; i++) {
-  //     this.drawables[i].click(which, MouseState.position)
-  //   }
-  // }
-  //
-  // private onMouseDown(which: number) {
-  //   if (!this.isEventReady) return
-  //   for (let i = 0; i < this.drawables.length; i++) {
-  //     this.drawables[i].mouseDown(which, MouseState.position)
-  //   }
-  // }
-
-  // private onMouseMove() {
-  //   if (!this.isEventReady) return
-  //   for (let i = 0; i < this.drawables.length; i++) {
-  //     this.drawables[i].mouseMove(MouseState.position)
-  //   }
-  // }
-  //
-  // private onMouseUp(which: number) {
-  //   if (!this.isEventReady) return
-  //   for (let i = 0; i < this.drawables.length; i++) {
-  //     this.drawables[i].mouseUp(which, MouseState.position)
-  //   }
-  // }
-
-  public addDrawable(drawable: Drawable) {
-    this.drawables.push(drawable)
-    drawable.load(this)
-    this.disposables.push(drawable)
+  /**
+   * 
+   * @param x 
+   * @param y 
+   * @param width 
+   * @param height 
+   */
+  public setViewport(x: number, y: number, width: number, height: number) {
+    this.gl.viewport(x, y, width, height);
   }
 
-  public removeDrawable(drawable: Drawable) {
-    let index = this.drawables.indexOf(drawable)
-    this.drawables.splice(index, 1)
-    index = this.disposables.indexOf(drawable)
-    this.disposables.splice(index, 1)
-    drawable.dispose()
-  }
-
-  public render() {
-    // this.isEventReady = true
+  public clear() {
     const gl = this.gl
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
+  }
+
+  public updateViewport() {
     if (this.isViewportChanged) {
       this.isViewportChanged = false
-      gl.viewport(0, 0, Coordinate.nativeWidth * window.devicePixelRatio, Coordinate.nativeHeight * window.devicePixelRatio)
-      console.log(Coordinate.resolution)
-      console.log(Coordinate.nativeWidth * window.devicePixelRatio, Coordinate.nativeHeight * window.devicePixelRatio)
-      for (let i = 0; i < this.drawables.length; i++) {
-        this.drawables[i].onWindowResize()
-      }
-    }
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    for (let i = 0; i < this.drawables.length; i++) {
-      const drawable = this.drawables[i];
-      drawable.update()
-      drawable.draw(this)
+      const resolution = Coordinate2.resolution
+      this.setViewport(0, 0, resolution[0], resolution[1])
+      this.root.onWindowResize()
     }
   }
 
-  public dispose() {
-    for (let i = 0; i < this.disposables.length; i++) {
-      this.disposables[i].dispose()
+  public root = new RootView().apply((t) => {
+    t.size = SizeMode.fill();
+  })
+
+  private canvas: Nullable<Canvas> = null
+
+  public renderView() {
+    this.updateViewport()
+    this.clear()
+    let canvas = this.canvas
+    if (!canvas) {
+      canvas = new Canvas(this)
+      this.canvas = canvas
     }
+    
+    this.root.update()
+    this.root.draw(canvas)
+    RenderScheduler.executeDispose()
+  }
+
+
+  public dispose() {
+    // dispose current bounded resource
     this.disposeBounded()
+    // dispose all previous bounded resource
+    this.disposeStack()
     this.onDispose?.()
     this.onDispose = null
+    // dispose root view
+    this.root.dispose()
+  }
+
+  private disposeStack() {
+    const callback = (e: Bindable & Disposable): void => e.dispose()
+    this.shaderStack.forEach(callback)
+    this.vertexArrayStack.forEach(callback)
+    this.vertexBufferStack.forEach(callback)
+    this.indexBufferStack.forEach(callback)
+    this.frameBufferStack.forEach(callback)
   }
 
 }

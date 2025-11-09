@@ -54,7 +54,7 @@ class BackgroundLoader {
 
     public getBackground(): ImageBitmap {
         let randomSequence = this.backgroundSequence
-        if (randomSequence.length) {
+        if (!randomSequence.length) {
             randomSequence = this.randomSequence(this.backgroundNames.length)
             this.backgroundSequence = randomSequence
         }

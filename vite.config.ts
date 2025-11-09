@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
-import vueJsx from "@vitejs/plugin-vue-jsx";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -9,11 +8,7 @@ export default defineConfig({
     __DEV__: true
   },
   base: './',
-  plugins: [vue({
-    script: {
-      defineModel: true
-    }
-  }), vueJsx()],
+  plugins: [vue()],
   build: {
     rollupOptions: {
       input: {
@@ -25,6 +20,8 @@ export default defineConfig({
     outDir: './docs'
   },
   server: {
+    host: "0.0.0.0",
+    hmr: false,
     proxy: {
       '/api': {
         target: 'http://192.168.42.129:8888',

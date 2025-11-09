@@ -1,4 +1,4 @@
-import {Vector2} from "../core/Vector2";
+import {Vector2} from "../graphic/core/Vector2";
 import {linear, TimeFunction} from "../../util/Easing";
 import {Transition, TransitionGroup} from "./Transition";
 

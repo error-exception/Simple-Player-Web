@@ -7,7 +7,9 @@ const props = withDefaults(defineProps<{
 }>(), {
   align: 'left',
 })
+
 const value = defineModel({ default: '' })
+
 const selectedIndex = computed({
   get() {
     return props.items.indexOf(value.value)
@@ -16,6 +18,7 @@ const selectedIndex = computed({
     value.value = props.items[v]
   }
 })
+
 const hidden = ref(true)
 const select = (index: number) => {
   selectedIndex.value = index
@@ -24,7 +27,7 @@ const select = (index: number) => {
 </script>
 
 <template>
-  <div class="relative">
+  <div>
     <input
         @focus="hidden = false"
         class="expand-select"
@@ -73,10 +76,7 @@ const select = (index: number) => {
 .expand-item-list {
   @apply text-white w-full p-1 rounded-md;
   background-color: black;
-  position: absolute;
-  box-shadow: 0 0 8px rgba(0, 0, 0, .8);
-  transform: translateY(8px) translateX(-50%);
-  left: 50%;
+  box-shadow: 0 0 8px rgba(0, 0, 0, .8);  
   z-index: 100;
   font-size: 14px;
 }

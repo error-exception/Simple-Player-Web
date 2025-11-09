@@ -1,5 +1,4 @@
-import {Vector2} from "../webgl/core/Vector2";
-import {MouseEventFire} from "../webgl/event/MouseEventFire";
+import { vector2 } from "../webgl/graphic/matrix/vec2";
 
 export const MOUSE_LEFT_DOWN = 0b1
 export const MOUSE_RIGHT_DOWN = 0b10
@@ -12,10 +11,9 @@ export const MOUSE_KEY_NONE = 0
 export class MouseState {
 
   private static state: number = MOUSE_NONE
-  private static downPosition: Vector2 = Vector2.newZero()
-  private static upPosition: Vector2 = Vector2.newZero()
-
-  public static position: Vector2 = Vector2.newZero()
+  private static downPosition = vector2.create() // Vector2.newZero()
+  private static upPosition = vector2.create() // Vector2.newZero()
+  public static position = vector2.create() // Vector2.newZero()
   public static which: number = MOUSE_KEY_NONE
 
   public static onClick: ((which: number) => void) | null = null
@@ -26,34 +24,32 @@ export class MouseState {
   public static receiveMouseDown(which: number, x: number, y: number) {
     MouseState.which |= which
     MouseState.state |= which === MOUSE_KEY_LEFT ? MOUSE_LEFT_DOWN : MOUSE_RIGHT_DOWN
-    MouseState.position.x = x
-    MouseState.position.y = y
-    MouseState.downPosition.x = x
-    MouseState.downPosition.y = y
-    // MouseState.fireOnMousedown(which)
-    MouseEventFire.fireMouseDown(which, MouseState.position)
+    vector2.set(MouseState.position, x, y)
+    vector2.set(MouseState.downPosition, x, y)
+    MouseState.fireOnMousedown(which)
+    // MouseEventFire.fireMouseDown(which, MouseState.position)
   }
 
   public static receiveMouseUp(which: number, x: number, y: number) {
     MouseState.which ^= which
     MouseState.state ^= which === MOUSE_KEY_LEFT ? MOUSE_LEFT_DOWN : MOUSE_RIGHT_DOWN
-    MouseState.position.x = x
-    MouseState.position.y = y
-    MouseState.upPosition.x = x
-    MouseState.upPosition.y = y
-    // MouseState.fireOnMouseUp(which)
-    MouseEventFire.fireMouseUp(which, MouseState.position)
-    if (MouseState.downPosition.equals(MouseState.upPosition)) {
+    vector2.set(MouseState.position, x, y)
+    vector2.set(MouseState.upPosition, x, y)
+    MouseState.fireOnMouseUp(which)
+    // MouseEventFire.fireMouseUp(which, MouseState.position)
+    if (vector2.equals(MouseState.downPosition, MouseState.upPosition)) {
       MouseState.fireOnClick(which)
     }
+    // if (MouseState.downPosition.equals(MouseState.upPosition)) {
+    //   MouseState.fireOnClick(which)
+    // }
   }
 
   public static receiveMouseMove(x: number, y: number) {
     MouseState.state |= MOUSE_MOVE
-    MouseState.position.x = x
-    MouseState.position.y = y
-    // MouseState.fireOnMouseMove()
-    MouseEventFire.fireMouseMove(MouseState.which, MouseState.position)
+    vector2.set(MouseState.position, x, y)
+    MouseState.fireOnMouseMove()
+    // MouseEventFire.fireMouseMove(MouseState.which, MouseState.position)
   }
 
   public static isLeftDown() {

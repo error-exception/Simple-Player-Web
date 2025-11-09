@@ -8,6 +8,7 @@ export class OSUParser {
   private static readonly timingPoints = "[TimingPoints]"
   private static readonly events = "[Events]"
   private static readonly difficulty = "[Difficulty]"
+  private static readonly hitObjects = '[HitObjects]'
 
   public static parse(textContent: string, osuFilename: string): OSUFile {
     const osuFile: OSUFile = { name: osuFilename }
@@ -24,6 +25,8 @@ export class OSUParser {
         this.parseEvents(lines, i + 1, osuFile)
       } else if (line === this.difficulty) {
         this.parseDifficulty(lines, i + 1, osuFile)
+      } else if (line === this.hitObjects) {
+        this.parseHitObjects(lines, i + 1, osuFile)
       }
     }
     return osuFile
@@ -197,4 +200,10 @@ export class OSUParser {
     }
     out.Difficulty = difficulty
   }
+
+  private static parseHitObjects(lines: string[], index: number, out: OSUFile) {
+
+  }
+
+
 }

@@ -57,6 +57,6 @@ export class OSUDialog<Props = undefined, Returned = undefined> {
     }
     this.isCloseRequested = true
     playSound(Sound.DialogPopOut)
-    this.onCloseRequested.fire(data)
+    this.onCloseRequested.invoke(data)
   }
 }

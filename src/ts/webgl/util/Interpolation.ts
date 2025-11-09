@@ -1,4 +1,4 @@
-import {Color} from "../base/Color";
+import { color, type Color4 } from "../base/Color";
 
 export class Interpolation {
 
@@ -11,11 +11,12 @@ export class Interpolation {
         return start + factor * (end - start)
     }
 
-    public static colorAt(randomValue: number, startColor: Color, endColor: Color) {
-        const r = startColor.red + (endColor.red - startColor.red) * randomValue
-        const g = startColor.green + (endColor.green - startColor.green) * randomValue
-        const b = startColor.blue + (endColor.blue - startColor.blue) * randomValue
-        return new Color(r, g, b, 1)
+    public static colorAt(randomValue: number, startColor: Color4, endColor: Color4) {
+        const r = startColor[0] + (endColor[0] - startColor[0]) * randomValue
+        const g = startColor[1] + (endColor[1] - startColor[1]) * randomValue
+        const b = startColor[2] + (endColor[2] - startColor[2]) * randomValue
+        return color.color(r, g, b, 1)
+        // return new Color(r, g, b, 1)
     }
 
 }

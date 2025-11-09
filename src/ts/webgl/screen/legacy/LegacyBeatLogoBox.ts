@@ -1,10 +1,10 @@
 import {Box} from "../../box/Box";
 import {BeatState} from "../../../global/Beater";
 import {BaseDrawableConfig} from "../../drawable/Drawable";
-import {easeOut, easeOutElastic, easeOutQuint} from "../../../util/Easing";
+import {easeOut, easeOutQuint} from "../../../util/Easing";
 import AudioPlayerV2 from "../../../player/AudioPlayer";
 import {Time} from "../../../global/Time";
-import {Vector, Vector2} from "../../core/Vector2";
+import {Vector, Vector2} from "../../graphic/core/Vector2";
 import {Interpolation} from "../../util/Interpolation";
 import {effectScope, watch} from "vue";
 import {UIState} from "../../../global/UISettings";
@@ -161,6 +161,7 @@ class LogoAmpBox extends BeatBox<LegacyLogoConfig> {
     this.scope.run(() => {
       watch(() => UIState.logoHover, val => this.logoHoverable = val, {immediate: true})
     })
+    this.enableMouseEvent()
   }
 
   public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {
@@ -172,7 +173,7 @@ class LogoAmpBox extends BeatBox<LegacyLogoConfig> {
       return true
     }
     this.transform()
-      .scaleTo(Vector(1.1), 500, easeOutElastic)
+      .scaleTo(Vector(1.08), 360, easeOutQuint)
     return true
   }
 
@@ -181,7 +182,7 @@ class LogoAmpBox extends BeatBox<LegacyLogoConfig> {
       return true
     }
     this.transform()
-      .scaleTo(Vector(1), 500, easeOutElastic)
+      .scaleTo(Vector(1), 500, easeOutQuint)
     return true
   }
 

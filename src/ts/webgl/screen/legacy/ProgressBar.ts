@@ -1,6 +1,6 @@
 import {Box, BoxConfig} from "../../box/Box";
 import {ImageDrawable} from "../../drawable/ImageDrawable";
-import {TextureStore} from "../../texture/TextureStore";
+import {TextureStore} from "../../graphic/texture/TextureStore";
 import {Size} from "../../drawable/Size";
 import {Color} from "../../base/Color";
 import {Anchor} from "../../drawable/Anchor";
@@ -13,11 +13,11 @@ export class ProgressBar extends Box {
   constructor(config: BoxConfig) {
     super(config);
     this.add(
-      new ImageDrawable(TextureStore.get('Square'), {
+      new ImageDrawable(TextureStore.getTexture('Square'), {
         size: Size.FillParentSize,
         color: Color.fromHex(0xffffff, 40)
       }),
-      this.progress = new ImageDrawable(TextureStore.get('Square'), {
+      this.progress = new ImageDrawable(TextureStore.getTexture('Square'), {
         size: Size.FillParentSize,
         color: Color.fromHex(0xffffff, 80),
         origin: Anchor.CenterLeft

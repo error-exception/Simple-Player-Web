@@ -2,12 +2,17 @@
 
 ## 简介
 
-一个模仿 OSU 的网页播放器，只可播放，不能游玩
+一个模仿 OSU 的网页播放器，仅用于 osz 文件的播放。不支持
+
+![alt text](./docs_assetes/image.png)
+
+![alt text](./docs_assetes/image-1.png)
 
 1. 部分支持`.osz`文件，可拖动打开
 2. 预览视频（如果存在且可播放）
 3. 不完全的故事板支持（测试中）
 4. 支持动态 BPM
+5. 当 osz 含有故事板时，会自动播放故事板
 
 ## 预览
 
@@ -34,6 +39,8 @@ npm run build
 鼠标拖至页面的最左端，选择 Screen
 
 #### Screen 说明
+
+**注意：** Screen 切换已移除，osu!Stable 的入口和内容更新将在后续更新中加入。
 
 1. `Lazer! Home` osu！Lazer 的 Logo
 2. `Background Preview` 预览 Beatmap 中的背景图和视频（需浏览器支持）

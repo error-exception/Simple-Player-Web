@@ -1,6 +1,6 @@
-import {Texture} from "../../core/Texture";
+import {Texture} from "../../graphic/core/Texture";
 import {Nullable} from "../../../type";
-import {Disposable} from "../../core/Disposable";
+import {Disposable} from "../../graphic/core/Disposable";
 
 class StoryTextureManager implements Disposable {
 

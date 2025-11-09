@@ -1,5 +1,6 @@
 import {onMounted, onUnmounted} from "vue";
 import {ArrayUtils} from "./util/ArrayUtils";
+import {Nullable} from "./type";
 
 export function degreeToRadian(degree: number) {
   return degree * ( Math.PI / 180)
@@ -7,16 +8,6 @@ export function degreeToRadian(degree: number) {
 
 export function radianToDegree(radian: number) {
   return radian * (180 / Math.PI)
-}
-
-export function timeString(timeUnitS: number) {
-  if (isNaN(timeUnitS)) {
-    return '00:00'
-  }
-  const time = int(timeUnitS)
-  const minute = int(time / 60)
-  const seconds = time % 60
-  return `${ minute < 10 ? '0' + minute : minute }:${ seconds < 10 ? '0' + seconds : seconds }`
 }
 
 export function currentMilliseconds() {
@@ -76,14 +67,6 @@ export function isString(v: any): v is string {
   return typeof v === 'string'
 }
 
-export function sleep(m: number) {
-  return new Promise<void>((resolve) => {
-    setTimeout(() => {
-      resolve()
-    }, m)
-  })
-}
-
 export function shallowCopy<T extends object>(source: T): T {
   const result = {}
   const keys = Object.getOwnPropertyNames(source)
@@ -108,3 +91,5 @@ export function debounce(callback: () => void, delay: number) {
     timeout = setTimeout(callback, delay)
   }
 }
+
+export const nullable = <T>(): Nullable<T> => null

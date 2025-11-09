@@ -1,18 +1,23 @@
-import {Vector, Vector2} from "../core/Vector2";
+import {Vector2} from "../graphic/core/Vector2";
 import {Color} from "../base/Color";
-import {Texture} from "../core/Texture";
+import {Texture} from "../graphic/core/Texture";
 import {Blend} from "./Blend";
-import {Matrix3} from "../core/Matrix3";
-import {TransformUtils2} from "../core/TransformUtils2";
+import {Matrix3} from "../graphic/core/Matrix3";
+import {TransformUtils2} from "../graphic/core/TransformUtils2";
 import type {Nullable} from "../../type";
-import type {ShaderWrapper} from "../shader/ShaderWrapper";
+import type {ShaderWrapper} from "../graphic/shader/ShaderWrapper";
 import type {WebGLRenderer} from "../WebGLRenderer";
 import {ArrayUtils} from "../../util/ArrayUtils";
-import {Shaders} from "../shader/Shaders";
-import type {BasicVertexBuffer} from "../buffer/BasicVertexBuffer";
-import {Buffers} from "../buffer/Buffers";
+import {Shaders} from "../graphic/shader/Shaders";
+import type {BasicVertexBuffer} from "../graphic/buffer/BasicVertexBuffer";
+import {Buffers} from "../graphic/buffer/Buffers";
 import type {Drawable} from "./Drawable";
-import type {TextureRegin} from "../texture/TextureAtlas";
+import type {TextureRegin} from "../graphic/texture/TextureAtlas";
+import {Quad} from "../graphic/shape/Quad";
+import type {Rectangle} from "../graphic/shape/Rectangle";
+import {QuadUtils} from "../graphic/shape/QuadUtils";
+import type {Triangle} from "../graphic/shape/Triangle";
+import {TransformUtils3} from "../graphic/core/TransformUtils3";
 
 export class DrawNode {
 
@@ -26,15 +31,17 @@ export class DrawNode {
   public color = Color.White.copy()
   public texture: Nullable<Texture> = null
   public bufferData: Float32Array | number[] = ArrayUtils.emptyFloat32Array
-  private one = Vector2.newOne()
-  protected childrenNodes: DrawNode[] = []
 
   public vertexBuffer: BasicVertexBuffer = Buffers.SingleQuad
   public shader: ShaderWrapper = Shaders.Default
+  /**
+   * 是否将变换自动应用到顶点的 ATTR_POSITION 上
+   */
+  public autoTransform = false
 
   constructor(
     public source: Drawable,
-    public matrix = Matrix3.newIdentify(),
+    public matrix = Matrix3.newIdentify()
   ) {
     this.apply()
   }
@@ -46,55 +53,52 @@ export class DrawNode {
     this.bufferData = new Float32Array(this.vertexBuffer.elementCount)
   }
 
-  public addDrawNodes(...nodes: DrawNode[]) {
-    this.childrenNodes.push(...nodes)
-  }
-
+  private origin: Vector2 = new Vector2();
   public applyTransform(translate: Vector2, rotate: number, scale: Vector2, skew: Vector2, origin: Vector2) {
-    const m: Matrix3 = this.matrix
-    if (!origin.isZero()) {
-      TransformUtils2.translateFromLeft(m, origin.negative())
-    }
-    if (!translate.isZero()) {
-      TransformUtils2.translateFromLeft(m, translate)
-    }
-    if (rotate !== 0) {
-      TransformUtils2.rotateFromLeft(m, rotate)
-    }
-    if (!scale.equals(this.one)) {
-      TransformUtils2.scaleFromLeft(m, scale)
-    }
-    if (!skew.isZero()) {
-      TransformUtils2.skewFromLeft(m, skew)
-    }
-    if (!origin.isZero()) {
-      TransformUtils2.translateFromLeft(m, origin)
-    }
+    this.origin = origin;
+    TransformUtils2.applyTransform(this.matrix, translate, rotate, scale, skew, origin)
   }
 
   /**
    * 绘制一个四边形
-   * @param topLeft
-   * @param topRight
-   * @param bottomLeft
-   * @param bottomRight
+   * @param quad
    * @param color
    * @param index
    */
   public drawQuad(
-    topLeft: Vector2, topRight: Vector2,
-    bottomLeft: Vector2, bottomRight: Vector2,
+    quad: Quad,
     color?: Color, index: number = 0
   ) {
     const matrix = this.matrix,
       data = this.bufferData,
       stride = this.shader.stride,
       positionIndex = DrawNode.POSITION_INDEX,
-      startIndex = index * stride * DrawNode.VERTEX_PER_QUAD
-    TransformUtils2.applyTo(matrix, topLeft, data, startIndex + positionIndex)
-    TransformUtils2.applyTo(matrix, topRight, data, startIndex + stride + positionIndex)
-    TransformUtils2.applyTo(matrix, bottomLeft, data, startIndex + stride * 2 + positionIndex)
-    TransformUtils2.applyTo(matrix, bottomRight, data, startIndex + stride * 3 + positionIndex)
+      startIndex = index * stride * DrawNode.VERTEX_PER_QUAD,
+      topLeft = quad.topLeft,
+      topRight = quad.topRight,
+      bottomLeft = quad.bottomLeft,
+      bottomRight = quad.bottomRight
+    if (this.autoTransform) {
+      const source = this.source
+      const origin = this.origin
+      TransformUtils3.applyTo(source, topLeft, data, startIndex + positionIndex, origin)
+      TransformUtils3.applyTo(source, topRight, data, startIndex + stride + positionIndex, origin)
+      TransformUtils3.applyTo(source, bottomLeft, data, startIndex + stride * 2 + positionIndex, origin)
+      TransformUtils3.applyTo(source, bottomRight, data, startIndex + stride * 3 + positionIndex, origin)
+    } else {
+      data[startIndex + positionIndex] = topLeft.x
+      data[startIndex + positionIndex + 1] = topLeft.y
+
+      data[startIndex + stride + positionIndex] = topRight.x
+      data[startIndex + stride + positionIndex + 1] = topRight.y
+
+      data[startIndex + stride * 2 + positionIndex] = bottomLeft.x
+      data[startIndex + stride * 2 + positionIndex + 1] = bottomLeft.y
+
+      data[startIndex + stride * 3 + positionIndex] = bottomRight.x
+      data[startIndex + stride * 3 + positionIndex + 1] = bottomRight.y
+    }
+
     if (color) {
       const colorIndex = DrawNode.COLOR_INDEX
       data[startIndex + colorIndex] = color.red
@@ -119,23 +123,19 @@ export class DrawNode {
     }
   }
 
+  private tempQuad = new Quad()
   /**
    * 绘制一个矩形
-   * @param topLeft
-   * @param bottomRight
+   * @param rectangle
    * @param color
    * @param index
    */
   public drawRect(
-    topLeft: Vector2,
-    bottomRight: Vector2,
+    rectangle: Rectangle,
     color?: Color, index: number = 0
   ) {
-    this.drawQuad(
-      topLeft, Vector(bottomRight.x, topLeft.y),
-      Vector(topLeft.x, bottomRight.y), bottomRight,
-      color, index
-    )
+    QuadUtils.fromRectangleTo(rectangle, this.tempQuad)
+    this.drawQuad(this.tempQuad, color, index)
   }
 
   /**
@@ -173,15 +173,31 @@ export class DrawNode {
     }
   }
 
-  public drawTriangle(a1: Vector2, a2: Vector2, a3: Vector2, color?: Color, index: number = 0) {
+  public drawTriangle(triangle: Triangle, color?: Color, index: number = 0) {
     const matrix = this.matrix,
       data = this.bufferData,
       positionIndex = DrawNode.POSITION_INDEX,
       stride = this.shader.stride,
-      startIndex = index * stride * DrawNode.VERTEX_PER_TRIANGLE
-    TransformUtils2.applyTo(matrix, a1, data, startIndex + positionIndex)
-    TransformUtils2.applyTo(matrix, a2, data, startIndex + stride + positionIndex)
-    TransformUtils2.applyTo(matrix, a3, data, startIndex + stride * 2 + positionIndex)
+      startIndex = index * stride * DrawNode.VERTEX_PER_TRIANGLE,
+      a1 = triangle.angle1,
+      a2 = triangle.angle2,
+      a3 = triangle.angle3
+    if (this.autoTransform) {
+      const source = this.source
+      const origin = this.origin
+      TransformUtils3.applyTo(source, a1, data, startIndex + positionIndex, origin)
+      TransformUtils3.applyTo(source, a2, data, startIndex + stride + positionIndex, origin)
+      TransformUtils3.applyTo(source, a3, data, startIndex + stride * 2 + positionIndex, origin)
+    } else {
+      data[startIndex + positionIndex] = a1.x
+      data[startIndex + positionIndex + 1] = a1.y
+
+      data[startIndex + stride + positionIndex] = a2.x
+      data[startIndex + stride + positionIndex + 1] = a2.y
+
+      data[startIndex + stride * 2 + positionIndex] = a3.x
+      data[startIndex + stride * 2 + positionIndex + 1] = a3.y
+    }
     if (color) {
       const colorIndex = DrawNode.COLOR_INDEX
       data[startIndex + colorIndex] = color.red
@@ -241,10 +257,6 @@ export class DrawNode {
     this.vertexBuffer.unbind()
     if (this.texture)
       renderer.unbindTexture(this.texture)
-    // const nodes = this.childrenNodes
-    // for (let i = 0; i < nodes.length; i++) {
-    //   nodes[i].draw(renderer)
-    // }
 
   }
 

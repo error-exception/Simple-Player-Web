@@ -1,29 +1,29 @@
 import {IMouseEvent} from "../../global/MouseState";
 import {Box} from "../box/Box";
-import Coordinate from "../base/Coordinate";
-import {Disposable} from "../core/Disposable";
-import {almostEquals} from "../core/Utils";
-import {Vector, Vector2} from "../core/Vector2";
+import {Disposable} from "../graphic/core/Disposable";
+import {almostEquals} from "../graphic/core/Utils";
+import {Vector, Vector2} from "../graphic/core/Vector2";
 import {Axis} from "./Axis";
 import {provide, unprovide} from "../util/DependencyInject";
-import {DrawableTransition} from "../transition/DrawableTransition";
+import {TransformTransition} from "../transition/TransformTransition";
 import {Anchor} from "./Anchor";
 import {DrawNode} from "./DrawNode";
 import type {WebGLRenderer} from "../WebGLRenderer";
-import {Matrix3} from "../core/Matrix3";
+import {Matrix3} from "../graphic/core/Matrix3";
 import {DrawableRecorder} from "./DrawableRecorder";
 import {DrawableMouseEvent, type MouseEventCall} from "../event/DrawableMouseEvent";
 import type {Nullable} from "../../type";
 import {Size} from "./Size";
 import {Transformable} from "./Transformable";
 import {Color} from "../base/Color";
-import {Rectangle} from "./Rectangle";
-import {Quad} from "./Quad";
-import {RectangleUtils} from "./RectangleUtils";
-import {QuadUtils} from "./QuadUtils";
-import {TransformUtils} from "../core/TransformUtils";
+import {Rectangle} from "../graphic/shape/Rectangle";
+import {Quad} from "../graphic/shape/Quad";
+import {RectangleUtils} from "../graphic/shape/RectangleUtils";
+import {QuadUtils} from "../graphic/shape/QuadUtils";
 import {Invalidation, InvalidationSource} from "./Invalidation";
-import {DrawableTask} from "./DrawableTask";
+import {LayoutMember, LayoutValue} from "../layout/LayoutValue";
+import {Coordinate2} from "../base/Coordinate2";
+import {Vector2Utils} from "../graphic/core/Vector2Utils";
 
 export interface BaseDrawableConfig {
   size: Vector2
@@ -43,6 +43,11 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
   public anchorValue = Anchor.TopLeft
   public anchorOffset = Vector2.newZero()
   public origin = Vector2.newZero()
+  /**
+   * 相对位置
+   */
+  public position = Vector2.newZero()
+  public size = Vector2.newZero()
 
   /**
    * 该矩形为 Drawable 的初始矩形，该矩形则是为了保留变换之前的数据
@@ -66,15 +71,20 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
 
   protected disposeList: DisposableFunc[] = []
 
-  protected invalidationValue = Invalidation.None
-  protected invalidationSource = InvalidationSource.Self
+  protected layoutList: LayoutMember[] = []
 
   constructor(public config: C) {
     super()
     this.isAvailable = true;
-    this.applyConfig()
     provide(this.constructor.name, this)
     DrawableRecorder.record(this)
+    this.addLayout(this.sizeBacking)
+    this.addLayout(this.originBacking)
+    this.applyConfig()
+  }
+
+  protected addLayout(layout: LayoutMember) {
+    this.layoutList.push(layout)
   }
 
   public setAnchor(anchor: number) {
@@ -95,12 +105,12 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
     } else {
       this.anchor.y = 1
     }
-    this.parent?.invalidate(Invalidation.Layout, InvalidationSource.Child)
+    this.invalidate(Invalidation.Layout)
   }
 
   public setAnchorOffset(offset: Vector2) {
     this.anchorOffset.setFrom(offset)
-    this.parent?.invalidate(Invalidation.Layout, InvalidationSource.Child)
+    this.invalidate(Invalidation.Layout)
   }
 
   public setOrigin(origin: number) {
@@ -119,48 +129,76 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
     } else {
       this.origin.y = 1
     }
+    this.invalidate(Invalidation.Size)
+  }
+
+  private originBacking = new LayoutValue<Vector2>(Invalidation.Size | Invalidation.ParentAutoSize | Invalidation.Layout)
+
+  public getOrigin(): Vector2 {
+    if (!this.originBacking.isValid()) {
+      this.originBacking.value = this.computeOrigin()
+    }
+    return this.originBacking.value
   }
 
   public getWidth() {
-    return this.initRectangle.getWidth()
+    if (!this.sizeBacking.isValid()) {
+      this.sizeBacking.value = this.computeSize()
+    }
+    return this.sizeBacking.value.x
   }
 
   public getHeight() {
-    return this.initRectangle.getHeight()
+    if (!this.sizeBacking.isValid()) {
+      this.sizeBacking.value = this.computeSize()
+    }
+    return this.sizeBacking.value.y
   }
 
   public setWidth(w: number) {
+    if (almostEquals(this.size.x, w)) {
+      return
+    }
     this.sizeParam.x = w
-    this.parent?.invalidate(Invalidation.Layout, InvalidationSource.Child)
-    this.invalidate(Invalidation.Size)
+    this.invalidate(Invalidation.Size | Invalidation.ParentAutoSize)
   }
 
   public setHeight(h: number) {
+    if (almostEquals(this.size.y, h)) {
+      return
+    }
     this.sizeParam.y = h
-    this.parent?.invalidate(Invalidation.Layout, InvalidationSource.Child)
-    this.invalidate(Invalidation.Size)
+    this.invalidate(Invalidation.Size | Invalidation.ParentAutoSize)
   }
 
   public setSize(width: number, height: number) {
+    if (almostEquals(this.size.x, width) && almostEquals(this.size.y, height)) {
+      return
+    }
     this.sizeParam.set(width, height)
-    this.parent?.invalidate(Invalidation.Layout, InvalidationSource.Child)
-    this.invalidate(Invalidation.Size)
+    this.invalidate(Invalidation.Size | Invalidation.ParentAutoSize)
   }
 
   public getSize() {
-    return Vector(this.initRectangle.getWidth(), this.initRectangle.getHeight())
+    if (!this.sizeBacking.isValid()) {
+      this.sizeBacking.value = this.computeSize()
+    }
+    return this.sizeBacking.value
   }
 
   public getPosition() {
-    return this.initRectangle.topLeft
+    return this.position
+  }
+
+  public setPosition(x: number, y: number) {
+    this.position.set(x, y)
   }
 
   public applyConfig() {
     const config = this.config
     this.sizeParam.set(config.size.x, config.size.y)
     if (config.size.x !== Size.FillParent && config.size.y !== Size.FillParent) {
-      this.initRectangle.setWidth(config.size.x)
-      this.initRectangle.setHeight(config.size.y)
+      this.size.setFrom(config.size)
     } else {
       this.invalidate(Invalidation.Size | Invalidation.Layout)
     }
@@ -171,97 +209,74 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
     }
   }
 
-  /**
-   * 当父容器的尺寸发生变化时调用，如果没有父容器，则在窗口尺寸变化时调用
-   * @protected
-   */
-  public onSizeChanged() {
-    this.invalidate(Invalidation.Layout)
-  }
+  public sizeBacking = new LayoutValue<Vector2>(Invalidation.Size)
 
-  public updateSize() {
+  public computeSize() {
     const width = this.sizeParam.x
     const height = this.sizeParam.y
     const parentWidth =
-      this.parent ? this.parent.initRectangle.getWidth() : Coordinate.size.x
+      this.parent ? this.parent.getWidth() : Coordinate2.size.x
     const parentHeight =
-      this.parent ? this.parent.initRectangle.getHeight() : Coordinate.size.y
-    this.initRectangle.setWidth(width === Size.FillParent ? parentWidth : width)
-    this.initRectangle.setHeight(height === Size.FillParent ? parentHeight : height)
-    if (this.rectangle.getHeight() === 0 || this.rectangle.getWidth() === 0) {
-      this.rectangle.setFrom(this.initRectangle)
-    }
+      this.parent ? this.parent.getHeight() : Coordinate2.size.y
+    this.size.set(width === Size.FillParent ? parentWidth : width, height === Size.FillParent ? parentHeight : height)
+    return this.size
   }
 
   //////////////////////////////////////////////////////////////////////////
 
-  setScaleY(y: number) {
-    super.setScaleY(y);
-    this.parent?.invalidate(Invalidation.ParentAutoSize, InvalidationSource.Child)
-    // this.parent?.updateSizeByChildren(true)
-  }
-
-  setScaleX(x: number) {
-    super.setScaleX(x);
-    this.parent?.invalidate(Invalidation.ParentAutoSize, InvalidationSource.Child)
-    // this.parent?.updateSizeByChildren(true)
-  }
-
-  setScale(s: Vector2) {
-    super.setScale(s);
-    this.parent?.invalidate(Invalidation.ParentAutoSize, InvalidationSource.Child)
-    // this.parent?.updateSizeByChildren(true)
-  }
-
-  protected transition = new DrawableTransition(this)
+  protected transition = new TransformTransition(this)
 
   private computeOrigin() {
-    const origin = this.origin.copy()
-    const width = this.initRectangle.getWidth()
-    const height = this.initRectangle.getHeight()
-    origin.setFrom(this.initRectangle.topLeft)
-    origin.x += width * this.origin.x
-    origin.y += height * this.origin.y
-    return origin
+    return Vector(
+      this.getWidth() * this.origin.x,
+      this.getHeight() * this.origin.y
+    )
   }
 
   protected appliedColor = Color.Transparent.copy()
 
-  public updateTransform3() {
+  public updateTransform() {
     const node = this.drawNode
     const matrix = node.matrix
     matrix.setFrom(this.parent?.drawNode.matrix ?? Matrix3.identify)
-    const origin = this.computeOrigin()
+    // const info = node.transformInfo
+    // info.setFrom(this.parent?.drawNode.transformInfo ?? TransformInfo)
+    const origin = this.getOrigin().copy()
     if (this.parent) {
-      TransformUtils.applySelf(origin, node.matrix)
+      Vector2Utils.applySelf(origin, matrix)
     }
     node.applyTransform(
-      this._translate,
+      this._translate.add(this.position),
       this._rotate,
       this._scale,
       this._skew,
       origin
     )
-    RectangleUtils.applyTo(this.initRectangle, matrix, this.rectangle)
-    QuadUtils.fromRectangleTo(this.initRectangle, this.drawQuad)
+    this.rectangle.setWidth(this.getWidth())
+    this.rectangle.setHeight(this.getHeight())
+    this.rectangle.setTopLeft(0, 0)
+
+    QuadUtils.fromRectangleTo(this.rectangle, this.drawQuad)
+
+    RectangleUtils.applySelf(this.rectangle, matrix)
     QuadUtils.applySelf(this.drawQuad, matrix)
 
+    this.computeColor()
 
     this.isPresent = !almostEquals(this.appliedColor.alpha, 0) ||
       !(almostEquals(this.rectangle.getWidth(), 0) ||
         almostEquals(this.rectangle.getHeight(), 0))
-
-    this.computeColor()
+    this.onTransformUpdated()
   }
 
-  onTransformApplied() {}
+  onTransformUpdated() {}
 
   /**
    * 返回一个平滑过渡的变换
    * @param clear 默认为 true，如果为 true，初次调用变换方法时，将根据当前时间为基准进行平滑变换，如果想开始一个新的平滑
    * 过渡，则应该保持默认值
    */
-  public transform(clear: boolean = true): DrawableTransition {
+  public transform(clear: boolean = true): TransformTransition {
     if (clear) {
       return this.transition.clear
     }
@@ -290,7 +305,6 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
   }
 
   public load(renderer: WebGLRenderer) {
-    this.invalidateSelf()
     this.onLoad(renderer);
   }
 
@@ -300,59 +314,56 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
 
   public onUpdate() {}
 
-  public update() {
+  protected isLoaded = false
+  public update(renderer: WebGLRenderer) {
+    if (!this.isLoaded) {
+      this.isLoaded = true
+      this.load(renderer)
+    }
     if (this.isAvailable) {
-      this.invalidateSelf()
-      this.doPreTask()
+      this.validate()
       this.updateTransition()
       this.onUpdate();
-      this.updateTransform3();
-      this.onTransformApplied()
-      this.invalidateLayout()
-      this.doOnInvalidate()
-      this.doPostTask()
+      this.updateTransform();
+      this.updateChildren(renderer)
     }
   }
+
+  protected updateChildren(renderer: WebGLRenderer) {}
 
   //////////////////////////////////////////////////////////////////
 
-  private hasInvalidate = false
   public invalidate(value: number = Invalidation.All, source: number = InvalidationSource.Self) {
-    this.invalidationValue |= value
-    this.invalidationSource |= source
-  }
-
-  public invalidateSelf() {
-    this.hasInvalidate = this.invalidationValue !== Invalidation.None
-    const value = this.invalidationValue
-    if ((value & Invalidation.Size) > 0) {
-      this.updateSize()
-      this.invalidationValue &= ~Invalidation.Size
+    if (source === InvalidationSource.Self) {
+      this.parent?.invalidate(value & Invalidation.ParentAutoSize, InvalidationSource.Child)
     }
-  }
-
-  public invalidateLayout() {
-    if ((this.invalidationValue & Invalidation.Layout) > 0) {
-      this.updateLayout()
-      this.invalidationValue &= ~Invalidation.Layout
+    if (source === InvalidationSource.Child) {
+      value &= ~(Invalidation.Draw | Invalidation.Size | Invalidation.Layout)
     }
-  }
 
-  public updateLayout() {}
-
-  public doOnInvalidate() {
-    if (this.hasInvalidate) {
-      this.onInvalidate()
-      this.hasInvalidate = false
+    const list = this.layoutList
+    for (let i = 0; i < list.length; i++) {
+      const layout = list[i]
+      if ((value & layout.invalidation) > 0) {
+        layout.invalidate()
+      }
     }
+
+    this.onInvalidate(value, source)
   }
 
-  public onInvalidate() {}
+  protected onInvalidate(value: number, source: number) {}
+
+  public validate() {}
 
   ///////////////////////////////////////////////////////////
 
   public drawNode: DrawNode = new DrawNode(this)
 
+  /**
+   * This method will be called after onDraw. It is used to send uniform data to shader
+   * @param node
+   */
   public beforeCommit(node: DrawNode) {}
 
   public draw(renderer: WebGLRenderer): void {
@@ -463,23 +474,4 @@ export abstract class Drawable<C extends BaseDrawableConfig = BaseDrawableConfig
     return this
   }
 
-  ///////////////////////////////////////////////////////////
-
-  protected task = new DrawableTask()
-
-  public post(task: () => void) {
-    this.task.post(task)
-  }
-
-  public pre(task: () => void) {
-    this.task.pre(task)
-  }
-
-  public doPreTask() {
-    this.task.consumePreTask()
-  }
-
-  public doPostTask() {
-    this.task.consumePostTask()
-  }
 }

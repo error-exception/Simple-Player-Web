@@ -1,5 +1,5 @@
 import {MouseEventRecorder} from "./MouseEventRecorder";
-import type {Vector2} from "../core/Vector2";
+import type {Vector2} from "../graphic/core/Vector2";
 
 /**
  * todo: 控制事件只能向根节点传递，类似与事件冒泡机制

@@ -5,14 +5,17 @@ import {easeInQuart, easeOut} from "../../../util/Easing";
 import BeatBooster from "../../../global/BeatBooster";
 import {DrawNode} from "../../drawable/DrawNode";
 import type {WebGLRenderer} from "../../WebGLRenderer";
-import {DynamicQuadBuffer} from "../../buffer/DynamicQuadBuffer";
-import {TextureStore} from "../../texture/TextureStore";
-import {Shaders} from "../../shader/Shaders";
-import type {AlphaTextureShaderWrapper} from "../../shader/AlphaTextureShaderWrapper";
-import Coordinate from "../../base/Coordinate";
+import {DynamicQuadBuffer} from "../../graphic/buffer/DynamicQuadBuffer";
+import {TextureStore} from "../../graphic/texture/TextureStore";
+import {Shaders} from "../../graphic/shader/Shaders";
+import type {AlphaTextureShaderWrapper} from "../../graphic/shader/AlphaTextureShaderWrapper";
 import {Blend} from "../../drawable/Blend";
-import {Vector2Utils} from "../../core/Vector2Utils";
+import {Vector2Utils} from "../../graphic/core/Vector2Utils";
 import type {BaseDrawableConfig} from "../../drawable/Drawable";
+import {Vector2} from "../../graphic/core/Vector2";
+import {Rectangle} from "../../graphic/shape/Rectangle";
+import {RectangleUtils} from "../../graphic/shape/RectangleUtils";
+import {Coordinate2} from "../../base/Coordinate2";
 
 export interface RippleConfig extends BaseDrawableConfig {
     maxThickWidth?: number
@@ -76,7 +79,7 @@ export class Ripples extends BeatDrawable<RippleConfig> {
 
     beforeCommit(node: DrawNode) {
         const shader = node.shader as AlphaTextureShaderWrapper
-        shader.orth = Coordinate.orthographicProjectionMatrix4
+        shader.orth = Coordinate2.orthographicProjectionMatrix4
         shader.sampler2D = 0
     }
 
@@ -85,15 +88,21 @@ export class Ripples extends BeatDrawable<RippleConfig> {
         if (ripples.length === 0) {
             return
         }
-        const texture = TextureStore.get('Ripple')
-        const center = Vector2Utils.middle(this.initRectangle.topLeft, this.initRectangle.bottomRight)//. Vector(this.position.x + this.width / 2, this.position.y + this.height / 2)
+        const texture = TextureStore.getTexture('Ripple')
+        const center = Vector2Utils.middle(Vector2.zero, this.size),
+          rippleRectangle = new Rectangle()
         let ripple: Ripple
         for (let i = 0; i < ripples.length; i++) {
             ripple = ripples[i]
             const currentRadius = ripple.innerRadius + ripple.currentThickWidth
+
+            rippleRectangle.topLeft.setFrom(center.minusValue(currentRadius))
+            rippleRectangle.bottomRight.setFrom(center.addValue(currentRadius))
+
+            RectangleUtils.applySelf(rippleRectangle, this.drawNode.matrix)
+
             node.drawRect(
-              center.minusValue(currentRadius),
-              center.addValue(currentRadius),
+              rippleRectangle,
               undefined,
               i
             )

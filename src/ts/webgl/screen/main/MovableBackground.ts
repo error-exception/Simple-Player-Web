@@ -1,19 +1,20 @@
 import BackgroundLoader from "../../../global/BackgroundLoader";
 import {Box} from "../../box/Box";
-import Coordinate from "../../base/Coordinate";
 import {Drawable} from "../../drawable/Drawable";
-import {Texture} from "../../core/Texture";
-import {TransformUtils} from "../../core/TransformUtils";
-import {Vector, Vector2} from "../../core/Vector2";
+import {Texture} from "../../graphic/core/Texture";
+import {TransformUtils} from "../../graphic/core/TransformUtils";
+import {Vector, Vector2} from "../../graphic/core/Vector2";
 import {easeOutQuint} from "../../../util/Easing";
-import type {DefaultShaderWrapper} from "../../shader/DefaultShaderWrapper";
+import type {DefaultShaderWrapper} from "../../graphic/shader/DefaultShaderWrapper";
 import {Color} from "../../base/Color";
 import type {WebGLRenderer} from "../../WebGLRenderer";
-import {TextureStore} from "../../texture/TextureStore";
+import {TextureStore} from "../../graphic/texture/TextureStore";
 import type {DrawNode} from "../../drawable/DrawNode";
 import {Anchor} from "../../drawable/Anchor";
 import {Size} from "../../drawable/Size";
 import {MouseState} from "../../../global/MouseState";
+import {Coordinate2} from "../../base/Coordinate2";
+import {Vector2Utils} from "../../graphic/core/Vector2Utils.js";
 
 // const vertexShader = `
 //     attribute vec4 a_position;
@@ -84,7 +85,7 @@ export class MovableBackground extends Drawable {
       this.onFinish = null
     }
     const min = Math.min
-    const viewport = Coordinate;
+    const viewport = Coordinate2;
     const {imageWidth, imageHeight} = this.texture
 
     const imageDrawInfo = this.imageDrawInfo
@@ -119,8 +120,8 @@ export class MovableBackground extends Drawable {
 
     const widthDiffer = scaledWidth - imageWidth
     const heightDiffer = scaledHeight - imageHeight
-    const x = (factor * widthDiffer / viewport.width) * (translate.x - Coordinate.centerX)
-    const y = (factor * heightDiffer / viewport.height) * (translate.y - Coordinate.centerY)
+    const x = (factor * widthDiffer / viewport.width) * (translate.x - Coordinate2.centerX)
+    const y = (factor * heightDiffer / viewport.height) * (translate.y - Coordinate2.centerY)
 
     this.setScale(Vector(scale))
     this.setTranslate(new Vector2(x, y))
@@ -145,7 +146,7 @@ export class MovableBackground extends Drawable {
 
   public beforeCommit(node: DrawNode) {
     const shader = node.shader as DefaultShaderWrapper
-    shader.orth = Coordinate.orthographicProjectionMatrix4
+    shader.orth = Coordinate2.orthographicProjectionMatrix4
     shader.sampler2D = 0
     shader.color = this.computeColor()
   }
@@ -159,9 +160,9 @@ export class MovableBackground extends Drawable {
 
     const imageBottomRight = new Vector2(info.offsetLeft + info.drawWidth, info.offsetTop + info.drawHeight)
     const imageScale = TransformUtils.scale(1 / this.texture.imageWidth, 1 / this.texture.imageHeight)
-    TransformUtils.applySelf(imageTopLeft, imageScale)
-    TransformUtils.applySelf(imageBottomRight, imageScale)
-    node.drawRect(this.initRectangle.topLeft, this.initRectangle.bottomRight)
+    Vector2Utils.applySelf(imageTopLeft, imageScale)
+    Vector2Utils.applySelf(imageBottomRight, imageScale)
+    node.drawRect(this.rectangle)
     node.drawTexture(this.texture, imageTopLeft, imageBottomRight)
   }
 

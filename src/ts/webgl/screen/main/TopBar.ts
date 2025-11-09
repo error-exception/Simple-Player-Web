@@ -2,21 +2,20 @@ import {Box} from "../../box/Box";
 import {Anchor} from "../../drawable/Anchor";
 import {Drawable} from "../../drawable/Drawable";
 import {Color} from "../../base/Color";
-import Coordinate from "../../base/Coordinate";
-import {TextureStore} from "../../texture/TextureStore";
+import {TextureStore} from "../../graphic/texture/TextureStore";
 import {type DrawNode} from "../../drawable/DrawNode";
-import type {DefaultShaderWrapper} from "../../shader/DefaultShaderWrapper";
-import {Vector} from "../../core/Vector2";
+import type {DefaultShaderWrapper} from "../../graphic/shader/DefaultShaderWrapper";
+import {Vector} from "../../graphic/core/Vector2";
 import {ImageDrawable} from "../../drawable/ImageDrawable";
-import type {TextureRegin} from "../../texture/TextureAtlas";
+import type {TextureRegin} from "../../graphic/texture/TextureAtlas";
 import {RowBox} from "../../box/RowBox";
 import {easeOutQuint} from "../../../util/Easing";
 import {playSound, Sound} from "../../../player/SoundEffect";
 import {VueUI} from "../../../global/GlobalState";
 import {Size} from "../../drawable/Size";
 import {OSUPanelStack} from "../../../osu/OSUPanelStack";
-import type {IconAtlas} from "../../texture/IconAtlas";
-import {TextDrawable} from "../../drawable/TextDrawable";
+import type {IconAtlas} from "../../graphic/texture/IconAtlas";
+import {Coordinate2} from "../../base/Coordinate2";
 
 export class TopBar extends Box {
 
@@ -31,7 +30,7 @@ export class TopBar extends Box {
     this.shadow.setAlpha(0)
     const atlas = TextureStore.getAtlas('Icons-Atlas')
     this.add(
-      new ImageDrawable(TextureStore.get('Square'), {
+      new ImageDrawable(TextureStore.getTexture('Square'), {
         size: Size.of(Size.FillParent, 36),
         color: Color.fromHex(0x191919)
       }),
@@ -64,35 +63,35 @@ export class TopBar extends Box {
             .setOnClick(() => {
               OSUPanelStack.push({ name: 'beatmapDetails' })
             }),
-          new Box({
-            size: Size.of(140, 36),
-            anchor: Anchor.TopRight,
-            children: [
-              new TextDrawable({
-                size: Size.of(70, 22),
-                text: '00:00',
-                anchor: Anchor.Center,
-                fontSize: 16,
-              }).apply(it => {
-                it.addDisposable(() => {
-                  const id = setInterval(() => {
-                    const date = new Date()
-                    const hour = date.getHours()
-                    const minute = date.getMinutes()
-                    const seconds = date.getSeconds()
-                    it.setText(`${
-                      hour < 10 ? '0' + hour : hour
-                    }:${
-                      minute < 10 ? '0' + minute : minute
-                    }:${
-                      seconds < 10 ? '0' + seconds : seconds
-                    }`)
-                  }, 1000)
-                  return () => clearInterval(id)
-                })
-              })
-            ]
-          }),
+          // new Box({
+          //   size: Size.of(110, 36),
+          //   anchor: Anchor.TopRight,
+          //   children: [
+          //     new TextDrawable({
+          //       size: Size.of(70, 22),
+          //       text: '00:00',
+          //       anchor: Anchor.Center,
+          //       fontSize: 16,
+          //     }).apply(it => {
+          //       it.addDisposable(() => {
+          //         const id = setInterval(() => {
+          //           const date = new Date()
+          //           const hour = date.getHours()
+          //           const minute = date.getMinutes()
+          //           const seconds = date.getSeconds()
+          //           it.setText(`${
+          //             hour < 10 ? '0' + hour : hour
+          //           }:${
+          //             minute < 10 ? '0' + minute : minute
+          //           }:${
+          //             seconds < 10 ? '0' + seconds : seconds
+          //           }`)
+          //         }, 1000)
+          //         return () => clearInterval(id)
+          //       })
+          //     })
+          //   ]
+          // }),
           new TopBarButton(atlas.getRegin<IconAtlas>('Icon-Notifications'), Anchor.TopRight)
             .setOnClick(() => {
               VueUI.notification = true
@@ -138,7 +137,7 @@ class TopBarButton extends Box {
 class ButtonBackground extends ImageDrawable {
 
   constructor() {
-    super(TextureStore.get('Square'), {
+    super(TextureStore.getTexture('Square'), {
       size: Size.of(36),
       color: Color.White.copy()
     });
@@ -189,18 +188,15 @@ class TopBarShadow extends Drawable {
 
   public beforeCommit(node: DrawNode) {
     const shader = node.shader as DefaultShaderWrapper
-    shader.orth = Coordinate.orthographicProjectionMatrix4
+    shader.orth = Coordinate2.orthographicProjectionMatrix4
     shader.sampler2D = 0
     shader.color = this.computeColor()
   }
 
   onDraw(node: DrawNode) {
-    node.drawRect(
-      this.initRectangle.topLeft,
-      this.initRectangle.bottomRight
-    )
+    node.drawRect(this.rectangle)
     node.drawTexture(
-      TextureStore.get('VerticalGradiant'),
+      TextureStore.getTexture('VerticalGradiant'),
       Vector(0, 0),
       Vector(1, 1)
     )

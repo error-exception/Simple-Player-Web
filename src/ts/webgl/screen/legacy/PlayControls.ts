@@ -1,14 +1,14 @@
 import {RowBox, RowBoxConfig} from "../../box/RowBox";
 import {ImageDrawable} from "../../drawable/ImageDrawable";
-import type {Texture} from "../../core/Texture";
-import type {TextureRegin} from "../../texture/TextureAtlas";
-import {Vector, Vector2} from "../../core/Vector2";
-import {TextureStore} from "../../texture/TextureStore";
+import type {Texture} from "../../graphic/core/Texture";
+import type {TextureRegin} from "../../graphic/texture/TextureAtlas";
+import {Vector, Vector2} from "../../graphic/core/Vector2";
+import {TextureStore} from "../../graphic/texture/TextureStore";
 import {Anchor} from "../../drawable/Anchor";
 import {Size} from "../../drawable/Size";
 import TempOSUPlayManager from "../../../player/TempOSUPlayManager";
 import OSUPlayer from "../../../player/OSUPlayer";
-import type {IconAtlas} from "../../texture/IconAtlas";
+import type {IconAtlas} from "../../graphic/texture/IconAtlas";
 
 export class PlayControls extends RowBox {
   constructor(config: RowBoxConfig) {

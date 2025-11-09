@@ -3,7 +3,7 @@ import {isValueEvent, isVectorEvent, OSBValueEvent, OSBVectorEvent} from "../../
 import {Transition} from "../../../transition/Transition";
 import {easeFunction} from "../StoryEvent2";
 import {TransitionEvent} from "./TransitionEvent";
-import {Vector, Vector2} from "../../../core/Vector2";
+import {Vector, Vector2} from "../../../graphic/core/Vector2";
 import {Sprite} from "../Sprite";
 
 export class StoryMoveEvent extends TransitionEvent<OSBValueEvent | OSBVectorEvent, Vector2>{

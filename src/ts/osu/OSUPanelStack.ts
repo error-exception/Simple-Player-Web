@@ -19,7 +19,7 @@ export class OSUPanelStack {
   public static push(panel: PanelStack) {
     this.stack.push(panel)
     playSound(Sound.WavePopIn)
-    this.onPanelPushed.fire(panel)
+    this.onPanelPushed.invoke(panel)
     this.panelZIndex.value++
   }
 
@@ -28,11 +28,11 @@ export class OSUPanelStack {
     const panel = stack.pop()
     if (panel) {
       playSound(Sound.WavePopOut)
-      this.onPanelPopped.fire(panel)
+      this.onPanelPopped.invoke(panel)
       this.panelZIndex.value--
     }
     if (stack.size() === 0) {
-      this.onAllPanelsPopped.fire()
+      this.onAllPanelsPopped.invoke()
     }
   }
 

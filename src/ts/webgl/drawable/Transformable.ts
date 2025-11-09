@@ -1,134 +1,157 @@
-import {Vector2} from "../core/Vector2";
-import {Color} from "../base/Color";
+import { color, type Color4 } from "../base/Color";
+import { vector2 } from "../graphic/matrix/vec2";
 
 export class Transformable {
 
-  public _translate: Vector2 = Vector2.newZero()
-  public _scale: Vector2 = Vector2.newOne()
+  public _translate: vec2 = vector2.create()
+  public _scale: vec2 = vector2.fromValues(1, 1)
   public _rotate: number = 0
-  public _color: Color = Color.Black.copy()
-  public _skew: Vector2 = Vector2.newZero()
+  public _color: Color4 = color.clone(color.Black)
+  public _skew: vec2 = vector2.create()
+  public _alpha: number = 1
 
-  getTranslate() {
-    return this._translate.copy()
+  public get translate() {
+    return vector2.clone(this._translate)
   }
 
-  setTranslate(t: Vector2) {
-    this._translate.setFrom(t)
+  public set translate(t: vec2) {
+    vector2.copy(this._translate, t)
   }
 
-  getScale() {
-    return this._scale.copy()
+  public get scale() {
+    return vector2.clone(this._scale)
   }
 
-  setScale(s: Vector2) {
-    this._scale.setFrom(s)
+  public set scale(s: vec2) {
+    vector2.copy(this._scale, s)
   }
 
-  getSkew() {
+  public get skew() {
     return this._skew
   }
 
-  setSkew(s: Vector2) {
-    this._skew.setFrom(s)
+  public set skew(s: vec2) {
+    vector2.copy(this._skew, s)
   }
 
-  getColor() {
-    return this._color.copy()
+  public get color() {
+    return color.clone(this._color)
+
   }
 
-  setColor(c: Color) {
-    this._color.red = c.red
-    this._color.green = c.green
-    this._color.blue = c.blue
+  public set color(c: Color4) {
+    color.copy(this._color, c)
   }
 
-  getTranslateX() {
-    return this._translate.x
+  public get translateX() {
+    return this._translate[0]
   }
 
-  setTranslateX(x: number) {
-    this._translate.x = x
+  public set translateX(x: number) {
+    this._translate[0] = x
   }
 
-  getTranslateY() {
-    return this._translate.y
+  public get translateY() {
+    return this._translate[1]
   }
 
-  setTranslateY(y: number) {
-    this._translate.y = y
+  public set translateY(y: number) {
+    this._translate[1] = y
   }
 
-  getScaleX() {
-    return this._scale.x
+  public get scaleX() {
+    return this._scale[0]
   }
 
-  setScaleX(x: number) {
-    this._scale.x = x
+  public set scaleX(x: number) {
+    this._scale[0] = x
+  }  
+
+  public get scaleY() {
+    return this._scale[1]
   }
 
-  getScaleY() {
-    return this._scale.y
+  public set scaleY(y: number) {
+    this._scale[1] = y
   }
 
-  setScaleY(y: number) {
-    this._scale.y = y
+  public get colorR() {
+    return this._color[0]
   }
 
-  getColorR() {
-    return this._color.red
+  public set colorR(r: number) {
+    this._color[0] = r
   }
 
-  setColorR(r: number) {
-    this._color.red = r
+  public get colorG() {
+    return this._color[1]
   }
 
-  getColorG() {
-    return this._color.green
+  public set colorG(g: number) {
+    this._color[1] = g
   }
 
-  setColorG(g: number) {
-    this._color.green = g
+  public get colorB() {
+    return this._color[2]
   }
 
-  getColorB() {
-    return this._color.blue
+  public set colorB(b: number) {
+    this._color[2] = b
   }
 
-  setColorB(b: number) {
-    this._color.blue = b
+  public get colorA() {
+    return this._color[3]
   }
 
-  getAlpha() {
-    return this._color.alpha
+  public set colorA(a: number) {
+    this._color[3] = a
   }
 
-  setAlpha(a: number) {
-    this._color.alpha = a
+  public get alpha() {
+    return this._alpha
   }
 
-  getSkewX() {
-    return this._skew.x
+  public set alpha(a: number) {
+    this._alpha = a
   }
 
-  setSkewX(x: number) {
-    this._skew.x = x
+  public get skewX() {
+    return this._skew[0]
   }
 
-  getSkewY() {
-    return this._skew.y
+  public set skewX(x: number) {
+    this._skew[0] = x
   }
 
-  setSkewY(y: number) {
-    this._skew.y = y
+  public get skewY() {
+    return this._skew[1]
   }
-
-  getRotate() {
+  public set skewY(y: number) {
+    this._skew[1] = y
+  }
+  public get rotate() {
     return this._rotate
   }
-
-  setRotate(r: number) {
+  public set rotate(r: number) {
     this._rotate = r
+  }
+
+  public set width(w: number) {
+    
+  }
+  public set height(h: number) {}
+
+  public set size(size: vec2) {}
+
+  public get width(): number {
+    return 0
+  }
+
+  public get height(): number {
+    return 0
+  }
+  public get size(): vec2 {
+    return vector2.create()
   }
 
   public apply(block: (t: this) => void) {
@@ -139,4 +162,5 @@ export class Transformable {
   public run<T>(block: (t: this) => T) {
     return block(this)
   }
+
 }

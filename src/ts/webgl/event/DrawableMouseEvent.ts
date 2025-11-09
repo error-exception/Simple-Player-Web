@@ -1,8 +1,8 @@
 import type {Drawable} from "../drawable/Drawable";
 import {IMouseEvent, MouseState} from "../../global/MouseState";
-import {Vector2} from "../core/Vector2";
+import {Vector2} from "../graphic/core/Vector2";
 import type {Nullable} from "../../type";
-import type {Disposable} from "../core/Disposable";
+import type {Disposable} from "../graphic/core/Disposable";
 import {MouseEventRecorder} from "./MouseEventRecorder";
 
 interface MouseEvent {

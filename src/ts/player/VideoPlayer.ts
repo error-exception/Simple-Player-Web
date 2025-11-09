@@ -76,8 +76,6 @@ class VideoPlayer extends AbstractPlayer {
       }
       this.previousObjectUrl = URL.createObjectURL(src)
       video.src = this.previousObjectUrl
-      // this.previousObjectUrl = URL.createObjectURL(src)
-      // video.src = this.previousObjectUrl
     } else {
       return
     }

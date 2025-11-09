@@ -1,10 +1,9 @@
 import {Box} from "../../box/Box";
-import {TextureStore} from "../../texture/TextureStore";
+import {TextureStore} from "../../graphic/texture/TextureStore";
 import {Size} from "../../drawable/Size";
 import {ImageDrawable} from "../../drawable/ImageDrawable";
 import {Color} from "../../base/Color";
-import {Vector} from "../../core/Vector2";
-import {TextDrawable} from "../../drawable/TextDrawable";
+import {Vector} from "../../graphic/core/Vector2";
 import {Anchor} from "../../drawable/Anchor";
 
 export class TestScreen extends Box {
@@ -12,27 +11,27 @@ export class TestScreen extends Box {
   constructor() {
     super({
       size: Size.FillParentSize,
+      origin: Anchor.BottomRight,
       children: [
         new StdNote().apply(it => {
-          it.setTranslate(Vector(100, 100))
+          it.transform()
+            .scaleTo(Vector(0.5), 1000)
+            .scaleTo(Vector(1), 1000)
+            .scaleTo(Vector(0.5), 1000)
+            .scaleTo(Vector(1), 1000)
+            .scaleTo(Vector(0.5), 1000)
+            .scaleTo(Vector(1), 1000)
+            .scaleTo(Vector(0.5), 1000)
+            .scaleTo(Vector(1), 1000)
+            .scaleTo(Vector(0.5), 1000)
+            .scaleTo(Vector(1), 1000)
+            .scaleTo(Vector(0.5), 1000)
+            .scaleTo(Vector(1), 1000)
+            .scaleTo(Vector(0.5), 1000)
+            .scaleTo(Vector(1), 1000)
+            .scaleTo(Vector(0.5), 1000)
+            .scaleTo(Vector(1), 1000)
         }),
-        new StdNote().apply(it => {
-          it.setTranslate(Vector(180, 100))
-        }),
-        new StdNote().apply(it => {
-          it.setTranslate(Vector(260, 100))
-        }),
-        new StdNote().apply(it => {
-          it.setTranslate(Vector(340, 100))
-        }),
-        new TextDrawable({
-          size: Size.of(Size.FillParent, 500),
-          text: "Next",
-          fontStyle: 'light',
-          fontSize: 36,
-          anchor: Anchor.Center,
-          fontColor: Color.fromHex(0xff00ff)
-        })
       ]
     });
   }
@@ -41,16 +40,17 @@ export class TestScreen extends Box {
 class StdNote extends Box {
   constructor() {
     super({
-      size: Size.of(64),
+      size: Size.of(128),
+      anchor: Anchor.Center,
       children: [
-        new ImageDrawable(TextureStore.get('WhiteRound'), {
+        new ImageDrawable(TextureStore.getTexture('WhiteRound'), {
           size: Size.FillParentSize,
-          color: Color.fromHex(0x0090ff)
-        }).apply((it) => {
-          it.setScale(Vector(0.9))
+          color: Color.fromHex(0x0090ff),
+          anchor: Anchor.Center
         }),
-        new ImageDrawable(TextureStore.get('StdNoteCircle'), {
-          size: Size.FillParentSize
+        new ImageDrawable(TextureStore.getTexture('StdNoteCircle'), {
+          size: Size.FillParentSize,
+          anchor: Anchor.Center
         })
       ]
     });

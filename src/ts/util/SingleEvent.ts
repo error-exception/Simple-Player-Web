@@ -18,7 +18,7 @@ export class SingleEvent<T> {
     }
   }
 
-  public fire(p: T) {
+  public invoke(p: T) {
     const list = this.eventList
     for (let i = 0; i < list.length; i++) {
       list[i](p)

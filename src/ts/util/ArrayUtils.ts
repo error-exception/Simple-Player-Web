@@ -1,5 +1,5 @@
 import TypedArray = NodeJS.TypedArray;
-import {almostEquals} from "../webgl/core/Utils";
+import {almostEquals} from "../webgl/graphic/core/Utils";
 
 export class ArrayUtils {
 
@@ -29,6 +29,13 @@ export class ArrayUtils {
         arr.splice(start, (end - start))
     }
 
+    public static remove<T>(arr: T[], item: T) {
+        const index = arr.indexOf(item)
+        if (index !== -1) {
+            arr.splice(index, 1)
+        }
+    }
+
     public static copyOfRange<T>(arr: T[], start: number, end: number): T[] {
         const newArray = new Array<T>(end - start)
         for (let i = start; i < end; i++) {
@@ -51,6 +58,12 @@ export class ArrayUtils {
             return false
         }
         return index >= 0 && index < arr.length
+    }
+
+    public static checkBound<T>(arr: T[] | TypedArray, index: number) {
+        if (!ArrayUtils.inBound(arr, index)) {
+            throw new Error("index out of bound")
+        }
     }
 
     public static everyValue<T>(arr: T[], param2: (it: T) => T) {

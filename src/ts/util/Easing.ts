@@ -42,6 +42,20 @@ export const easeOutElastic = (x: number): number => {
             ? 1
             : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
 }
+
+export const easeOutElasticHalf = (x: number): number => {
+    const elastic_const = 2 * Math.PI / .3;
+    const elastic_const2 = .3 / 4;
+    const elastic_offset_half = Math.pow(2, -10) * Math.sin((.5 - elastic_const2) * elastic_const);
+    return Math.pow(2, -10 * x) * Math.sin((.5 * x - elastic_const2) * elastic_const) + 1 - elastic_offset_half * x;
+}
+export const easeOutElasticQuarter = (x: number): number => {
+    const elastic_const = 2 * Math.PI / .3;
+    const elastic_const2 = .3 / 4;
+    const elastic_offset_quarter = Math.pow(2, -10) * Math.sin((.25 - elastic_const2) * elastic_const);
+    return Math.pow(2, -10 * x) * Math.sin((.25 * x - elastic_const2) * elastic_const) + 1 - elastic_offset_quarter * x;
+}
+
 export const easeOutBounce = (x: number): number => {
     const n1 = 7.5625;
     const d1 = 2.75;

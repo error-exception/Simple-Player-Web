@@ -1,11 +1,10 @@
-import {type Vector2} from "../core/Vector2";
-import {Texture} from "../core/Texture";
+import { Texture } from "../graphic/core/Texture";
 
 const canvas = new OffscreenCanvas(480, 480)
 const context = canvas.getContext('2d') as OffscreenCanvasRenderingContext2D
 
 interface TextureOP {
-  resize(size: Vector2): void
+  resize(size: vec2): void
 }
 
 /**
@@ -14,11 +13,11 @@ interface TextureOP {
  * @param size
  * @param draw
  */
-export function genTexture(gl: WebGL2RenderingContext, size: Vector2, draw: (context: OffscreenCanvasRenderingContext2D, op: TextureOP) => void) {
+export function genTexture(gl: WebGL2RenderingContext, size: vec2, draw: (context: OffscreenCanvasRenderingContext2D, op: TextureOP) => void) {
 
-  function resize(size: Vector2) {
-    canvas.width = size.x
-    canvas.height = size.y
+  function resize(size: vec2) {
+    canvas.width = size[0]
+    canvas.height = size[1]
   }
   resize(size)
   const op: TextureOP = { resize }
@@ -26,11 +25,11 @@ export function genTexture(gl: WebGL2RenderingContext, size: Vector2, draw: (con
   return new Texture(gl, canvas)
 }
 
-export function drawCanvas(size: Vector2, draw: (context: OffscreenCanvasRenderingContext2D, op: TextureOP) => void) {
+export function drawCanvas(size: vec2, draw: (context: OffscreenCanvasRenderingContext2D, op: TextureOP) => void) {
 
-  function resize(size: Vector2) {
-    canvas.width = size.x
-    canvas.height = size.y
+  function resize(size: vec2) {
+    canvas.width = size[0]
+    canvas.height = size[1]
   }
   resize(size)
   const op: TextureOP = { resize }

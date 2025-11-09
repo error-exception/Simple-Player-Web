@@ -1,8 +1,8 @@
-import { Matrix3 } from "../core/Matrix3"
-import {Vector, Vector2} from "../core/Vector2"
-import {MatrixUtils} from "../core/MatrixUtils";
+import { Matrix3 } from "../graphic/core/Matrix3"
+import {Vector, Vector2} from "../graphic/core/Vector2"
+import {MatrixUtils} from "../graphic/core/MatrixUtils";
 import {degreeToRadian} from "../../Utils";
-import {TransformUtils} from "../core/TransformUtils";
+import {TransformUtils} from "../graphic/core/TransformUtils";
 import {Color} from "./Color";
 
 export class Transform {

@@ -1,5 +1,6 @@
 import {Interpolation} from "../webgl/util/Interpolation";
 import type {Nullable} from "../type";
+import {clamp, int} from "../Utils";
 
 const MAX_CACHE_SIZE = 6
 class LocalBackgroundLoader {
@@ -25,9 +26,10 @@ class LocalBackgroundLoader {
         return false
       }
       const index = ~~Interpolation.valueAt(Math.random(), 0, this.backgroundFiles.length - 1)
-      this.currentBackgroundFile = this.backgroundFiles[index]
+      // this.currentBackgroundFile = this.backgroundFiles[index]
       this.currentBackgroundImage =
         await createImageBitmap(this.backgroundFiles[index])
+      this.backgroundSequence.length = 0
       this.isInit = true
       return true
     } catch (_) {
@@ -40,13 +42,16 @@ class LocalBackgroundLoader {
     await this.init()
   }
 
-  private currentBackgroundFile: Nullable<File> = null
+  // private currentBackgroundFile: Nullable<File> = null
   private currentBackgroundImage: Nullable<ImageBitmap> = null
+  private backgroundSequence: number[] = []
   public getBackground(): ImageBitmap {
-    let index = ~~Interpolation.valueAt(Math.random(), 0, this.backgroundFiles.length - 1)
-    if (this.currentBackgroundFile === this.backgroundFiles[index]) {
-      index = (index + 1) % this.backgroundFiles.length
+    let randomSequence = this.backgroundSequence
+    if (!randomSequence.length) {
+      randomSequence = this.randomSequence(this.backgroundFiles.length)
+      this.backgroundSequence = randomSequence
     }
+    const index = randomSequence.shift()!
     const image = this.currentBackgroundImage!
     this.recycleQueue.push(image)
     this.recycleImageIfNeed()
@@ -72,6 +77,34 @@ class LocalBackgroundLoader {
       const image = this.recycleQueue.shift()
       image?.close()
     }
+  }
+
+  private randomSequence(count: number) {
+    const result = [];
+    const mark = new Array(count).fill(true);
+    for (let k = 0; k < mark.length; k++) {
+      const rand = clamp(
+        int(Interpolation.valueAt(Math.random(), 0, count - 1)),
+        0, count - 1
+      );
+      if (mark[rand]) {
+        result.push(rand);
+        mark[rand] = false;
+      } else {
+        for (
+          let i = rand, j = 0;
+          j < mark.length;
+          i = (i + 1) % count, j++
+        ) {
+          if (mark[i]) {
+            result.push(i);
+            mark[i] = false;
+            break;
+          }
+        }
+      }
+    }
+    return result;
   }
 }
 

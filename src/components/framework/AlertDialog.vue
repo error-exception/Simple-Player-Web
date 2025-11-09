@@ -33,7 +33,7 @@ function closeSelf(data?: any) {
   dialogOpacityTo(0, 800, easeOutQuint)
   setTimeout(() => {
     mask.value = false
-    dialog.onDataReturned.fire(data)
+    dialog.onDataReturned.invoke(data)
   }, 800)
 }
 

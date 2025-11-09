@@ -4,7 +4,7 @@ import {VideoBackground} from "../songPlay/VideoBackground";
 import OSUPlayer, {OSUBackground} from "../../../player/OSUPlayer";
 import BackgroundLoader from "../../../global/BackgroundLoader";
 import ScreenManager from "../../util/ScreenManager";
-import {Vector2} from "../../core/Vector2";
+import {Vector2} from "../../graphic/core/Vector2";
 import {easeOutCubic} from "../../../util/Easing";
 import {onLeftSide, onRightSide} from "../../../global/GlobalState";
 import {UIState} from "../../../global/UISettings";
@@ -73,25 +73,27 @@ export class BackgroundScreen extends Box {
     })
     onLeftSide.collect(this.leftSideCollector)
     onRightSide.collect(this.rightSideCollector)
+    this.background.isVisible = false
+    this.videoBackground.isVisible = false
     this.addDisposable(() => {
       const scope = effectScope()
       scope.run(() => {
-        watch(BackgroundManager.currentLoader, value => {
-          if (value === BackgroundManager.Default || value === BackgroundManager.Custom) {
-            this.videoBackground.isVisible = false
-            this.background.updateBackground2(BackgroundManager.getBackground())
-          } else if (value === BackgroundManager.Beatmap) {
-            const bg = OSUPlayer.background.value
-            if (bg.video && !['main', 'legacy'].includes(ScreenManager.currentId.value)) {
-              this.videoBackground.isVisible = true
-              this.videoBackground.setVideo(bg.video)
-            }
-            this.background.updateBackground2(bg.image ?? BackgroundLoader.getBackground())
-          }
-          watch(BackgroundManager.customBackgroundChange, () => {
-            this.background.updateBackground2(BackgroundManager.getBackground())
-          })
-        })
+        // watch(BackgroundManager.currentLoader, value => {
+        //   if (value === BackgroundManager.Default || value === BackgroundManager.Custom) {
+        //     this.videoBackground.isVisible = false
+        //     this.background.updateBackground2(BackgroundManager.getBackground())
+        //   } else if (value === BackgroundManager.Beatmap) {
+        //     const bg = OSUPlayer.background.value
+        //     if (bg.video && !['main', 'legacy'].includes(ScreenManager.currentId.value)) {
+        //       this.videoBackground.isVisible = true
+        //       this.videoBackground.setVideo(bg.video)
+        //     }
+        //     this.background.updateBackground2(bg.image ?? BackgroundLoader.getBackground())
+        //   }
+        // })
+        // watch(BackgroundManager.customBackgroundChange, () => {
+        //   this.background.updateBackground2(BackgroundManager.getBackground())
+        // })
       })
       return scope.stop
     })

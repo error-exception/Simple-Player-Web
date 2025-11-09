@@ -3,7 +3,7 @@ import {OSUParser} from "./OSUParser";
 import {isAnimation, OSBFile, type OSBSprite, OSUFile} from "./OSUFile";
 import OSUPlayer from "../player/OSUPlayer";
 import {OSBParser} from "./OSBParser";
-import type {Disposable} from "../webgl/core/Disposable";
+import type {Disposable} from "../webgl/graphic/core/Disposable";
 import {OSZConfig} from "../global/GlobalState";
 
 

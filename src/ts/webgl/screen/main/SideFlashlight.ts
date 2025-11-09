@@ -1,7 +1,6 @@
 import {BeatBox} from "../../box/BeatBox";
 import {ImageDrawable} from "../../drawable/ImageDrawable";
-import {TextureStore} from "../../texture/TextureStore";
-import Coordinate from "../../base/Coordinate";
+import {TextureStore} from "../../graphic/texture/TextureStore";
 import {Anchor} from "../../drawable/Anchor";
 import {BeatState} from "../../../global/Beater";
 import AudioChannel from "../../../player/AudioChannel";
@@ -9,6 +8,7 @@ import {easeInQuad} from "../../../util/Easing";
 import {Blend} from "../../drawable/Blend";
 import type {Color} from "../../base/Color";
 import {Size} from "../../drawable/Size";
+import {Coordinate2} from "../../base/Coordinate2";
 
 export class SideFlashlight extends BeatBox {
 
@@ -19,8 +19,8 @@ export class SideFlashlight extends BeatBox {
     super({
       size: Size.FillParentSize,
     });
-    const w = width ?? Coordinate.width * 0.2
-    const texture = TextureStore.get('Gradiant')
+    const w = width ?? Coordinate2.width * 0.2
+    const texture = TextureStore.getTexture('Gradiant')
     const left = new ImageDrawable(texture, {
       size: Size.of(w, Size.FillParent),
       anchor: Anchor.TopLeft,
