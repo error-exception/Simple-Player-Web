@@ -59,7 +59,7 @@ export class BackgroundScreen extends Box {
     this.addDisposable(() => {
       return collectLatest(OSUPlayer.background, this.collector)
     })
-    this.add(
+    this.addTransformable(
       this.background,
       this.videoBackground
     )

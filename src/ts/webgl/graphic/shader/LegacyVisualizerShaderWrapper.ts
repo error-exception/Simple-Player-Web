@@ -1,10 +1,22 @@
-import {ShaderWrapper} from "./ShaderWrapper";
+import {ShaderWrapper, VerticesAddAction} from "./ShaderWrapper";
 import type {WebGLRenderer} from "../../WebGLRenderer";
 import {Shader} from "../core/Shader";
 import {ShaderSource} from "./ShaderSource";
 import {ArrayUtils} from "../../../util/ArrayUtils";
-import {UNI_ORTH} from "./ShaderConstant";
+import {UNI_FLAG_ALPHA, UNI_FLAG_ORTH, UNI_ORTH} from "./ShaderConstant";
+import type { DrawState } from "../../canvas/Canvas";
 
+export class LegacyVisualizerVerticesAddAction extends VerticesAddAction {
+
+  addVertex(state: DrawState, target: number[], ...vertex: vec2[]): void {
+    
+  }
+
+}
+
+/**
+ * @deprecated
+ */
 export class LegacyVisualizerShaderWrapper extends ShaderWrapper {
 
   constructor(renderer: WebGLRenderer) {
@@ -20,7 +32,8 @@ export class LegacyVisualizerShaderWrapper extends ShaderWrapper {
   private _orth: Float32Array = ArrayUtils.emptyFloat32Array
   public set orth(mat4: Float32Array) {
     if (!ArrayUtils.equals(this._orth, mat4)) {
-      this.shader.setUniformMatrix4fv(UNI_ORTH, mat4)
+      this.uniformDirtyFlag |= UNI_FLAG_ORTH
+      // this.shader.setUniformMatrix4fv(UNI_ORTH, mat4)
       this._orth = mat4
     }
   }
@@ -28,7 +41,8 @@ export class LegacyVisualizerShaderWrapper extends ShaderWrapper {
   private _alpha = Number.NaN
   public set alpha(a: number) {
     if (this._alpha !== a) {
-      this.shader.setUniform1f('u_alpha', a)
+      this.uniformDirtyFlag |= UNI_FLAG_ALPHA
+      // this.shader.setUniform1f('u_alpha', a)
       this._alpha = a
     }
   }

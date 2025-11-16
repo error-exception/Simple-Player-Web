@@ -1,10 +1,9 @@
-import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
+import { createApp } from 'vue';
+import App from './App.vue';
+import './style.css';
 import { playSound, Sound } from "./ts/player/SoundEffect";
-import { matrix3, identity } from './ts/webgl/graphic/matrix/mat3';
+import { Transformable } from './ts/webgl/drawable/Transformable';
 import { vector2 } from './ts/webgl/graphic/matrix/vec2';
-import { degreeToRadian } from './ts/Utils';
 
 
 const app = createApp(App)
@@ -47,26 +46,17 @@ app.directive('osu-default', {
   }
 })
 app.mount('#app');
-// // root world matrix
-// const rootWorldMatrix = matrix3.identity(matrix3.create())
 
-// // parent world matrix
+const parent = new Transformable()
+const child = new Transformable()
 
-// const parentWorldMatrix = matrix3.identity(matrix3.create())
-// matrix3.translate(parentWorldMatrix, parentWorldMatrix, vector2.fromValues(23, 40))
-// matrix3.multiply(parentWorldMatrix, parentWorldMatrix, rootWorldMatrix)
-// // child local matrix
+parent.addTransformable(child)
 
+parent.translate = vector2.fromValues(100, 100)
+child.scale = vector2.fromValues(0.5, 0.5)
 
-// const translate = vector2.fromValues(23, 40)
+// parent.updateTransformFromRoot()
 
-// const identity = matrix3.identity(matrix3.create())
-
-// let mb = matrix3.translate(identity, identity, translate)
-
-// // print world matrix
-// console.log(
-//   rootWorldMatrix,
-//   parentWorldMatrix,
-//   matrix3.multiply(matrix3.create(), parentWorldMatrix, mb)
-// )
+console.log(child.localToWorld([10, 10]))
+console.log(parent.localToWorld([10, 10]))
+console.log(parent.worldToLocal([100, 100]))

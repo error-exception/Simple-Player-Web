@@ -22,11 +22,11 @@ export class BackgroundScreen extends ViewGroup {
   private setupVideoBackground(bg: OSUBackground) {
     if (bg.video && OSZConfig.loadVideo) {
       this.videoBackground.video = bg.video
-      this.videoBackground.transform().fadeTo(1, 220, easeOut)
-      this.movableBackground.transform().fadeTo(0, 220, easeOut)
+      this.videoBackground.clearTransform().fadeTo(1, 220, easeOut)
+      this.movableBackground.clearTransform().fadeTo(0, 220, easeOut)
     } else {
-      this.videoBackground.transform().fadeTo(0, 220, easeOut)
-      this.movableBackground.transform().fadeTo(1, 220, easeOut)
+      this.videoBackground.clearTransform().fadeTo(0, 220, easeOut)
+      this.movableBackground.clearTransform().fadeTo(1, 220, easeOut)
     }
   }
 
@@ -83,13 +83,13 @@ export class BackgroundScreen extends ViewGroup {
       watch(OSUPlayer.currentOSZFile, osz => {
         if (osz.osbFile.sprites.length > 0) {
           this.storyboardView.loadStoryboard(osz)
-          this.storyboardView.transform().fadeTo(1, 220, easeOut)
-          this.movableBackground.transform().fadeTo(0, 220, easeOut)
-          this.videoBackground.transform().fadeTo(0, 220, easeOut)
+          this.storyboardView.clearTransform().fadeTo(1, 220, easeOut)
+          this.movableBackground.clearTransform().fadeTo(0, 220, easeOut)
+          this.videoBackground.clearTransform().fadeTo(0, 220, easeOut)
         } else {
-          this.storyboardView.transform().fadeTo(0, 220, easeOut)
-          this.movableBackground.transform().fadeTo(1, 220, easeOut)
-          this.videoBackground.transform().fadeTo(1, 220, easeOut)
+          this.storyboardView.clearTransform().fadeTo(0, 220, easeOut)
+          this.movableBackground.clearTransform().fadeTo(1, 220, easeOut)
+          this.videoBackground.clearTransform().fadeTo(1, 220, easeOut)
         }
       })
     })
@@ -107,10 +107,6 @@ export class BackgroundScreen extends ViewGroup {
   public show() {
     this.movableBackground.isVisible = true
     this.videoBackground.isVisible = true
-  }
-
-  protected onDispose(): void {
-    super.onDispose()
   }
 
 }

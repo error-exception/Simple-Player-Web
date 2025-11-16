@@ -1,24 +1,13 @@
 <script setup lang="ts">
-import OSUPanel from "../../framework/OSUPanel.vue";
-import {Color} from "../../../ts/webgl/base/Color";
+import { OSUDialogs } from "../../../ts/osu/OSUDialogs";
+import { Color } from "../../../ts/webgl/base/Color";
+import BasicButton from "../../common/BasicButton.vue";
 import Column from "../../common/Column.vue";
 import Row from "../../common/Row.vue";
-import BasicButton from "../../common/BasicButton.vue";
-import {OSUDialogs} from "../../../ts/osu/OSUDialogs";
-import {ref} from "vue";
-import {TexturePacker} from "../../../ts/webgl/graphic/texture/TexturePack";
+import OSUPanel from "../../framework/OSUPanel.vue";
 
 const showTest = () => {
   OSUDialogs.testDialog.show()
-}
-
-const canvasRef = ref<HTMLCanvasElement | null>(null);
-
-const testPack = () => {
-  const canvas = canvasRef.value
-  if (!canvas) return
-  const packer = new TexturePacker()
-  packer.testDraw(canvas.getContext('2d')!)
 }
 
 </script>
@@ -42,7 +31,6 @@ const testPack = () => {
             :color="Color.fromRGB(59, 130, 246 )"
             class="px-4 py-2 text-white rounded-md"
             v-osu-button
-            @click="testPack"
         >
           Test Pack
         </BasicButton>

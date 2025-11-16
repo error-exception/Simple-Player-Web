@@ -65,11 +65,11 @@ export class BackButton extends ViewGroup implements IBeat {
   public onHover(event: MouseEvent): boolean {
     this.isHover = true
     const width = 60
-    this.background.transform()
+    this.background.clearTransform()
       .widthTo(120 * 1.2, 500, easeOutElastic)
-    this.darkBackground.transform()
+    this.darkBackground.clearTransform()
       .widthTo(width * 1.2, 500, easeOutElastic)
-    this.darkBackground.transform()
+    this.darkBackground.clearTransform()
       .colorTo(this.darkColor, 300, easeOutQuint)
     playSound(Sound.DefaultHover)
     return true
@@ -78,11 +78,11 @@ export class BackButton extends ViewGroup implements IBeat {
   public onHoverLost(event: MouseEvent): boolean {
     this.isHover = false
     const width = 60
-    this.background.transform()
+    this.background.clearTransform()
       .widthTo(120, 300, easeOutQuint)
-    this.darkBackground.transform()
+    this.darkBackground.clearTransform()
       .widthTo(width, 300, easeOutQuint)
-    this.darkBackground.transform()
+    this.darkBackground.clearTransform()
       .colorTo(this.colour, 300, easeOutQuint)
     return true
   }
@@ -94,11 +94,11 @@ export class BackButton extends ViewGroup implements IBeat {
 
   onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {
     if (this.isHover) {
-      this.icon.transform()
+      this.icon.clearTransform()
         .scaleTo(vector2.fromValues(0.9, 0.9), 60, easeOut)
         .scaleTo(vector2.fromValues(1, 1), gap * 2, easeOutQuint)
     } else {
-      this.icon.transform()
+      this.icon.clearTransform()
         .scaleTo(vector2.fromValues(0.94, 0.94), 60, easeOut)
         .scaleTo(vector2.fromValues(1, 1), gap * 2, easeOutQuint)
     }

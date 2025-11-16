@@ -29,7 +29,7 @@ export class TopBar extends Box {
     this.shadow = new TopBarShadow()
     this.shadow.setAlpha(0)
     const atlas = TextureStore.getAtlas('Icons-Atlas')
-    this.add(
+    this.addTransformable(
       new ImageDrawable(TextureStore.getTexture('Square'), {
         size: Size.of(Size.FillParent, 36),
         color: Color.fromHex(0x191919)
@@ -122,7 +122,7 @@ class TopBarButton extends Box {
       size: Size.of(36), anchor
     });
     this.enableMouseEvent()
-    this.add(
+    this.addTransformable(
       new ButtonBackground(),
       new ImageDrawable(textureRegin, {
         size: Size.of(20),

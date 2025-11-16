@@ -29,7 +29,6 @@ export class StorySprite extends Transformable implements Disposable {
   public finalOrigin = vector2.create()
   public anchor = vector2.create()
   public position = vector2.create()
-
   protected _size = vector2.create()
 
   public set width(w: number) {
@@ -54,6 +53,8 @@ export class StorySprite extends Transformable implements Disposable {
     return this._size
   }
 
+  public spriteTranslate: vec2 = vector2.create()
+
   public texture: Nullable<Texture | TextureRegin> = null
 
   public blend = Blend.Normal
@@ -75,8 +76,8 @@ export class StorySprite extends Transformable implements Disposable {
   constructor(sprite: OSBSprite, source: OSZ, protected storyTextureStore: StoryTextureStore) {
     super()
     this.layer = sprite.layer
-    this.translateX = sprite.x
-    this.translateY = sprite.y
+    this.spriteTranslate[0] = sprite.x
+    this.spriteTranslate[1] = sprite.y
     // this.position[0] = sprite.x
     // this.position[1] = sprite.y
     this.filePath = sprite.filePath
@@ -163,15 +164,28 @@ export class StorySprite extends Transformable implements Disposable {
     this.liveState = LiveState.Alive
     canvas.save()
     const pivotX = this.width * this.finalOrigin[0], pivotY = this.height * this.finalOrigin[1]
-    canvas.base(0, 0)
-    canvas.pivot(pivotX, pivotY)
+    // canvas.base(0, 0)
+    // canvas.pivot(pivotX, pivotY)
+    const finalTranslateX = -pivotX + this.spriteTranslate[0]
+    const finalTranslateY = -pivotY + this.spriteTranslate[1]
 
-    const finalTranslateX = -pivotX + this._translate[0]
-    const finalTranslateY = -pivotY + this._translate[1]
-    canvas.translate(finalTranslateX, finalTranslateY)
-    canvas.scale(this._scale[0] * (this.flipX ? -1 : 1), this._scale[1] * (this.flipY ? -1 : 1))
 
-    canvas.rotate(this._rotate)
+
+    this.actualOrigin = [pivotX, pivotY]
+    this.translate = [finalTranslateX, finalTranslateY]
+    this.scale = [this._scale[0] * (this.flipX ? -1 : 1), this._scale[1] * (this.flipY ? -1 : 1)]
+    this.transformationChanged = true
+
+    this.updateTransformFromRoot()
+
+    canvas.setMatrix3(this.worldMatrix)
+
+    
+    
+    // canvas.translate(finalTranslateX, finalTranslateY)
+    // canvas.scale(this._scale[0] * (this.flipX ? -1 : 1), this._scale[1] * (this.flipY ? -1 : 1))
+
+    // canvas.rotate(this._rotate)
 
     canvas.setBlend(this.blend)
     canvas.setColor(this._color)

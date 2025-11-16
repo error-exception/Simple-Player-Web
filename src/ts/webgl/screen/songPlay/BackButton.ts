@@ -33,7 +33,7 @@ export class BackButton extends BeatBox {
     const color = Color.fromRGB(236, 72, 153)
     this.color = color
     this.darkColor = ColorUtils.lum(color, -.35)
-    this.add(
+    this.addTransformable(
       this.background = new ImageDrawable(square, {
         size: Size.FillParentSize,
         anchor: Anchor.CenterLeft,

@@ -3,12 +3,11 @@ import { BeatDispatcher, type IBeat } from "../../../global/Beater";
 import { Time } from "../../../global/Time";
 import { OSUApplication } from "../../../OSUApplication";
 import { easeInQuart, easeOut } from "../../../util/Easing";
-import { color } from "../../base/Color";
 import type { Canvas } from "../../canvas/Canvas";
 import { Blend } from "../../drawable/Blend";
-import type { BaseDrawableConfig } from "../../drawable/Drawable";
 import { DynamicQuadBuffer } from "../../graphic/buffer/DynamicQuadBuffer";
 import { vector2 } from "../../graphic/matrix/vec2";
+import type { AlphaTextureExtra } from "../../graphic/shader/AlphaTextureShaderWrapper";
 import { Shaders } from "../../graphic/shader/Shaders";
 import { TextureStore } from "../../graphic/texture/TextureStore";
 import { ObjectTransition } from "../../transition/Transition";
@@ -77,8 +76,13 @@ export class Ripples extends View implements IBeat {
     }
   }
 
+  // TODO: define an interface to type this object. used for AlphaTextureShader
+  private extra: AlphaTextureExtra = {
+    applyAlpha: 0
+  }
+
   public onDraw(canvas: Canvas) {
-    canvas.setColor(color.White)
+    
     const ripples = this.ripples
     if (ripples.length === 0) {
       return
@@ -97,8 +101,9 @@ export class Ripples extends View implements IBeat {
 
       const currentRadius = ripple.innerRadius + ripple.currentThickWidth;
 
-      canvas.setGlobalAlpha(ripple.alpha)
-
+      this.extra.applyAlpha = ripple.alpha
+      canvas.setExtra(this.extra)
+      
       canvas.drawTexture(
         texture,
         center[0] - currentRadius,

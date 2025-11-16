@@ -30,7 +30,7 @@ export class Menu extends Box {
       size: Size.of(Size.FillParent, 96),
       anchor: Anchor.Center,
     });
-    this.add(
+    this.addTransformable(
       new ImageDrawable(TextureStore.getTexture('Square') ,{
         size: Size.FillParentSize,
         color: Color.fromHex(0x323232)
@@ -170,7 +170,7 @@ class MenuButton extends BeatBox<MenuButtonConfig> {
       autoSize: Axes.X
     });
     const atlas = TextureStore.getAtlas('Icons-Atlas')
-    this.add(
+    this.addTransformable(
       new MenuButtonBackground(config.color, config.sound, {
         size: config.size,
         origin: config.backgroundOrigin,

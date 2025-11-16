@@ -47,26 +47,26 @@ export class MovableBackground extends ViewGroup {
   public set backgroundImage(image: ImageBitmap) {
     if (this.currentShowing === 0) {
       this.back.image = image
-      this.back.transform().fadeTo(1, 220)
-      this.front.transform().fadeTo(0, 220)
+      this.back.clearTransform().fadeTo(1, 220)
+      this.front.clearTransform().fadeTo(0, 220)
       this.currentShowing = 1
     } else if (this.currentShowing === 1) {
       this.front.image = image
-      this.front.transform().fadeTo(1, 220)
-      this.back.transform().fadeTo(0, 220)
+      this.front.clearTransform().fadeTo(1, 220)
+      this.back.clearTransform().fadeTo(0, 220)
       this.currentShowing = 0
     }
   }
 
   public in() {
-    this.transform()
+    this.clearTransform()
       .delay(300).scaleTo(vector2.fromValues(0.996, 0.996), 500, easeOutQuint)
       .delay(300).moveTo(vector2.fromValues(0, 35), 500, easeOutQuint)
       .delay(300).fadeTo(0.7, 500, easeOutQuint)
   }
 
   public out() {
-    this.transform()
+    this.clearTransform()
       .scaleTo(vector2.fromValues(1, 1), 500, easeOutQuint)
       .moveTo(vector2.create(), 500, easeOutQuint)
       .fadeTo(1, 500, easeOutQuint)

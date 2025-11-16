@@ -1,14 +1,8 @@
-import {ViewGroup, ViewGroupOptions} from "../view/ViewGroup";
-import {View, ViewOptions} from "../view/View";
-import {Axis} from "../drawable/Axis";
-import {anchor, Anchor} from "../drawable/Anchor";
+import { anchor } from "../drawable/Anchor";
 import { vector2 } from "../graphic/matrix/vec2";
+import { View } from "../view/View";
+import { ViewGroup } from "../view/ViewGroup";
 
-export interface ColumnOptions extends ViewGroupOptions {
-
-  gap?: number
-
-}
 
 export class Column extends ViewGroup {
 
@@ -16,11 +10,10 @@ export class Column extends ViewGroup {
   private middleChildren: View[] = []
   private bottomChildren: View[] = []
 
-  private gap: number = 0
+  public gap: number = 0
 
-  constructor(options: ColumnOptions) {
-    super(options);
-    this.gap = options.gap ?? 0
+  constructor() {
+    super();
   }
 
   protected onChildChanged(view: View, isRemove: boolean) {
@@ -62,16 +55,16 @@ export class Column extends ViewGroup {
       bottomLength = bottomChildren.length;
 
     for (i = 0; i < topLength; i++) {
-      topHeight += topChildren[i].getHeight()
+      topHeight += topChildren[i].height
     }
     for (i = 0; i < middleLength; i++) {
-      middleHeight += middleChildren[i].getHeight()
+      middleHeight += middleChildren[i].height
     }
     for (i = 0; i < bottomLength; i++) {
-      bottomHeight += bottomChildren[i].getHeight()
+      bottomHeight += bottomChildren[i].height
     }
 
-    const width = this.getWidth(), height = this.getHeight()
+    const width = this.width, height = this.height
     const x = this.position[0], y = this.position[1]
     let offsetTop = 0, remainsLength = height
 
@@ -81,13 +74,13 @@ export class Column extends ViewGroup {
       const anchorX = child.anchor[0]
       vector2.set(
         temp,
-        x + width * anchorX + child.getWidth() * anchorX, 
+        x + width * anchorX + child.width * anchorX, 
         y + offsetTop
       )
       child.position = temp
       // TODO: apply gap
-      offsetTop += child.getHeight()
-      remainsLength -= child.getHeight()
+      offsetTop += child.height
+      remainsLength -= child.height
     }
 
     offsetTop = height
@@ -96,12 +89,12 @@ export class Column extends ViewGroup {
       const anchorX = child.anchor[0]
       vector2.set(
         temp,
-        x + width * anchorX + child.getWidth() * anchorX,
+        x + width * anchorX + child.width * anchorX,
         y + offsetTop
       )
       // TODO: apply gap
-      offsetTop -= child.getHeight()
-      remainsLength -= child.getHeight()
+      offsetTop -= child.height
+      remainsLength -= child.height
     }
 
     // TODO: layout middle children

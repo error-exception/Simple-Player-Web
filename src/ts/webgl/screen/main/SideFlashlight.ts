@@ -36,7 +36,7 @@ export class SideFlashlight extends BeatBox {
     right.setScaleX(-1)
     left.setAlpha(0)
     right.setAlpha(0)
-    this.add(left, right)
+    this.addTransformable(left, right)
     this.left = left
     this.right = right
   }

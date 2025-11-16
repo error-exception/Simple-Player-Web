@@ -16,10 +16,16 @@ import { hasFlag } from "../../util/flagUtils";
 import { DrawState } from "../../canvas/Canvas";
 import { Coordinate2 } from "../../base/Coordinate2";
 
+export interface AlphaTextureExtra {
+  applyAlpha: number
+}
+
 class AlphaTextureVerticesAddAction extends VerticesAddAction {
 
   addVertex(state: DrawState, target: number[], ...vertex: vec2[]) {
-    const alpha = state.globalAlpha
+
+    const extraAlpha = this.extra ? Reflect.get(this.extra, "applyAlpha") : undefined
+    const alpha = extraAlpha !== undefined ? extraAlpha : state.globalAlpha
     const shader = this.shader as AlphaTextureShaderWrapper
     shader.sampler2D = 0
     shader.orth = shader.renderer.currentOrth()

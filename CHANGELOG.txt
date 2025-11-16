@@ -1,3 +1,10 @@
+截止至 2025-11-16
+    1. 从 canvas 中移除矩阵操作；
+    2. 当 ScreenManager.pop() 被调用时，自动移除当前 Screen；
+    3. 在 Transformable class 中增加矩阵相关操作，优化本地、世界坐标、变换中心的转换；
+    4. 增加简单的 osu!stable 主界面 Screen；
+    5. 其他更新......
+
 截止至 2025-11-09
     1. 重构 UI system，优化自定义组件的开发效率；
     2. 增加 Canvas 类，简化在 View 中绘制图形的操作；

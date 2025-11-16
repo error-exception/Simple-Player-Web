@@ -19,7 +19,7 @@ export class LegacyPlayScreen extends BeatBox {
     super({
       size: Size.FillParentSize,
     });
-    this.add(
+    this.addTransformable(
       this.logo = new LegacyLogo({
         size: Size.of(200),
         offset: Vector(36, 65),

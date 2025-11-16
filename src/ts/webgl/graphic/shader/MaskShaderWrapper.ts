@@ -10,7 +10,7 @@ import { ShaderWrapper, VerticesAddAction } from "./ShaderWrapper";
 class MaskShaderVerticesAddAction extends VerticesAddAction {
 
   addVertex(state: DrawState, target: number[], ...vertex: vec2[]): void {
-    if (vertex.length !== 4) {
+    if (vertex.length !== 4 && vertex.length !== 8) {
       return
     }
 
@@ -24,6 +24,15 @@ class MaskShaderVerticesAddAction extends VerticesAddAction {
         b[0], b[1], 1, 0,
         c[0], c[1], 0, 1,
         d[0], d[1], 1, 1
+      )
+    } else if (vertex.length === 8) {
+      const a = vertex[0], b = vertex[1], c = vertex[2], d = vertex[3],
+        e = vertex[4], f = vertex[5], g = vertex[6], h = vertex[7]
+      target.push(
+        a[0], a[1], b[0], b[1],
+        c[0], c[1], d[0], d[1],
+        e[0], e[1], f[0], f[1],
+        g[0], g[1], h[0], h[1]
       )
     }
   }

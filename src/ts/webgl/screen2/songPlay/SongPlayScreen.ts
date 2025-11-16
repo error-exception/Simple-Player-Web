@@ -23,7 +23,6 @@ export class SongPlayScreen extends Screen {
   private readonly fadeLogo: FadeLogo
   private readonly bottomBar: ViewGroup
 
-
   constructor() {
     super();
     const fadeLogo = new FadeLogo()
@@ -48,6 +47,7 @@ export class SongPlayScreen extends Screen {
       logoContainer.anchor = anchor.BottomRight
       logoContainer.translate = vector2.fromValues(32, 68)
       logoContainer.scale = vector2.create()
+      logoContainer.origin = anchor.Center
       const logo = new LogoBounceBox(vector2.fromValues(200, 200))
       {
         logo.anchor = anchor.Center
@@ -72,52 +72,50 @@ export class SongPlayScreen extends Screen {
       const widgetRow = new Row()
       {
         widgetRow.size = SizeMode.fill()
-
       }
       this.bottomBar = bottomBar
       bottomBar.addViews([bottomBarBackground])
     }
-    this.view.size = SizeMode.fill()
-    this.view.addViews([fadeLogo, bottomBar, backButton, logoContainer])
+    this.addViews([fadeLogo, bottomBar, backButton, logoContainer])
   }
 
   public onEntering(): void {
     super.onEntering()
     const one = vector2.fromValues(1, 1)
-    this.fadeLogo.transform()
+    this.fadeLogo.clearTransform()
       .scaleTo(one, 500, easeOutQuint)
-    this.backButton.transform()
+    this.backButton.clearTransform()
       .moveXTo(0, 500, easeOutQuint)
-    this.bottomBar.transform()
+    this.bottomBar.clearTransform()
       .moveYTo(0, 500, easeOutQuint)
-    this.logoContainer.transform()
+    this.logoContainer.clearTransform()
       .scaleTo(one, 500, easeOutQuint)
     // restore background transform
     const background = inject(BackgroundScreen)
-    background.transform()
+    background.clearTransform()
       .scaleTo(one, 500, easeOutQuint)
       .fadeTo(1, 500, easeOutQuint)
       .moveTo(vector2.create(), 500, easeOutQuint)
-    this.view.transform()
+    this.clearTransform()
       .fadeTo(1, 300, easeOutQuint)
   }
 
   public onExiting(): void {
     super.onExiting()
     const zero = vector2.create()
-    this.fadeLogo.transform()
+    this.fadeLogo.clearTransform()
       .scaleTo(zero, 300, easeOutQuint)
-    this.backButton.transform()
+    this.backButton.clearTransform()
       .moveXTo(-120, 300, easeOutQuint)
-    this.bottomBar.transform()
+    this.bottomBar.clearTransform()
       .moveYTo(48, 300, easeOutQuint)
-    this.logoContainer.transform()
+    this.logoContainer.clearTransform()
       .scaleTo(zero, 300, easeOutQuint)
-    this.view.transform()
+    this.clearTransform()
       .fadeTo(0, 300, easeOutQuint)
     // revert background transform
     const background = inject(BackgroundScreen)
-    background.transform()
+    background.clearTransform()
       .scaleTo(vector2.fromValues(0.996, 0.996), 500, easeOutQuint)
       .moveTo(vector2.fromValues(0, 35), 500, easeOutQuint)
       .fadeTo(0.8, 500, easeOutQuint)

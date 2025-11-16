@@ -17,6 +17,7 @@ import { vector2 } from "./webgl/graphic/matrix/vec2";
 import { TextureStore } from "./webgl/graphic/texture/TextureStore";
 import { Row } from "./webgl/layout/Row";
 import { BackgroundScreen } from "./webgl/screen2/background/BackgroundScreen";
+import { LegacyScreen } from "./webgl/screen2/legacy/LegacyScreen";
 import { LogoBounceBox } from "./webgl/screen2/main/BeatLogoBox";
 import { MainScreen } from "./webgl/screen2/main/MainScreen";
 import { OverlayScreen } from "./webgl/screen2/overlay/OverlayScreen";
@@ -84,19 +85,6 @@ export class OSUApplication {
     const integrator = MouseEventIntegrator.getInstance()
     integrator.setRootView(renderer.root)
     integrator.initialize()
-  }
-
-  public static renderTextView(renderer: WebGLRenderer) {
-    const root = renderer.root
-    const text = new TextView()
-    {
-      text.text = "Jumping Beat`abcdefghijklmn`"
-      text.size = vector2.fromValues(500, 300)
-      text.color = color.White
-      text.textSize = 64
-      text.textAlignment = "right"
-    }
-    root.addView(text)
   }
 
   private static renderBackground(renderer: WebGLRenderer) {

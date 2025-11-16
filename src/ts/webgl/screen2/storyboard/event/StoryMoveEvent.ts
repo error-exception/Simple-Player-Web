@@ -69,10 +69,10 @@ export class StoryMoveEvent extends TransitionEvent<OSBValueEvent | OSBVectorEve
     const y = this.transitionYQueue.update(timestamp)
     const sprite = this.sprite
     if (x !== null) {
-      sprite._translate[0] = x
+      sprite.spriteTranslate[0] = x
     }
     if (y !== null) {
-      sprite._translate[1] = y
+      sprite.spriteTranslate[1] = y
     }
   }
 

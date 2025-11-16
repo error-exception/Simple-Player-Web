@@ -91,6 +91,7 @@ export class StoryboardView extends View {
     if (!renderer) {
       return
     }
+    
     renderer.pushOrth(this.orth)
     this.storyboardLayer?.draw(canvas)
     renderer.popOrth()
@@ -118,10 +119,7 @@ export class StoryScreen extends Screen {
       storyboardView.anchor = anchor.Center
       this.storyboardView = storyboardView
     }
-
-    this.view.size = SizeMode.fill()
-    this.view.anchor = anchor.Center
-    this.view.addView(storyboardView)
+    this.addView(storyboardView)
     this.shouldCache = false
 
     window.addEventListener("keydown", this.closeSelf)
@@ -136,7 +134,7 @@ export class StoryScreen extends Screen {
 
   private closeSelf = (ev: KeyboardEvent) => {
     if (ev.code === "Escape") {
-      OSUApplication.screenManager.pop()
+      this.close()
     }
 
   }
@@ -148,7 +146,6 @@ export class StoryScreen extends Screen {
 
   public onExiting(): void {
     super.onExiting()
-    this.view.remove()
     window.removeEventListener("keydown", this.closeSelf)
     inject(BackgroundScreen).show()
   }

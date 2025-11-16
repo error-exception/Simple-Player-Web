@@ -29,6 +29,9 @@ class BrightnessTextureVerticesAddAction extends VerticesAddAction {
 
 }
 
+/**
+ * @deprecated
+ */
 export class BrightnessTextureShaderWrapper extends ShaderWrapper {
 
   public addAction: VerticesAddAction = new BrightnessTextureVerticesAddAction(this)

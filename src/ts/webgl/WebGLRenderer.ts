@@ -20,6 +20,9 @@ import { SizeMode } from "./view/View";
 import { LegacyLogo } from './screen/legacy/LegacyLogo';
 import { Shaders } from "./graphic/shader/Shaders";
 import { color } from "./base/Color";
+import { Transformable } from "./drawable/Transformable";
+import { degreeToRadian } from "../Utils";
+import { vector2 } from "./graphic/matrix/vec2";
 
 export class WebGLRenderer implements Disposable {
 
@@ -217,8 +220,7 @@ export class WebGLRenderer implements Disposable {
     if (!canvas) {
       canvas = new Canvas(this)
       this.canvas = canvas
-    }
-    
+    }    
     this.root.update()
     this.root.draw(canvas)
     RenderScheduler.executeDispose()

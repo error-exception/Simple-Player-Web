@@ -1,7 +1,6 @@
-import {Vector, Vector2} from "../core/Vector2";
-import type {Nullable} from "../../../type";
-import {Texture} from "../core/Texture";
-import type {Disposable} from "../core/Disposable";
+import type { Nullable } from "../../../type";
+import type { Disposable } from "../core/Disposable";
+import { Texture } from "../core/Texture";
 import { vector2 } from "../matrix/vec2";
 
 export class TextureAtlas implements Disposable {

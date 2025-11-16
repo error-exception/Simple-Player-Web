@@ -38,7 +38,7 @@ export class StoryRotateEvent extends TransitionEvent<OSBValueEvent, number> {
     }
     const value = this.transitionQueue.update(timestamp)
     if (value !== null) {
-      this.sprite._rotate = radianToDegree(value)
+      this.sprite._rotate = value
     }
   }
 

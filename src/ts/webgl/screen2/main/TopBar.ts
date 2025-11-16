@@ -1,5 +1,6 @@
 import { VueUI } from "../../../global/GlobalState";
 import { OSUPanelStack } from "../../../osu/OSUPanelStack";
+import { OSUApplication } from "../../../OSUApplication";
 import { playSound, Sound } from "../../../player/SoundEffect";
 import { easeOutQuint } from "../../../util/Easing";
 import { SingleEvent } from "../../../util/SingleEvent";
@@ -8,7 +9,6 @@ import type { Canvas } from "../../canvas/Canvas";
 import { anchor } from "../../drawable/Anchor";
 import type { MouseEvent } from "../../event/ViewMouseEventSystem";
 import { vector2 } from "../../graphic/matrix/vec2";
-import { Shaders } from "../../graphic/shader/Shaders";
 import type { IconAtlas } from "../../graphic/texture/IconAtlas";
 import { TextureStore } from "../../graphic/texture/TextureStore";
 import { Row } from "../../layout/Row";
@@ -16,6 +16,7 @@ import { ImageView } from "../../view/ImageView";
 import { TextView } from "../../view/TextView";
 import { SizeMode, View } from "../../view/View";
 import { ViewGroup } from "../../view/ViewGroup";
+import { LegacyScreen } from "../legacy/LegacyScreen";
 
 export class TopBar extends ViewGroup {
 
@@ -54,6 +55,13 @@ export class TopBar extends ViewGroup {
         help2Icon.anchor = anchor.TopLeft
         help2Icon.onClickListener.add(() => {
           OSUPanelStack.push({ name: 'test' })
+        })
+      }
+      const help3Icon = new TopBarButton("Icon-Help", size)
+      {
+        help3Icon.anchor = anchor.TopLeft
+        help3Icon.onClickListener.add(() => {
+          OSUApplication.screenManager.push(LegacyScreen)
         })
       }
 
@@ -101,7 +109,7 @@ export class TopBar extends ViewGroup {
         })
       }
       buttonBox.addViews([
-        settingsIcon, helpIcon, help2Icon, stateText, musicIcon, folderIcon, fullscreenIcon, radioIcon, notificationIcon
+        settingsIcon, helpIcon, help2Icon, help3Icon, stateText, musicIcon, folderIcon, fullscreenIcon, radioIcon, notificationIcon
       ])
     }
     this.addViews([topBarBackground, buttonBox])
@@ -146,20 +154,20 @@ class TopBarButton extends ViewGroup {
   }
 
   public onHover(event: MouseEvent): void {
-    this.background.transform().fadeTo(.25, 200)
+    this.background.clearTransform().fadeTo(.25, 200)
     playSound(Sound.ButtonHover)
   }
 
   public onHoverLost(event: MouseEvent): void {
-    this.background.transform().fadeTo(0, 200)
+    this.background.clearTransform().fadeTo(0, 200)
   }
 
   public onMouseDown(event: MouseEvent): void {
-    this.background.transform().fadeTo(.4, 40)
+    this.background.clearTransform().fadeTo(.4, 40)
   }
 
   public onMouseUp(event: MouseEvent): void {
-    this.background.transform()
+    this.background.clearTransform()
       .fadeTo(.8, 45)
       .fadeTo(.25, 400, easeOutQuint)
     playSound(Sound.ButtonSelect)

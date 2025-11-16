@@ -23,10 +23,9 @@ export class MainScreen extends Screen {
 
   constructor() {
     super();
-    this.view.size = SizeMode.fill()
-    this.view.origin = anchor.Center
-    this.view.scale = vector2.create()
-    this.view.alpha = 0
+    this.scale = vector2.create()
+    this.alpha = 0
+    this.origin = anchor.Center
     // const topBar = new TopBar()
     // {
     //   topBar.size = vector2.fromValues(SizeMode.FILL_WIDTH, 36)
@@ -47,7 +46,7 @@ export class MainScreen extends Screen {
         const menu = inject(Menu)
         const topBar = inject(TopBar)
         const background = inject(BackgroundScreen)
-        const transition = logo.transform()
+        const transition = logo.clearTransform()
         if (isShowMenu) {
           playSound(Sound.OsuLogoSelect)
           transition.moveTo(vector2.fromValues(-200, 0), 500, easeOutExpo)
@@ -56,12 +55,12 @@ export class MainScreen extends Screen {
             menu.open()
           }, 100)
 
-          background.transform()
+          background.clearTransform()
             .delay(100).scaleTo(vector2.fromValues(0.996, 0.996), 500, easeOutQuint)
             .delay(100).moveTo(vector2.fromValues(0, 35), 500, easeOutQuint)
             .delay(100).fadeTo(0.8, 500, easeOutQuint)
 
-          topBar.transform()
+          topBar.clearTransform()
             .delay(100)
             .moveYTo(0, 500, easeOutQuint)
         } else {
@@ -70,12 +69,12 @@ export class MainScreen extends Screen {
           clearTimeout(menuTimeoutId)
           menu.close()
 
-          background.transform()
+          background.clearTransform()
             .delay(100).scaleTo(vector2.fromValues(1, 1), 500, easeOutQuint)
             .delay(100).moveTo(vector2.create(), 500, easeOutQuint)
             .delay(100).fadeTo(1, 500, easeOutQuint)
 
-          topBar.transform()
+          topBar.clearTransform()
             .delay(100).moveYTo(-36, 500, easeOutQuint)
         }
         isShowMenu = !isShowMenu
@@ -96,14 +95,14 @@ export class MainScreen extends Screen {
       sideLight.size = SizeMode.fill()
       this.sideLight = sideLight
     }
-    this.view.addViews([sideLight, menu, logo])
+    this.addViews([sideLight, menu, logo])
   }
 
   public onEntering(): void {
     super.onEntering()
     console.log("MainScreen onEntering")
 
-    this.view.transform()
+    this.clearTransform()
       .delay(1000).scaleTo(vector2.fromValues(1, 1), 1000, easeOutQuint)
       .delay(1000).fadeTo(1, 1000, easeOutQuint)
   }
@@ -115,10 +114,10 @@ export class MainScreen extends Screen {
 
   public onResuming(): void {
     super.onResuming()
-    this.sideLight.transform()
+    this.sideLight.clearTransform()
       .delay(300)
       .fadeTo(1, 60, easeOutSine)
-    this.view.transform()
+    this.clearTransform()
       .fadeTo(1, 300, easeOutSine)
       .moveXTo(0, 300, easeOutSine)
       .scaleTo(vector2.fromValues(1, 1), 300, easeOutSine)
@@ -127,7 +126,7 @@ export class MainScreen extends Screen {
   public onSuspending(): void {
     super.onSuspending()
     this.sideLight.alpha = 0
-    this.view.transform()
+    this.clearTransform()
       .fadeTo(0, 300, easeOutQuint)
       .moveXTo(-1280, 300, easeInSine)
       .scaleTo(vector2.fromValues(0.6, 0.6), 300, easeOutQuint)

@@ -15,7 +15,7 @@ export class FadeLogo extends ImageView implements IBeat {
   }
 
   public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number): void {
-    this.transform()
+    this.clearTransform()
       .fadeTo(0.3, 60, easeOut)
       .fadeTo(0.1, gap * 2, easeOutQuint)
   }

@@ -1,12 +1,11 @@
 import { Nullable } from "../../type";
 import { ArrayUtils } from "../../util/ArrayUtils";
-import { degreeToRadian, nullable } from "../../Utils";
+import { nullable } from "../../Utils";
 import { color, type Color4 } from "../base/Color";
 import { Blend } from "../drawable/Blend";
 import { BasicVertexBuffer } from "../graphic/buffer/BasicVertexBuffer";
 import { Buffers } from "../graphic/buffer/Buffers";
 import { Texture } from "../graphic/core/Texture";
-import { almostEquals } from "../graphic/core/Utils";
 import { matrix3 } from '../graphic/matrix/mat3';
 import { vector2 } from "../graphic/matrix/vec2";
 import { Shaders } from "../graphic/shader/Shaders";
@@ -27,14 +26,18 @@ export class DrawState {
   public previousAlpha: number = 1
   public globalAlpha: number = 1
   public blend: Blend = Blend.Normal
-
-  public scaleMatrix: mat3 = matrix3.create()
-  public translateMatrix: mat3 = matrix3.create()
-  public rotateMatrix: mat3 = matrix3.create()
-  public pivot = vector2.create()
-  public matrix: mat3 = matrix3.create()
-  public invertMatrix: mat3 = matrix3.identity(matrix3.create())
-  public basePosition = vector2.create()
+  /**
+   * translate -> rotate -> scale
+   */
+  // public localMatrix: mat3 = matrix3.create()
+  // public scaleMatrix: mat3 = matrix3.create()
+  // public translateMatrix: mat3 = matrix3.create()
+  // public rotateMatrix: mat3 = matrix3.create()
+  // public parentWorldMatrix: mat3 = matrix3.create()
+  // public pivot: vec2 = vector2.create()  
+  public worldMatrix: mat3 = matrix3.create()
+  // public invertMatrix: mat3 = matrix3.identity(matrix3.create())
+  // public basePosition = vector2.create()
   // don't copy
   public shader: ShaderWrapper = Shaders.Default
   // don't copy
@@ -43,29 +46,33 @@ export class DrawState {
   public copy() {
     const state = new DrawState()
     state.fillColor = this.fillColor
-    state.globalAlpha = this.globalAlpha
     state.previousAlpha = this.globalAlpha
+    state.globalAlpha = this.globalAlpha
     state.blend = this.blend
-    matrix3.copy(state.scaleMatrix, this.scaleMatrix)
-    matrix3.copy(state.translateMatrix, this.translateMatrix)
-    matrix3.copy(state.rotateMatrix, this.rotateMatrix)
-    matrix3.copy(state.matrix, this.matrix)
-    vector2.copy(state.pivot, this.pivot)
-    vector2.copy(state.basePosition, this.basePosition)
+
+    // matrix3.identity(state.scaleMatrix)
+    // matrix3.identity(state.rotateMatrix)
+    // matrix3.identity(state.translateMatrix)
+    // matrix3.copy(state.worldMatrix, this.worldMatrix)
+
+    // vector2.copy(state.pivot, this.pivot)
+    // matrix3.copy(state.parentWorldMatrix, this.worldMatrix)
+    // matrix3.identity(state.localMatrix)
     return state
   }
 
   public reset() {
     this.fillColor = color.White
     this.globalAlpha = 1
+    this.previousAlpha = 1
     this.blend = Blend.Normal
 
-    matrix3.identity(this.scaleMatrix)
-    matrix3.identity(this.translateMatrix)
-    matrix3.identity(this.rotateMatrix)
-    matrix3.identity(this.matrix)
-    vector2.set(this.pivot, 0, 0)
-    vector2.set(this.basePosition, 0, 0)
+    // matrix3.identity(this.scaleMatrix)
+    // matrix3.identity(this.translateMatrix)
+    // matrix3.identity(this.rotateMatrix)
+    matrix3.identity(this.worldMatrix)
+    // matrix3.identity(this.localMatrix)
+    // vector2.set(this.pivot, 0, 0)
   }
 
 }
@@ -94,8 +101,11 @@ export class Canvas {
 
   // TODO: Add cache for canvas's state
   public save() {
-    this.stateStack.push(this.currentState.copy())
-    this.shouldComputeTransform = true
+    // this.transform()
+    const newState = this.currentState.copy()
+    this.stateStack.push(newState)
+    // this.currentState = newState
+    // this.shouldComputeTransform = true
   }
 
   public restore() {
@@ -104,7 +114,7 @@ export class Canvas {
       return
     }
     this.currentState = this.stateStack.pop()!
-    this.shouldComputeTransform = true
+    // this.shouldComputeTransform = true
     this.extra = null
   }
 
@@ -113,7 +123,7 @@ export class Canvas {
     this.stateStack.length = 0
     this.texture = null
     this.extra = null
-    this.shouldComputeTransform = true
+    // this.shouldComputeTransform = true
     this.isBatching = false
     this.batchData = []
   }
@@ -136,95 +146,92 @@ export class Canvas {
     this.extra = extra
   }
 
+  public setMatrix3(matrix: mat3) {
+    matrix3.copy(this.currentState.worldMatrix, matrix)
+  }
+
   // TODO: remove this method, use translate to implement
   public base(x: number, y: number) {
-    vector2.set(this.currentState.basePosition, x, y)
   }
 
-  private temp: vec2 = vector2.create()
+  // private temp: vec2 = vector2.create()
 
-  public translate(x: number, y: number) {
-    const state = this.currentState
-    vector2.set(this.temp, x, y)
-    matrix3.translate(state.translateMatrix, state.translateMatrix, this.temp)
-    this.shouldComputeTransform = true
-  }
+  // public translate(x: number, y: number) {
+  //   const state = this.currentState
+  //   vector2.set(this.temp, x, y)
+  //   matrix3.translate(state.translateMatrix, state.translateMatrix, this.temp)
+  //   this.shouldComputeTransform = true
+  // }
 
-  public scale(x: number, y: number) {
-    if (almostEquals(x, 0)) {
-      x = 1e-5 // avoid divide by zero when compute invert matrix
-    }
-    if (almostEquals(y, 0)) {
-      y = 1e-5 // avoid divide by zero when compute invert matrix
-    }
+  // public scale(x: number, y: number) {
+  //   if (almostEquals(x, 0)) {
+  //     x = 1e-5 // avoid divide by zero when compute invert matrix
+  //   }
+  //   if (almostEquals(y, 0)) {
+  //     y = 1e-5 // avoid divide by zero when compute invert matrix
+  //   }
 
-    vector2.set(this.temp, x, y)
-    matrix3.scale(this.currentState.scaleMatrix, this.currentState.scaleMatrix, this.temp)
-    this.shouldComputeTransform = true
-  }
+  //   vector2.set(this.temp, x, y)
+  //   matrix3.scale(this.currentState.scaleMatrix, this.currentState.scaleMatrix, this.temp)
+  //   this.shouldComputeTransform = true
+  // }
 
-  public rotate(degree: number) {
-    matrix3.rotate(this.currentState.rotateMatrix, this.currentState.rotateMatrix, degreeToRadian(degree))
-    this.shouldComputeTransform = true
-  }
+  // public rotate(degree: number) {
+  //   matrix3.rotate(this.currentState.rotateMatrix, this.currentState.rotateMatrix, degreeToRadian(degree))
+  //   this.shouldComputeTransform = true
+  // }
 
   public pivot(x: number, y: number) {
-    const state = this.currentState
-    vector2.set(state.pivot, state.basePosition[0] + x, state.basePosition[1] + y)
+    // vector2.set(this.currentState.pivot, x, y)
   }
 
-  private shouldComputeTransform = false
+  // private shouldComputeTransform = false
 
-  private transform() {
-    if (!this.shouldComputeTransform) {
-      return
-    }
-    this.shouldComputeTransform = false
-    const { translateMatrix, scaleMatrix, rotateMatrix, matrix } = this.currentState
-    // Correct transformation order: translate -> rotate -> scale
-    matrix3.multiply(matrix, translateMatrix, rotateMatrix)
-    matrix3.multiply(matrix, matrix, scaleMatrix)
-  }
+  // private transform() {
+  //   if (!this.shouldComputeTransform) {
+  //     return
+  //   }
+  //   this.shouldComputeTransform = false
+
+  //   const { translateMatrix, scaleMatrix, rotateMatrix, worldMatrix, localMatrix, parentWorldMatrix } = this.currentState
+
+  //   matrix3.multiply(localMatrix, translateMatrix, rotateMatrix)
+  //   matrix3.multiply(localMatrix, localMatrix, scaleMatrix)
+    
+  //   matrix3.multiply(worldMatrix, parentWorldMatrix, localMatrix)
+  // }
   
-  private isInvertMatrixComputed = false
+  // private isInvertMatrixComputed = false
 
-  public worldToLocal(x: number, y: number): vec2 {
-    this.isInvertMatrixComputed = this.shouldComputeTransform
-    const invertMatrix = this.currentState.invertMatrix
-    // If transform is changed or not computed, compute invert matrix
-    if (this.isInvertMatrixComputed) {
-      this.transform()
-      matrix3.invert(invertMatrix, this.currentState.matrix)
-    }
+  // public worldToLocal(x: number, y: number): vec2 {
+  //   this.isInvertMatrixComputed = this.shouldComputeTransform
+  //   const invertMatrix = this.currentState.invertMatrix
+  //   // If transform is changed or not computed, compute invert matrix
+  //   if (this.isInvertMatrixComputed) {
+  //     // this.transform()
+  //     matrix3.invert(invertMatrix, this.currentState.worldMatrix)
+  //   }
 
-    // discard consider invert matrix is null, because scale transform is not zero
-    return vector2.transformMat3(vector2.create(), vector2.fromValues(x, y), invertMatrix)
-  }
+  //   // discard consider invert matrix is null, because scale transform is not zero
+  //   return vector2.transformMat3(vector2.create(), vector2.fromValues(x, y), invertMatrix)
+  // }
 
-  public localToWorld(x: number, y: number): vec2 {
-    this.transform()
-    const { matrix, pivot } = this.currentState
-    return transformVector(matrix, vector2.fromValues(x, y), pivot)
-  }
+  // public localToWorld(x: number, y: number): vec2 {
+  //   // this.transform()
+  //   const { worldMatrix: matrix, pivot } = this.currentState
+  //   return transformVector(matrix, vector2.fromValues(x, y), pivot)
+  // }
 
   public drawTriangle(triangle: Triangle3) {
     const state = this.currentState,
-      { basePosition, matrix, pivot, shader } = this.currentState,
+      { worldMatrix, /* pivot, */ shader } = this.currentState,
       { angle1, angle2, angle3 } = triangle
 
-    const [ x1, y1 ] = angle1,
-      [ x2, y2 ] = angle2,
-      [ x3, y3 ] = angle3
+    // this.transform()
 
-    vector2.add(angle1, angle1, basePosition)
-    vector2.add(angle2, angle2, basePosition)
-    vector2.add(angle3, angle3, basePosition)
-
-    this.transform()
-
-    const a = transformVector(matrix, angle1, pivot),
-      b = transformVector(matrix, angle2, pivot),
-      c = transformVector(matrix, angle3, pivot)
+    const a = transformVector(worldMatrix, angle1/* , pivot */),
+      b = transformVector(worldMatrix, angle2/* , pivot */),
+      c = transformVector(worldMatrix, angle3/* , pivot */)
 
     shader.addAction.extra = this.extra
     if (this.isBatching) {
@@ -234,34 +241,20 @@ export class Canvas {
       shader.addAction.addVertex(state, data, a, b, c)
       this.draw(data)
     }
-
-    vector2.set(triangle.angle1, x1, y1)
-    vector2.set(triangle.angle2, x2, y2)
-    vector2.set(triangle.angle3, x3, y3)
   }
 
   public drawQuad(quad: Quad4, texture: Texture = TextureStore.getTexture('Square')) {
 
     const state = this.currentState,
-      { basePosition, matrix, pivot, shader } = this.currentState,
+      { worldMatrix, /* pivot, */ shader } = this.currentState,
       { topLeft, topRight, bottomLeft, bottomRight } = quad
 
-    const [ x1, y1 ] = topLeft,
-      [ x2, y2 ] = topRight,
-      [ x3, y3 ] = bottomLeft,
-      [ x4, y4 ] = bottomRight
+    // this.transform()
 
-    vector2.add(topLeft, topLeft, basePosition)
-    vector2.add(topRight, topRight, basePosition)
-    vector2.add(bottomLeft, bottomLeft, basePosition)
-    vector2.add(bottomRight, bottomRight, basePosition)
-
-    this.transform()
-
-    const a = transformVector(matrix, topLeft, pivot),
-      b = transformVector(matrix, topRight, pivot),
-      c = transformVector(matrix, bottomLeft, pivot),
-      d = transformVector(matrix, bottomRight, pivot)
+    const a = transformVector(worldMatrix, topLeft/* , pivot */),
+      b = transformVector(worldMatrix, topRight/* , pivot */),
+      c = transformVector(worldMatrix, bottomLeft/* , pivot */),
+      d = transformVector(worldMatrix, bottomRight/* , pivot */)
 
     this.texture = texture
     shader.addAction.extra = this.extra
@@ -273,10 +266,6 @@ export class Canvas {
       this.draw(data)
     }
 
-    vector2.set(quad.topLeft, x1, y1)
-    vector2.set(quad.topRight, x2, y2)
-    vector2.set(quad.bottomLeft, x3, y3)
-    vector2.set(quad.bottomRight, x4, y4)
   }
 
   public drawTextureAtlas(textureRegin: TextureRegin, x: number, y: number, width: number, height: number) {
@@ -400,28 +389,18 @@ export class Canvas {
     vector2.set(quad.bottomRight, x + width, y + height)
 
     const state = this.currentState,
-      { basePosition, matrix, pivot, shader } = this.currentState,
+      { worldMatrix,/*  pivot, */ shader } = this.currentState,
       { topLeft, topRight, bottomLeft, bottomRight } = quad
 
-    const [ x1, y1 ] = topLeft,
-      [ x2, y2 ] = topRight,
-      [ x3, y3 ] = bottomLeft,
-      [ x4, y4 ] = bottomRight
+    // this.transform()
 
-    vector2.add(topLeft, topLeft, basePosition)
-    vector2.add(topRight, topRight, basePosition)
-    vector2.add(bottomLeft, bottomLeft, basePosition)
-    vector2.add(bottomRight, bottomRight, basePosition)
-
-    this.transform()
-
-    const a = transformVector(matrix, topLeft, pivot), 
+    const a = transformVector(worldMatrix, topLeft/* , pivot */), 
       texA = vector2.fromValues(texX, texY),
-      b = transformVector(matrix, topRight, pivot), 
+      b = transformVector(worldMatrix, topRight/* , pivot */), 
       texB = vector2.fromValues(texX + texWidth, texY),
-      c = transformVector(matrix, bottomLeft, pivot), 
+      c = transformVector(worldMatrix, bottomLeft/* , pivot */), 
       texC = vector2.fromValues(texX, texY + texHeight),
-      d = transformVector(matrix, bottomRight, pivot), 
+      d = transformVector(worldMatrix, bottomRight/* , pivot */), 
       texD = vector2.fromValues(texX + texWidth, texY + texHeight)
 
     this.texture = texture
@@ -434,10 +413,6 @@ export class Canvas {
       this.draw(data)
     }
 
-    vector2.set(quad.topLeft, x1, y1)
-    vector2.set(quad.topRight, x2, y2)
-    vector2.set(quad.bottomLeft, x3, y3)
-    vector2.set(quad.bottomRight, x4, y4)
   }
 
   private isBatching = false
@@ -537,12 +512,12 @@ export class Canvas {
     // this.debugStencilState("endMask")
   }
 
-  public transformVec2(vec: vec2) {
-    const { matrix, pivot } = this.currentState
-    // vector2.add(vec, vec, basePosition)
-    this.transform()
-    return transformVector(matrix, vec, pivot)
-  }
+  // public transformVec2(vec: vec2) {
+  //   const { worldMatrix: matrix, pivot } = this.currentState
+  //   // vector2.add(vec, vec, basePosition)
+  //   // this.transform()
+  //   return transformVector(matrix, vec, pivot)
+  // }
 
   private draw(data: Float32Array | number[]) {
     const renderer = this.renderer
@@ -571,11 +546,11 @@ export class Canvas {
 }
 
 
-function transformVector(matrix: mat3, position: vec2, pivot: vec2) {
+function transformVector(matrix: mat3, position: vec2/* , pivot: vec2 */) {
   // Create temporary vector for calculation to avoid modifying input
-  const temp = vector2.subtract(vector2.create(), position, pivot)
-  const out = vector2.transformMat3(vector2.create(), temp, matrix)
-  vector2.add(out, out, pivot)
+  // const temp = vector2.subtract(vector2.create(), position, pivot)
+  const out = vector2.transformMat3(vector2.create(), position, matrix)
+  // vector2.add(out, out, pivot)
   return out
 }
 

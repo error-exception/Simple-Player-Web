@@ -1,21 +1,37 @@
-import type { Disposable } from "../graphic/core/Disposable";
+import { OSUApplication } from "../../OSUApplication";
+import { anchor } from "../drawable/Anchor";
+import { SizeMode } from "../view/View";
 import { ViewGroup } from "../view/ViewGroup";
-import { addInstance, removeInstance } from "./InstanceInject";
+import { ScreenLayer } from "./ScreenManager";
 
-export class Screen implements Disposable {
-
-  /**
-   * The view of the screen.
-   */
-  public view: ViewGroup = new ViewGroup()
+export class Screen extends ViewGroup {
 
   /**
    * Whether the screen should be cached.
    */
   public shouldCache = true
 
+  public screenClosed = false
+
   constructor() {
-    addInstance(this)
+    super()
+    this.size = SizeMode.fill()
+    this.anchor = anchor.Center
+  }
+
+  public close(layer: ScreenLayer = ScreenLayer.Content) {
+    this.screenClosed = true
+    const screenManager = OSUApplication.screenManager
+    if (this === screenManager.current(layer)) {
+      screenManager.pop()
+    }
+  }
+
+  public update(): void {
+    super.update()
+    if (this.screenClosed && this.isNotPresent) {
+      this.remove()
+    }
   }
 
   /**
@@ -45,11 +61,6 @@ export class Screen implements Disposable {
    */
   public onEntering() {
 
-  }
-
-  public dispose(): void {
-    removeInstance(this)
-    this.view.dispose()
   }
 
 }

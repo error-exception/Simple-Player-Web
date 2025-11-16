@@ -47,7 +47,7 @@ class BeatLogo extends BeatBox<LogoConfig> {
     })
     this.logo = logo
     this.triangles = triangles
-    this.add(
+    this.addTransformable(
       triangles,
       logo
     )
@@ -82,7 +82,7 @@ class LogoBeatBox extends Box<LogoConfig> {
     super(config);
 
     this.beatLogo = new BeatLogo(config)
-    this.add(this.beatLogo)
+    this.addTransformable(this.beatLogo)
   }
 
   public onUpdate() {
@@ -133,7 +133,7 @@ class LogoAmpBox extends Box<LogoConfig> {
       anchor: Anchor.Center
     })
 
-    this.add(
+    this.addTransformable(
       this.visualizer,
       ripple,
       this.logoBeatBox
@@ -193,7 +193,7 @@ export class LogoBounceBox extends Box<LogoConfig> {
     super(config);
     this.enableMouseEvent()
     this.logoAmpBox = new LogoAmpBox(config)
-    this.add(this.logoAmpBox)
+    this.addTransformable(this.logoAmpBox)
     this.scope.run(() => {
       watch(() => UIState.logoDrag, value => {
         this.isDraggable = value
@@ -244,7 +244,7 @@ export class BeatLogoBox extends Box<LogoConfig> {
     super(config);
     this.enableMouseEvent()
     this.logoBounceBox = new LogoBounceBox(config)
-    this.add(this.logoBounceBox)
+    this.addTransformable(this.logoBounceBox)
   }
 
   private flag = true

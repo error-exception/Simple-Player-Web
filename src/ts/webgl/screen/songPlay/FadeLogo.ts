@@ -17,7 +17,7 @@ export class FadeLogo extends BeatBox {
             blend: Blend.Additive
         })
         this.logo.setAlpha(0.3)
-        this.add(this.logo)
+        this.addTransformable(this.logo)
     }
 
     public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number): void {

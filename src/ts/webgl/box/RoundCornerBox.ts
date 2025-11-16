@@ -85,7 +85,7 @@ export class RoundCornerBox extends Box<RoundCornerBoxConfig> {
     // Do nothing
   }
 
-  add(...children: Drawable[]) {
+  addTransformable(...children: Drawable[]) {
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
       this.childrenList.push(child)

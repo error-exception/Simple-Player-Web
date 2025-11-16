@@ -25,7 +25,7 @@ export class Box<T extends BoxConfig = BoxConfig> extends Drawable<T> {
     this.layout.tag = 'Layout'
   }
 
-  public add(...children: Drawable[]) {
+  public addTransformable(...children: Drawable[]) {
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
       child.setParent(this)
@@ -76,7 +76,7 @@ export class Box<T extends BoxConfig = BoxConfig> extends Drawable<T> {
     super.onLoad(renderer);
     const config = this.config
     if (config.children) {
-      this.add(...config.children)
+      this.addTransformable(...config.children)
     }
   }
 

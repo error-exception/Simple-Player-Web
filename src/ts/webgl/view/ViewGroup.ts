@@ -19,6 +19,7 @@ export class ViewGroup extends View {
 
   public addView(view: View) {
     this.children.push(view)
+    this.addTransformable(view)
     this.onChildChanged(view, false)
     this.forceLayoutChildren()
   }
@@ -26,6 +27,7 @@ export class ViewGroup extends View {
   public addViews(views: View[]) {
     for (const view of views) {
       this.children.push(view)
+      this.addTransformable(view)
       this.onChildChanged(view, false)
     }
     this.forceLayoutChildren()
@@ -33,6 +35,7 @@ export class ViewGroup extends View {
 
   public addViewAt(view: View, index: number) {
     this.children.splice(index, 0, view)
+    this.transformableChildren.splice(index, 0, view)
     this.onChildChanged(view, false)
     this.forceLayoutChildren()
   }
@@ -43,6 +46,7 @@ export class ViewGroup extends View {
       return
     }
     this.children.splice(index, 1)
+    this.removeTransformable(view)
     this.onChildChanged(view, true);
     this.forceLayoutChildren()
     RenderScheduler.scheduleDispose(view)
@@ -119,15 +123,15 @@ export class ViewGroup extends View {
 
   protected onLayoutChildren() {
     const children = this.children, len = children.length;
-    const [ x, y ] = this.position
+    // const [ x, y ] = this.position
     const [ parentWidth, parentHeight ] = this.size
     
     for (let i = 0; i < len; i++) {
       const child = children[i]
       const anchor = child.anchor
       const [ width, height ] = child.size
-      const childX = x + (parentWidth * anchor[0] - width * anchor[0])
-      const childY = y + (parentHeight * anchor[1] - height * anchor[1])
+      const childX = (parentWidth * anchor[0] - width * anchor[0])
+      const childY = (parentHeight * anchor[1] - height * anchor[1])
       
       child.position = vector2.fromValues(childX, childY)
     }

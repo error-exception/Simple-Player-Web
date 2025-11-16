@@ -90,17 +90,17 @@ export class Row extends ViewGroup {
     }
 
     const width = this.width, height = this.height,
-      [ x, y ] = this.position,
+      // [ x, y ] = this.position,
       gap = this.gap
 
-    let leftX = x, centerX = x, rightX = x + width
+    let leftX = 0, centerX = 0, rightX = width
 
     // 布局左侧子元素
     for (i = 0; i < leftChildrenLen; i++) {
       const child = leftChildren[i]
       child.position = vector2.fromValues(
         leftX,
-        y + height * child.anchor[1] - child.height * child.anchor[1]
+        height * child.anchor[1] - child.height * child.anchor[1]
       )
       leftX += child.width + gap
     }
@@ -111,18 +111,18 @@ export class Row extends ViewGroup {
       rightX -= child.width
       child.position = vector2.fromValues(
         rightX,
-        y + height * child.anchor[1] - child.height * child.anchor[1]
+        height * child.anchor[1] - child.height * child.anchor[1]
       )
       rightX -= gap
     }
 
     // 布局中间子元素
-    centerX = x + (width - centerWidth) / 2
+    centerX = (width - centerWidth) / 2
     for (i = 0; i < centerChildrenLen; i++) {
       const child = centerChildren[i]
       child.position = vector2.fromValues(
         centerX,
-        y + height * child.anchor[1] - child.height * child.anchor[1]
+        height * child.anchor[1] - child.height * child.anchor[1]
       )
       centerX += child.width + gap
     }

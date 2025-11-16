@@ -178,7 +178,7 @@ export class Background extends Box {
     super({size: Size.FillParentSize});
     const current = new MovableBackground()
     const next = new MovableBackground()
-    this.add(next, current)
+    this.addTransformable(next, current)
     this.backImage.isVisible = false
     this.frontImage.setBackgroundImage(initImage ? initImage : BackgroundLoader.getBackground())
   }
@@ -247,7 +247,7 @@ export class BackgroundBounce extends Box {
       size: Size.FillParentSize
     });
 
-    this.add((this.background = new Background(backgroundImage)))
+    this.addTransformable((this.background = new Background(backgroundImage)))
   }
 
   public in() {

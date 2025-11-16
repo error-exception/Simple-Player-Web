@@ -2,7 +2,7 @@ import type { Nullable } from "../../type";
 import { createMutableStateFlow, MutableStateFlow } from "../../util/flow";
 import { anchor } from "../drawable/Anchor";
 import { Disposable } from "../graphic/core/Disposable";
-import { ScreenStack } from "../layout/ScreenStack";
+import { ScreenStackView } from "../layout/ScreenStack";
 import type { RootView } from "../view/RootView";
 import { SizeMode } from "../view/View";
 import { ViewGroup } from "../view/ViewGroup";
@@ -19,14 +19,14 @@ export type ScreenConstructor = new (...args: any[]) => Screen
 
 const screenCache = new Map<ScreenConstructor, Screen>();
 
-export class ScreenStackInfo implements Disposable {
+export class ScreenStackLayer implements Disposable {
 
   public readonly stack: Screen[] = []
-  public readonly screen = new ScreenStack()
+  public readonly screenView = new ScreenStackView()
 
   constructor() {
-    this.screen.size = SizeMode.fill()
-    this.screen.anchor = anchor.Center
+    this.screenView.size = SizeMode.fill()
+    this.screenView.anchor = anchor.Center
   }
 
   public get current(): Nullable<Screen> {
@@ -51,7 +51,7 @@ export class ScreenStackInfo implements Disposable {
     if (this.stack.length > 0) {
       this.current?.onSuspending()
     }
-    this.screen.addIfAbsent(screen.view)
+    this.screenView.addIfAbsent(screen)
     this.stack.push(screen);
     screen.onEntering();
   }
@@ -60,8 +60,6 @@ export class ScreenStackInfo implements Disposable {
     const screen = this.stack.pop();
     if (screen) {
       screen.onExiting();
-      // this.viewStack.removeView(screen.view)
-      // RenderScheduler.scheduleDispose(screen)
     }
     if (this.stack.length > 0) {
       this.current?.onResuming()
@@ -69,29 +67,27 @@ export class ScreenStackInfo implements Disposable {
   }
 
   public dispose() {
-    this.stack.forEach(item => {
-      item.dispose()
-    })
+    this.stack.forEach(item => item.dispose())
     this.stack.length = 0
   }
 }
 
 export class ScreenManager implements Disposable {
 
-  private screenLayers: ScreenStackInfo[] = []
+  private screenLayers: ScreenStackLayer[] = []
 
   constructor(rootView: RootView) {
 
-    this.screenLayers[ScreenLayer.Background] = new ScreenStackInfo();
-    this.screenLayers[ScreenLayer.Content] = new ScreenStackInfo();
-    this.screenLayers[ScreenLayer.Foreground] = new ScreenStackInfo();
-    this.screenLayers[ScreenLayer.Overlay] = new ScreenStackInfo();
+    this.screenLayers[ScreenLayer.Background] = new ScreenStackLayer();
+    this.screenLayers[ScreenLayer.Content] = new ScreenStackLayer();
+    this.screenLayers[ScreenLayer.Foreground] = new ScreenStackLayer();
+    this.screenLayers[ScreenLayer.Overlay] = new ScreenStackLayer();
 
     const screenGroup = new ViewGroup();
     {
       screenGroup.size = SizeMode.fill()
       screenGroup.anchor = anchor.TopLeft
-      screenGroup.addViews(this.screenLayers.map(info => info.screen))
+      screenGroup.addViews(this.screenLayers.map(info => info.screenView))
     }
     rootView.contentView = screenGroup;
   }
@@ -102,6 +98,10 @@ export class ScreenManager implements Disposable {
 
   public pop(layer: number = ScreenLayer.Content) {
     this.screenLayers[layer].pop();
+  }
+
+  public current(layer: ScreenLayer): Nullable<Screen> {
+    return this.screenLayers[layer].current
   }
 
   public dispose(): void {

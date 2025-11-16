@@ -78,7 +78,7 @@ export class BeatLogo extends ViewGroup implements IBeat {
     
     const volume = AudioPlayerV2.isPlaying() ? AudioChannel.maxVolume() + 0.4 : 0
     const adjust = Math.min(volume, 1)
-    this.transform()
+    this.clearTransform()
       .scaleTo(vector2.fromValues(1 - adjust * 0.02, 1 - adjust * 0.02), 60, easeOut)
       .scaleTo(vector2.fromValues(1, 1), gap * 2, easeOutQuint)
 
@@ -87,14 +87,14 @@ export class BeatLogo extends ViewGroup implements IBeat {
       .transitionTo(0, gap * 2, easeOutQuint)
 
     if (BeatState.isKiai) {
-      this.logoFlash.transform()
+      this.logoFlash.clearTransform()
         .fadeTo(0.16, 60, easeOut)
         .fadeTo(0, gap * 2, easeOutQuint)
     }
   }
 
   public onClick(event: MouseEvent): void {
-    this.clickEffect.transform()
+    this.clickEffect.clearTransform()
       .fadeTo(.4, 60)
       .fadeTo(0, 1000, easeOutQuint)
   }
@@ -172,21 +172,21 @@ class LogoAmpBox extends ViewGroup {
   }
 
   public onHover(event: MouseEvent): void {
-    this.transform().scaleTo(vector2.fromValues(1.1, 1.1), 500, easeOutElastic)
+    this.clearTransform().scaleTo(vector2.fromValues(1.1, 1.1), 500, easeOutElastic)
     this.onLogoHover?.(event)
   }
 
   public onHoverLost(event: MouseEvent): void {
-    this.transform().scaleTo(vector2.fromValues(1, 1), 500, easeOutElastic)
+    this.clearTransform().scaleTo(vector2.fromValues(1, 1), 500, easeOutElastic)
     this.onLogoHoverLost?.(event)
   }
 
   public onMouseDown(event: MouseEvent): void {
-    this.transform().scaleTo(vector2.fromValues(0.9, 0.9), 1000, easeOut)
+    this.clearTransform().scaleTo(vector2.fromValues(0.9, 0.9), 1000, easeOut)
   }
 
   public onMouseUp(event: MouseEvent): void {    
-    this.transform().scaleTo(vector2.fromValues(1, 1), 500, easeOutElastic)
+    this.clearTransform().scaleTo(vector2.fromValues(1, 1), 500, easeOutElastic)
   }
 
 }
@@ -224,7 +224,7 @@ export class LogoBounceBox extends ViewGroup {
 
   public onDragLost(event: MouseEvent): void {
     this.isDragging = false
-    this.transform().moveTo(vector2.create(), 600, easeOutElastic)
+    this.clearTransform().moveTo(vector2.create(), 600, easeOutElastic)
   }
 
 }

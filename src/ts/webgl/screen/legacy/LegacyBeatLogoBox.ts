@@ -29,7 +29,7 @@ class LegacyBeatLogo extends BeatBox<LegacyLogoConfig> {
       anchor: Anchor.Center
     })
     this.logo = logo
-    this.add(logo)
+    this.addTransformable(logo)
   }
 
   public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {
@@ -68,7 +68,7 @@ class LegacyFadeBeatLogo extends BeatBox<LegacyLogoConfig> {
     })
     this.logo = logo
     this.logo.setAlpha(.08)
-    this.add(logo)
+    this.addTransformable(logo)
   }
 
   public onNewBeat(isKiai: boolean, newBeatTimestamp: number, gap: number) {
@@ -93,7 +93,7 @@ class LegacyLogoBeatBox extends Box<LegacyLogoConfig> {
     super(config);
 
     this.beatLogo = new LegacyBeatLogo(config)
-    this.add(this.beatLogo)
+    this.addTransformable(this.beatLogo)
   }
 
   public onUpdate() {
@@ -118,7 +118,7 @@ class LegacyFadeLogoBeatBox extends Box<LegacyLogoConfig> {
     super(config);
 
     this.beatLogo = new LegacyFadeBeatLogo(config)
-    this.add(this.beatLogo)
+    this.addTransformable(this.beatLogo)
   }
 
   public onUpdate() {
@@ -157,7 +157,7 @@ class LogoAmpBox extends BeatBox<LegacyLogoConfig> {
     })
     this.logoBeatBox = new LegacyLogoBeatBox(config)
     this.fadeLogoBeatBox = new LegacyFadeLogoBeatBox(config)
-    this.add(this.visualizer, ripple, this.logoBeatBox, this.fadeLogoBeatBox)
+    this.addTransformable(this.visualizer, ripple, this.logoBeatBox, this.fadeLogoBeatBox)
     this.scope.run(() => {
       watch(() => UIState.logoHover, val => this.logoHoverable = val, {immediate: true})
     })
@@ -202,7 +202,7 @@ export class LogoBounceBox extends Box<LegacyLogoConfig> {
 
   constructor(config: LegacyLogoConfig) {
     super(config);
-    this.add(new LogoAmpBox(config))
+    this.addTransformable(new LogoAmpBox(config))
   }
 
   // private flag = true

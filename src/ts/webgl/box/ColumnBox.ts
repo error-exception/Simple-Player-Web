@@ -28,8 +28,8 @@ export class ColumnBox extends Box<ColumnBoxConfig> {
     this.invalidate(Invalidation.Layout)
   }
 
-  public add(...children: Drawable[]) {
-    super.add(...children);
+  public addTransformable(...children: Drawable[]) {
+    super.addTransformable(...children);
     this.categoryChildren(children)
     this.invalidate(Invalidation.Layout)
   }

@@ -21,7 +21,7 @@ export class LegacyScreen extends Box {
     super({
       size: Size.FillParentSize
     });
-    this.add(
+    this.addTransformable(
       new LogoBounceBox({
         size: Size.of(500),
         anchor: Anchor.Center
@@ -30,7 +30,7 @@ export class LegacyScreen extends Box {
       new HomeOverlay(),
     )
     if (__DEV__) {
-      this.add(new LegacyToast())
+      this.addTransformable(new LegacyToast())
     }
   }
 }
@@ -55,7 +55,7 @@ class HomeOverlay extends Box {
       anchor: Axis.Y_BOTTOM | Axis.X_CENTER,
       color: Color.fromHex(0x0, 128)
     })
-    this.add(
+    this.addTransformable(
       this.top, this.bottom,
       new PlayControls({
         size: Size.of(Size.FillParent, 36),

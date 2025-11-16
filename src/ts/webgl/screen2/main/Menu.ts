@@ -137,16 +137,16 @@ export class Menu extends ViewGroup {
   }
 
   public logoHover() {
-    this.leftButtonGroup.transform()
+    this.leftButtonGroup.clearTransform()
       .moveXTo(-10, 500, easeOutElastic)
-    this.rightButtonGroup.transform()
+    this.rightButtonGroup.clearTransform()
       .moveXTo(10, 500, easeOutElastic)
   }
 
   public logoHoverLost() {
-    this.leftButtonGroup.transform()
+    this.leftButtonGroup.clearTransform()
       .moveXTo(0, 500, easeOutElastic)
-    this.rightButtonGroup.transform()
+    this.rightButtonGroup.clearTransform()
       .moveXTo(0, 500, easeOutElastic)
   }
 
@@ -155,7 +155,7 @@ export class Menu extends ViewGroup {
   public open() {
     // 1. overall opacity animation
     // 2. scaleY animation
-    this.background.transform()
+    this.background.clearTransform()
       .fadeTo(1, this.duration, easeOutQuint)
       .scaleYTo(1, this.duration, easeOutQuint)
     // 3. left and right button group expand animation
@@ -165,7 +165,7 @@ export class Menu extends ViewGroup {
   }
 
   public close() {
-    this.background.transform()
+    this.background.clearTransform()
       .fadeTo(0, this.duration, easeOutQuint)
       .scaleYTo(0.3, this.duration, easeOutQuint)
     this.collapseLeftButtonGroup()
@@ -178,10 +178,10 @@ export class Menu extends ViewGroup {
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
       child.isMouseEventEnabled = true
-      child.transform()
+      child.clearTransform()
         .widthTo(this.rightWidthList[i], this.duration, easeOutQuint)
     }
-    rightGroup.transform().fadeTo(1, this.duration, easeOutQuint)
+    rightGroup.clearTransform().fadeTo(1, this.duration, easeOutQuint)
   }
 
   private collapseRightButtonGroup() {
@@ -190,10 +190,10 @@ export class Menu extends ViewGroup {
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
       child.isMouseEventEnabled = false
-      child.transform()
+      child.clearTransform()
         .widthTo(0, this.duration, easeOutQuint)
     }
-    rightGroup.transform().fadeTo(0, this.duration, easeOutQuint)
+    rightGroup.clearTransform().fadeTo(0, this.duration, easeOutQuint)
   }
 
   private expandLeftButtonGroup() {
@@ -203,10 +203,10 @@ export class Menu extends ViewGroup {
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
       child.isMouseEventEnabled = true
-      child.transform()
+      child.clearTransform()
         .widthTo(this.leftWidthList[i], this.duration, easeOutQuint)
     }
-    leftGroup.transform().fadeTo(1, this.duration, easeOutQuint)
+    leftGroup.clearTransform().fadeTo(1, this.duration, easeOutQuint)
   }
 
   private collapseLeftButtonGroup() {
@@ -215,10 +215,10 @@ export class Menu extends ViewGroup {
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
       child.isMouseEventEnabled = false
-      child.transform()
+      child.clearTransform()
         .widthTo(0, this.duration, easeOutQuint)
     }
-    leftGroup.transform().fadeTo(0, this.duration, easeOutQuint)
+    leftGroup.clearTransform().fadeTo(0, this.duration, easeOutQuint)
   }
 
 }
@@ -287,21 +287,21 @@ class MenuButton extends ViewGroup implements IBeat {
 
   public onHover(event: MouseEvent): void {
     playSound(Sound.ButtonHover)
-    this.transform().widthTo(this.originWidth * 1.4, 500, easeOutElastic)
+    this.clearTransform().widthTo(this.originWidth * 1.4, 500, easeOutElastic)
     this.isHovered = true
   }
 
   public onHoverLost(event: MouseEvent): void {
-    this.transform().widthTo(this.originWidth, 500, easeOutElastic)
+    this.clearTransform().widthTo(this.originWidth, 500, easeOutElastic)
     this.isHovered = false
   }
 
   public onMouseDown(event: MouseEvent): void {
-    this.background.transform().colorTo(this.backgroundPressColor, 300)
+    this.background.clearTransform().colorTo(this.backgroundPressColor, 300)
   }
 
   public onMouseUp(event: MouseEvent): void {
-    this.background.transform()
+    this.background.clearTransform()
       .colorTo(this.backgroundActiveColor, 30)
       .colorTo(this.backgroundColor, 400, easeOutQuint)
     playSound(this.sound)
@@ -311,7 +311,7 @@ class MenuButton extends ViewGroup implements IBeat {
     if (this.isNotPresent || !this.isHovered) {
       return
     }
-    this.icon.transform()
+    this.icon.clearTransform()
       .scaleTo(vector2.fromValues(0.9, 0.9), 60, easeOutCubic)
       .scaleTo(vector2.fromValues(1, 1), gap * 2, easeOutQuint)
   }

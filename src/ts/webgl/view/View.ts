@@ -48,7 +48,7 @@ export class View extends Transformable implements Disposable {
     addInstance(this)
     this.layoutList.push(
       this.sizeBacking,
-      this.originBacking
+      // this.originBacking
     )
   }
 
@@ -60,6 +60,35 @@ export class View extends Transformable implements Disposable {
    */
   public onLoad() {
     this.invalidate(Invalidation.All, InvalidationSource.Self)
+  }
+
+  public viewTranslate = vector2.create()
+
+  public get translateX() {
+    return this.viewTranslate[0]
+  }
+
+  public set translateX(x: number) {
+    this.transformationChanged = this.transformationChanged || almostEquals(this.viewTranslate[0], x)
+    this.viewTranslate[0] = x
+  }
+
+  public get translateY() {
+    return this.viewTranslate[1]
+  }
+
+  public set translateY(y: number) {
+    this.transformationChanged = this.transformationChanged || almostEquals(this.viewTranslate[1], y)
+    this.viewTranslate[1] = y
+  }
+
+  public get translate() {
+    return vector2.clone(this.viewTranslate)
+  }
+
+  public set translate(translate: vec2) {
+    this.transformationChanged = this.transformationChanged || !vector2.equals(this.viewTranslate, translate)
+    vector2.copy(this.viewTranslate, translate)
   }
 
   /**
@@ -149,40 +178,28 @@ export class View extends Transformable implements Disposable {
     this.invalidate(Invalidation.All)
   }
 
-  /**
-   * This method will be called when view complete first layout.
-   */
-  protected onLayoutReady() {
-    
-  }
+  public origin = anchor.TopLeft;
 
-  /**
-   * This method will be called when view complete layout.
-   */
-  protected onLayoutComplete() {
+  // public set origin(origin: vec2) {
+  //   this._origin = origin
+  //   this.invalidate(Invalidation.Size)
+  // }
 
-  }
+  // public get origin(): vec2 {
+  //   return this.originBacking.value
+  // }
 
-  public _origin = anchor.TopLeft;
+  // private originBacking = new LayoutValue<vec2>(Invalidation.Size, () => {
+  //   const origin = this._origin
+  //   const size = this.size
 
-  public set origin(origin: vec2) {
-    this._origin = origin
-    this.invalidate(Invalidation.Size)
-  }
+  //   this.actualOrigin = vector2.fromValues(
+  //     size[0] * origin[0],
+  //     size[1] * origin[1]
+  //   )
 
-  public get origin(): vec2 {
-    return this.originBacking.value
-  }
-
-  private originBacking = new LayoutValue<vec2>(Invalidation.Size | Invalidation.Position, () => {
-    const origin = this._origin
-    const size = this.size
-
-    return vector2.fromValues(
-      size[0] * origin[0],
-      size[1] * origin[1]
-    )
-  })
+  //   return this.actualOrigin
+  // })
 
   public invalidate(invalidate: number = Invalidation.None, source: number = InvalidationSource.Self) {
     // notify parent view to invalidate
@@ -216,11 +233,8 @@ export class View extends Transformable implements Disposable {
 
   public transition = new TransformTransition(this)
 
-  public transform(clear: boolean = true) {
-    if (clear) {
-      return this.transition.clear
-    }
-    return this.transition
+  public clearTransform() {
+    return this.transition.clear
   }
 
   public get isNotPresent() {
@@ -251,6 +265,7 @@ export class View extends Transformable implements Disposable {
     if (state < ViewState.Loaded || state >= ViewState.Disposed || this.isNotPresent) {
       return
     }
+    
     const drawable = this.drawable
     drawable.setBound(this.rectangle)
     drawable.draw(canvas)
@@ -304,7 +319,7 @@ export enum ViewState {
    * When a view is loaded
    */
   Loaded = 2,
-
+  
   /**
    * When a view is disposed
    */

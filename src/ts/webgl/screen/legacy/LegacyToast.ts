@@ -17,7 +17,7 @@ export class LegacyToast extends Box {
       size: Size.of(Size.FillParent, 48),
       anchor: Anchor.Center
     });
-    this.add(
+    this.addTransformable(
       new ImageDrawable(TextureStore.getTexture('Square'), {
         size: Size.FillParentSize,
         color: Color.fromHex(0, 0xc0)

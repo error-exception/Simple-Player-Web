@@ -62,12 +62,12 @@ export class SideFlashlight extends ViewGroup implements IBeat {
     if (BeatState.isKiai) {
       if ((BeatState.beatIndex & 1) === 0) {
         left = 0.54 * leftAdjust
-        this.left.transform()
+        this.left.clearTransform()
           .fadeTo(left, 60)
           .fadeTo(0, beatLength, lightTimeFunc)
       } else {
         right = 0.54 * rightAdjust
-        this.right.transform()
+        this.right.clearTransform()
           .fadeTo(right, 60)
           .fadeTo(0, beatLength, lightTimeFunc)
       }
@@ -75,10 +75,10 @@ export class SideFlashlight extends ViewGroup implements IBeat {
       if ((BeatState.beatIndex & 0b11) === 0 && BeatState.beatIndex != 0) {
         left = 0.3 * leftAdjust
         right = 0.3 * rightAdjust
-        this.left.transform()
+        this.left.clearTransform()
           .fadeTo(left, 60)
           .fadeTo(0, beatLength, lightTimeFunc)
-        this.right.transform()
+        this.right.clearTransform()
           .fadeTo(right, 60)
           .fadeTo(0, beatLength, lightTimeFunc)
       }

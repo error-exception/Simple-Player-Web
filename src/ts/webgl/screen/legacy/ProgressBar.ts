@@ -12,7 +12,7 @@ export class ProgressBar extends Box {
 
   constructor(config: BoxConfig) {
     super(config);
-    this.add(
+    this.addTransformable(
       new ImageDrawable(TextureStore.getTexture('Square'), {
         size: Size.FillParentSize,
         color: Color.fromHex(0xffffff, 40)

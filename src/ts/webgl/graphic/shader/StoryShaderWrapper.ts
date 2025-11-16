@@ -15,6 +15,9 @@ import {ArrayUtils} from "../../../util/ArrayUtils";
 import type {Color} from "../../base/Color";
 import {hasFlag} from "../../util/flagUtils";
 
+/**
+ * @deprecated
+ */
 export class StoryShaderWrapper extends ShaderWrapper {
   constructor(renderer: WebGLRenderer) {
     const gl = renderer.gl

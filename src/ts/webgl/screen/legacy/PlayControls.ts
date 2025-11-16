@@ -15,7 +15,7 @@ export class PlayControls extends RowBox {
     super(config);
 
     const atlas = TextureStore.getAtlas('Icons-Atlas')
-    this.add(
+    this.addTransformable(
       new ControlButton(atlas.getRegin<IconAtlas>('Icon-SkipPrevious'))
         .setOnClick(() => {
           TempOSUPlayManager.prev()

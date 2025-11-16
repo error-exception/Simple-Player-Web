@@ -1,13 +1,7 @@
-
-/**
- * TODO: Implement OverlayScreen to display TopBar
- */
-
-import { effect, effectScope } from "vue";
+import { effectScope } from "vue";
 import AudioPlayer from "../../../player/AudioPlayer";
 import { PlayerState } from "../../../player/PlayerState";
 import { collectLatest } from "../../../util/eventRef";
-import { anchor } from "../../drawable/Anchor";
 import { vector2 } from "../../graphic/matrix/vec2";
 import { Screen } from "../../util/Screen";
 import { SizeMode } from "../../view/View";
@@ -21,14 +15,12 @@ export class OverlayScreen extends Screen {
 
   constructor() {
     super();
-    this.view.size = SizeMode.fill();
-    this.view.origin = anchor.Center
     const topBar = new TopBar()
     {
       topBar.size = vector2.fromValues(SizeMode.FILL_WIDTH, 36)
       this.topBar = topBar
     }
-    this.view.addView(topBar)
+    this.addView(topBar)
     this.scope.run(() => {
       collectLatest(AudioPlayer.playState, stateCode => {
         topBar.stateText = {
